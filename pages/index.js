@@ -7,7 +7,7 @@ export default function Home() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#060b13", // Ez tünteti el a fehér széleket
+        backgroundColor: "#060b13",
         backgroundImage: "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
         backgroundSize: "contain",
         backgroundPosition: "center",
@@ -62,6 +62,33 @@ export default function Home() {
         </p>
       </div>
 
+      {/* START GOMB (Bal oldalon, középtől kicsit feljebb) */}
+      <a 
+        href="/start" // Erre az új oldalra visz
+        style={{
+          position: "absolute",
+          top: "45%", // Kicsit a közép (50%) fölött
+          left: "10%", // Bal oldalon
+          transform: "translateY(-50%)", // Pontos igazítás a középhez képest
+          padding: "14px 40px",
+          backgroundColor: "rgba(255, 255, 255, 0.1)", // Áttetsző háttér
+          border: "1px solid rgba(255, 255, 255, 0.6)", // Fehér keret
+          borderRadius: "10px",
+          color: "white",
+          textDecoration: "none",
+          fontWeight: "bold",
+          fontSize: "1.2rem",
+          cursor: "pointer",
+          backdropFilter: "blur(8px)", // Elegáns elmosás effekt
+          boxShadow: "0 4px 15px rgba(0, 0, 0, 0.4)",
+          transition: "transform 0.2s, background-color 0.2s"
+        }}
+        onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.25)'}
+        onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
+      >
+        Start
+      </a>
+
       {/* BOTTOM BAR */}
       <div
         style={{
@@ -82,8 +109,8 @@ export default function Home() {
         <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
           © 2026 WealthyAI — All rights reserved.
         </div>
-
         <div style={{ display: "flex", gap: "18px" }}>
+           {/* Képek cseréje a működő, egyszerű inline stílusra */}
           <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
             <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: "34px", height: "34px", cursor: "pointer" }} />
           </a>
