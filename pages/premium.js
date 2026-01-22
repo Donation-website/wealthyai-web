@@ -1,78 +1,78 @@
-import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 
 export default function PremiumPage() {
   const router = useRouter();
   const { session_id } = router.query;
   const [loading, setLoading] = useState(true);
+  const [valid, setValid] = useState(false);
 
   useEffect(() => {
-    if (session_id) {
-      // Később itt jön majd a Stripe server-side ellenőrzés
-      setLoading(false);
-    }
+    if (!session_id) return;
+
+    fetch(`/api/verify-session?session_id=${session_id}`)
+      .then(res => res.json())
+      .then(data => {
+        setValid(data.valid);
+        setLoading(false);
+      });
   }, [session_id]);
 
   if (loading) {
     return (
       <main style={pageStyle}>
-        <h2>Verifying your payment...</h2>
+        <h2>Verifying your payment…</h2>
       </main>
     );
   }
 
+  if (!valid) {
+    router.push('/start');
+    return null;
+  }
+
   return (
     <main style={pageStyle}>
+      <h1>🎉 Welcome to WealthyAI Premium</h1>
+      <p style={{ maxWidth: "600px", opacity: 0.85 }}>
+        Thank you for choosing WealthyAI.
+        Your payment was successful and your premium access is now active.
+      </p>
+
       <div style={cardStyle}>
-        <h1 style={{ color: "#00ff88" }}>✅ Payment Successful</h1>
-        <p style={{ marginTop: "10px", opacity: 0.85 }}>
-          Thank you for choosing <strong>WealthyAI</strong>.
-        </p>
-
-        <p style={{ marginTop: "20px", opacity: 0.75 }}>
-          Your premium features are now unlocked.
-        </p>
-
-        <button
-          style={buttonStyle}
-          onClick={() => alert("AI + charts will load here next 🚀")}
-        >
-          Launch Premium Dashboard
-        </button>
-
-        <p style={{ marginTop: "30px", fontSize: "0.85rem", opacity: 0.6 }}>
-          A confirmation email has been sent.
-        </p>
+        <h3>What’s next?</h3>
+        <ul>
+          <li>✔ Advanced AI financial optimization</li>
+          <li>✔ Interactive charts & projections</li>
+          <li>✔ Goal tracking & exports</li>
+        </ul>
       </div>
+
+      <p style={{ marginTop: "30px", opacity: 0.7 }}>
+        🚀 AI features coming online shortly.
+      </p>
     </main>
   );
 }
 
 const pageStyle = {
   minHeight: "100vh",
-  backgroundColor: "#060b13",
+  background: "#060b13",
+  color: "white",
   display: "flex",
+  flexDirection: "column",
   alignItems: "center",
   justifyContent: "center",
-  color: "white",
+  padding: "40px",
   fontFamily: "Arial, sans-serif",
+  textAlign: "center"
 };
 
 const cardStyle = {
-  background: "rgba(255,255,255,0.06)",
-  borderRadius: "20px",
-  padding: "40px",
-  textAlign: "center",
-  maxWidth: "480px",
-  boxShadow: "0 10px 30px rgba(0,0,0,0.4)",
-};
-
-const buttonStyle = {
   marginTop: "30px",
-  padding: "14px 28px",
-  background: "#00ff88",
-  border: "none",
-  borderRadius: "8px",
-  fontWeight: "bold",
-  cursor: "pointer",
+  padding: "25px",
+  borderRadius: "16px",
+  background: "rgba(255,255,255,0.05)",
+  backdropFilter: "blur(10px)",
+  border: "1px solid rgba(255,255,255,0.15)"
 };
