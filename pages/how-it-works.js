@@ -1,44 +1,27 @@
 export default function HowItWorks() {
   return (
-    <main style={pageStyle("/wealthyai/dia.png")}>
+    <main style={pageStyle("/wealthyai/icons/dia.png")}>
       <div style={contentBox}>
         <h1>How WealthyAI Works</h1>
 
         <p>
-          WealthyAI is a digital financial planning platform designed to help
-          individuals better understand their financial situation and make
-          more informed decisions.
+          WealthyAI is designed to help individuals understand their financial
+          situation through structured insights and clear explanations.
         </p>
 
         <p>
-          By structuring your financial inputs and presenting them in a clear,
-          logical way, WealthyAI assists you in identifying patterns, risks,
-          and opportunities within your personal finances.
+          The platform focuses on clarity, planning, and long-term thinking,
+          helping users see their finances in context rather than isolated numbers.
         </p>
 
         <p>
-          The platform focuses on clarity, education, and long-term thinking.
-          It does not replace professional financial advisors, but it helps
-          you prepare better questions and gain confidence in your decisions.
-        </p>
-
-        <h2>Visual Understanding</h2>
-        <p>
-          Where applicable, WealthyAI provides visual representations such as
-          charts and summaries to help you better understand financial trends
-          and proportions.
-        </p>
-
-        <h2>Security & Responsibility</h2>
-        <p>
-          WealthyAI does not store sensitive financial data. All interactions
-          are handled securely, and users remain fully responsible for how
-          they apply the information provided.
+          Visual elements and structured outputs help users better grasp trends,
+          proportions, and potential outcomes.
         </p>
 
         <p>
-          WealthyAI is an informational tool only and does not provide
-          investment, legal, or tax advice.
+          WealthyAI does not replace professional financial advisors and does not
+          provide investment, tax, or legal advice.
         </p>
       </div>
     </main>
