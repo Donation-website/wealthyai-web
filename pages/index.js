@@ -2,35 +2,39 @@ export default function Home() {
   return (
     <main
       style={{
-        minHeight: "100vh",
-        width: "100%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        height: "100vh",
+        width: "100vw",
         backgroundImage:
-          "linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('/wealthyai/wealthyai.png')",
+          "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
         backgroundSize: "contain",
         backgroundRepeat: "no-repeat",
         backgroundPosition: "center",
         backgroundColor: "black",
+        position: "relative",
         color: "white",
-        fontFamily: "Arial, sans-serif",
-        position: "relative"
+        fontFamily: "Arial, sans-serif"
       }}
     >
-      {/* Center text */}
-      <div style={{ textAlign: "center", maxWidth: "600px", zIndex: 1 }}>
-        <h1 style={{ fontSize: "3.5rem", marginBottom: "0.6rem" }}>
+      {/* CENTER TEXT */}
+      <div
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          textAlign: "center"
+        }}
+      >
+        <h1 style={{ fontSize: "3.5rem", marginBottom: "0.5rem" }}>
           WealthyAI
         </h1>
-        <p style={{ opacity: 0.9, fontSize: "1.15rem" }}>
-          AI-powered financial clarity to help you understand, plan,
-          and make smarter decisions about your money.
+        <p style={{ fontSize: "1.2rem", opacity: 0.9 }}>
+          Professional financial planning powered by AI.
         </p>
       </div>
 
-      {/* Footer */}
-      <footer
+      {/* FOOTER */}
+      <div
         style={{
           position: "absolute",
           bottom: "20px",
@@ -38,51 +42,50 @@ export default function Home() {
           transform: "translateX(-50%)",
           width: "90%",
           maxWidth: "1100px",
-          padding: "12px 24px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          padding: "10px 20px",
           background: "rgba(0,0,0,0.25)",
-          backdropFilter: "blur(8px)",
-          borderRadius: "12px",
-          fontSize: "0.85rem"
+          backdropFilter: "blur(6px)",
+          borderRadius: "12px"
         }}
       >
-        <div style={{ opacity: 0.85 }}>
+        {/* LEFT */}
+        <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
           © 2026 WealthyAI
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "22px" }}>
-          <a href="/how-it-works" style={linkStyle}>How it works</a>
-          <a href="/terms" style={linkStyle}>Terms</a>
-
-          <div style={{ display: "flex", gap: "16px" }}>
-            <SocialIcon src="/wealthyai/icons/fb.png" />
-            <SocialIcon src="/wealthyai/icons/insta.png" />
-            <SocialIcon src="/wealthyai/icons/x.png" />
-          </div>
+        {/* CENTER LINKS */}
+        <div style={{ display: "flex", gap: "20px", fontSize: "0.9rem" }}>
+          <a href="/how-it-works" style={link}>How it works</a>
+          <a href="/terms" style={link}>Terms</a>
         </div>
-      </footer>
+
+        {/* RIGHT ICONS */}
+        <div style={{ display: "flex", gap: "16px" }}>
+          <a href="https://facebook.com" target="_blank">
+            <img src="/wealthyai/icons/fb.png" style={icon} />
+          </a>
+          <a href="https://instagram.com" target="_blank">
+            <img src="/wealthyai/icons/insta.png" style={icon} />
+          </a>
+          <a href="https://x.com" target="_blank">
+            <img src="/wealthyai/icons/x.png" style={icon} />
+          </a>
+        </div>
+      </div>
     </main>
   );
 }
 
-function SocialIcon({ src }) {
-  return (
-    <img
-      src={src}
-      alt=""
-      style={{
-        width: "28px",
-        height: "28px",
-        cursor: "pointer",
-        filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.6))"
-      }}
-    />
-  );
-}
+const icon = {
+  width: "32px",
+  height: "32px",
+  cursor: "pointer"
+};
 
-const linkStyle = {
+const link = {
   color: "white",
   textDecoration: "none",
   opacity: 0.85
