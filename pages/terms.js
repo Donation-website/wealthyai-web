@@ -1,26 +1,42 @@
 export default function Terms() {
   return (
-    <main style={{ padding: "60px", fontFamily: "Arial, sans-serif" }}>
-      <h1>Terms & Conditions</h1>
+    <main style={pageStyle("/wealthyai/szgep.png")}>
+      <div style={contentBox}>
+        <h1>Terms & Conditions</h1>
 
-      <p>
-        WealthyAI provides informational and educational content only.
-        It is not a licensed financial advisor.
-      </p>
+        <p>
+          WealthyAI provides informational content only.
+          No financial advice is given.
+        </p>
 
-      <p>
-        All financial decisions made using this platform are the sole
-        responsibility of the user.
-      </p>
+        <p>
+          Payments are securely processed via Stripe.
+        </p>
 
-      <p>
-        Payments are processed securely via Stripe. WealthyAI never stores
-        payment information.
-      </p>
-
-      <p>
-        By using this site, you agree to these terms.
-      </p>
+        <p>
+          By using this website, you accept these terms.
+        </p>
+      </div>
     </main>
   );
 }
+
+const pageStyle = (img) => ({
+  minHeight: "100vh",
+  backgroundImage: `linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('${img}')`,
+  backgroundSize: "cover",
+  backgroundPosition: "center",
+  color: "white",
+  fontFamily: "Arial, sans-serif",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center"
+});
+
+const contentBox = {
+  maxWidth: "700px",
+  background: "rgba(0,0,0,0.45)",
+  padding: "40px",
+  borderRadius: "14px",
+  backdropFilter: "blur(8px)"
+};
