@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 
 // Töltsd be a publikus kulcsodat (a Vercelből jön NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY névvel)
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+// Jelenleg a kódba van írva a megadott kulcs
+const stripePromise = loadStripe('pk_live_51S0zyXDyLtejYlZibrRjTKEHsMWqtJh1WpENv2SeEc0m3KXH9yv1tdPKevrkvVgSzIYfBcukep1fo50KVn5AYp3n000F6g1N2u');
 
 export default function UserDashboard() {
   const [data, setData] = useState({ income: 5000, fixed: 2000, variable: 1500 });
@@ -98,7 +99,7 @@ export default function UserDashboard() {
                 <div style={{ display: "flex", justifyContent: "center", gap: "20px" }}>
                 
                 {/* 1 Day Pass - Kiemelve, handleCheckout hívása */}
-                <div style={{...pricingCardStyle, transform: 'scale(1.05)'}} onClick={() => handleCheckout('YOUR_1_DAY_PRICE_ID')}>
+                <div style={{...pricingCardStyle, transform: 'scale(1.05)'}} onClick={() => handleCheckout('price_1SsRVyDyLtejYlZi3fEwvTPW')}>
                     <h3>1 Day Pass</h3>
                     <p style={{ fontSize: "2rem", fontWeight: "bold", margin: "10px 0" }}>$9.99</p>
                     <p>Full AI Analysis, Detailed PDF Export, Advanced Projections.</p>
@@ -108,7 +109,7 @@ export default function UserDashboard() {
                 </div>
 
                 {/* 1 Week Pass, handleCheckout hívása */}
-                <div style={pricingCardStyle} onClick={() => handleCheckout('YOUR_1_WEEK_PRICE_ID')}>
+                <div style={pricingCardStyle} onClick={() => handleCheckout('price_1SsRY1DyLtejYlZiglvFKufA')}>
                     <h3>1 Week Pass</h3>
                     <p style={{ fontSize: "2rem", fontWeight: "bold", margin: "10px 0" }}>$14.99</p>
                     <p>Everything in 1 Day, plus Goal Tracking & Weekly Digests.</p>
@@ -118,7 +119,7 @@ export default function UserDashboard() {
                 </div>
 
                 {/* 1 Month Pass, handleCheckout hívása */}
-                <div style={pricingCardStyle} onClick={() => handleCheckout('YOUR_1_MONTH_PRICE_ID')}>
+                <div style={pricingCardStyle} onClick={() => handleCheckout('price_1SsRceDyLtejYlZim22g8OT2')}>
                     <h3>1 Month Pass</h3>
                     <p style={{ fontSize: "2rem", fontWeight: "bold", margin: "10px 0" }}>$24.99</p>
                     <p>Everything in 1 Week, plus Tax Optimization Tools & Live Charts.</p>
