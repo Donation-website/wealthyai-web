@@ -1,42 +1,33 @@
 export default function Terms() {
   return (
-    <main style={pageStyle("/wealthyai/szgep.png")}>
+    <main style={pageStyle("/wealthyai/icons/szgep.png")}>
       <div style={contentBox}>
         <h1>Terms & Conditions</h1>
 
         <p>
-          WealthyAI is a digital informational platform. By using this website,
-          you acknowledge that all content is provided for educational and
-          informational purposes only.
+          WealthyAI is an informational platform designed to support financial
+          awareness and planning.
         </p>
 
-        <h2>Payments & Subscriptions</h2>
+        <h2>Payments & Security</h2>
         <p>
-          Payments on WealthyAI are processed securely through Stripe, a
-          globally recognized payment provider. WealthyAI does not store
-          credit card details or sensitive payment information.
+          All payments are securely processed via Stripe. WealthyAI does not
+          store credit card information or sensitive payment data.
         </p>
 
         <p>
-          All transactions are encrypted and handled directly by Stripe in
-          compliance with industry security standards.
+          Stripe complies with industry-leading security standards to ensure
+          safe and encrypted transactions.
         </p>
 
         <h2>User Responsibility</h2>
         <p>
-          Users are solely responsible for how they interpret and apply the
-          information provided by WealthyAI. The platform does not guarantee
-          financial outcomes or results.
-        </p>
-
-        <h2>Limitation of Liability</h2>
-        <p>
-          WealthyAI shall not be held liable for any financial decisions made
-          based on the information presented on this website.
+          Users are fully responsible for how they interpret and apply the
+          information provided by WealthyAI.
         </p>
 
         <p>
-          By continuing to use this platform, you agree to these terms.
+          By using this platform, you agree to these terms.
         </p>
       </div>
     </main>
