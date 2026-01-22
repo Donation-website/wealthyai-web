@@ -1,10 +1,6 @@
-// pages/api/create-stripe-session.js
-
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2023-10-16',
-});
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -21,31 +17,19 @@ export default async function handler(req, res) {
   try {
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
-
       line_items: [
         {
           price: priceId,
           quantity: 1,
         },
       ],
-
-      // 👉 SIKERES FIZETÉS UTÁN IDE MEGY
       success_url: `${req.headers.origin}/premium?session_id={CHECKOUT_SESSION_ID}`,
-
-      // 👉 MEGSZAKÍTOTT FIZETÉS
       cancel_url: `${req.headers.origin}/start?canceled=true`,
     });
 
-    return res.status(200).json({
-      sessionId: session.id,
-      url: session.url,
-    });
-  } catch (error) {
-    console.error('Stripe Checkout Error:', error);
-
-    return res.status(500).json({
-      error: 'Stripe session creation failed',
-      details: error.message,
-    });
+    res.status(200).json({ url: session.url });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Stripe session creation failed' });
   }
 }
