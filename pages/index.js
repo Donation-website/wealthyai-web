@@ -4,86 +4,97 @@ export default function Home() {
       style={{
         height: "100vh",
         width: "100vw",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
         backgroundImage:
           "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
         backgroundSize: "contain",
-        backgroundRepeat: "no-repeat",
         backgroundPosition: "center",
-        backgroundColor: "black",
-        position: "relative",
+        backgroundRepeat: "no-repeat",
         color: "white",
-        fontFamily: "Arial, sans-serif"
+        fontFamily: "Arial, sans-serif",
+        position: "relative",
+        overflow: "hidden"
       }}
     >
-      {/* TOP NAV */}
+      {/* TOP NAVIGATION */}
       <div
         style={{
           position: "absolute",
-          top: "20px",
-          left: "50%",
-          transform: "translateX(-50%)",
+          top: "30px",
+          right: "40px",
           display: "flex",
-          gap: "30px",
-          fontSize: "0.95rem",
-          background: "rgba(0,0,0,0.3)",
-          padding: "10px 24px",
-          borderRadius: "12px",
-          backdropFilter: "blur(6px)"
+          gap: "28px",
+          zIndex: 5,
+          fontSize: "0.95rem"
         }}
       >
-        <a href="/how-it-works" style={link}>How it works</a>
-        <a href="/terms" style={link}>Terms</a>
+        <a href="/how-it-works" style={navLinkStyle}>How it works</a>
+        <a href="/how-to-use" style={navLinkStyle}>How to use</a>
+        <a href="/terms" style={navLinkStyle}>Terms</a>
       </div>
 
-      {/* CENTER TEXT */}
-      <div
-        style={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          textAlign: "center"
-        }}
-      >
-        <h1 style={{ fontSize: "3.5rem", marginBottom: "0.5rem" }}>
+      {/* CENTER CONTENT */}
+      <div style={{ textAlign: "center", zIndex: 2 }}>
+        <h1
+          style={{
+            fontSize: "3.6rem",
+            marginBottom: "0.6rem",
+            fontWeight: "bold",
+            letterSpacing: "1px"
+          }}
+        >
           WealthyAI
         </h1>
-        <p style={{ fontSize: "1.2rem", opacity: 0.9 }}>
-          Professional financial planning powered by AI.
+
+        <p
+          style={{
+            fontSize: "1.15rem",
+            opacity: 0.9,
+            maxWidth: "520px",
+            margin: "0 auto",
+            lineHeight: "1.5"
+          }}
+        >
+          AI-powered financial thinking.  
+          Structured insights. Clear perspective.  
+          You decide.
         </p>
       </div>
 
-      {/* FOOTER */}
+      {/* BOTTOM BAR */}
       <div
         style={{
           position: "absolute",
-          bottom: "20px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: "90%",
-          maxWidth: "1100px",
+          bottom: "0",
+          left: "0",
+          width: "100%",
+          padding: "18px 30px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          padding: "10px 20px",
-          background: "rgba(0,0,0,0.25)",
+          backgroundColor: "rgba(0,0,0,0.35)",
           backdropFilter: "blur(6px)",
-          borderRadius: "12px"
+          boxSizing: "border-box",
+          zIndex: 4
         }}
       >
+        {/* COPYRIGHT */}
         <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
           © 2026 WealthyAI — All rights reserved.
         </div>
 
-        <div style={{ display: "flex", gap: "16px" }}>
-          <a href="https://facebook.com" target="_blank">
-            <img src="/wealthyai/icons/fb.png" style={icon} />
+        {/* SOCIAL ICONS */}
+        <div style={{ display: "flex", gap: "18px" }}>
+          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+            <img src="/wealthyai/icons/fb.png" alt="Facebook" style={iconStyle} />
           </a>
-          <a href="https://instagram.com" target="_blank">
-            <img src="/wealthyai/icons/insta.png" style={icon} />
+          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+            <img src="/wealthyai/icons/insta.png" alt="Instagram" style={iconStyle} />
           </a>
-          <a href="https://x.com" target="_blank">
-            <img src="/wealthyai/icons/x.png" style={icon} />
+          <a href="https://x.com" target="_blank" rel="noopener noreferrer">
+            <img src="/wealthyai/icons/x.png" alt="X" style={iconStyle} />
           </a>
         </div>
       </div>
@@ -91,14 +102,18 @@ export default function Home() {
   );
 }
 
-const icon = {
-  width: "32px",
-  height: "32px",
-  cursor: "pointer"
-};
+/* ===== STYLES ===== */
 
-const link = {
+const navLinkStyle = {
   color: "white",
   textDecoration: "none",
-  opacity: 0.9
+  opacity: 0.85,
+  transition: "opacity 0.2s"
+};
+
+const iconStyle = {
+  width: "34px",
+  height: "34px",
+  filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.6))",
+  transition: "transform 0.2s"
 };
