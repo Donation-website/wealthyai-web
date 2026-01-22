@@ -4,8 +4,7 @@ export default function HowToUse() {
       style={{
         minHeight: "100vh",
         width: "100vw",
-        // JAVÍTOTT ÚTVONAL: ha a public/wealthyai/icons/use.png-ben van
-        backgroundImage: "url('/wealthyai/icons/use.png')", 
+        backgroundImage: "url('/wealthyai/icons/use.png')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
@@ -13,38 +12,67 @@ export default function HowToUse() {
         justifyContent: "center",
         alignItems: "center",
         padding: "40px",
-        boxSizing: "border-box" // Hogy ne lógjon ki a padding miatt
+        boxSizing: "border-box"
       }}
     >
       <div
         style={{
-          maxWidth: "900px",
-          backgroundColor: "rgba(255, 255, 255, 0.85)", // Világos háttér a szövegnek
+          maxWidth: "800px",
+          // Áttetsző fehér háttér (0.25 opacity) homályosítással
+          backgroundColor: "rgba(255, 255, 255, 0.25)", 
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)", // Safari támogatás
           padding: "40px",
-          borderRadius: "12px",
-          color: "#000000", // FEKETE SZÖVEG
+          borderRadius: "20px",
+          color: "#000000", // Tiszta fekete szöveg
           fontFamily: "Arial, sans-serif",
           lineHeight: "1.6",
-          boxShadow: "0 4px 15px rgba(0,0,0,0.2)"
+          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+          border: "1px solid rgba(255, 255, 255, 0.3)"
         }}
       >
-        <h1 style={{ marginBottom: "20px", color: "#000" }}>How to use WealthyAI</h1>
+        <h1 style={{ marginBottom: "20px", fontWeight: "bold" }}>How to use WealthyAI</h1>
 
-        <section style={{ color: "#000" }}>
-            <h2>1. What is WealthyAI?</h2>
-            <p>WealthyAI is an AI-powered financial planning and analysis platform...</p>
+        <section>
+          <h2 style={{ fontSize: "1.4rem" }}>1. What is WealthyAI?</h2>
+          <p>
+            WealthyAI is an AI-powered financial planning and analysis platform.
+            It helps you understand your financial situation, assess potential
+            risks, and explore possible strategies.
+          </p>
 
-            <h2>2. How do I get started?</h2>
-            <p>To begin, simply click the <strong>Start</strong> button on the main page.</p>
+          <h2 style={{ fontSize: "1.4rem" }}>2. How do I get started?</h2>
+          <p>
+            To begin, simply click the <strong>Start</strong> button on the main page.
+            You will be asked to enter basic financial information such as goals and risk tolerance.
+          </p>
 
-            {/* Többi tartalom változatlan, de mind fekete lesz */}
-            <h2>3. What happens after I enter my data?</h2>
-            <p>Based on your inputs, WealthyAI analyzes your situation...</p>
+          <h2 style={{ fontSize: "1.4rem" }}>3. What do I receive?</h2>
+          <p>
+            You receive a personalized overview focusing on:
+          </p>
+          <ul style={{ paddingLeft: "20px" }}>
+            <li>Risk awareness</li>
+            <li>Scenario-based thinking</li>
+            <li>Strategic considerations</li>
+          </ul>
+
+          <h2 style={{ fontSize: "1.4rem" }}>4. Access plans</h2>
+          <p>
+            WealthyAI offers daily, weekly, and monthly access options to fit your needs.
+          </p>
         </section>
 
-        <p style={{ marginTop: "30px", fontStyle: "italic", color: "#333" }}>
-          Always make financial decisions responsibly.
+        <p style={{ marginTop: "30px", fontStyle: "italic", fontWeight: "500" }}>
+          Always make financial decisions responsibly. You remain fully in control.
         </p>
+
+        {/* Vissza gomb opció, ha kell */}
+        <div style={{ marginTop: "20px" }}>
+          <a href="/" style={{ color: "#000", textDecoration: "underline", fontSize: "0.9rem" }}>
+            Back to Home
+          </a>
+        </div>
       </div>
     </main>
   );
