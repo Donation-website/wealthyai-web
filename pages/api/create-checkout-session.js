@@ -1,36 +1,31 @@
-// pages/api/create-checkout-session.js
-import Stripe from 'stripe';
+import Stripe from "stripe";
 
-// A titkos kulcsot a Vercel Environment Variables-ből húzza be
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
-  if (req.method === 'POST') {
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return res.status(405).end("Method Not Allowed");
+  }
+
+  try {
     const { priceId } = req.body;
-    try {
-      // Itt add meg a majdani sikeres és sikertelen visszatérési URL-eket
-      const successUrl = `${req.headers.origin}/success`; // Egyelőre csak a főoldalra visz vissza
-      const cancelUrl = `${req.headers.origin}/`; 
 
-      const session = await stripe.checkout.sessions.create({
-        line_items: [
-          {
-            price: priceId,
-            quantity: 1,
-          },
-        ],
-        mode: 'subscription', // Mivel előfizetést adunk el
-        success_url: successUrl,
-        cancel_url: cancelUrl,
-      });
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1
+        }
+      ],
+      success_url: `${req.headers.origin}/success`,
+      cancel_url: `${req.headers.origin}/`
+    });
 
-      // Visszaküldi a kliensnek a Stripe session ID-t
-      res.status(200).json({ sessionId: session.id });
-    } catch (err) {
-      res.status(500).json({ error: 'Error creating checkout session' });
-    }
-  } else {
-    res.setHeader('Allow', 'POST');
-    res.status(405).end('Method Not Allowed');
+    res.status(200).json({ sessionId: session.id });
+  } catch (err) {
+    res.status(500).json({ error: "Stripe session error" });
   }
 }
