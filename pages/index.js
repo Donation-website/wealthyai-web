@@ -7,17 +7,17 @@ export default function Home() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        // JAVÍTÁS: Sötét kitöltő szín a szélekre (képhez passzoló sötétkék/fekete)
-        backgroundColor: "#060b13", 
-        backgroundImage:
-          "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
+        backgroundColor: "#060b13", // Ez tünteti el a fehér széleket
+        backgroundImage: "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
         backgroundSize: "contain",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
         color: "white",
         fontFamily: "Arial, sans-serif",
         position: "relative",
-        overflow: "hidden"
+        overflow: "hidden",
+        margin: 0,
+        padding: 0
       }}
     >
       {/* TOP NAVIGATION */}
@@ -32,9 +32,9 @@ export default function Home() {
           fontSize: "0.95rem"
         }}
       >
-        <a href="/how-it-works" style={navLinkStyle}>How it works</a>
-        <a href="/how-to-use" style={navLinkStyle}>How to use</a>
-        <a href="/terms" style={navLinkStyle}>Terms</a>
+        <a href="/how-it-works" style={{ color: "white", textDecoration: "none", opacity: 0.85, cursor: "pointer" }}>How it works</a>
+        <a href="/how-to-use" style={{ color: "white", textDecoration: "none", opacity: 0.85, cursor: "pointer" }}>How to use</a>
+        <a href="/terms" style={{ color: "white", textDecoration: "none", opacity: 0.85, cursor: "pointer" }}>Terms</a>
       </div>
 
       {/* CENTER CONTENT */}
@@ -49,7 +49,6 @@ export default function Home() {
         >
           WealthyAI
         </h1>
-
         <p
           style={{
             fontSize: "1.15rem",
@@ -59,9 +58,7 @@ export default function Home() {
             lineHeight: "1.5"
           }}
         >
-          AI-powered financial thinking.  
-          Structured insights. Clear perspective.  
-          You decide.
+          AI-powered financial thinking. Structured insights. Clear perspective. You decide.
         </p>
       </div>
 
@@ -82,42 +79,22 @@ export default function Home() {
           zIndex: 4
         }}
       >
-        {/* COPYRIGHT */}
         <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
           © 2026 WealthyAI — All rights reserved.
         </div>
 
-        {/* SOCIAL ICONS */}
         <div style={{ display: "flex", gap: "18px" }}>
           <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
-            <img src="/wealthyai/icons/fb.png" alt="Facebook" style={iconStyle} />
+            <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: "34px", height: "34px", cursor: "pointer" }} />
           </a>
           <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
-            <img src="/wealthyai/icons/insta.png" alt="Instagram" style={iconStyle} />
+            <img src="/wealthyai/icons/insta.png" alt="Instagram" style={{ width: "34px", height: "34px", cursor: "pointer" }} />
           </a>
           <a href="https://x.com" target="_blank" rel="noopener noreferrer">
-            <img src="/wealthyai/icons/x.png" alt="X" style={iconStyle} />
+            <img src="/wealthyai/icons/x.png" alt="X" style={{ width: "34px", height: "34px", cursor: "pointer" }} />
           </a>
         </div>
       </div>
     </main>
   );
 }
-
-/* ===== STYLES ===== */
-
-const navLinkStyle = {
-  color: "white",
-  textDecoration: "none",
-  opacity: 0.85,
-  transition: "opacity 0.2s",
-  cursor: "pointer" // JAVÍTÁS: Látszódjon, hogy kattintható
-};
-
-const iconStyle = {
-  width: "34px",
-  height: "34px",
-  filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.6))",
-  transition: "transform 0.2s",
-  cursor: "pointer"
-};
