@@ -15,6 +15,26 @@ export default function Home() {
         fontFamily: "Arial, sans-serif"
       }}
     >
+      {/* TOP NAV */}
+      <div
+        style={{
+          position: "absolute",
+          top: "20px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          display: "flex",
+          gap: "30px",
+          fontSize: "0.95rem",
+          background: "rgba(0,0,0,0.3)",
+          padding: "10px 24px",
+          borderRadius: "12px",
+          backdropFilter: "blur(6px)"
+        }}
+      >
+        <a href="/how-it-works" style={link}>How it works</a>
+        <a href="/terms" style={link}>Terms</a>
+      </div>
+
       {/* CENTER TEXT */}
       <div
         style={{
@@ -51,18 +71,10 @@ export default function Home() {
           borderRadius: "12px"
         }}
       >
-        {/* LEFT */}
         <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
           © 2026 WealthyAI — All rights reserved.
         </div>
 
-        {/* CENTER LINKS */}
-        <div style={{ display: "flex", gap: "20px", fontSize: "0.9rem" }}>
-          <a href="/how-it-works" style={link}>How it works</a>
-          <a href="/terms" style={link}>Terms</a>
-        </div>
-
-        {/* RIGHT ICONS */}
         <div style={{ display: "flex", gap: "16px" }}>
           <a href="https://facebook.com" target="_blank">
             <img src="/wealthyai/icons/fb.png" style={icon} />
@@ -88,5 +100,5 @@ const icon = {
 const link = {
   color: "white",
   textDecoration: "none",
-  opacity: 0.85
+  opacity: 0.9
 };
