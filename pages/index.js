@@ -53,7 +53,7 @@ export default function Home() {
       >
         {/* LEFT */}
         <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
-          © 2026 WealthyAI
+          © 2026 WealthyAI — All rights reserved.
         </div>
 
         {/* CENTER LINKS */}
