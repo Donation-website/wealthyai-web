@@ -1,25 +1,35 @@
 import { loadStripe } from '@stripe/stripe-js';
 
-// Ezt a kulcsot már megadtad, ez biztonságosan szerepelhet a kliens kódban
+// Az éles publikus kulcsod
 const stripePromise = loadStripe('pk_live_51S0zyXDyLtejYlZibrRjTKEHsMWqtJh1WpENv2SeEc0m3KXH9yv1tdPKevrkvVgSzIYfBcukep1fo50KVn5AYp3n000F6g1N2u');
 
 export default function Home() {
   
   const handleCheckout = async (priceId) => {
-    // Ideiglenes figyelmeztetés, amíg nincs kész a backend
-    alert("Checkout integration in progress. Price ID: " + priceId);
-    
-    /* 
-       Ha kész az api/checkout fájlod, ezt kell majd aktiválni:
-       const response = await fetch('/api/checkout', {
-         method: 'POST',
-         headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify({ priceId }),
-       });
-       const session = await response.json();
-       const stripe = await stripePromise;
-       await stripe.redirectToCheckout({ sessionId: session.id });
-    */
+    try {
+      // Hívja meg az 1. lépésben létrehozott API végpontot
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const { sessionId } = await response.json();
+      const stripe = await stripePromise;
+      
+      // Átirányítás a Stripe fizetési oldalára
+      const { error } = await stripe.redirectToCheckout({ sessionId });
+
+      if (error) {
+        console.error(error.message);
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+    }
   };
 
   return (
@@ -28,15 +38,15 @@ export default function Home() {
         <h1 style={{ fontSize: "3.5rem", marginBottom: "0.5rem" }}>WealthyAI</h1>
         <p style={{ opacity: 0.8, marginBottom: "2rem" }}>Professional financial planning</p>
         
-        {/* Fehér téglalap alakú gombok */}
+        {/* Fehér téglalap alakú gombok - CSERÉLD KI AZ ID-KAT!!! */}
         <div style={buttonContainer}>
-          <button onClick={() => handleCheckout('price_1_day_id')} style={whiteButtonStyle}>
+          <button onClick={() => handleCheckout('IDE_TEDD_A_1_NAPOS_PRICE_ID-JAT')} style={whiteButtonStyle}>
             1 DAY <br/> <span style={{fontSize: '0.8rem'}}>$9.99</span>
           </button>
-          <button onClick={() => handleCheckout('price_1_week_id')} style={whiteButtonStyle}>
+          <button onClick={() => handleCheckout('IDE_TEDD_A_1_HETES_PRICE_ID-JAT')} style={whiteButtonStyle}>
             1 WEEK <br/> <span style={{fontSize: '0.8rem'}}>$14.99</span>
           </button>
-          <button onClick={() => handleCheckout('price_1_month_id')} style={whiteButtonStyle}>
+          <button onClick={() => handleCheckout('IDE_TEDD_A_1_HONAPOS_PRICE_ID-JAT')} style={whiteButtonStyle}>
             1 MONTH <br/> <span style={{fontSize: '0.8rem'}}>$24.99</span>
           </button>
         </div>
@@ -52,7 +62,7 @@ export default function Home() {
   );
 }
 
-// Stílusok
+// Stílusok (ugyanaz maradt)
 const mainStyle = {
   height: "100vh", width: "100vw", display: "flex", alignItems: "center", justifyContent: "center",
   backgroundImage: "linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('/wealthyai/wealthyai.png')",
