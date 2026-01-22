@@ -62,29 +62,30 @@ export default function Home() {
         </p>
       </div>
 
-      {/* START GOMB (Bal oldalon, középtől kicsit feljebb) */}
+      {/* START GOMB (Sötét háttérrel) */}
       <a 
-        href="/start" // Erre az új oldalra visz
+        href="/start"
         style={{
           position: "absolute",
-          top: "45%", // Kicsit a közép (50%) fölött
-          left: "10%", // Bal oldalon
-          transform: "translateY(-50%)", // Pontos igazítás a középhez képest
+          top: "45%",
+          left: "10%",
+          transform: "translateY(-50%)",
           padding: "14px 40px",
-          backgroundColor: "rgba(255, 255, 255, 0.1)", // Áttetsző háttér
-          border: "1px solid rgba(255, 255, 255, 0.6)", // Fehér keret
+          backgroundColor: "#1a253a", // Sötétkék háttér, igazítva a képhez
+          border: "1px solid rgba(255, 255, 255, 0.4)",
           borderRadius: "10px",
           color: "white",
           textDecoration: "none",
           fontWeight: "bold",
           fontSize: "1.2rem",
           cursor: "pointer",
-          backdropFilter: "blur(8px)", // Elegáns elmosás effekt
-          boxShadow: "0 4px 15px rgba(0, 0, 0, 0.4)",
+          backdropFilter: "blur(4px)", 
+          boxShadow: "0 4px 15px rgba(0, 0, 0, 0.5)",
           transition: "transform 0.2s, background-color 0.2s"
         }}
-        onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.25)'}
-        onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
+        // Hover effektus finomítása
+        onMouseEnter={(e) => e.target.style.backgroundColor = '#2c3e50'}
+        onMouseLeave={(e) => e.target.style.backgroundColor = '#1a253a'}
       >
         Start
       </a>
@@ -110,7 +111,6 @@ export default function Home() {
           © 2026 WealthyAI — All rights reserved.
         </div>
         <div style={{ display: "flex", gap: "18px" }}>
-           {/* Képek cseréje a működő, egyszerű inline stílusra */}
           <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
             <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: "34px", height: "34px", cursor: "pointer" }} />
           </a>
