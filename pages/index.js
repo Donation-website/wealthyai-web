@@ -7,43 +7,69 @@ export default function Home() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/wealthyai/wealthyai.png')",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
+        backgroundImage:
+          "linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('/wealthyai/wealthyai.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
         color: "white",
         fontFamily: "Arial, sans-serif",
-        position: "relative", // Ez kell ahhoz, hogy az ikonokat a sarokhoz rögzíthessük
-        overflow: "hidden"
+        position: "relative"
       }}
     >
-      {/* Középső szöveg marad középen */}
-      <div style={{ textAlign: "center", zIndex: 1 }}>
-        <h1 style={{ fontSize: "3.5rem", marginBottom: "0.5rem", fontWeight: "bold" }}>WealthyAI</h1>
-        <p style={{ opacity: 0.9, fontSize: "1.2rem", letterSpacing: "1px" }}>
-          Professional financial planning – coming soon.
+      {/* Center content */}
+      <div style={{ textAlign: "center", maxWidth: "600px", zIndex: 1 }}>
+        <h1 style={{ fontSize: "3.5rem", marginBottom: "0.6rem" }}>
+          WealthyAI
+        </h1>
+        <p style={{ opacity: 0.9, fontSize: "1.15rem" }}>
+          AI-powered financial clarity to help you understand, plan, and make
+          smarter decisions about your money — without complexity.
         </p>
       </div>
 
-      {/* Ikonok a bal alsó sarokban */}
-      <div style={{ 
-        position: "absolute",
-        bottom: "30px", // 30 pixelre az aljától
-        left: "30px",   // 30 pixelre a bal szélétől
-        display: "flex", 
-        gap: "15px",
-        zIndex: 2
-      }}>
-        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" style={{ transition: "transform 0.2s" }}>
-          <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: "28px", height: "28px", filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.5))" }} />
-        </a>
-        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" style={{ transition: "transform 0.2s" }}>
-          <img src="/wealthyai/icons/insta.png" alt="Instagram" style={{ width: "28px", height: "28px", filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.5))" }} />
-        </a>
-        <a href="https://x.com" target="_blank" rel="noopener noreferrer" style={{ transition: "transform 0.2s" }}>
-          <img src="/wealthyai/icons/x.png" alt="X" style={{ width: "28px", height: "28px", filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.5))" }} />
-        </a>
-      </div>
+      {/* Footer */}
+      <footer
+        style={{
+          position: "absolute",
+          bottom: 0,
+          width: "100%",
+          padding: "14px 30px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          background: "rgba(0,0,0,0.35)",
+          backdropFilter: "blur(6px)",
+          fontSize: "0.85rem"
+        }}
+      >
+        <div style={{ opacity: 0.85 }}>
+          © 2026 WealthyAI. All rights reserved.
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
+          <a href="/how-it-works" style={linkStyle}>How it works</a>
+          <a href="/terms" style={linkStyle}>Terms</a>
+
+          <div style={{ display: "flex", gap: "12px" }}>
+            <a href="https://facebook.com" target="_blank" rel="noreferrer">
+              <img src="/wealthyai/icons/fb.png" width="20" />
+            </a>
+            <a href="https://instagram.com" target="_blank" rel="noreferrer">
+              <img src="/wealthyai/icons/insta.png" width="20" />
+            </a>
+            <a href="https://x.com" target="_blank" rel="noreferrer">
+              <img src="/wealthyai/icons/x.png" width="20" />
+            </a>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }
+
+const linkStyle = {
+  color: "white",
+  textDecoration: "none",
+  opacity: 0.85
+};
