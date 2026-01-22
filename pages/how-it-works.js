@@ -1,26 +1,44 @@
 export default function HowItWorks() {
   return (
-    <main style={{ padding: "60px", fontFamily: "Arial, sans-serif" }}>
-      <h1>How WealthyAI Works</h1>
+    <main style={pageStyle("/wealthyai/dia.png")}>
+      <div style={contentBox}>
+        <h1>How WealthyAI Works</h1>
 
-      <p>
-        WealthyAI is an AI-powered financial planning assistant designed to help
-        you better understand your financial situation.
-      </p>
+        <p>
+          WealthyAI helps you understand your financial situation using
+          structured, AI-assisted insights.
+        </p>
 
-      <h3>What it does</h3>
-      <ul>
-        <li>Provides structured financial insights</li>
-        <li>Supports long-term financial thinking</li>
-        <li>Helps explore financial scenarios</li>
-      </ul>
+        <ul>
+          <li>Clear financial overviews</li>
+          <li>Visual explanations</li>
+          <li>Long-term thinking support</li>
+        </ul>
 
-      <h3>What it does NOT do</h3>
-      <ul>
-        <li>No legal or investment advice</li>
-        <li>No guaranteed results</li>
-        <li>All decisions are your responsibility</li>
-      </ul>
+        <p>
+          WealthyAI does not provide legal or investment advice.
+        </p>
+      </div>
     </main>
   );
 }
+
+const pageStyle = (img) => ({
+  minHeight: "100vh",
+  backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${img}')`,
+  backgroundSize: "cover",
+  backgroundPosition: "center",
+  color: "white",
+  fontFamily: "Arial, sans-serif",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center"
+});
+
+const contentBox = {
+  maxWidth: "700px",
+  background: "rgba(0,0,0,0.45)",
+  padding: "40px",
+  borderRadius: "14px",
+  backdropFilter: "blur(8px)"
+};
