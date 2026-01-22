@@ -7,6 +7,8 @@ export default function Home() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        // JAVÍTÁS: Sötét kitöltő szín a szélekre (képhez passzoló sötétkék/fekete)
+        backgroundColor: "#060b13", 
         backgroundImage:
           "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
         backgroundSize: "contain",
@@ -108,12 +110,14 @@ const navLinkStyle = {
   color: "white",
   textDecoration: "none",
   opacity: 0.85,
-  transition: "opacity 0.2s"
+  transition: "opacity 0.2s",
+  cursor: "pointer" // JAVÍTÁS: Látszódjon, hogy kattintható
 };
 
 const iconStyle = {
   width: "34px",
   height: "34px",
   filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.6))",
-  transition: "transform 0.2s"
+  transition: "transform 0.2s",
+  cursor: "pointer"
 };
