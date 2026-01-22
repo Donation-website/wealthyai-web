@@ -18,17 +18,18 @@ export default function HowToUse() {
       <div
         style={{
           maxWidth: "800px",
-          // Áttetsző fehér háttér (0.25 opacity) homályosítással
-          backgroundColor: "rgba(255, 255, 255, 0.25)", 
+          // Módosított áttetszőség: 0.25-ről 0.1-re csökkentve
+          backgroundColor: "rgba(255, 255, 255, 0.1)", 
           backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)", // Safari támogatás
+          WebkitBackdropFilter: "blur(12px)",
           padding: "40px",
           borderRadius: "20px",
-          color: "#000000", // Tiszta fekete szöveg
+          // Szöveg színe fehérre javítva
+          color: "#ffffff", 
           fontFamily: "Arial, sans-serif",
           lineHeight: "1.6",
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-          border: "1px solid rgba(255, 255, 255, 0.3)"
+          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
+          border: "1px solid rgba(255, 255, 255, 0.2)"
         }}
       >
         <h1 style={{ marginBottom: "20px", fontWeight: "bold" }}>How to use WealthyAI</h1>
@@ -67,9 +68,9 @@ export default function HowToUse() {
           Always make financial decisions responsibly. You remain fully in control.
         </p>
 
-        {/* Vissza gomb opció, ha kell */}
+        {/* Vissza gomb fehér színnel */}
         <div style={{ marginTop: "20px" }}>
-          <a href="/" style={{ color: "#000", textDecoration: "underline", fontSize: "0.9rem" }}>
+          <a href="/" style={{ color: "#ffffff", textDecoration: "underline", fontSize: "0.9rem" }}>
             Back to Home
           </a>
         </div>
