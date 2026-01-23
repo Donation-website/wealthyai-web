@@ -31,9 +31,11 @@ export default function UserDashboard() {
   );
 
   const riskLevel =
-    usagePercent > 90 ? 'High Risk'
-    : usagePercent > 70 ? 'Medium Risk'
-    : 'Low Risk';
+    usagePercent > 90
+      ? 'High Risk'
+      : usagePercent > 70
+      ? 'Medium Risk'
+      : 'Low Risk';
 
   const insights = [];
 
@@ -42,7 +44,7 @@ export default function UserDashboard() {
       '🚨 Your expenses exceed your income. Immediate action is recommended to prevent long-term financial stress.'
     );
     insights.push(
-      '💡 AI-powered plans provide crisis strategies, local assistance options and recovery roadmaps.'
+      '💡 Premium AI provides crisis strategies, local assistance options and recovery roadmaps.'
     );
   }
 
@@ -92,7 +94,7 @@ export default function UserDashboard() {
   /* === STYLES === */
 
   const cardStyle = {
-    background: 'rgba(15, 23, 42, 0.55)', // dark blue glass
+    background: 'rgba(15, 23, 42, 0.55)',
     backdropFilter: 'blur(14px)',
     borderRadius: '22px',
     padding: '26px',
@@ -126,8 +128,11 @@ export default function UserDashboard() {
         padding: '40px',
         fontFamily: 'Arial, sans-serif',
         color: 'white',
-        background:
-          'radial-gradient(circle at top, #0b1220 0%, #05070d 60%)',
+        backgroundImage:
+          "linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('/wealthyai/icons/hat.png')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
       }}
     >
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -196,8 +201,12 @@ export default function UserDashboard() {
           {/* INSIGHTS */}
           <div style={cardStyle}>
             <h3>Insights (Basic)</h3>
-            <p>Risk Level: <strong>{riskLevel}</strong></p>
-            <p>Savings Score: <strong>{savingsScore}/100</strong></p>
+            <p>
+              Risk Level: <strong>{riskLevel}</strong>
+            </p>
+            <p>
+              Savings Score: <strong>{savingsScore}/100</strong>
+            </p>
 
             <ul>
               {insights.map((i, idx) => (
@@ -209,7 +218,7 @@ export default function UserDashboard() {
 
             <p style={{ opacity: 0.65, marginTop: '18px' }}>
               🔒 Advanced country-specific strategies and provider analysis
-              are available in AI plans below.
+              are available in AI-powered plans below.
             </p>
           </div>
         </div>
@@ -229,9 +238,21 @@ export default function UserDashboard() {
             }}
           >
             {[
-              ['1 Day Pass', 'AI optimization & crisis insights', 'price_1SscYJDyLtejYlZiyDvhdaIx'],
-              ['1 Week Pass', 'Behavior & trend analysis', 'price_1SscaYDyLtejYlZiDjSeF5Wm'],
-              ['1 Month Pass', 'Full AI financial dashboard', 'price_1SscbeDyLtejYlZixJcT3B4o'],
+              [
+                '1 Day Pass',
+                'AI optimization & crisis insights',
+                'price_1SscYJDyLtejYlZiyDvhdaIx',
+              ],
+              [
+                '1 Week Pass',
+                'Behavior & trend analysis',
+                'price_1SscaYDyLtejYlZiDjSeF5Wm',
+              ],
+              [
+                '1 Month Pass',
+                'Full AI financial dashboard',
+                'price_1SscbeDyLtejYlZixJcT3B4o',
+              ],
             ].map(([title, desc, priceId]) => (
               <div
                 key={title}
