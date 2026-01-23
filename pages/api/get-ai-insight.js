@@ -1,16 +1,18 @@
 export default async function handler(req, res) {
-  // Csak POST kérést fogadunk
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
   const { income, fixed, variable } = req.body;
-  const token = process.env.HF_TOKEN; // Ide húzza be a Vercelről a kulcsot
+  const token = process.env.HF_TOKEN;
+
+  const inc = Number(income) || 0;
+  const fix = Number(fixed) || 0;
+  const vari = Number(variable) || 0;
+  const totalCosts = fix + vari;
 
   try {
-    // JAVÍTOTT URL: megadtuk a konkrét modellt (Mistral-7B)
+    // ÚJ URL: A router.huggingface.co használata a Mistral modellel
     const response = await fetch(
-      "https://api-inference.huggingface.co",
+      "https://router.huggingface.co",
       {
         headers: { 
           "Content-Type": "application/json",
@@ -18,7 +20,7 @@ export default async function handler(req, res) {
         },
         method: "POST",
         body: JSON.stringify({
-          inputs: `[INST] Wealth Advisor. Income: $${income}, Costs: $${Number(fixed) + Number(variable)}. Give 3 pro tips in English. [/INST]`,
+          inputs: `[INST] Professional Wealth Advisor. Income: $${inc}, Total Costs: $${totalCosts}. Give 3 short, professional pro tips. [/INST]`,
           parameters: { 
             max_new_tokens: 200, 
             wait_for_model: true,
@@ -30,29 +32,32 @@ export default async function handler(req, res) {
 
     const result = await response.json();
 
-    // Ha hiba jön az API-tól (pl. rossz token vagy túlterhelt szerver)
-    if (!response.ok || result.error) {
-      throw new Error(result.error || "Hugging Face Error");
+    // Ha még töltődik a modell
+    if (result.error && result.estimated_time) {
+      return res.status(200).json({ insight: "AI is warming up... Please try again in 10 seconds!" });
     }
 
-    // A válasz kinyerése (Hugging Face tömböt ad vissza)
-    let aiText = Array.isArray(result) ? result[0].generated_text : result.generated_text;
+    // A válasz kinyerése
+    let aiText = "";
+    if (Array.isArray(result)) {
+      aiText = result[0]?.generated_text || "";
+    } else {
+      aiText = result?.generated_text || "";
+    }
 
     if (aiText) {
-      // Megtisztítjuk a szöveget a felesleges részektől
       const cleanText = aiText.replace(/\[\/INST\]/g, "").trim();
       return res.status(200).json({ insight: cleanText });
     }
     
-    throw new Error("No AI text");
+    throw new Error("Invalid AI response format");
 
   } catch (error) {
-    console.error("Hiba az AI hívásakor:", error.message);
+    console.error("DEBUG ERROR:", error.message);
     
-    // BIZTONSÁGI TARTALÉK: Ha az AI nem válaszol, ez jelenik meg a felhasználónak
-    const surplus = Number(income) - (Number(fixed) + Number(variable));
-    const smartTips = `• Strategy: Based on your $${surplus} monthly surplus, we suggest allocating 60% to diversified ETFs.\n• Optimization: Reducing variable costs by 15% would save you more.\n• Retirement: You are on a good path to financial stability.`;
+    const surplus = inc - totalCosts;
+    const fallback = `• Strategy: Based on your $${surplus} surplus, consider the 50/30/20 rule.\n• Optimization: Your variable costs ($${vari}) could be reduced to save more.\n• Action: Build a 6-month emergency fund first.`;
     
-    res.status(200).json({ insight: smartTips });
+    res.status(200).json({ insight: fallback });
   }
 }
