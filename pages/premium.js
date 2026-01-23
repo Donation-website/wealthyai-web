@@ -5,11 +5,13 @@ export default function PremiumDashboard() {
   const [aiResponse, setAiResponse] = useState("");
   const [loading, setLoading] = useState(false);
   
-  // Felhasználói adatok - Alapértelmezett értékek
+  // Felhasználói adatok - Alapértelmezett értékek, amíg nem mentjük el a start.js-ből
   const [userData, setUserData] = useState({ income: 5000, fixed: 2000, variable: 1500 });
 
-  // Számítások a grafikonhoz
+  // Számítások a fő mutatókhoz
   const monthlySavings = userData.income - (userData.fixed + userData.variable);
+  const savingsRate = ((monthlySavings / userData.income) * 100);
+
   const chartData = [
     { name: 'Now', savings: 0 },
     { name: 'Year 1', savings: monthlySavings * 12 },
@@ -24,6 +26,7 @@ export default function PremiumDashboard() {
     setLoading(true);
     setAiResponse("");
     try {
+      // Ez a hívás a pages/api/get-ai-insight.js fájlt éri el
       const response = await fetch('/api/get-ai-insight', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -48,24 +51,44 @@ export default function PremiumDashboard() {
     setLoading(false);
   };
 
-  // Funkciók az alsó gombokhoz
-  const handleExport = () => {
-    alert("Preparing your English Financial Report (PDF)... Your download will start shortly.");
-  };
-
-  const handleGoalSetup = () => {
-    const goal = prompt("Enter your savings goal (e.g., New Home):", "Emergency Fund");
-    if (goal) alert("Goal '" + goal + "' has been set! We will track it for you.");
-  };
+  const handleExport = () => alert("Preparing your Financial Report (PDF)...");
+  const handleGoalSetup = () => alert("Goal tracking module is initializing.");
 
   return (
     <div style={{ background: '#060b13', color: 'white', minHeight: '100vh', padding: '40px', fontFamily: 'Arial, sans-serif' }}>
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
         
-        <header style={{ textAlign: 'center', marginBottom: '50px' }}>
-          <h1 style={{ color: '#00ff88', fontSize: '2.8rem', marginBottom: '10px' }}>🎉 Welcome to WealthyAI Premium</h1>
-          <p style={{ fontSize: '1.2rem', opacity: 0.8 }}>Payment successful! Your premium features are now active.</p>
+        <header style={{ marginBottom: '40px' }}>
+          <h1 style={{ color: '#00ff88', fontSize: '2.5rem' }}>WealthyAI Studio</h1>
+          <p style={{ fontSize: '1.1rem', opacity: 0.8 }}>Premium financial dashboard & analytics.</p>
         </header>
+
+        {/* YOUTUBE STUDIO STYLE ANALYTICS BAR */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '40px' }}>
+          <div style={analyticsCard}>
+            <p style={labelStyle}>Net Worth (5Y Projection)</p>
+            <h2 style={valueStyle}>${(monthlySavings * 60).toLocaleString()}</h2>
+            <p style={{ color: '#00ff88', fontSize: '0.8rem' }}>↑ 100% (Premium unlocked)</p>
+          </div>
+          
+          <div style={analyticsCard}>
+            <p style={labelStyle}>Savings Rate</p>
+            <h2 style={valueStyle}>{savingsRate.toFixed(1)}%</h2>
+            <p style={{ color: '#00ff88', fontSize: '0.8rem' }}>Good standing</p>
+          </div>
+
+          <div style={analyticsCard}>
+            <p style={labelStyle}>Financial Freedom Score</p>
+            <h2 style={valueStyle}>78/100</h2>
+            <p style={{ color: '#00ff88', fontSize: '0.8rem' }}>Top 15% of users</p>
+          </div>
+
+          <div style={analyticsCard}>
+            <p style={labelStyle}>AI Efficiency Gain</p>
+            <h2 style={valueStyle}>+12.4%</h2>
+            <p style={{ color: '#aaa', fontSize: '0.8rem' }}>Potential growth</p>
+          </div>
+        </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
           
@@ -116,15 +139,9 @@ export default function PremiumDashboard() {
 
         {/* BOTTOM BUTTONS */}
         <div style={{ marginTop: '50px', display: 'flex', justifyContent: 'center', gap: '20px' }}>
-          <div style={miniCard} onClick={handleGoalSetup}>
-            🎯 <span style={{ cursor: 'pointer' }}>Set Savings Goal</span>
-          </div>
-          <div style={miniCard} onClick={handleExport}>
-            📥 <span style={{ cursor: 'pointer' }}>Download PDF Report</span>
-          </div>
-          <div style={miniCard} onClick={() => alert("Market Sync is active: Checking live rates...")}>
-            📊 <span>Live Market Sync</span>
-          </div>
+          <div style={miniCard} onClick={handleGoalSetup}>🎯 Set Savings Goal</div>
+          <div style={miniCard} onClick={handleExport}>📥 Download PDF Report</div>
+          <div style={miniCard} onClick={() => alert("Market Sync active.")}>📊 Live Market Sync</div>
         </div>
 
       </div>
@@ -140,6 +157,18 @@ const cardStyle = {
   border: '1px solid rgba(255,255,255,0.1)',
   boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
 };
+
+const analyticsCard = { // ÚJ STÍLUS AZ ANALITIKAI SÁVHOZ
+  background: 'rgba(255,255,255,0.03)',
+  padding: '20px',
+  borderRadius: '15px',
+  border: '1px solid rgba(255,255,255,0.08)',
+  textAlign: 'left'
+};
+
+const labelStyle = { color: '#aaa', fontSize: '0.85rem', marginBottom: '5px' };
+const valueStyle = { color: '#fff', fontSize: '1.8rem', margin: '0' };
+
 
 const buttonStyle = {
   background: '#00ff88',
