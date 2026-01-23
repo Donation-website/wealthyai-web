@@ -5,7 +5,6 @@ export default function UserDashboard() {
     income: 5000,
     fixed: 2000,
     variable: 1500,
-
     electricity: 150,
     water: 50,
     gas: 100,
@@ -19,15 +18,12 @@ export default function UserDashboard() {
     data.gas +
     data.internet;
 
-  const totalExpenses =
-    data.fixed + data.variable;
-
+  const totalExpenses = data.fixed + data.variable;
   const balance = data.income - totalExpenses;
 
   const usagePercent =
     data.income > 0 ? Math.min((totalExpenses / data.income) * 100, 100) : 0;
 
-  // BASIC LOGIKA
   const savingsRate = data.income > 0 ? (balance / data.income) * 100 : 0;
   const savingsScore = Math.max(
     0,
@@ -35,37 +31,34 @@ export default function UserDashboard() {
   );
 
   const riskLevel =
-    usagePercent > 90
-      ? 'High Risk'
-      : usagePercent > 70
-      ? 'Medium Risk'
-      : 'Low Risk';
+    usagePercent > 90 ? 'High Risk'
+    : usagePercent > 70 ? 'Medium Risk'
+    : 'Low Risk';
 
-  // DINAMIKUS BASIC INSIGHTOK
   const insights = [];
 
   if (balance < 0) {
     insights.push(
-      '🚨 Your expenses exceed your income. Immediate action is recommended to avoid debt accumulation.'
+      '🚨 Your expenses exceed your income. Immediate action is recommended to prevent long-term financial stress.'
     );
     insights.push(
-      '💡 Premium AI provides crisis strategies, local assistance options, and step-by-step recovery plans.'
+      '💡 AI-powered plans provide crisis strategies, local assistance options and recovery roadmaps.'
     );
   }
 
   if (data.subscriptions > data.income * 0.08) {
     insights.push(
-      '📺 Subscriptions are relatively high. Reviewing unused services may free up monthly cash.'
+      '📺 Subscriptions appear relatively high. Reviewing unused services may free up monthly cash.'
     );
   }
 
   if (totalUtilities > data.income * 0.15) {
     insights.push(
-      '⚡ Utilities form a large portion of expenses. Provider comparison or plan optimization could help.'
+      '⚡ Utilities form a significant portion of expenses. Provider comparison could reduce costs.'
     );
   }
 
-  if (savingsRate >= 20 && balance >= 0) {
+  if (balance >= 0 && savingsRate >= 20) {
     insights.push(
       '✅ You are saving at a healthy rate. This structure supports long-term stability.'
     );
@@ -73,7 +66,7 @@ export default function UserDashboard() {
 
   if (balance >= 0 && savingsRate < 20) {
     insights.push(
-      '⚠️ Savings rate is below the recommended 20%. Small adjustments could improve resilience.'
+      '⚠️ Savings rate is below the recommended 20%. Minor adjustments could improve resilience.'
     );
   }
 
@@ -96,17 +89,19 @@ export default function UserDashboard() {
     }
   };
 
+  /* === STYLES === */
+
   const cardStyle = {
-    background: 'rgba(255,255,255,0.05)',
-    backdropFilter: 'blur(10px)',
-    borderRadius: '20px',
-    padding: '25px',
-    border: '1px solid rgba(255,255,255,0.1)',
+    background: 'rgba(15, 23, 42, 0.55)', // dark blue glass
+    backdropFilter: 'blur(14px)',
+    borderRadius: '22px',
+    padding: '26px',
+    border: '1px solid rgba(255,255,255,0.08)',
     color: 'white',
   };
 
   const inputStyle = {
-    background: 'rgba(255,255,255,0.1)',
+    background: 'rgba(255,255,255,0.08)',
     border: 'none',
     borderRadius: '8px',
     padding: '10px',
@@ -117,20 +112,22 @@ export default function UserDashboard() {
 
   const pricingCardStyle = {
     ...cardStyle,
-    background: 'rgba(0,255,136,0.08)',
-    border: '1px solid rgba(0,255,136,0.3)',
+    background: 'rgba(10, 18, 35, 0.85)',
+    border: '1px solid rgba(255,255,255,0.12)',
     textAlign: 'center',
     cursor: 'pointer',
+    transition: 'transform 0.2s, box-shadow 0.2s',
   };
 
   return (
     <main
       style={{
         minHeight: '100vh',
-        background: '#060b13',
-        color: 'white',
-        fontFamily: 'Arial, sans-serif',
         padding: '40px',
+        fontFamily: 'Arial, sans-serif',
+        color: 'white',
+        background:
+          'radial-gradient(circle at top, #0b1220 0%, #05070d 60%)',
       }}
     >
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -145,45 +142,29 @@ export default function UserDashboard() {
             gap: '20px',
           }}
         >
-          {/* INPUT SIDE */}
+          {/* INPUT */}
           <div style={cardStyle}>
             <h3>Income & Expenses</h3>
 
-            <label>Monthly Income ($)</label>
-            <input
-              type="number"
-              value={data.income}
-              style={inputStyle}
-              onChange={(e) =>
-                setData({ ...data, income: Number(e.target.value) })
-              }
-            />
+            {[
+              ['Monthly Income ($)', 'income'],
+              ['Fixed Expenses', 'fixed'],
+              ['Variable Expenses', 'variable'],
+            ].map(([label, key]) => (
+              <div key={key}>
+                <label>{label}</label>
+                <input
+                  type="number"
+                  value={data[key]}
+                  style={inputStyle}
+                  onChange={(e) =>
+                    setData({ ...data, [key]: Number(e.target.value) })
+                  }
+                />
+              </div>
+            ))}
 
-            <label style={{ marginTop: '10px', display: 'block' }}>
-              Fixed Expenses
-            </label>
-            <input
-              type="number"
-              value={data.fixed}
-              style={inputStyle}
-              onChange={(e) =>
-                setData({ ...data, fixed: Number(e.target.value) })
-              }
-            />
-
-            <label style={{ marginTop: '10px', display: 'block' }}>
-              Variable Expenses
-            </label>
-            <input
-              type="number"
-              value={data.variable}
-              style={inputStyle}
-              onChange={(e) =>
-                setData({ ...data, variable: Number(e.target.value) })
-              }
-            />
-
-            <hr style={{ margin: '20px 0', opacity: 0.3 }} />
+            <hr style={{ margin: '20px 0', opacity: 0.25 }} />
 
             <h4>Utilities (optional)</h4>
             {['electricity', 'water', 'gas', 'internet'].map((key) => (
@@ -207,36 +188,28 @@ export default function UserDashboard() {
               value={data.subscriptions}
               style={inputStyle}
               onChange={(e) =>
-                setData({
-                  ...data,
-                  subscriptions: Number(e.target.value),
-                })
+                setData({ ...data, subscriptions: Number(e.target.value) })
               }
             />
           </div>
 
-          {/* INSIGHT SIDE */}
+          {/* INSIGHTS */}
           <div style={cardStyle}>
             <h3>Insights (Basic)</h3>
-
-            <p>
-              Risk Level: <strong>{riskLevel}</strong>
-            </p>
-            <p>
-              Savings Score: <strong>{savingsScore}/100</strong>
-            </p>
+            <p>Risk Level: <strong>{riskLevel}</strong></p>
+            <p>Savings Score: <strong>{savingsScore}/100</strong></p>
 
             <ul>
               {insights.map((i, idx) => (
-                <li key={idx} style={{ marginBottom: '10px' }}>
+                <li key={idx} style={{ marginBottom: '12px' }}>
                   {i}
                 </li>
               ))}
             </ul>
 
-            <p style={{ opacity: 0.7, marginTop: '15px' }}>
-              🔒 Country-specific strategies, local providers and recovery plans
-              are available with AI-powered plans below.
+            <p style={{ opacity: 0.65, marginTop: '18px' }}>
+              🔒 Advanced country-specific strategies and provider analysis
+              are available in AI plans below.
             </p>
           </div>
         </div>
@@ -255,35 +228,27 @@ export default function UserDashboard() {
               flexWrap: 'wrap',
             }}
           >
-            <div
-              style={pricingCardStyle}
-              onClick={() =>
-                handleCheckout('price_1SscYJDyLtejYlZiyDvhdaIx')
-              }
-            >
-              <h3>1 Day Pass</h3>
-              <small>AI optimization & emergency insights</small>
-            </div>
-
-            <div
-              style={pricingCardStyle}
-              onClick={() =>
-                handleCheckout('price_1SscaYDyLtejYlZiDjSeF5Wm')
-              }
-            >
-              <h3>1 Week Pass</h3>
-              <small>Behavior & trend analysis</small>
-            </div>
-
-            <div
-              style={pricingCardStyle}
-              onClick={() =>
-                handleCheckout('price_1SscbeDyLtejYlZixJcT3B4o')
-              }
-            >
-              <h3>1 Month Pass</h3>
-              <small>Full AI financial dashboard</small>
-            </div>
+            {[
+              ['1 Day Pass', 'AI optimization & crisis insights', 'price_1SscYJDyLtejYlZiyDvhdaIx'],
+              ['1 Week Pass', 'Behavior & trend analysis', 'price_1SscaYDyLtejYlZiDjSeF5Wm'],
+              ['1 Month Pass', 'Full AI financial dashboard', 'price_1SscbeDyLtejYlZixJcT3B4o'],
+            ].map(([title, desc, priceId]) => (
+              <div
+                key={title}
+                style={pricingCardStyle}
+                onClick={() => handleCheckout(priceId)}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.boxShadow =
+                    '0 0 30px rgba(80,160,255,0.25)')
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.boxShadow = 'none')
+                }
+              >
+                <h3>{title}</h3>
+                <small style={{ opacity: 0.8 }}>{desc}</small>
+              </div>
+            ))}
           </div>
         </div>
       </div>
