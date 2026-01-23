@@ -1,11 +1,5 @@
 // pages/start.js
 import React, { useState } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
-
-// ✅ PUBLISHABLE KEY ENV-BŐL (TEST vagy LIVE – amit Vercelen beállítasz)
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-);
 
 export default function UserDashboard() {
   const [data, setData] = useState({
@@ -16,12 +10,9 @@ export default function UserDashboard() {
 
   const totalExpenses = data.fixed + data.variable;
   const balance = data.income - totalExpenses;
-  const usagePercent = Math.min(
-    (totalExpenses / data.income) * 100,
-    100
-  );
+  const usagePercent =
+    data.income > 0 ? Math.min((totalExpenses / data.income) * 100, 100) : 0;
 
-  // ✅ STRIPE CHECKOUT
   const handleCheckout = async (priceId) => {
     try {
       const response = await fetch('/api/create-stripe-session', {
@@ -35,12 +26,11 @@ export default function UserDashboard() {
       if (session.url) {
         window.location.href = session.url;
       } else {
-        console.error(session.error);
-        alert('Hiba történt a fizetés indításakor.');
+        alert('Payment initialization failed.');
       }
     } catch (err) {
       console.error(err);
-      alert('Stripe kapcsolat hiba.');
+      alert('Unexpected error during checkout.');
     }
   };
 
@@ -51,7 +41,6 @@ export default function UserDashboard() {
     padding: '25px',
     border: '1px solid rgba(255,255,255,0.1)',
     color: 'white',
-    marginBottom: '20px',
     boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
   };
 
@@ -71,7 +60,6 @@ export default function UserDashboard() {
     border: '1px solid rgba(0,255,136,0.3)',
     textAlign: 'center',
     cursor: 'pointer',
-    transition: 'transform 0.2s',
   };
 
   return (
@@ -89,13 +77,7 @@ export default function UserDashboard() {
           Your Financial Overview (Basic)
         </h1>
 
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '20px',
-          }}
-        >
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
           {/* INPUTS */}
           <div style={cardStyle}>
             <h3>Enter Your Data</h3>
@@ -138,11 +120,10 @@ export default function UserDashboard() {
           {/* RESULTS */}
           <div style={cardStyle}>
             <h3>Balance & Insights</h3>
-
             <h2
               style={{
+                fontSize: '2.4rem',
                 color: balance < 0 ? '#ff4d4d' : '#00ff88',
-                fontSize: '2.5rem',
               }}
             >
               {balance.toLocaleString()} $
@@ -157,37 +138,66 @@ export default function UserDashboard() {
                 background: '#333',
                 borderRadius: '10px',
                 overflow: 'hidden',
-                marginTop: '15px',
               }}
             >
               <div
                 style={{
                   width: `${usagePercent}%`,
                   height: '100%',
-                  background:
-                    usagePercent > 90 ? '#ff4d4d' : '#00ff88',
+                  background: usagePercent > 90 ? '#ff4d4d' : '#00ff88',
                 }}
               />
             </div>
 
-            <p style={{ marginTop: '20px', opacity: 0.8 }}>
-              💡 Try to keep expenses under 80% to save more.
+            <p style={{ marginTop: '15px', opacity: 0.8 }}>
+              💡 Try to keep expenses below 80% to maintain savings.
             </p>
-
-            <a
-              href="/"
-              style={{
-                display: 'inline-block',
-                marginTop: '20px',
-                color: 'white',
-                opacity: 0.8,
-              }}
-            >
-              ← Back to Home
-            </a>
           </div>
         </div>
 
         {/* PREMIUM */}
         <div style={{ marginTop: '60px' }}>
           <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>
+            Unlock Advanced AI Optimization
+          </h2>
+
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '20px',
+              flexWrap: 'wrap',
+            }}
+          >
+            <div
+              style={pricingCardStyle}
+              onClick={() => handleCheckout('PRICE_ID_DAY')}
+            >
+              <h3>1 Day Pass</h3>
+              <p style={{ fontSize: '2rem' }}>$9.99</p>
+              <p>Advanced AI analysis & exports</p>
+            </div>
+
+            <div
+              style={pricingCardStyle}
+              onClick={() => handleCheckout('PRICE_ID_WEEK')}
+            >
+              <h3>1 Week Pass</h3>
+              <p style={{ fontSize: '2rem' }}>$14.99</p>
+              <p>Goal tracking & summaries</p>
+            </div>
+
+            <div
+              style={pricingCardStyle}
+              onClick={() => handleCheckout('PRICE_ID_MONTH')}
+            >
+              <h3>1 Month Pass</h3>
+              <p style={{ fontSize: '2rem' }}>$24.99</p>
+              <p>Live charts & tax tools</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
