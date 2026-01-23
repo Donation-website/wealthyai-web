@@ -2,14 +2,10 @@ import React, { useState } from 'react';
 
 export default function UserDashboard() {
   const [data, setData] = useState({
-    income: 5000,
-    fixed: 2000,
-    variable: 1500,
+    income: 5000, fixed: 2000, variable: 1500,
   });
-  // Új állapot az AI válaszának tárolására és a töltés jelzésére
   const [aiInsight, setAiInsight] = useState('');
   const [loadingAI, setLoadingAI] = useState(false);
-
 
   const totalExpenses = data.fixed + data.variable;
   const balance = data.income - totalExpenses;
@@ -18,46 +14,28 @@ export default function UserDashboard() {
 
   const handleCheckout = async (priceId) => {
     localStorage.setItem('userFinancials', JSON.stringify(data));
-
     try {
-      const response = await fetch('/api/create-stripe-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId }),
-      });
-      // ... (rest of stripe logic)
+      const response = await fetch('/api/create-stripe-session', { /* ... */ });
       const session = await response.json();
-      if (session.url) {
-        window.location.href = session.url;
-      } else {
-        alert('Payment initialization failed.');
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Unexpected error during checkout.');
-    }
+      if (session.url) { window.location.href = session.url; } else { alert('Payment failed.'); }
+    } catch (err) { alert('Unexpected error.'); }
   };
   
-  // Új funkció az AI hívására
   const getFreeAIInsight = async () => {
     setLoadingAI(true);
-    // Feltételezve, hogy az /api/get-ai-insight.js fájlod már az új router.huggingface.co URL-t használja
     const response = await fetch('/api/get-ai-insight', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data), // Elküldjük a bevételi adatokat
+        body: JSON.stringify(data),
     });
     const result = await response.json();
     setAiInsight(result.insight);
     setLoadingAI(false);
   };
 
-
-  // Stílusok meghagyva
   const cardStyle = { /* ... */ };
   const inputStyle = { /* ... */ };
   const pricingCardStyle = { /* ... */ };
-
 
   return (
     <main style={{ minHeight: '100vh', background: '#060b13', color: 'white', fontFamily: 'Arial, sans-serif', padding: '40px' }}>
@@ -83,7 +61,6 @@ export default function UserDashboard() {
               <div style={{ width: `${usagePercent}%`, height: '100%', background: usagePercent > 90 ? '#ff4d4d' : '#00ff88' }} />
             </div>
             
-            {/* ÚJ RÉSZ AZ INGYENES AI GOMBBAL ÉS EREDMÉNNYEL */}
             <button 
                 onClick={getFreeAIInsight} 
                 disabled={loadingAI}
@@ -101,7 +78,6 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        {/* ... (rest of pricing section) ... */}
         <div style={{ marginTop: '60px' }}>
           <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>Unlock Advanced AI Optimization (Stripe)</h2>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
@@ -119,8 +95,6 @@ export default function UserDashboard() {
             </div>
           </div>
         </div>
-
-
       </div>
     </main>
   );
