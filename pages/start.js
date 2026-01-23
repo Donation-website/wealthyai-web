@@ -171,7 +171,8 @@ export default function UserDashboard() {
           >
             <div
               style={pricingCardStyle}
-              onClick={() => handleCheckout('price_1TESTDAY...')}
+              // BEÍRVA A TE KÓDOD: price_1SscYJDyLtejYlZiyDvhdaIx
+              onClick={() => handleCheckout('price_1SscYJDyLtejYlZiyDvhdaIx')}
             >
               <h3>1 Day Pass</h3>
               <p style={{ fontSize: '2rem' }}>$9.99</p>
@@ -180,7 +181,8 @@ export default function UserDashboard() {
 
             <div
               style={pricingCardStyle}
-              onClick={() => handleCheckout('price_1TESTWEEK...')}
+              // BEÍRVA A TE KÓDOD: price_1SscaYDyLtejYlZiDjSeF5Wm
+              onClick={() => handleCheckout('price_1SscaYDyLtejYlZiDjSeF5Wm')}
             >
               <h3>1 Week Pass</h3>
               <p style={{ fontSize: '2rem' }}>$14.99</p>
@@ -189,7 +191,8 @@ export default function UserDashboard() {
 
             <div
               style={pricingCardStyle}
-              onClick={() => handleCheckout('price_1TESTMONTH...')}
+              // BEÍRVA A TE KÓDOD: price_1SscbeDyLtejYlZixJcT3B4o
+              onClick={() => handleCheckout('price_1SscbeDyLtejYlZixJcT3B4o')}
             >
               <h3>1 Month Pass</h3>
               <p style={{ fontSize: '2rem' }}>$24.99</p>
