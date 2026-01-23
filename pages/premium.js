@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 export default function PremiumDashboard() {
   const [aiResponse, setAiResponse] = useState("");
   const [loading, setLoading] = useState(false);
   
-  // Default data
+  // Felhasználói adatok - Alapértelmezett értékek
   const [userData, setUserData] = useState({ income: 5000, fixed: 2000, variable: 1500 });
 
-  // Calculations for the graph
+  // Számítások a grafikonhoz
   const monthlySavings = userData.income - (userData.fixed + userData.variable);
   const chartData = [
     { name: 'Now', savings: 0 },
@@ -20,23 +19,28 @@ export default function PremiumDashboard() {
     { name: 'Year 5', savings: monthlySavings * 60 },
   ];
 
+  // AI lekérése a szerveroldali API-tól
   const askAI = async () => {
     setLoading(true);
-    setAiResponse(""); // Reset
+    setAiResponse("");
     try {
-      // Use the provided key
-      const genAI = new GoogleGenerativeAI("AIzaSyD2l3DBUbct-vzBiIQcmzTCXnS6GcMF690");
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-      
-      const prompt = `You are a professional financial advisor. My monthly income is ${userData.income} USD. 
-      My fixed costs are ${userData.fixed}, and variable costs are ${userData.variable}. 
-      Give 3 very short, professional bullet-point financial tips in English to optimize my savings. 
-      Be specific and encouraging.`;
-      
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      setAiResponse(text);
+      const response = await fetch('/api/get-ai-insight', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          income: userData.income, 
+          fixed: userData.fixed, 
+          variable: userData.variable 
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.insight) {
+        setAiResponse(data.insight);
+      } else {
+        setAiResponse("AI is currently refining your strategy. Please try again.");
+      }
     } catch (error) {
       console.error("AI Error:", error);
       setAiResponse("Sorry, the AI advisor is busy right now. Please try again in a few seconds.");
@@ -44,12 +48,14 @@ export default function PremiumDashboard() {
     setLoading(false);
   };
 
+  // Funkciók az alsó gombokhoz
   const handleExport = () => {
-    alert("Generating your PDF report... This will take a few seconds.");
+    alert("Preparing your English Financial Report (PDF)... Your download will start shortly.");
   };
 
   const handleGoalSetup = () => {
-    alert("Goal tracking module is initializing. Set your target savings!");
+    const goal = prompt("Enter your savings goal (e.g., New Home):", "Emergency Fund");
+    if (goal) alert("Goal '" + goal + "' has been set! We will track it for you.");
   };
 
   return (
@@ -63,7 +69,7 @@ export default function PremiumDashboard() {
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
           
-          {/* AI BOX - NOW IN ENGLISH */}
+          {/* AI BOX */}
           <div style={cardStyle}>
             <h3 style={{ color: '#00ff88', marginBottom: '15px' }}>🤖 AI Financial Advisor</h3>
             <p style={{ fontSize: '0.9rem', opacity: 0.7, marginBottom: '20px' }}>
@@ -78,7 +84,7 @@ export default function PremiumDashboard() {
             </div>
           </div>
 
-          {/* CHART BOX - NOW IN ENGLISH */}
+          {/* CHART BOX */}
           <div style={cardStyle}>
             <h3 style={{ color: '#00ff88', marginBottom: '15px' }}>📈 5-Year Wealth Projection</h3>
             <p style={{ fontSize: '0.9rem', opacity: 0.7, marginBottom: '20px' }}>
@@ -95,10 +101,10 @@ export default function PremiumDashboard() {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#222" vertical={false} />
                   <XAxis dataKey="name" stroke="#666" />
-                  <YAxis stroke="#666" tickFormatter={(value) => `$${value}`} />
+                  <YAxis stroke="#666" tickFormatter={(v) => `$${v}`} />
                   <Tooltip 
                     contentStyle={{ background: '#111', border: '1px solid #333', color: '#fff' }}
-                    formatter={(value) => [`$${value}`, 'Savings']}
+                    formatter={(v) => [`$${v}`, 'Savings']}
                   />
                   <Area type="monotone" dataKey="savings" stroke="#00ff88" fillOpacity={1} fill="url(#colorGreen)" strokeWidth={3} />
                 </AreaChart>
@@ -108,7 +114,7 @@ export default function PremiumDashboard() {
 
         </div>
 
-        {/* BOTTOM BUTTONS - WITH FUNCTIONALITY */}
+        {/* BOTTOM BUTTONS */}
         <div style={{ marginTop: '50px', display: 'flex', justifyContent: 'center', gap: '20px' }}>
           <div style={miniCard} onClick={handleGoalSetup}>
             🎯 <span style={{ cursor: 'pointer' }}>Set Savings Goal</span>
@@ -126,7 +132,7 @@ export default function PremiumDashboard() {
   );
 }
 
-// Styles (unchanged)
+// Stílusok
 const cardStyle = {
   background: 'rgba(255,255,255,0.05)',
   padding: '30px',
@@ -165,5 +171,6 @@ const miniCard = {
   border: '1px solid rgba(255,255,255,0.05)',
   fontSize: '0.9rem',
   color: '#aaa',
-  cursor: 'pointer'
+  cursor: 'pointer',
+  transition: '0.3s'
 };
