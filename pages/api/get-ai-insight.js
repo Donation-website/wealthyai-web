@@ -5,7 +5,6 @@ export default async function handler(req, res) {
   const token = "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"; 
 
   try {
-    // ÚJ ENDPOINT: a hibaüzenetben kért router.huggingface.co használata
     const response = await fetch(
       "https://router.huggingface.co",
       {
@@ -15,41 +14,28 @@ export default async function handler(req, res) {
         },
         method: "POST",
         body: JSON.stringify({
-          inputs: `[INST] You are a professional WealthAI Advisor. Income: $${income}, Fixed: $${fixed}, Variable: $${variable}. Give 3 short financial strategies in English. Bullet points only. [/INST]`,
-          parameters: { 
-            return_full_text: false, 
-            max_new_tokens: 250,
-            wait_for_model: true 
-          }
+          inputs: `[INST] You are a professional WealthAI Advisor. My monthly income is $${income}, fixed costs are $${fixed}, and variable costs are $${variable}. Give 3 specific, short financial strategies in English to maximize my wealth. Bullet points only. [/INST]`,
+          parameters: { return_full_text: false, max_new_tokens: 250, wait_for_model: true }
         }),
       }
     );
 
     const result = await response.json();
 
-    // 1. Eset: A modell még töltődik
-    if (result.error && result.estimated_time) {
-      return res.status(200).json({ 
-        insight: `AI is warming up (Ready in ${Math.round(result.estimated_time)}s). Please wait 10 seconds and click again.` 
-      });
-    }
-
-    // 2. Eset: A Hugging Face válasza szinte mindig egy lista elején van
+    // A Hugging Face válasza szinte mindig egy lista: [{generated_text: "..."}]
     let aiText = "";
     if (Array.isArray(result) && result[0] && result[0].generated_text) {
       aiText = result[0].generated_text;
     } else if (result && result.generated_text) {
       aiText = result.generated_text;
-    } else if (result && result.error) {
+    } else if (result.error) {
       aiText = "AI Error: " + result.error;
     } else {
-      aiText = "The AI engine is finalizing your report. Please try again in 5 seconds.";
+      aiText = "The AI is thinking. Please try again in 5 seconds.";
     }
 
     res.status(200).json({ insight: aiText.trim() });
-
   } catch (error) {
-    console.error("Szerver hiba:", error);
-    res.status(500).json({ error: "AI Engine connection failed." });
+    res.status(500).json({ error: "Connection failed." });
   }
 }
