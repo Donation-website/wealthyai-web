@@ -32,16 +32,17 @@ export default async function handler(req, res) {
 
     const result = await response.json();
 
-    // Ha a válasz egy tömb (szokásos HF formátum)
+    // Debug log a Vercel konzolhoz (ezt figyeld a Vercel Log-ban!)
+    console.log("HF Válasz:", result);
+
     let aiText = "";
-    if (Array.isArray(result) && result[0]?.generated_text) {
-      aiText = result[0].generated_text;
+    if (Array.isArray(result) && result?.generated_text) {
+      aiText = result.generated_text;
     } else if (result?.generated_text) {
       aiText = result.generated_text;
     }
 
     if (aiText) {
-      // Csak az AI válaszát tartjuk meg (levágjuk az [INST] részt ha benne maradt)
       const cleanText = aiText.split('[/INST]').pop().trim();
       return res.status(200).json({ insight: cleanText });
     }
@@ -56,4 +57,3 @@ export default async function handler(req, res) {
       insight: `• Surplus: $${surplus}\n• Advice: Save at least 20%.\n• Status: AI is updating, please retry in 5s.` 
     });
   }
-}
