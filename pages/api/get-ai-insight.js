@@ -8,11 +8,11 @@ export default async function handler(req, res) {
 
   if (!token) {
     return res.status(500).json({
-      insight: 'Error: HF_TOKEN missing from environment variables.',
+      insight: 'HF_TOKEN missing from Vercel environment variables.',
     });
   }
 
-  const API_URL = 'https://api-inference.huggingface.co/v1/chat/completions';
+  const API_URL = 'https://router.huggingface.co/v1/chat/completions';
 
   try {
     const response = await fetch(API_URL, {
@@ -33,10 +33,11 @@ export default async function handler(req, res) {
             role: 'user',
             content: `My monthly income is $${income}. My total expenses are $${
               Number(fixed) + Number(variable)
-            }. Give financial advice.`,
+            }. Give concise financial advice.`,
           },
         ],
         max_tokens: 150,
+        temperature: 0.7,
       }),
     });
 
@@ -47,14 +48,13 @@ export default async function handler(req, res) {
 
     const result = await response.json();
 
-    const aiText =
-      result?.choices?.[0]?.message?.content?.trim();
+    const aiText = result?.choices?.[0]?.message?.content;
 
     if (!aiText) {
       throw new Error('Empty AI response');
     }
 
-    return res.status(200).json({ insight: aiText });
+    return res.status(200).json({ insight: aiText.trim() });
   } catch (error) {
     console.error('AI ERROR:', error.message);
 
