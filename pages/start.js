@@ -5,25 +5,96 @@ export default function UserDashboard() {
     income: 5000,
     fixed: 2000,
     variable: 1500,
+
     electricity: 150,
     water: 50,
     gas: 100,
-    internet: 60,
-    phone: 40,
+    internet: 80,
+    subscriptions: 120,
   });
 
-  const totalExpenses =
-    data.fixed +
-    data.variable +
+  const totalUtilities =
     data.electricity +
     data.water +
     data.gas +
-    data.internet +
-    data.phone;
+    data.internet;
+
+  const totalExpenses =
+    data.fixed + data.variable;
 
   const balance = data.income - totalExpenses;
+
   const usagePercent =
     data.income > 0 ? Math.min((totalExpenses / data.income) * 100, 100) : 0;
+
+  // BASIC LOGIKA
+  const savingsRate = data.income > 0 ? (balance / data.income) * 100 : 0;
+  const savingsScore = Math.max(
+    0,
+    Math.min(100, Math.round((savingsRate / 30) * 100))
+  );
+
+  const riskLevel =
+    usagePercent > 90
+      ? 'High Risk'
+      : usagePercent > 70
+      ? 'Medium Risk'
+      : 'Low Risk';
+
+  // DINAMIKUS BASIC INSIGHTOK
+  const insights = [];
+
+  if (balance < 0) {
+    insights.push(
+      '🚨 Your expenses exceed your income. Immediate action is recommended to avoid debt accumulation.'
+    );
+    insights.push(
+      '💡 Premium AI provides crisis strategies, local assistance options, and step-by-step recovery plans.'
+    );
+  }
+
+  if (data.subscriptions > data.income * 0.08) {
+    insights.push(
+      '📺 Subscriptions are relatively high. Reviewing unused services may free up monthly cash.'
+    );
+  }
+
+  if (totalUtilities > data.income * 0.15) {
+    insights.push(
+      '⚡ Utilities form a large portion of expenses. Provider comparison or plan optimization could help.'
+    );
+  }
+
+  if (savingsRate >= 20 && balance >= 0) {
+    insights.push(
+      '✅ You are saving at a healthy rate. This structure supports long-term stability.'
+    );
+  }
+
+  if (balance >= 0 && savingsRate < 20) {
+    insights.push(
+      '⚠️ Savings rate is below the recommended 20%. Small adjustments could improve resilience.'
+    );
+  }
+
+  const handleCheckout = async (priceId) => {
+    localStorage.setItem('userFinancials', JSON.stringify(data));
+
+    try {
+      const response = await fetch('/api/create-stripe-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId }),
+      });
+
+      const session = await response.json();
+      if (session.url) window.location.href = session.url;
+      else alert('Payment initialization failed.');
+    } catch (err) {
+      console.error(err);
+      alert('Unexpected error during checkout.');
+    }
+  };
 
   const cardStyle = {
     background: 'rgba(255,255,255,0.05)',
@@ -32,7 +103,6 @@ export default function UserDashboard() {
     padding: '25px',
     border: '1px solid rgba(255,255,255,0.1)',
     color: 'white',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
   };
 
   const inputStyle = {
@@ -43,21 +113,14 @@ export default function UserDashboard() {
     color: 'white',
     width: '100%',
     marginTop: '5px',
-    marginBottom: '10px',
   };
 
-  const warningStyle = {
-    marginTop: '15px',
-    padding: '15px',
-    borderRadius: '12px',
-    background:
-      balance < 0
-        ? 'rgba(255, 80, 80, 0.15)'
-        : 'rgba(0, 255, 136, 0.12)',
-    border:
-      balance < 0
-        ? '1px solid rgba(255,80,80,0.4)'
-        : '1px solid rgba(0,255,136,0.4)',
+  const pricingCardStyle = {
+    ...cardStyle,
+    background: 'rgba(0,255,136,0.08)',
+    border: '1px solid rgba(0,255,136,0.3)',
+    textAlign: 'center',
+    cursor: 'pointer',
   };
 
   return (
@@ -82,7 +145,7 @@ export default function UserDashboard() {
             gap: '20px',
           }}
         >
-          {/* INPUTS */}
+          {/* INPUT SIDE */}
           <div style={cardStyle}>
             <h3>Income & Expenses</h3>
 
@@ -96,7 +159,9 @@ export default function UserDashboard() {
               }
             />
 
-            <label>Fixed Expenses</label>
+            <label style={{ marginTop: '10px', display: 'block' }}>
+              Fixed Expenses
+            </label>
             <input
               type="number"
               value={data.fixed}
@@ -106,7 +171,9 @@ export default function UserDashboard() {
               }
             />
 
-            <label>Variable Expenses</label>
+            <label style={{ marginTop: '10px', display: 'block' }}>
+              Variable Expenses
+            </label>
             <input
               type="number"
               value={data.variable}
@@ -116,101 +183,109 @@ export default function UserDashboard() {
               }
             />
 
-            <hr style={{ opacity: 0.2 }} />
+            <hr style={{ margin: '20px 0', opacity: 0.3 }} />
 
-            {[
-              ['electricity', 'Electricity'],
-              ['water', 'Water'],
-              ['gas', 'Gas'],
-              ['internet', 'Internet'],
-              ['phone', 'Phone'],
-            ].map(([key, label]) => (
-              <div key={key}>
-                <label>{label}</label>
-                <input
-                  type="number"
-                  value={data[key]}
-                  style={inputStyle}
-                  onChange={(e) =>
-                    setData({
-                      ...data,
-                      [key]: Number(e.target.value),
-                    })
-                  }
-                />
-              </div>
+            <h4>Utilities (optional)</h4>
+            {['electricity', 'water', 'gas', 'internet'].map((key) => (
+              <input
+                key={key}
+                type="number"
+                placeholder={key}
+                value={data[key]}
+                style={inputStyle}
+                onChange={(e) =>
+                  setData({ ...data, [key]: Number(e.target.value) })
+                }
+              />
             ))}
+
+            <label style={{ marginTop: '10px', display: 'block' }}>
+              Subscriptions
+            </label>
+            <input
+              type="number"
+              value={data.subscriptions}
+              style={inputStyle}
+              onChange={(e) =>
+                setData({
+                  ...data,
+                  subscriptions: Number(e.target.value),
+                })
+              }
+            />
           </div>
 
-          {/* RESULTS */}
+          {/* INSIGHT SIDE */}
           <div style={cardStyle}>
-            <h3>Balance & Insights</h3>
+            <h3>Insights (Basic)</h3>
 
-            <h2
-              style={{
-                fontSize: '2.4rem',
-                color: balance < 0 ? '#ff4d4d' : '#00ff88',
-              }}
-            >
-              {balance.toLocaleString()} $
-            </h2>
+            <p>
+              Risk Level: <strong>{riskLevel}</strong>
+            </p>
+            <p>
+              Savings Score: <strong>{savingsScore}/100</strong>
+            </p>
 
-            <p>You are spending {usagePercent.toFixed(1)}% of your income.</p>
+            <ul>
+              {insights.map((i, idx) => (
+                <li key={idx} style={{ marginBottom: '10px' }}>
+                  {i}
+                </li>
+              ))}
+            </ul>
 
-            <div
-              style={{
-                width: '100%',
-                height: '12px',
-                background: '#333',
-                borderRadius: '10px',
-                overflow: 'hidden',
-                marginTop: '10px',
-              }}
-            >
-              <div
-                style={{
-                  width: `${usagePercent}%`,
-                  height: '100%',
-                  background:
-                    usagePercent > 90 ? '#ff4d4d' : '#00ff88',
-                }}
-              />
-            </div>
-
-            <div style={warningStyle}>
-              {balance < 0 ? (
-                <>
-                  <strong>⚠ Financial Alert</strong>
-                  <p style={{ marginTop: '8px', opacity: 0.85 }}>
-                    Your expenses exceed your income.
-                    <br />
-                    AI Premium provides emergency strategies, local support
-                    options, and recovery planning.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <strong>✅ Healthy Status</strong>
-                  <p style={{ marginTop: '8px', opacity: 0.85 }}>
-                    You are on track. Premium AI can help optimize savings
-                    and long-term growth.
-                  </p>
-                </>
-              )}
-            </div>
+            <p style={{ opacity: 0.7, marginTop: '15px' }}>
+              🔒 Country-specific strategies, local providers and recovery plans
+              are available with AI-powered plans below.
+            </p>
           </div>
         </div>
 
-        <p
-          style={{
-            marginTop: '40px',
-            textAlign: 'center',
-            opacity: 0.65,
-          }}
-        >
-          🔒 Country-specific savings, providers & advanced strategies are
-          available in Premium plans below.
-        </p>
+        {/* PRICING */}
+        <div style={{ marginTop: '60px' }}>
+          <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>
+            Unlock Advanced AI Optimization
+          </h2>
+
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '20px',
+              flexWrap: 'wrap',
+            }}
+          >
+            <div
+              style={pricingCardStyle}
+              onClick={() =>
+                handleCheckout('price_1SscYJDyLtejYlZiyDvhdaIx')
+              }
+            >
+              <h3>1 Day Pass</h3>
+              <small>AI optimization & emergency insights</small>
+            </div>
+
+            <div
+              style={pricingCardStyle}
+              onClick={() =>
+                handleCheckout('price_1SscaYDyLtejYlZiDjSeF5Wm')
+              }
+            >
+              <h3>1 Week Pass</h3>
+              <small>Behavior & trend analysis</small>
+            </div>
+
+            <div
+              style={pricingCardStyle}
+              onClick={() =>
+                handleCheckout('price_1SscbeDyLtejYlZixJcT3B4o')
+              }
+            >
+              <h3>1 Month Pass</h3>
+              <small>Full AI financial dashboard</small>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   );
