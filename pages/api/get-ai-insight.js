@@ -22,7 +22,7 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'mistralai/Mistral-7B-Instruct-v0.2',
+        model: 'meta-llama/Llama-3.1-8B-Instruct',
         messages: [
           {
             role: 'system',
@@ -36,7 +36,7 @@ export default async function handler(req, res) {
             }. Give concise financial advice.`,
           },
         ],
-        max_tokens: 150,
+        max_tokens: 180,
         temperature: 0.7,
       }),
     });
@@ -47,7 +47,6 @@ export default async function handler(req, res) {
     }
 
     const result = await response.json();
-
     const aiText = result?.choices?.[0]?.message?.content;
 
     if (!aiText) {
