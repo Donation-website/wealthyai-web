@@ -1,3 +1,5 @@
+import React from 'react';
+
 export default function Home() {
   return (
     <main
@@ -71,7 +73,7 @@ export default function Home() {
           left: "10%",
           transform: "translateY(-50%)",
           padding: "14px 40px",
-          backgroundColor: "#1a253a", // Sötétkék háttér, igazítva a képhez
+          backgroundColor: "#1a253a",
           border: "1px solid rgba(255, 255, 255, 0.4)",
           borderRadius: "10px",
           color: "white",
@@ -83,7 +85,6 @@ export default function Home() {
           boxShadow: "0 4px 15px rgba(0, 0, 0, 0.5)",
           transition: "transform 0.2s, background-color 0.2s"
         }}
-        // Hover effektus finomítása
         onMouseEnter={(e) => e.target.style.backgroundColor = '#2c3e50'}
         onMouseLeave={(e) => e.target.style.backgroundColor = '#1a253a'}
       >
