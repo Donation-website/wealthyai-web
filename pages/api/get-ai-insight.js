@@ -1,12 +1,8 @@
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
   const { income, fixed, variable } = req.body;
-  
-  // A Te Hugging Face tokened beillesztve
-  const token = "hf_WnmlLqCqIjjWiiQIdhxEWXsFJjXXNFIjXXNFIvxR"; 
+  const token = "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"; 
 
   try {
     const response = await fetch(
@@ -18,14 +14,11 @@ export default async function handler(req, res) {
         },
         method: "POST",
         body: JSON.stringify({
-          inputs: `[INST] You are a professional WealthAI Advisor. 
-          Monthly Income: $${income}, Fixed Costs: $${fixed}, Variable Costs: $${variable}.
-          Give 3 specific financial strategies in English to maximize wealth. 
-          Bullet points only. [/INST]`,
+          inputs: `[INST] You are a professional WealthAI Advisor. Income: $${income}, Fixed: $${fixed}, Variable: $${variable}. Give 3 short financial strategies in English. Bullet points only. [/INST]`,
           parameters: { 
             return_full_text: false, 
             max_new_tokens: 250,
-            wait_for_model: true // Megvárja, amíg a modell betöltődik
+            wait_for_model: true 
           }
         }),
       }
@@ -33,29 +26,28 @@ export default async function handler(req, res) {
 
     const result = await response.json();
 
-    // Hibakezelés, ha a modell éppen ébredezik
+    // HIBAKERESÉS: Ha a modell ébredezik
     if (result.error && result.estimated_time) {
       return res.status(200).json({ 
-        insight: `AI engine is warming up (Ready in ${Math.round(result.estimated_time)}s). Please wait a moment and click again.` 
+        insight: `AI is warming up (Ready in ${Math.round(result.estimated_time)}s). Please wait and click again.` 
       });
     }
 
-    // A Hugging Face válaszának feldolgozása (tömb vagy objektum formátum)
+    // JAVÍTOTT KIOLVASÁS: A Hugging Face legtöbbször egy listát küld vissza: [{generated_text: "..."}]
     let aiText = "";
-    if (Array.isArray(result) && result[0]?.generated_text) {
+    if (Array.isArray(result) && result[0] && result[0].generated_text) {
       aiText = result[0].generated_text;
-    } else if (result?.generated_text) {
+    } else if (result.generated_text) {
       aiText = result.generated_text;
-    }
-
-    if (!aiText) {
-      return res.status(200).json({ insight: "The AI is processing heavy data. Please try one more time in 5 seconds." });
+    } else {
+      // Ha még mindig baj van, írjuk ki mi jött vissza, hogy lássuk a hibát
+      console.log("Hugging Face válasz:", JSON.stringify(result));
+      aiText = "The AI model is still loading. Please try again in 10 seconds.";
     }
 
     res.status(200).json({ insight: aiText.trim() });
 
   } catch (error) {
-    console.error("AI hiba:", error);
     res.status(500).json({ error: "AI Engine connection failed." });
   }
 }
