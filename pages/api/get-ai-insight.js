@@ -14,28 +14,31 @@ export default async function handler(req, res) {
         },
         method: "POST",
         body: JSON.stringify({
-          inputs: `[INST] You are a professional WealthAI Advisor. My monthly income is $${income}, fixed costs are $${fixed}, and variable costs are $${variable}. Give 3 specific, short financial strategies in English to maximize my wealth. Bullet points only. [/INST]`,
-          parameters: { return_full_text: false, max_new_tokens: 250, wait_for_model: true }
+          inputs: `[INST] Professional WealthAI. Income: $${income}, Costs: $${fixed+variable}. Give 3 short financial tips in English. [/INST]`,
+          parameters: { return_full_text: false, max_new_tokens: 200, wait_for_model: true }
         }),
       }
     );
 
     const result = await response.json();
 
-    // A Hugging Face válasza szinte mindig egy lista: [{generated_text: "..."}]
+    // Ha a Hugging Face hibát küld (pl. túlterheltség)
+    if (result.error) {
+      return res.status(200).json({ insight: "AI is busy: " + result.error });
+    }
+
+    // A válasz feldolgozása (Hugging Face formátumhoz igazítva)
     let aiText = "";
-    if (Array.isArray(result) && result[0] && result[0].generated_text) {
+    if (Array.isArray(result) && result[0]?.generated_text) {
       aiText = result[0].generated_text;
-    } else if (result && result.generated_text) {
+    } else if (result.generated_text) {
       aiText = result.generated_text;
-    } else if (result.error) {
-      aiText = "AI Error: " + result.error;
     } else {
-      aiText = "The AI is thinking. Please try again in 5 seconds.";
+      aiText = "No strategy generated. Please try again.";
     }
 
     res.status(200).json({ insight: aiText.trim() });
   } catch (error) {
-    res.status(500).json({ error: "Connection failed." });
+    res.status(500).json({ error: "API Route Error: " + error.message });
   }
 }
