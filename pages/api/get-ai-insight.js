@@ -4,16 +4,17 @@ export default async function handler(req, res) {
   }
 
   const { income, fixed, variable } = req.body;
+  
+  // A Te Hugging Face tokened beillesztve
+  const token = "hf_WnmlLqCqIjjWiiQIdhxEWXsFJjXXNFIjXXNFIvxR"; 
 
   try {
-    // Ingyenes modell hívása. Megjegyzés: Ha nincs saját kulcsod, 
-    // a Hugging Face korlátozhatja a hívások számát.
     const response = await fetch(
       "https://api-inference.huggingface.co",
       {
         headers: { 
-          "Content-Type": "application/json"
-          // Ha van saját Hugging Face tokened, ide írhatod: "Authorization": "Bearer hf_..."
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}` 
         },
         method: "POST",
         body: JSON.stringify({
@@ -21,28 +22,40 @@ export default async function handler(req, res) {
           Monthly Income: $${income}, Fixed Costs: $${fixed}, Variable Costs: $${variable}.
           Give 3 specific financial strategies in English to maximize wealth. 
           Bullet points only. [/INST]`,
+          parameters: { 
+            return_full_text: false, 
+            max_new_tokens: 250,
+            wait_for_model: true // Megvárja, amíg a modell betöltődik
+          }
         }),
       }
     );
 
     const result = await response.json();
-    
-    // Kezeljük, ha a válasz egy tömb (Hugging Face specifikus)
-    let text = "";
-    if (Array.isArray(result) && result[0]?.generated_text) {
-      text = result[0].generated_text;
-    } else if (result?.generated_text) {
-      text = result.generated_text;
+
+    // Hibakezelés, ha a modell éppen ébredezik
+    if (result.error && result.estimated_time) {
+      return res.status(200).json({ 
+        insight: `AI engine is warming up (Ready in ${Math.round(result.estimated_time)}s). Please wait a moment and click again.` 
+      });
     }
 
-    // Csak az AI válaszát vágjuk ki
-    const cleanText = text.includes('[/INST]') 
-      ? text.split('[/INST]').pop().trim() 
-      : text || "AI is warmimg up, please try again in 5 seconds.";
+    // A Hugging Face válaszának feldolgozása (tömb vagy objektum formátum)
+    let aiText = "";
+    if (Array.isArray(result) && result[0]?.generated_text) {
+      aiText = result[0].generated_text;
+    } else if (result?.generated_text) {
+      aiText = result.generated_text;
+    }
 
-    res.status(200).json({ insight: cleanText });
+    if (!aiText) {
+      return res.status(200).json({ insight: "The AI is processing heavy data. Please try one more time in 5 seconds." });
+    }
+
+    res.status(200).json({ insight: aiText.trim() });
+
   } catch (error) {
-    console.error("AI Error:", error);
-    res.status(500).json({ error: "AI Engine is busy" });
+    console.error("AI hiba:", error);
+    res.status(500).json({ error: "AI Engine connection failed." });
   }
 }
