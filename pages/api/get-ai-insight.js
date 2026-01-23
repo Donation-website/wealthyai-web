@@ -26,28 +26,32 @@ export default async function handler(req, res) {
 
     const result = await response.json();
 
-    // HIBAKERESÉS: Ha a modell ébredezik
+    // 1. Eset: A modell még töltődik
     if (result.error && result.estimated_time) {
       return res.status(200).json({ 
-        insight: `AI is warming up (Ready in ${Math.round(result.estimated_time)}s). Please wait and click again.` 
+        insight: `AI is warming up (Ready in ${Math.round(result.estimated_time)}s). Please wait 10 seconds and click again.` 
       });
     }
 
-    // JAVÍTOTT KIOLVASÁS: A Hugging Face legtöbbször egy listát küld vissza: [{generated_text: "..."}]
+    // 2. Eset: A válasz egy lista (ez a leggyakoribb a Hugging Face-nél)
     let aiText = "";
     if (Array.isArray(result) && result[0] && result[0].generated_text) {
       aiText = result[0].generated_text;
-    } else if (result.generated_text) {
+    } 
+    // 3. Eset: A válasz egy sima objektum
+    else if (result && result.generated_text) {
       aiText = result.generated_text;
-    } else {
-      // Ha még mindig baj van, írjuk ki mi jött vissza, hogy lássuk a hibát
-      console.log("Hugging Face válasz:", JSON.stringify(result));
-      aiText = "The AI model is still loading. Please try again in 10 seconds.";
+    } 
+    // 4. Eset: Hiba történt
+    else {
+      console.log("DEBUG - Válasz formátuma:", JSON.stringify(result));
+      aiText = "The AI engine is taking longer than expected. Please try again in 5 seconds.";
     }
 
     res.status(200).json({ insight: aiText.trim() });
 
   } catch (error) {
+    console.error("Szerver hiba:", error);
     res.status(500).json({ error: "AI Engine connection failed." });
   }
 }
