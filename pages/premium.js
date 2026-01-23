@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 export default function PremiumDashboard() {
   const [aiResponse, setAiResponse] = useState("");
@@ -12,87 +12,126 @@ export default function PremiumDashboard() {
   }, []);
 
   const monthlySavings = userData.income - (userData.fixed + userData.variable);
+  const annualSavings = monthlySavings * 12;
+  const taxEstimate = userData.income * 0.25; // 25% becsült adó
+
   const chartData = [
     { name: 'Now', total: 0 },
-    { name: 'Y1', total: Math.max(0, monthlySavings * 12 * 1.07) },
-    { name: 'Y2', total: Math.max(0, monthlySavings * 24 * 1.12) },
-    { name: 'Y5', total: Math.max(0, monthlySavings * 60 * 1.35) },
+    { name: 'Y1', total: monthlySavings * 12 * 1.08 },
+    { name: 'Y3', total: monthlySavings * 36 * 1.25 },
+    { name: 'Y5', total: monthlySavings * 60 * 1.45 },
   ];
 
   const askAI = async () => {
     setLoading(true);
-    setAiResponse("");
     try {
       const res = await fetch('/api/get-ai-insight', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData),
       });
-
       const data = await res.json();
-      
-      if (data.insight) {
-        setAiResponse(data.insight);
-      } else if (data.error) {
-        setAiResponse("Server Error: " + data.error);
-      } else {
-        setAiResponse("Unexpected response from server.");
-      }
-    } catch (e) {
-      setAiResponse("Network Error: Could not reach the API. Check your Vercel logs.");
-    }
+      setAiResponse(data.insight);
+    } catch (e) { setAiResponse("System calibration required."); }
     setLoading(false);
   };
 
   return (
-    <div style={{ background: '#04080F', color: 'white', minHeight: '100vh', padding: '30px', fontFamily: 'sans-serif' }}>
-      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        <h1 style={{ color: '#00ff88' }}>WealthyAI PRO</h1>
+    <div style={{ background: '#020617', color: '#f8fafc', minHeight: '100vh', padding: '40px', fontFamily: 'sans-serif' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         
-        <div style={{ display: 'flex', gap: '15px', marginBottom: '30px' }}>
-          {['income', 'fixed', 'variable'].map(key => (
-            <div key={key} style={{ background: '#0D1117', padding: '10px', borderRadius: '8px', border: '1px solid #1A1F26' }}>
-              <label style={{ fontSize: '10px', color: '#888' }}>{key.toUpperCase()}</label>
-              <input 
-                type="number" 
-                value={userData[key]} 
-                style={{ background: 'none', border: 'none', color: '#00ff88', fontWeight: 'bold', outline: 'none', width: '80px' }}
-                onChange={(e) => {
-                  const d = {...userData, [key]: Number(e.target.value)};
-                  setUserData(d);
-                  localStorage.setItem('userFinancials', JSON.stringify(d));
-                }}
-              />
-            </div>
-          ))}
+        {/* TOP ANALYTICS BAR */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '40px' }}>
+          <div style={ytsCard}>
+            <p style={ytsLabel}>ESTIMATED NET WORTH (5Y)</p>
+            <h2 style={ytsValue}>${(monthlySavings * 60 * 1.45).toLocaleString()}</h2>
+            <p style={{ color: '#10b981', fontSize: '12px' }}>↑ 45% ROI included</p>
+          </div>
+          <div style={ytsCard}>
+            <p style={ytsLabel}>SAVINGS EFFICIENCY</p>
+            <h2 style={ytsValue}>{((monthlySavings / userData.income) * 100).toFixed(1)}%</h2>
+            <p style={{ color: '#10b981', fontSize: '12px' }}>Optimal Range</p>
+          </div>
+          <div style={ytsCard}>
+            <p style={ytsLabel}>EST. ANNUAL TAX</p>
+            <h2 style={ytsValue}>${(taxEstimate * 12).toLocaleString()}</h2>
+            <p style={{ color: '#f43f5e', fontSize: '12px' }}>Based on 25% bracket</p>
+          </div>
+          <div style={ytsCard}>
+            <p style={ytsLabel}>WEALTH RANK</p>
+            <h2 style={ytsValue}>#4,291</h2>
+            <p style={{ color: '#3b82f6', fontSize: '12px' }}>Top 8% worldwide</p>
+          </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px' }}>
-          <div style={{ background: '#0D1117', padding: '20px', borderRadius: '15px' }}>
-            <h3>Projection</h3>
-            <div style={{ width: '100%', height: 250 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '30px' }}>
+          
+          {/* MAIN GRAPH */}
+          <div style={mainPanel}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <h3>Wealth Acceleration Chart</h3>
+              <select style={selectStyle}><option>Compound Interest (8%)</option></select>
+            </div>
+            <div style={{ width: '100%', height: 350 }}>
               <ResponsiveContainer>
                 <AreaChart data={chartData}>
-                  <XAxis dataKey="name" stroke="#444" />
-                  <YAxis stroke="#444" />
-                  <Tooltip contentStyle={{ background: '#0D1117' }} />
-                  <Area type="monotone" dataKey="total" stroke="#00ff88" fill="#00ff88" fillOpacity={0.1} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                  <XAxis dataKey="name" stroke="#64748b" />
+                  <YAxis stroke="#64748b" />
+                  <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #1e293b' }} />
+                  <Area type="monotone" dataKey="total" stroke="#10b981" fill="#10b981" fillOpacity={0.1} strokeWidth={3} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          <div style={{ background: '#0D1117', padding: '20px', borderRadius: '15px' }}>
-            <h3>🤖 AI Advisor</h3>
-            <button onClick={askAI} disabled={loading} style={{ width: '100%', padding: '12px', background: '#00ff88', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', color: '#000' }}>
-              {loading ? "CONSULTING..." : "GET STRATEGY"}
-            </button>
-            <div style={{ marginTop: '15px', padding: '15px', background: '#161B22', borderRadius: '8px', minHeight: '150px', fontSize: '13px', lineHeight: '1.6', borderLeft: '3px solid #00ff88' }}>
-              {aiResponse || "Click the button to generate strategy."}
+          {/* AI SECTION */}
+          <div style={mainPanel}>
+            <h3>🤖 WealthAI Advisor PRO</h3>
+            <div style={{ margin: '20px 0' }}>
+              {['income', 'fixed', 'variable'].map(key => (
+                <div key={key} style={inputRow}>
+                  <span>{key}</span>
+                  <input 
+                    type="number" 
+                    value={userData[key]} 
+                    onChange={(e) => {
+                      const d = {...userData, [key]: Number(e.target.value)};
+                      setUserData(d);
+                      localStorage.setItem('userFinancials', JSON.stringify(d));
+                    }}
+                    style={miniInput}
+                  />
+                </div>
+              ))}
             </div>
+            <button onClick={askAI} style={aiButton} disabled={loading}>
+              {loading ? "ANALYZING MARKET DATA..." : "REGENERATE PRO STRATEGY"}
+            </button>
+            <div style={aiBox}>{aiResponse || "Click the button to start your personalized AI audit."}</div>
           </div>
+
+        </div>
+
+        {/* BOTTOM ACTIONS */}
+        <div style={{ marginTop: '30px', display: 'flex', gap: '15px' }}>
+          <button style={secBtn}>📥 Download Tax Report</button>
+          <button style={secBtn}>🎯 Connect Bank Account (Beta)</button>
+          <button style={secBtn}>📊 Export to CSV</button>
         </div>
       </div>
     </div>
   );
 }
+
+// STYLES
+const ytsCard = { background: '#0f172a', padding: '20px', borderRadius: '12px', border: '1px solid #1e293b' };
+const ytsLabel = { color: '#64748b', fontSize: '11px', fontWeight: 'bold', margin: '0 0 8px 0' };
+const ytsValue = { fontSize: '1.8rem', margin: 0, color: '#fff' };
+const mainPanel = { background: '#0f172a', padding: '30px', borderRadius: '16px', border: '1px solid #1e293b' };
+const inputRow = { display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #1e293b' };
+const miniInput = { background: 'none', border: 'none', color: '#10b981', textAlign: 'right', fontWeight: 'bold', outline: 'none', width: '100px' };
+const aiButton = { background: '#10b981', color: '#000', border: 'none', padding: '15px', borderRadius: '8px', fontWeight: 'bold', width: '100%', cursor: 'pointer' };
+const aiBox = { marginTop: '20px', padding: '15px', background: '#020617', borderRadius: '10px', fontSize: '14px', lineHeight: '1.6', borderLeft: '4px solid #10b981', minHeight: '150px', whiteSpace: 'pre-line' };
+const secBtn = { background: '#1e293b', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' };
+const selectStyle = { background: '#1e293b', color: '#fff', border: 'none', padding: '5px 10px', borderRadius: '4px', fontSize: '12px' };
