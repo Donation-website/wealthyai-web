@@ -4,202 +4,114 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 export default function PremiumDashboard() {
   const [aiResponse, setAiResponse] = useState("");
   const [loading, setLoading] = useState(false);
-  
-  // Felhasználói adatok - Alapértelmezett értékek, amíg nem mentjük el a start.js-ből
-  const [userData, setUserData] = useState({ income: 5000, fixed: 2000, variable: 1500 });
+  const [userData, setUserData] = useState({ income: 0, fixed: 0, variable: 0 });
 
-  // Számítások a fő mutatókhoz
+  // ADATOK BETÖLTÉSE A BÖNGÉSZŐBŐL
+  useEffect(() => {
+    const savedData = localStorage.getItem('userFinancials');
+    if (savedData) {
+      setUserData(JSON.parse(savedData));
+    }
+  }, []);
+
   const monthlySavings = userData.income - (userData.fixed + userData.variable);
-  const savingsRate = ((monthlySavings / userData.income) * 100);
+  const savingsRate = userData.income > 0 ? ((monthlySavings / userData.income) * 100) : 0;
 
   const chartData = [
     { name: 'Now', savings: 0 },
-    { name: 'Year 1', savings: monthlySavings * 12 },
-    { name: 'Year 2', savings: monthlySavings * 24 },
-    { name: 'Year 3', savings: monthlySavings * 36 },
-    { name: 'Year 4', savings: monthlySavings * 48 },
-    { name: 'Year 5', savings: monthlySavings * 60 },
+    { name: 'Y1', savings: monthlySavings * 12 },
+    { name: 'Y2', savings: monthlySavings * 24 },
+    { name: 'Y3', savings: monthlySavings * 36 },
+    { name: 'Y4', savings: monthlySavings * 48 },
+    { name: 'Y5', savings: monthlySavings * 60 },
   ];
 
-  // AI lekérése a szerveroldali API-tól
   const askAI = async () => {
     setLoading(true);
     setAiResponse("");
     try {
-      // Ez a hívás a pages/api/get-ai-insight.js fájlt éri el
       const response = await fetch('/api/get-ai-insight', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          income: userData.income, 
-          fixed: userData.fixed, 
-          variable: userData.variable 
-        }),
+        body: JSON.stringify(userData),
       });
-
       const data = await response.json();
-
-      if (data.insight) {
-        setAiResponse(data.insight);
-      } else {
-        setAiResponse("AI is currently refining your strategy. Please try again.");
-      }
+      if (data.insight) setAiResponse(data.insight);
+      else setAiResponse("AI is busy. Error: " + (data.error || "Unknown"));
     } catch (error) {
-      console.error("AI Error:", error);
-      setAiResponse("Sorry, the AI advisor is busy right now. Please try again in a few seconds.");
+      setAiResponse("Network error. Please check your connection.");
     }
     setLoading(false);
   };
 
-  const handleExport = () => alert("Preparing your Financial Report (PDF)...");
-  const handleGoalSetup = () => alert("Goal tracking module is initializing.");
-
   return (
-    <div style={{ background: '#060b13', color: 'white', minHeight: '100vh', padding: '40px', fontFamily: 'Arial, sans-serif' }}>
+    <div style={{ background: '#060b13', color: 'white', minHeight: '100vh', padding: '40px', fontFamily: 'Arial' }}>
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
         
         <header style={{ marginBottom: '40px' }}>
           <h1 style={{ color: '#00ff88', fontSize: '2.5rem' }}>WealthyAI Studio</h1>
-          <p style={{ fontSize: '1.1rem', opacity: 0.8 }}>Premium financial dashboard & analytics.</p>
+          <p style={{ opacity: 0.8 }}>Premium analytics for your financial growth.</p>
         </header>
 
-        {/* YOUTUBE STUDIO STYLE ANALYTICS BAR */}
+        {/* ANALYTICS BAR */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '40px' }}>
           <div style={analyticsCard}>
-            <p style={labelStyle}>Net Worth (5Y Projection)</p>
+            <p style={labelStyle}>Net Worth (5Y)</p>
             <h2 style={valueStyle}>${(monthlySavings * 60).toLocaleString()}</h2>
-            <p style={{ color: '#00ff88', fontSize: '0.8rem' }}>↑ 100% (Premium unlocked)</p>
+            <p style={{ color: '#00ff88', fontSize: '0.8rem' }}>↑ Projection</p>
           </div>
-          
           <div style={analyticsCard}>
             <p style={labelStyle}>Savings Rate</p>
             <h2 style={valueStyle}>{savingsRate.toFixed(1)}%</h2>
-            <p style={{ color: '#00ff88', fontSize: '0.8rem' }}>Good standing</p>
+            <p style={{ color: '#00ff88', fontSize: '0.8rem' }}>Efficiency</p>
           </div>
-
           <div style={analyticsCard}>
-            <p style={labelStyle}>Financial Freedom Score</p>
+            <p style={labelStyle}>Financial Score</p>
             <h2 style={valueStyle}>78/100</h2>
-            <p style={{ color: '#00ff88', fontSize: '0.8rem' }}>Top 15% of users</p>
+            <p style={{ color: '#00ff88', fontSize: '0.8rem' }}>Top 15%</p>
           </div>
-
           <div style={analyticsCard}>
-            <p style={labelStyle}>AI Efficiency Gain</p>
+            <p style={labelStyle}>AI Gain</p>
             <h2 style={valueStyle}>+12.4%</h2>
-            <p style={{ color: '#aaa', fontSize: '0.8rem' }}>Potential growth</p>
+            <p style={{ color: '#aaa', fontSize: '0.8rem' }}>Potential</p>
           </div>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-          
-          {/* AI BOX */}
           <div style={cardStyle}>
-            <h3 style={{ color: '#00ff88', marginBottom: '15px' }}>🤖 AI Financial Advisor</h3>
-            <p style={{ fontSize: '0.9rem', opacity: 0.7, marginBottom: '20px' }}>
-              Personalized analysis based on your financial data.
-            </p>
-            <button onClick={askAI} style={buttonStyle} disabled={loading}>
-              {loading ? "Analyzing Data..." : "Get AI Insights"}
-            </button>
-            
-            <div style={aiResultBox}>
-              {aiResponse || "Click the button to generate your personalized AI financial plan."}
-            </div>
+            <h3>🤖 AI Advisor</h3>
+            <button onClick={askAI} style={buttonStyle} disabled={loading}>{loading ? "Analyzing..." : "Get AI Insights"}</button>
+            <div style={aiResultBox}>{aiResponse || "Your personalized plan will appear here."}</div>
           </div>
 
-          {/* CHART BOX */}
           <div style={cardStyle}>
-            <h3 style={{ color: '#00ff88', marginBottom: '15px' }}>📈 5-Year Wealth Projection</h3>
-            <p style={{ fontSize: '0.9rem', opacity: 0.7, marginBottom: '20px' }}>
-              Projected savings by saving ${monthlySavings} every month.
-            </p>
+            <h3>📈 Wealth Projection</h3>
             <div style={{ width: '100%', height: 250 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData}>
-                  <defs>
-                    <linearGradient id="colorGreen" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#00ff88" stopOpacity={0.4}/>
-                      <stop offset="95%" stopColor="#00ff88" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#222" vertical={false} />
                   <XAxis dataKey="name" stroke="#666" />
-                  <YAxis stroke="#666" tickFormatter={(v) => `$${v}`} />
-                  <Tooltip 
-                    contentStyle={{ background: '#111', border: '1px solid #333', color: '#fff' }}
-                    formatter={(v) => [`$${v}`, 'Savings']}
-                  />
-                  <Area type="monotone" dataKey="savings" stroke="#00ff88" fillOpacity={1} fill="url(#colorGreen)" strokeWidth={3} />
+                  <YAxis stroke="#666" />
+                  <Tooltip contentStyle={{ background: '#111', border: 'none' }} />
+                  <Area type="monotone" dataKey="savings" stroke="#00ff88" fill="#00ff88" fillOpacity={0.1} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
-
         </div>
 
-        {/* BOTTOM BUTTONS */}
         <div style={{ marginTop: '50px', display: 'flex', justifyContent: 'center', gap: '20px' }}>
-          <div style={miniCard} onClick={handleGoalSetup}>🎯 Set Savings Goal</div>
-          <div style={miniCard} onClick={handleExport}>📥 Download PDF Report</div>
-          <div style={miniCard} onClick={() => alert("Market Sync active.")}>📊 Live Market Sync</div>
+          <button style={miniCard} onClick={() => alert('Goal Set!')}>🎯 Set Goal</button>
+          <button style={miniCard} onClick={() => alert('PDF Generated!')}>📥 PDF Report</button>
         </div>
-
       </div>
     </div>
   );
 }
 
-// Stílusok
-const cardStyle = {
-  background: 'rgba(255,255,255,0.05)',
-  padding: '30px',
-  borderRadius: '24px',
-  border: '1px solid rgba(255,255,255,0.1)',
-  boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
-};
-
-const analyticsCard = { // ÚJ STÍLUS AZ ANALITIKAI SÁVHOZ
-  background: 'rgba(255,255,255,0.03)',
-  padding: '20px',
-  borderRadius: '15px',
-  border: '1px solid rgba(255,255,255,0.08)',
-  textAlign: 'left'
-};
-
+const cardStyle = { background: 'rgba(255,255,255,0.05)', padding: '30px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)' };
+const analyticsCard = { background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.08)' };
 const labelStyle = { color: '#aaa', fontSize: '0.85rem', marginBottom: '5px' };
 const valueStyle = { color: '#fff', fontSize: '1.8rem', margin: '0' };
-
-
-const buttonStyle = {
-  background: '#00ff88',
-  color: '#060b13',
-  border: 'none',
-  padding: '14px 20px',
-  borderRadius: '12px',
-  fontWeight: 'bold',
-  cursor: 'pointer',
-  width: '100%',
-  fontSize: '1rem'
-};
-
-const aiResultBox = {
-  marginTop: '20px',
-  padding: '15px',
-  background: 'rgba(0,0,0,0.2)',
-  borderRadius: '12px',
-  fontSize: '0.95rem',
-  lineHeight: '1.6',
-  minHeight: '100px',
-  borderLeft: '4px solid #00ff88'
-};
-
-const miniCard = {
-  background: 'rgba(255,255,255,0.03)',
-  padding: '15px 25px',
-  borderRadius: '15px',
-  border: '1px solid rgba(255,255,255,0.05)',
-  fontSize: '0.9rem',
-  color: '#aaa',
-  cursor: 'pointer',
-  transition: '0.3s'
-};
+const buttonStyle = { background: '#00ff88', color: '#060b13', border: 'none', padding: '14px', borderRadius: '12px', fontWeight: 'bold', width: '100%', cursor: 'pointer' };
+const aiResultBox = { marginTop: '20px', padding: '15px', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', minHeight: '100px', borderLeft: '4px solid #00ff88' };
+const miniCard = { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer' };
