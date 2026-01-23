@@ -1,15 +1,6 @@
 import React from 'react';
 
 export default function Home() {
-  const pageUrl =
-    typeof window !== "undefined"
-      ? encodeURIComponent(window.location.href)
-      : "";
-
-  const shareText = encodeURIComponent(
-    "AI-powered financial thinking with WealthyAI"
-  );
-
   return (
     <main
       style={{
@@ -29,7 +20,7 @@ export default function Home() {
         position: "relative",
         overflow: "hidden",
         margin: 0,
-        padding: 0,
+        padding: 0
       }}
     >
       {/* TOP NAVIGATION */}
@@ -41,7 +32,7 @@ export default function Home() {
           display: "flex",
           gap: "28px",
           zIndex: 5,
-          fontSize: "0.95rem",
+          fontSize: "0.95rem"
         }}
       >
         <a href="/how-it-works" style={navLink}>How it works</a>
@@ -56,7 +47,7 @@ export default function Home() {
             fontSize: "3.6rem",
             marginBottom: "0.6rem",
             fontWeight: "bold",
-            letterSpacing: "1px",
+            letterSpacing: "1px"
           }}
         >
           WealthyAI
@@ -67,7 +58,7 @@ export default function Home() {
             opacity: 0.9,
             maxWidth: "520px",
             margin: "0 auto",
-            lineHeight: "1.5",
+            lineHeight: "1.5"
           }}
         >
           AI-powered financial thinking. Structured insights. Clear perspective.
@@ -91,8 +82,9 @@ export default function Home() {
           textDecoration: "none",
           fontWeight: "bold",
           fontSize: "1.2rem",
+          cursor: "pointer",
           backdropFilter: "blur(4px)",
-          boxShadow: "0 4px 15px rgba(0,0,0,0.5)",
+          boxShadow: "0 4px 15px rgba(0,0,0,0.5)"
         }}
       >
         Start
@@ -112,7 +104,7 @@ export default function Home() {
           backgroundColor: "rgba(0,0,0,0.35)",
           backdropFilter: "blur(6px)",
           boxSizing: "border-box",
-          zIndex: 4,
+          zIndex: 4
         }}
       >
         <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
@@ -123,7 +115,7 @@ export default function Home() {
         <div style={{ display: "flex", gap: "18px" }}>
           {/* FACEBOOK SHARE */}
           <a
-            href={`https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`}
+            href="https://www.facebook.com/sharer/sharer.php?u=https://wealthyai-web.vercel.app/"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -134,12 +126,12 @@ export default function Home() {
             />
           </a>
 
-          {/* INSTAGRAM (branding link only) */}
+          {/* INSTAGRAM (branding only – no direct share possible) */}
           <a
             href="https://www.instagram.com/"
             target="_blank"
             rel="noopener noreferrer"
-            title="Instagram does not support direct sharing from web"
+            title="Instagram does not support direct web sharing"
           >
             <img
               src="/wealthyai/icons/insta.png"
@@ -150,7 +142,7 @@ export default function Home() {
 
           {/* X / TWITTER SHARE */}
           <a
-            href={`https://twitter.com/intent/tweet?url=${pageUrl}&text=${shareText}`}
+            href="https://twitter.com/intent/tweet?url=https://wealthyai-web.vercel.app/&text=AI-powered%20financial%20thinking%20with%20WealthyAI"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -170,11 +162,11 @@ const navLink = {
   color: "white",
   textDecoration: "none",
   opacity: 0.85,
-  cursor: "pointer",
+  cursor: "pointer"
 };
 
 const iconStyle = {
   width: "34px",
   height: "34px",
-  cursor: "pointer",
+  cursor: "pointer"
 };
