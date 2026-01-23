@@ -171,7 +171,7 @@ export default function UserDashboard() {
           >
             <div
               style={pricingCardStyle}
-              onClick={() => handleCheckout('PRICE_ID_DAY')}
+              onClick={() => handleCheckout('price_1TESTDAY...')}
             >
               <h3>1 Day Pass</h3>
               <p style={{ fontSize: '2rem' }}>$9.99</p>
@@ -180,7 +180,7 @@ export default function UserDashboard() {
 
             <div
               style={pricingCardStyle}
-              onClick={() => handleCheckout('PRICE_ID_WEEK')}
+              onClick={() => handleCheckout('price_1TESTWEEK...')}
             >
               <h3>1 Week Pass</h3>
               <p style={{ fontSize: '2rem' }}>$14.99</p>
@@ -189,7 +189,7 @@ export default function UserDashboard() {
 
             <div
               style={pricingCardStyle}
-              onClick={() => handleCheckout('PRICE_ID_MONTH')}
+              onClick={() => handleCheckout('price_1TESTMONTH...')}
             >
               <h3>1 Month Pass</h3>
               <p style={{ fontSize: '2rem' }}>$24.99</p>
