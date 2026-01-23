@@ -4,13 +4,7 @@ export default async function handler(req, res) {
   const { income, fixed, variable } = req.body;
   const token = process.env.HF_TOKEN;
 
-  const inc = Number(income) || 0;
-  const fix = Number(fixed) || 0;
-  const vari = Number(variable) || 0;
-  const totalCosts = fix + vari;
-
   try {
-    // EZ AZ ÚJ GENERÁCIÓS URL (Router alapú)
     const response = await fetch(
       "https://api-inference.huggingface.co",
       {
@@ -20,7 +14,7 @@ export default async function handler(req, res) {
         },
         method: "POST",
         body: JSON.stringify({
-          inputs: `[INST] Professional Wealth Advisor. Income: $${inc}, Costs: $${totalCosts}. 3 tips. [/INST]`,
+          inputs: `[INST] Wealth Advisor. Income: $${income}, Costs: $${Number(fixed) + Number(variable)}. Give 3 short tips. [/INST]`,
           parameters: { max_new_tokens: 150, wait_for_model: true }
         }),
       }
@@ -28,31 +22,37 @@ export default async function handler(req, res) {
 
     const result = await response.json();
 
-    // Ha még töltődik a modell, adjunk értelmes választ
-    if (result.error && result.estimated_time) {
-      return res.status(200).json({ insight: "AI is warming up... try in 10s!" });
-    }
+    // LOGOLJUK A NYERS VÁLASZT, hogy lássuk a Vercelben, ha baj van
+    console.log("HF NYERS VÁLASZ:", JSON.stringify(result));
 
-    // A válasz kinyerése (Hugging Face specifikus tömb kezelés)
+    if (result.error) throw new Error(result.error);
+
+    // Különböző válaszformátumok kezelése (Tömb vs Objektum)
     let aiText = "";
-    if (Array.isArray(result) && result[0]?.generated_text) {
+    if (Array.isArray(result) && result.length > 0) {
       aiText = result[0].generated_text;
-    } else if (result?.generated_text) {
+    } else if (result.generated_text) {
       aiText = result.generated_text;
     }
 
     if (aiText) {
-      const cleanText = aiText.split('[/INST]').pop().trim();
+      // Csak az AI válaszát tartjuk meg, az utasítást levágjuk
+      const cleanText = aiText.includes('[/INST]') 
+        ? aiText.split('[/INST]').pop().trim() 
+        : aiText.trim();
+        
       return res.status(200).json({ insight: cleanText });
     }
     
-    throw new Error("API response error");
+    throw new Error("Empty generated_text");
 
   } catch (error) {
-    console.error("LOG:", error.message);
-    const surplus = inc - totalCosts;
-    return res.status(200).json({ 
-      insight: `• Budget: You have $${surplus} surplus.\n• Tip: Invest 20% in index funds.\n• Note: AI currently in fallback mode.` 
+    console.error("AI HIBA RÉSZLETEI:", error.message);
+    const surplus = Number(income) - (Number(fixed) + Number(variable));
+    
+    // Ha ide jutunk, legalább a matek legyen jó a tartalék szövegben
+    res.status(200).json({ 
+      insight: `• Budget: You have $${surplus} surplus.\n• Recommendation: Save at least 20%.\n• Status: AI is busy, showing calculated advice.` 
     });
   }
 }
