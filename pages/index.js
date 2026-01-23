@@ -1,6 +1,15 @@
 import React from 'react';
 
 export default function Home() {
+  const pageUrl =
+    typeof window !== "undefined"
+      ? encodeURIComponent(window.location.href)
+      : "";
+
+  const shareText = encodeURIComponent(
+    "AI-powered financial thinking with WealthyAI"
+  );
+
   return (
     <main
       style={{
@@ -10,7 +19,8 @@ export default function Home() {
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: "#060b13",
-        backgroundImage: "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
+        backgroundImage:
+          "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
         backgroundSize: "contain",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
@@ -19,7 +29,7 @@ export default function Home() {
         position: "relative",
         overflow: "hidden",
         margin: 0,
-        padding: 0
+        padding: 0,
       }}
     >
       {/* TOP NAVIGATION */}
@@ -31,12 +41,12 @@ export default function Home() {
           display: "flex",
           gap: "28px",
           zIndex: 5,
-          fontSize: "0.95rem"
+          fontSize: "0.95rem",
         }}
       >
-        <a href="/how-it-works" style={{ color: "white", textDecoration: "none", opacity: 0.85, cursor: "pointer" }}>How it works</a>
-        <a href="/how-to-use" style={{ color: "white", textDecoration: "none", opacity: 0.85, cursor: "pointer" }}>How to use</a>
-        <a href="/terms" style={{ color: "white", textDecoration: "none", opacity: 0.85, cursor: "pointer" }}>Terms</a>
+        <a href="/how-it-works" style={navLink}>How it works</a>
+        <a href="/how-to-use" style={navLink}>How to use</a>
+        <a href="/terms" style={navLink}>Terms</a>
       </div>
 
       {/* CENTER CONTENT */}
@@ -46,7 +56,7 @@ export default function Home() {
             fontSize: "3.6rem",
             marginBottom: "0.6rem",
             fontWeight: "bold",
-            letterSpacing: "1px"
+            letterSpacing: "1px",
           }}
         >
           WealthyAI
@@ -57,15 +67,16 @@ export default function Home() {
             opacity: 0.9,
             maxWidth: "520px",
             margin: "0 auto",
-            lineHeight: "1.5"
+            lineHeight: "1.5",
           }}
         >
-          AI-powered financial thinking. Structured insights. Clear perspective. You decide.
+          AI-powered financial thinking. Structured insights. Clear perspective.
+          You decide.
         </p>
       </div>
 
-      {/* START GOMB (Sötét háttérrel) */}
-      <a 
+      {/* START BUTTON */}
+      <a
         href="/start"
         style={{
           position: "absolute",
@@ -74,19 +85,15 @@ export default function Home() {
           transform: "translateY(-50%)",
           padding: "14px 40px",
           backgroundColor: "#1a253a",
-          border: "1px solid rgba(255, 255, 255, 0.4)",
+          border: "1px solid rgba(255,255,255,0.4)",
           borderRadius: "10px",
           color: "white",
           textDecoration: "none",
           fontWeight: "bold",
           fontSize: "1.2rem",
-          cursor: "pointer",
-          backdropFilter: "blur(4px)", 
-          boxShadow: "0 4px 15px rgba(0, 0, 0, 0.5)",
-          transition: "transform 0.2s, background-color 0.2s"
+          backdropFilter: "blur(4px)",
+          boxShadow: "0 4px 15px rgba(0,0,0,0.5)",
         }}
-        onMouseEnter={(e) => e.target.style.backgroundColor = '#2c3e50'}
-        onMouseLeave={(e) => e.target.style.backgroundColor = '#1a253a'}
       >
         Start
       </a>
@@ -105,24 +112,69 @@ export default function Home() {
           backgroundColor: "rgba(0,0,0,0.35)",
           backdropFilter: "blur(6px)",
           boxSizing: "border-box",
-          zIndex: 4
+          zIndex: 4,
         }}
       >
         <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
           © 2026 WealthyAI — All rights reserved.
         </div>
+
+        {/* SOCIAL SHARE ICONS */}
         <div style={{ display: "flex", gap: "18px" }}>
-          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
-            <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: "34px", height: "34px", cursor: "pointer" }} />
+          {/* FACEBOOK SHARE */}
+          <a
+            href={`https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img
+              src="/wealthyai/icons/fb.png"
+              alt="Share on Facebook"
+              style={iconStyle}
+            />
           </a>
-          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
-            <img src="/wealthyai/icons/insta.png" alt="Instagram" style={{ width: "34px", height: "34px", cursor: "pointer" }} />
+
+          {/* INSTAGRAM (branding link only) */}
+          <a
+            href="https://www.instagram.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Instagram does not support direct sharing from web"
+          >
+            <img
+              src="/wealthyai/icons/insta.png"
+              alt="Instagram"
+              style={iconStyle}
+            />
           </a>
-          <a href="https://x.com" target="_blank" rel="noopener noreferrer">
-            <img src="/wealthyai/icons/x.png" alt="X" style={{ width: "34px", height: "34px", cursor: "pointer" }} />
+
+          {/* X / TWITTER SHARE */}
+          <a
+            href={`https://twitter.com/intent/tweet?url=${pageUrl}&text=${shareText}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img
+              src="/wealthyai/icons/x.png"
+              alt="Share on X"
+              style={iconStyle}
+            />
           </a>
         </div>
       </div>
     </main>
   );
 }
+
+const navLink = {
+  color: "white",
+  textDecoration: "none",
+  opacity: 0.85,
+  cursor: "pointer",
+};
+
+const iconStyle = {
+  width: "34px",
+  height: "34px",
+  cursor: "pointer",
+};
