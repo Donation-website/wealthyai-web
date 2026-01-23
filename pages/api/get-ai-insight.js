@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ insight: "Hiba: HF_TOKEN hiányzik a Vercel-ből!" });
   }
 
-  // AZ ÚJ ROUTER URL (A Hugging Face kérése alapján)
+  // AZ ÚJ ROUTER URL
   const MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.2";
   const API_URL = `https://router.huggingface.co{MODEL_ID}`;
 
@@ -31,10 +31,6 @@ export default async function handler(req, res) {
     });
 
     const result = await response.json();
-
-    // Debug log a Vercel konzolhoz (ezt figyeld a Vercel Log-ban!)
-    console.log("HF Válasz:", result);
-
     let aiText = "";
     if (Array.isArray(result) && result?.generated_text) {
       aiText = result.generated_text;
@@ -54,6 +50,7 @@ export default async function handler(req, res) {
     console.error("RÉSZLETES HIBA:", error.message);
     const surplus = Number(income || 0) - (Number(fixed || 0) + Number(variable || 0));
     res.status(200).json({ 
-      insight: `• Surplus: $${surplus}\n• Advice: Save at least 20%.\n• Status: AI is updating, please retry in 5s.` 
+      insight: `• Surplus: $${surplus}\n• Advice: Save at least 20%.\n• Status: AI connection failed (${error.message}).` 
     });
   }
+}
