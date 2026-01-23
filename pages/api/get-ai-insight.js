@@ -5,8 +5,9 @@ export default async function handler(req, res) {
   const token = "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"; 
 
   try {
+    // ÚJ ENDPOINT: a hibaüzenetben kért router.huggingface.co használata
     const response = await fetch(
-      "https://api-inference.huggingface.co",
+      "https://router.huggingface.co",
       {
         headers: { 
           "Content-Type": "application/json",
@@ -33,19 +34,16 @@ export default async function handler(req, res) {
       });
     }
 
-    // 2. Eset: A válasz egy lista (ez a leggyakoribb a Hugging Face-nél)
+    // 2. Eset: A Hugging Face válasza szinte mindig egy lista elején van
     let aiText = "";
     if (Array.isArray(result) && result[0] && result[0].generated_text) {
       aiText = result[0].generated_text;
-    } 
-    // 3. Eset: A válasz egy sima objektum
-    else if (result && result.generated_text) {
+    } else if (result && result.generated_text) {
       aiText = result.generated_text;
-    } 
-    // 4. Eset: Hiba történt
-    else {
-      console.log("DEBUG - Válasz formátuma:", JSON.stringify(result));
-      aiText = "The AI engine is taking longer than expected. Please try again in 5 seconds.";
+    } else if (result && result.error) {
+      aiText = "AI Error: " + result.error;
+    } else {
+      aiText = "The AI engine is finalizing your report. Please try again in 5 seconds.";
     }
 
     res.status(200).json({ insight: aiText.trim() });
