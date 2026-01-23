@@ -8,12 +8,11 @@ export default async function handler(req, res) {
 
   if (!token) {
     return res.status(500).json({
-      insight: 'Error: HF_TOKEN is missing from Vercel environment variables.',
+      insight: 'Error: HF_TOKEN missing from environment variables.',
     });
   }
 
-  const MODEL_ID = 'mistralai/Mistral-7B-Instruct-v0.2';
-  const API_URL = `https://router.huggingface.co/hf-inference/models/${MODEL_ID}`;
+  const API_URL = 'https://api-inference.huggingface.co/v1/chat/completions';
 
   try {
     const response = await fetch(API_URL, {
@@ -21,45 +20,41 @@ export default async function handler(req, res) {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
-        Accept: 'application/json', // ⬅⬅⬅ EZ VOLT A KRITIKUS HIÁNYZÓ SOR
       },
       body: JSON.stringify({
-        inputs: `[INST] You are a professional financial advisor.
-
-Monthly income: $${income}
-Total expenses: $${Number(fixed) + Number(variable)}
-
-Give exactly 3 clear bullet points of financial advice. [/INST]`,
-        parameters: {
-          max_new_tokens: 150,
-          wait_for_model: true,
-        },
+        model: 'mistralai/Mistral-7B-Instruct-v0.2',
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are a professional financial advisor. Respond with exactly 3 bullet points.',
+          },
+          {
+            role: 'user',
+            content: `My monthly income is $${income}. My total expenses are $${
+              Number(fixed) + Number(variable)
+            }. Give financial advice.`,
+          },
+        ],
+        max_tokens: 150,
       }),
     });
 
     if (!response.ok) {
       const text = await response.text();
-      throw new Error(`HF API error ${response.status}: ${text}`);
+      throw new Error(`HF API ${response.status}: ${text}`);
     }
 
     const result = await response.json();
 
-    let aiText = '';
-
-    // HuggingFace Router többféle választ adhat
-    if (Array.isArray(result) && result[0]?.generated_text) {
-      aiText = result[0].generated_text;
-    } else if (result?.generated_text) {
-      aiText = result.generated_text;
-    }
+    const aiText =
+      result?.choices?.[0]?.message?.content?.trim();
 
     if (!aiText) {
       throw new Error('Empty AI response');
     }
 
-    const cleanText = aiText.split('[/INST]').pop().trim();
-
-    return res.status(200).json({ insight: cleanText });
+    return res.status(200).json({ insight: aiText });
   } catch (error) {
     console.error('AI ERROR:', error.message);
 
