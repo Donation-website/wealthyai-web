@@ -5,44 +5,57 @@ export default function PremiumRouter() {
   const router = useRouter();
 
   useEffect(() => {
-    const access = JSON.parse(localStorage.getItem("premiumAccess"));
+    if (!router.isReady) return;
 
-    if (!access || !access.tier) {
+    const { session_id } = router.query;
+    if (!session_id) {
       router.replace("/");
       return;
     }
 
-    if (Date.now() > access.expiresAt) {
-      localStorage.removeItem("premiumAccess");
-      router.replace("/");
-      return;
-    }
+    const verify = async () => {
+      try {
+        const res = await fetch(`/api/verify-session?session_id=${session_id}`);
+        const data = await res.json();
 
-    // ROUTING BY TIER
-    if (access.tier === "day") {
-      router.replace("/day");
-    } else if (access.tier === "week") {
-      router.replace("/premium-week");
-    } else if (access.tier === "month") {
-      router.replace("/premium-month");
-    } else {
-      router.replace("/");
-    }
+        if (!data.valid || !data.tier) {
+          router.replace("/");
+          return;
+        }
+
+        // ⬇️ ITT A LÉNYEG
+        localStorage.setItem(
+          "premiumAccess",
+          JSON.stringify({
+            tier: data.tier,
+            expiresAt: Date.now() + data.duration,
+          })
+        );
+
+        if (data.tier === "day") router.replace("/day");
+        if (data.tier === "week") router.replace("/premium-week");
+        if (data.tier === "month") router.replace("/premium-month");
+      } catch (e) {
+        router.replace("/");
+      }
+    };
+
+    verify();
   }, [router]);
 
   return (
     <div
       style={{
         minHeight: "100vh",
+        background: "#020617",
+        color: "#94a3b8",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "#020617",
-        color: "#94a3b8",
         fontFamily: "Inter, system-ui, sans-serif",
       }}
     >
-      Redirecting to your premium dashboard…
+      Verifying subscription…
     </div>
   );
 }
