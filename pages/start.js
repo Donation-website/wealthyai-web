@@ -41,50 +41,40 @@ export default function UserDashboard() {
 
   if (balance < 0) {
     insights.push(
-      '🚨 Your expenses exceed your income. Immediate action is recommended to prevent long-term financial stress.'
+      'Your expenses exceed your income. Immediate action is recommended to prevent long-term financial stress.'
     );
     insights.push(
-      '💡 Premium AI provides crisis strategies, local assistance options and recovery roadmaps.'
+      'Premium AI provides crisis strategies, local assistance options and recovery roadmaps.'
     );
   }
 
   if (data.subscriptions > data.income * 0.08) {
     insights.push(
-      '📺 Subscriptions appear relatively high. Reviewing unused services may free up monthly cash.'
+      'Subscriptions appear relatively high. Reviewing unused services may free up monthly cash.'
     );
   }
 
   if (totalUtilities > data.income * 0.15) {
     insights.push(
-      '⚡ Utilities form a significant portion of expenses. Provider comparison could reduce costs.'
+      'Utilities form a significant portion of expenses. Provider comparison could reduce costs.'
     );
   }
 
   if (balance >= 0 && savingsRate >= 20) {
     insights.push(
-      '✅ You are saving at a healthy rate. This structure supports long-term stability.'
+      'You are saving at a healthy rate. This structure supports long-term stability.'
     );
   }
 
   if (balance >= 0 && savingsRate < 20) {
     insights.push(
-      '⚠️ Savings rate is below the recommended 20%. Minor adjustments could improve resilience.'
+      'Savings rate is below the recommended 20%. Minor adjustments could improve resilience.'
     );
   }
 
-  /**
-   * 🔐 OKOS START LOGIKA
-   * – ha már van aktív előfizetés → Premium
-   * – ha nincs / lejárt → Stripe
-   */
+  // ✅ JAVÍTOTT CHECKOUT – NINCS PRE-CHECK, MINDIG STRIPE
   const handleCheckout = async (priceId) => {
     localStorage.setItem('userFinancials', JSON.stringify(data));
-
-    const access = JSON.parse(localStorage.getItem('premiumAccess'));
-    if (access && access.expiresAt > Date.now()) {
-      window.location.href = '/premium';
-      return;
-    }
 
     try {
       const response = await fetch('/api/create-stripe-session', {
@@ -94,8 +84,12 @@ export default function UserDashboard() {
       });
 
       const session = await response.json();
-      if (session.url) window.location.href = session.url;
-      else alert('Payment initialization failed.');
+
+      if (session.url) {
+        window.location.href = session.url;
+      } else {
+        alert('Payment initialization failed.');
+      }
     } catch (err) {
       console.error(err);
       alert('Unexpected error during checkout.');
@@ -228,7 +222,7 @@ export default function UserDashboard() {
             </ul>
 
             <p style={{ opacity: 0.65, marginTop: '18px' }}>
-              🔒 Advanced country-specific strategies and provider analysis
+              Advanced country-specific strategies and provider analysis
               are available in AI-powered plans below.
             </p>
           </div>
