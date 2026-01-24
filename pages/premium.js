@@ -1,22 +1,44 @@
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 
 export default function PremiumDashboard() {
+  const router = useRouter();
+  const { session_id } = router.query;
+
   const [tier, setTier] = useState(null);
   const [expired, setExpired] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const access = JSON.parse(localStorage.getItem('premiumAccess'));
-    if (!access) {
+    if (!session_id) {
       setExpired(true);
+      setLoading(false);
       return;
     }
-    if (Date.now() > access.expiresAt) {
-      setExpired(true);
-      localStorage.removeItem('premiumAccess');
-    } else {
-      setTier(access.tier);
-    }
-  }, []);
+
+    fetch(`/api/verify-session?session_id=${session_id}`)
+      .then(res => res.json())
+      .then(data => {
+        if (!data.valid) {
+          setExpired(true);
+          return;
+        }
+
+        const access = {
+          tier: data.tier,
+          expiresAt: data.expiresAt,
+        };
+
+        localStorage.setItem('premiumAccess', JSON.stringify(access));
+        setTier(data.tier);
+      })
+      .catch(() => setExpired(true))
+      .finally(() => setLoading(false));
+  }, [session_id]);
+
+  if (loading) {
+    return <div style={center}>Verifying payment…</div>;
+  }
 
   if (expired) {
     return (
@@ -25,10 +47,6 @@ export default function PremiumDashboard() {
         <a href="/start">Renew access</a>
       </div>
     );
-  }
-
-  if (!tier) {
-    return <div style={center}>Loading premium…</div>;
   }
 
   return (
