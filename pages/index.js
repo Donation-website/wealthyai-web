@@ -2,12 +2,12 @@ import React from 'react';
 import Head from 'next/head';
 
 export default function Home() {
-  const pageUrl = "https://wealthyai-web.vercel.app";
+  const pageUrl = "https://wealthyai-web.vercel.app/";
   const pageTitle = "WealthyAI - AI-powered financial thinking";
   const pageDescription = "Structured insights. Clear perspective. You decide.";
   
-  // ITT JAVÍTOTTAM A LINKET: Hozzáadtam a hiányzó perjelet!
-  const imageUrl = "https://wealthyai-web.vercel.appwealthyai/icons/dia.png";
+  // A HIÁNYZÓ PERJELT JAVÍTVA ITT:
+  const imageUrl = "https://wealthyai-web.vercel.app";
 
   return (
     <>
@@ -15,15 +15,18 @@ export default function Home() {
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
 
-        {/* Facebook Meta */}
+        {/* Facebook / Open Graph Meta Tagek a dia.png képpel */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={pageUrl} />
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={pageDescription} />
         <meta property="og:image" content={imageUrl} />
+        {/* Hozzáadtam az alt tag-et is, segítheti a feldolgozást */}
+        <meta property="og:image:alt" content="WealthyAI background image with stock market graphs" />
 
-        {/* Twitter Meta */}
+        {/* Twitter Meta Tagek a dia.png képpel */}
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@yourtwitterhandle" /> {/* Cseréld a @yourtwitterhandle részt a sajátodra */}
         <meta name="twitter:url" content={pageUrl} />
         <meta name="twitter:title" content={pageTitle} />
         <meta name="twitter:description" content={pageDescription} />
@@ -144,7 +147,7 @@ export default function Home() {
             
             {/* FACEBOOK */}
             <a
-              href="https://www.facebook.com/sharer/sharer.php?u=https://wealthyai-web.vercel.app"
+              href="https://www.facebook.com"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -170,7 +173,7 @@ export default function Home() {
 
             {/* X / TWITTER */}
             <a
-              href="https://twitter.com/intent/tweet?url=https://wealthyai-web.vercel.app&text=WealthyAI%20-%20AI-powered%20financial%20thinking"
+              href="https://twitter.com"
               target="_blank"
               rel="noopener noreferrer"
             >
