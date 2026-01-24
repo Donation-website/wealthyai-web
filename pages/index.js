@@ -2,30 +2,27 @@ import React from 'react';
 import Head from 'next/head';
 
 export default function Home() {
-  // Ezeket a változókat használja a kód a megosztáshoz
   const pageUrl = "https://wealthyai-web.vercel.app";
   const pageTitle = "WealthyAI - AI-powered financial thinking";
   const pageDescription = "Structured insights. Clear perspective. You decide.";
-  // A kép pontos elérhetősége a Vercel oldalon keresztül
   const imageUrl = "https://wealthyai-web.vercel.appwealthyai/icons/dia.png";
+
+  // Itt készítjük elő a linkeket, hogy a HTML-ben már tiszták legyenek
+  const fbShareUrl = "https://www.facebook.com" + encodeURIComponent(pageUrl);
+  const xShareUrl = "https://twitter.com" + encodeURIComponent(pageUrl) + "&text=" + encodeURIComponent(pageTitle);
 
   return (
     <>
       <Head>
-        {/* Böngésző fül címe és alap adatok */}
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
 
-        {/* Facebook / Messenger / Viber megosztás adatai */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={pageUrl} />
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={pageDescription} />
         <meta property="og:image" content={imageUrl} />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
 
-        {/* X (Twitter) megosztás adatai */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:url" content={pageUrl} />
         <meta name="twitter:title" content={pageTitle} />
@@ -144,9 +141,10 @@ export default function Home() {
 
           {/* SOCIAL SHARE ICONS */}
           <div style={{ display: "flex", gap: "18px" }}>
+            
             {/* FACEBOOK SHARE */}
             <a
-              href={`https://www.facebook.com{encodeURIComponent(pageUrl)}`}
+              href={fbShareUrl}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -157,12 +155,11 @@ export default function Home() {
               />
             </a>
 
-            {/* INSTAGRAM (csak link a profilra) */}
+            {/* INSTAGRAM */}
             <a
               href="https://www.instagram.com"
               target="_blank"
               rel="noopener noreferrer"
-              title="Instagram does not support direct web sharing"
             >
               <img
                 src="/wealthyai/icons/insta.png"
@@ -173,7 +170,7 @@ export default function Home() {
 
             {/* X / TWITTER SHARE */}
             <a
-              href={`https://twitter.com{encodeURIComponent(pageUrl)}&text=${encodeURIComponent(pageTitle)}`}
+              href={xShareUrl}
               target="_blank"
               rel="noopener noreferrer"
             >
