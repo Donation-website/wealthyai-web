@@ -1,24 +1,19 @@
 import { useState } from "react";
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer
 } from "recharts";
 
 export default function PremiumWeek() {
   const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
   const [country, setCountry] = useState("auto");
-  const [loading, setLoading] = useState(false);
   const [aiText, setAiText] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const [daily, setDaily] = useState(
-    DAYS.map((d) => ({
-      day: d,
+    DAYS.map(day => ({
+      day,
       rent: 40,
       food: 35,
       transport: 15,
@@ -26,28 +21,20 @@ export default function PremiumWeek() {
     }))
   );
 
-  const updateValue = (i, key, value) => {
+  const update = (i, k, v) => {
     const copy = [...daily];
-    copy[i][key] = Number(value);
+    copy[i][k] = Number(v);
     setDaily(copy);
   };
 
-  const dailyTotals = daily.map((d) =>
-    d.rent + d.food + d.transport + d.entertainment
-  );
-
-  const weeklyTotal = dailyTotals.reduce((a, b) => a + b, 0);
-
-  const chartData = daily.map((d, i) => ({
-    day: d.day,
-    total: dailyTotals[i],
-    rent: d.rent,
-    food: d.food,
-    transport: d.transport,
-    entertainment: d.entertainment,
+  const chartData = daily.map(d => ({
+    ...d,
+    total: d.rent + d.food + d.transport + d.entertainment,
   }));
 
-  const runWeeklyAI = async () => {
+  const weeklyTotal = chartData.reduce((a, b) => a + b.total, 0);
+
+  const runAI = async () => {
     setLoading(true);
     try {
       const res = await fetch("/api/get-ai-insight", {
@@ -56,7 +43,6 @@ export default function PremiumWeek() {
         body: JSON.stringify({
           type: "weekly",
           country,
-          days: DAYS,
           data: chartData,
           weeklyTotal,
         }),
@@ -72,94 +58,88 @@ export default function PremiumWeek() {
   return (
     <div style={page}>
       {/* HEADER */}
-      <div style={header}>
-        <h1 style={title}>WEALTHYAI · WEEKLY ANALYSIS</h1>
-        <p style={subtitle}>
-          Thank you for choosing the <strong>Weekly Professional Access</strong>.
-          This module analyzes real daily behavior patterns with country-aware
-          logic.
-        </p>
-      </div>
+      <h1 style={title}>WEALTHYAI · WEEKLY ANALYSIS</h1>
+      <p style={subtitle}>
+        Behavioral spending patterns with country-aware intelligence.
+      </p>
 
-      {/* COUNTRY */}
-      <div style={card}>
-        <label style={label}>Country context</label>
-        <select
-          value={country}
-          onChange={(e) => setCountry(e.target.value)}
-          style={select}
-        >
-          <option value="auto">Auto detect</option>
-          <option value="US">United States</option>
-          <option value="DE">Germany</option>
-          <option value="UK">United Kingdom</option>
-          <option value="HU">Hungary</option>
-        </select>
-        <p style={hint}>
-          Country affects tax logic, savings recommendations and provider
-          benchmarks.
-        </p>
-      </div>
+      {/* MAIN SPLIT */}
+      <div style={split}>
 
-      {/* DAILY INPUT GRID */}
-      <div style={grid}>
-        {daily.map((d, i) => (
-          <div key={i} style={card}>
-            <h4>{d.day}</h4>
-            {["rent", "food", "transport", "entertainment"].map((k) => (
-              <input
-                key={k}
-                type="number"
-                value={d[k]}
-                onChange={(e) => updateValue(i, k, e.target.value)}
-                style={input}
-                placeholder={k}
-              />
+        {/* LEFT – INPUTS */}
+        <div style={leftCol}>
+          <div style={card}>
+            <label style={label}>Country context</label>
+            <select
+              value={country}
+              onChange={e => setCountry(e.target.value)}
+              style={select}
+            >
+              <option value="auto">Auto detect</option>
+              <option value="US">United States</option>
+              <option value="DE">Germany</option>
+              <option value="UK">United Kingdom</option>
+              <option value="HU">Hungary</option>
+            </select>
+          </div>
+
+          <div style={inputScroll}>
+            {daily.map((d, i) => (
+              <div key={i} style={card}>
+                <strong>{d.day}</strong>
+                {["rent", "food", "transport", "entertainment"].map(k => (
+                  <input
+                    key={k}
+                    type="number"
+                    value={d[k]}
+                    onChange={e => update(i, k, e.target.value)}
+                    style={input}
+                    placeholder={k}
+                  />
+                ))}
+              </div>
             ))}
           </div>
-        ))}
-      </div>
+        </div>
 
-      {/* SUMMARY */}
-      <div style={summary}>
-        <span>Total weekly spend</span>
-        <strong>${weeklyTotal}</strong>
-      </div>
+        {/* RIGHT – CHARTS */}
+        <div style={rightCol}>
+          <div style={chartCard}>
+            <ResponsiveContainer width="100%" height={260}>
+              <LineChart data={chartData}>
+                <CartesianGrid stroke="#0f172a" />
+                <XAxis dataKey="day" stroke="#94a3b8" />
+                <YAxis stroke="#94a3b8" />
+                <Tooltip />
+                <Line dataKey="total" stroke="#38bdf8" strokeWidth={3} />
+                <Line dataKey="rent" stroke="#f472b6" />
+                <Line dataKey="food" stroke="#34d399" />
+                <Line dataKey="transport" stroke="#facc15" />
+                <Line dataKey="entertainment" stroke="#a78bfa" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
 
-      {/* CHART */}
-      <div style={chartBox}>
-        <ResponsiveContainer width="100%" height={260}>
-          <LineChart data={chartData}>
-            <CartesianGrid stroke="#0f172a" />
-            <XAxis dataKey="day" stroke="#94a3b8" />
-            <YAxis stroke="#94a3b8" />
-            <Tooltip />
-            <Line type="monotone" dataKey="total" stroke="#38bdf8" strokeWidth={3} />
-            <Line type="monotone" dataKey="rent" stroke="#f472b6" />
-            <Line type="monotone" dataKey="food" stroke="#34d399" />
-            <Line type="monotone" dataKey="transport" stroke="#facc15" />
-            <Line type="monotone" dataKey="entertainment" stroke="#a78bfa" />
-          </LineChart>
-        </ResponsiveContainer>
+          <div style={summary}>
+            Weekly total: <strong>${weeklyTotal}</strong>
+          </div>
+        </div>
       </div>
 
       {/* AI */}
       <div style={aiBox}>
-        <button onClick={runWeeklyAI} style={aiButton}>
-          {loading ? "ANALYZING WEEKLY PATTERNS…" : "RUN WEEKLY AI OPTIMIZATION"}
+        <button onClick={runAI} style={aiButton}>
+          {loading ? "ANALYZING…" : "RUN WEEKLY AI OPTIMIZATION"}
         </button>
         <pre style={aiTextStyle}>
-          {aiText ||
-            "AI will analyze your daily volatility, spending behavior and country-specific patterns."}
+          {aiText || "AI will analyze volatility, habits and country patterns."}
         </pre>
       </div>
 
       {/* NAV */}
-      <div style={navActions}>
-        <a href="/" style={outlineBtn}>← Back to WealthyAI Home</a>
-        <a href="/how-to-use" style={outlineBtnAlt}>
-          Learn more about Monthly →
-        </a>
+      <div style={nav}>
+        <a href="/" style={btn}>← Back to Home</a>
+        <a href="/how-to-use" style={btnAlt}>Monthly →</a>
       </div>
     </div>
   );
@@ -175,28 +155,30 @@ const page = {
   fontFamily: "Inter, system-ui, sans-serif",
 };
 
-const header = { marginBottom: "30px" };
-const title = { fontSize: "2.4rem", marginBottom: "6px" };
-const subtitle = { color: "#94a3b8", maxWidth: "760px" };
+const title = { fontSize: "2.4rem" };
+const subtitle = { color: "#94a3b8", marginBottom: "30px" };
 
-const grid = {
+const split = {
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-  gap: "20px",
+  gridTemplateColumns: "1fr 1.2fr",
+  gap: "30px",
+};
+
+const leftCol = {};
+const rightCol = {};
+
+const inputScroll = {
+  maxHeight: "420px",
+  overflowY: "auto",
+  paddingRight: "8px",
 };
 
 const card = {
   background: "#020617",
   border: "1px solid #1e293b",
   borderRadius: "14px",
-  padding: "18px",
-};
-
-const label = {
-  fontSize: "0.75rem",
-  color: "#7dd3fc",
-  marginBottom: "6px",
-  display: "block",
+  padding: "16px",
+  marginBottom: "14px",
 };
 
 const input = {
@@ -205,10 +187,11 @@ const input = {
   border: "none",
   borderBottom: "1px solid #38bdf8",
   color: "#38bdf8",
-  fontSize: "1rem",
   padding: "6px 0",
-  marginBottom: "10px",
+  marginTop: "8px",
 };
+
+const label = { fontSize: "0.75rem", color: "#7dd3fc" };
 
 const select = {
   width: "100%",
@@ -219,32 +202,23 @@ const select = {
   borderRadius: "8px",
 };
 
-const hint = {
-  fontSize: "0.7rem",
-  color: "#64748b",
-  marginTop: "6px",
+const chartCard = {
+  background: "#020617",
+  border: "1px solid #1e293b",
+  borderRadius: "16px",
+  padding: "18px",
 };
 
 const summary = {
-  marginTop: "30px",
-  fontSize: "1.2rem",
-  display: "flex",
-  justifyContent: "space-between",
-};
-
-const chartBox = {
-  marginTop: "30px",
-  background: "#020617",
-  border: "1px solid #1e293b",
-  borderRadius: "14px",
-  padding: "18px",
+  marginTop: "16px",
+  fontSize: "1.1rem",
 };
 
 const aiBox = {
   marginTop: "40px",
   background: "#020617",
   border: "1px solid #1e293b",
-  borderRadius: "14px",
+  borderRadius: "16px",
   padding: "22px",
 };
 
@@ -256,35 +230,31 @@ const aiButton = {
   border: "none",
   borderRadius: "8px",
   fontWeight: "bold",
-  cursor: "pointer",
 };
 
 const aiTextStyle = {
   marginTop: "14px",
   whiteSpace: "pre-wrap",
   color: "#cbd5f5",
-  fontSize: "0.95rem",
-  lineHeight: "1.6",
 };
 
-const navActions = {
+const nav = {
   marginTop: "40px",
   display: "flex",
   justifyContent: "center",
-  gap: "18px",
+  gap: "16px",
 };
 
-const outlineBtn = {
+const btn = {
   border: "1px solid #38bdf8",
   color: "#38bdf8",
   padding: "10px 18px",
   borderRadius: "10px",
   textDecoration: "none",
-  fontSize: "0.9rem",
 };
 
-const outlineBtnAlt = {
-  ...outlineBtn,
+const btnAlt = {
+  ...btn,
   borderColor: "#a78bfa",
   color: "#a78bfa",
 };
