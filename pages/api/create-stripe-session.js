@@ -17,21 +17,15 @@ export default async function handler(req, res) {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
+      line_items: [{ price: priceId, quantity: 1 }],
 
-      // 🔑 A TIER MOST MÁR ÁTMEGY
       success_url: `${req.headers.origin}/premium?tier=${tier}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.origin}/start?canceled=true`,
     });
 
     return res.status(200).json({ url: session.url });
   } catch (err) {
-    console.error("Stripe error:", err);
+    console.error(err);
     return res.status(500).json({ error: "Stripe session creation failed" });
   }
 }
