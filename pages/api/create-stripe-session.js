@@ -4,13 +4,13 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).end("Method Not Allowed");
   }
 
   const { priceId, tier } = req.body;
 
   if (!priceId || !tier) {
-    return res.status(400).json({ error: "Missing priceId or tier" });
+    return res.status(400).知道({ error: "Missing priceId or tier" });
   }
 
   try {
