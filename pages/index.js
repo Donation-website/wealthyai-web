@@ -6,7 +6,6 @@ export default function Home() {
 
   return (
     <>
-      {/* ===== SOCIAL & SEO META ===== */}
       <Head>
         <title>WealthyAI – AI-powered financial clarity</title>
 
@@ -15,13 +14,13 @@ export default function Home() {
           content="AI-powered financial planning with structured insights and clear perspective."
         />
 
-        {/* Open Graph (Facebook, LinkedIn) */}
+        {/* Open Graph */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={SITE_URL} />
         <meta property="og:title" content="WealthyAI – AI-powered financial clarity" />
         <meta
           property="og:description"
-          content="Structured financial insights, smart analysis and AI-powered optimization."
+          content="Structured financial insights and AI-powered optimization."
         />
         <meta property="og:image" content={`${SITE_URL}/wealthyai/wealthyai.png`} />
         <meta property="og:image:width" content="1200" />
@@ -37,11 +36,11 @@ export default function Home() {
         <meta name="twitter:image" content={`${SITE_URL}/wealthyai/wealthyai.png`} />
       </Head>
 
-      {/* ===== EXISTING PAGE – UNCHANGED ===== */}
       <main
         style={{
           height: "100vh",
-          width: "100vw",
+          width: "100%",              // 🔥 EZ A KULCS
+          boxSizing: "border-box",    // 🔥 BIZTOSÍTÁS
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -54,7 +53,7 @@ export default function Home() {
           color: "white",
           fontFamily: "Arial, sans-serif",
           position: "relative",
-          overflow: "hidden",
+          overflow: "hidden",         // 🔒 NINCS CSÚSZKA
           margin: 0,
           padding: 0,
         }}
@@ -90,7 +89,7 @@ export default function Home() {
           </p>
         </div>
 
-        {/* START BUTTON */}
+        {/* START */}
         <a
           href="/start"
           style={{
@@ -116,15 +115,16 @@ export default function Home() {
         <div
           style={{
             position: "absolute",
-            bottom: "0",
-            left: "0",
-            width: "100%",
-            padding: "18px 30px",
+            bottom: 0,
+            left: 0,
+            width: "100%",             // 🔥 NEM 100vw
+            padding: "18px 24px",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
             backgroundColor: "rgba(0,0,0,0.35)",
             backdropFilter: "blur(6px)",
+            boxSizing: "border-box",
             zIndex: 4,
           }}
         >
@@ -132,9 +132,7 @@ export default function Home() {
             © 2026 WealthyAI — All rights reserved.
           </div>
 
-          {/* SOCIAL SHARE */}
-          <div style={{ display: "flex", gap: "18px" }}>
-            {/* Facebook */}
+          <div style={{ display: "flex", gap: "18px", alignItems: "center" }}>
             <a
               href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`}
               target="_blank"
@@ -143,7 +141,6 @@ export default function Home() {
               <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
             </a>
 
-            {/* X / Twitter */}
             <a
               href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(
                 SITE_URL
@@ -154,7 +151,6 @@ export default function Home() {
               <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
             </a>
 
-            {/* LinkedIn (használd az insta ikont, ahogy eddig) */}
             <a
               href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
                 SITE_URL
