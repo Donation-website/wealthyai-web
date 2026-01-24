@@ -1,80 +1,66 @@
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
+import React from 'react';
 
-export default function PremiumDashboard() {
-  const router = useRouter();
-  const { session_id } = router.query;
+export default function ProMetricsCards({ income, fixed, variable }) {
+  const expenses = fixed + variable;
+  const surplus = income - expenses;
+  const savingsRate = income > 0 ? (surplus / income) * 100 : 0;
 
-  const [loading, setLoading] = useState(true);
-  const [tier, setTier] = useState(null);
-  const [expired, setExpired] = useState(false);
+  const projected5Y = surplus * 60 * 1.45;
 
-  useEffect(() => {
-    if (!session_id) return;
+  const risk =
+    savingsRate < 0 ? 'Critical'
+    : savingsRate < 10 ? 'High'
+    : savingsRate < 20 ? 'Medium'
+    : 'Healthy';
 
-    const verify = async () => {
-      try {
-        const res = await fetch(`/api/verify-session?session_id=${session_id}`);
-        const data = await res.json();
+  const riskColor =
+    risk === 'Critical' ? '#ef4444'
+    : risk === 'High' ? '#f97316'
+    : risk === 'Medium' ? '#facc15'
+    : '#10b981';
 
-        if (!data.valid) {
-          setExpired(true);
-          setLoading(false);
-          return;
-        }
-
-        // 🔑 EZ HIÁNYZOTT EDDIG
-        const access = {
-          tier: data.tier,
-          expiresAt: data.expiresAt,
-        };
-
-        localStorage.setItem('premiumAccess', JSON.stringify(access));
-        setTier(data.tier);
-        setLoading(false);
-
-      } catch (err) {
-        console.error(err);
-        setExpired(true);
-        setLoading(false);
-      }
-    };
-
-    verify();
-  }, [session_id]);
-
-  if (loading) {
-    return <div style={center}>Activating premium access…</div>;
-  }
-
-  if (expired) {
-    return (
-      <div style={center}>
-        <h2>Access expired</h2>
-        <a href="/start">Renew access</a>
-      </div>
-    );
-  }
+  const cards = [
+    { label: 'Monthly Surplus', value: `$${surplus.toLocaleString()}` },
+    { label: 'Savings Rate', value: `${savingsRate.toFixed(1)}%` },
+    { label: 'Risk Level', value: risk, color: riskColor },
+    { label: '5Y Projection', value: `$${projected5Y.toLocaleString()}` },
+  ];
 
   return (
-    <div style={{ padding: 40, color: 'white', background: '#020617', minHeight: '100vh' }}>
-      <h1>WealthyAI Premium</h1>
-
-      {tier === 'day' && <p>✅ 1 Day Pro Strategy Access</p>}
-      {tier === 'week' && <p>🚀 7 Day Behavioral + Trend Analysis</p>}
-      {tier === 'month' && <p>👑 Full AI Wealth Engine + Tax Simulation</p>}
-
-      <p style={{ marginTop: 20, opacity: 0.7 }}>
-        Tier: <strong>{tier.toUpperCase()}</strong>
-      </p>
+    <div style={grid}>
+      {cards.map((c, i) => (
+        <div key={i} style={card}>
+          <p style={label}>{c.label}</p>
+          <h2 style={{ ...value, color: c.color || '#fff' }}>{c.value}</h2>
+        </div>
+      ))}
     </div>
   );
 }
 
-const center = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  minHeight: '100vh',
-  flexDirection: 'column',
+/* styles */
+const grid = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+  gap: '20px',
+  marginBottom: '40px',
+};
+
+const card = {
+  background: '#0f172a',
+  border: '1px solid #1e293b',
+  borderRadius: '14px',
+  padding: '20px',
+};
+
+const label = {
+  color: '#64748b',
+  fontSize: '12px',
+  fontWeight: 'bold',
+  marginBottom: '6px',
+};
+
+const value = {
+  fontSize: '1.9rem',
+  margin: 0,
 };
