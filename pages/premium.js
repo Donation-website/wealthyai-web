@@ -48,7 +48,7 @@ export default function PremiumDashboard() {
       <div style={header}>
         <h1 style={title}>WEALTHYAI · PRO INTELLIGENCE</h1>
         <p style={subtitle}>
-          🎉 Thank you for choosing the <strong>1-Day Professional Access</strong>.  
+          Thank you for choosing the <strong>1-Day Professional Access</strong>.
           You now have access to advanced analytics and AI-driven insights.
         </p>
       </div>
@@ -107,7 +107,7 @@ export default function PremiumDashboard() {
 
       {/* UPSELL */}
       <div style={upsell}>
-        🔒 Weekly and Monthly plans unlock country-specific tax optimization,
+        Weekly and Monthly plans unlock country-specific tax optimization,
         stress testing, and multi-account projections.
       </div>
     </div>
