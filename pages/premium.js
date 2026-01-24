@@ -105,6 +105,14 @@ export default function PremiumDashboard() {
         </div>
       </div>
 
+      {/* NAV ACTIONS */}
+      <div style={navActions}>
+        <a href="/" style={outlineBtn}>← Back to WealthyAI Home</a>
+        <a href="/how-to-use" style={outlineBtnAlt}>
+          Learn more about Weekly & Monthly →
+        </a>
+      </div>
+
       {/* UPSELL */}
       <div style={upsell}>
         Weekly and Monthly plans unlock country-specific tax optimization,
@@ -246,8 +254,30 @@ const chartTitle = {
   marginBottom: "6px",
 };
 
+const navActions = {
+  marginTop: "30px",
+  display: "flex",
+  justifyContent: "center",
+  gap: "18px",
+};
+
+const outlineBtn = {
+  border: "1px solid #38bdf8",
+  color: "#38bdf8",
+  padding: "10px 18px",
+  borderRadius: "10px",
+  textDecoration: "none",
+  fontSize: "0.9rem",
+};
+
+const outlineBtnAlt = {
+  ...outlineBtn,
+  borderColor: "#a78bfa",
+  color: "#a78bfa",
+};
+
 const upsell = {
-  marginTop: "40px",
+  marginTop: "20px",
   textAlign: "center",
   color: "#94a3b8",
 };
