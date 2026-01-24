@@ -1,4 +1,3 @@
-// pages/start.js
 import React, { useState } from "react";
 
 export default function UserDashboard() {
@@ -15,6 +14,7 @@ export default function UserDashboard() {
 
   const totalExpenses = data.fixed + data.variable;
   const balance = data.income - totalExpenses;
+
   const usagePercent =
     data.income > 0 ? Math.min((totalExpenses / data.income) * 100, 100) : 0;
 
@@ -37,37 +37,72 @@ export default function UserDashboard() {
     insights.push(
       "Your expenses exceed your income. Immediate action is recommended."
     );
+    insights.push(
+      "Premium AI provides crisis strategies and recovery planning."
+    );
   }
 
-  if (data.subscriptions > data.income * 0.08) {
-    insights.push("Subscriptions appear relatively high.");
+  if (balance >= 0 && savingsRate >= 20) {
+    insights.push(
+      "You are saving at a healthy rate. This supports long-term stability."
+    );
   }
 
-  if (savingsRate >= 20) {
-    insights.push("You are saving at a healthy rate.");
-  } else {
-    insights.push("Savings rate is below the recommended 20%.");
+  if (balance >= 0 && savingsRate < 20) {
+    insights.push(
+      "Savings rate is below the recommended 20%. Minor adjustments may help."
+    );
   }
 
   const handleCheckout = async (priceId, tier) => {
     localStorage.setItem("userFinancials", JSON.stringify(data));
 
     try {
-      const res = await fetch("/api/create-stripe-session", {
+      const response = await fetch("/api/create-stripe-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ priceId, tier }),
       });
 
-      const session = await res.json();
+      const session = await response.json();
       if (session.url) {
         window.location.href = session.url;
       } else {
         alert("Payment initialization failed.");
       }
-    } catch (e) {
+    } catch (err) {
+      console.error(err);
       alert("Unexpected error during checkout.");
     }
+  };
+
+  /* ===== STYLES ===== */
+
+  const cardStyle = {
+    background: "rgba(15,23,42,0.6)",
+    backdropFilter: "blur(14px)",
+    borderRadius: "22px",
+    padding: "26px",
+    border: "1px solid rgba(255,255,255,0.08)",
+    color: "white",
+  };
+
+  const inputStyle = {
+    background: "rgba(255,255,255,0.08)",
+    border: "none",
+    borderRadius: "8px",
+    padding: "10px",
+    color: "white",
+    width: "100%",
+    marginTop: "6px",
+  };
+
+  const pricingCardStyle = {
+    ...cardStyle,
+    background: "rgba(10,18,35,0.85)",
+    textAlign: "center",
+    cursor: "pointer",
+    transition: "box-shadow 0.2s",
   };
 
   return (
@@ -75,27 +110,30 @@ export default function UserDashboard() {
       style={{
         minHeight: "100vh",
         padding: "40px",
+        fontFamily: "Inter, system-ui, sans-serif",
         color: "white",
         backgroundImage:
-          "linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('/wealthyai/icons/hat.png')",
+          "linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('/wealthyai/icons/hat.png')",
         backgroundSize: "cover",
         backgroundPosition: "center",
-        fontFamily: "Arial, sans-serif",
       }}
     >
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        <h1>Your Financial Overview (Basic)</h1>
+        <h1 style={{ marginBottom: "30px" }}>
+          Your Financial Overview (Basic)
+        </h1>
 
         <div
           style={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
             gap: "20px",
-            marginTop: "30px",
           }}
         >
-          <div style={card}>
+          {/* INPUTS */}
+          <div style={cardStyle}>
             <h3>Income & Expenses</h3>
+
             {[
               ["Monthly Income ($)", "income"],
               ["Fixed Expenses", "fixed"],
@@ -106,7 +144,7 @@ export default function UserDashboard() {
                 <input
                   type="number"
                   value={data[key]}
-                  style={input}
+                  style={inputStyle}
                   onChange={(e) =>
                     setData({ ...data, [key]: Number(e.target.value) })
                   }
@@ -115,7 +153,8 @@ export default function UserDashboard() {
             ))}
           </div>
 
-          <div style={card}>
+          {/* INSIGHTS */}
+          <div style={cardStyle}>
             <h3>Insights (Basic)</h3>
             <p>
               Risk Level: <strong>{riskLevel}</strong>
@@ -123,20 +162,25 @@ export default function UserDashboard() {
             <p>
               Savings Score: <strong>{savingsScore}/100</strong>
             </p>
+
             <ul>
               {insights.map((i, idx) => (
-                <li key={idx}>{i}</li>
+                <li key={idx} style={{ marginBottom: "12px" }}>
+                  {i}
+                </li>
               ))}
             </ul>
-            <p style={{ opacity: 0.6, marginTop: "12px" }}>
-              Advanced AI strategies available in Premium plans.
+
+            <p style={{ opacity: 0.65, marginTop: "18px" }}>
+              Advanced AI strategies unlock in Premium plans below.
             </p>
           </div>
         </div>
 
+        {/* PRICING */}
         <div style={{ marginTop: "60px" }}>
           <h2 style={{ textAlign: "center", marginBottom: "30px" }}>
-            Upgrade to Premium
+            Unlock Advanced AI Optimization
           </h2>
 
           <div
@@ -148,33 +192,33 @@ export default function UserDashboard() {
             }}
           >
             <div
-              style={pricing}
+              style={pricingCardStyle}
               onClick={() =>
-                handleCheckout("price_1SscYJDyLtejYlZiyDvhdaIx", "day")
+                handleCheckout("price_DAY_ID", "day")
               }
             >
               <h3>1 Day Pass</h3>
-              <small>AI optimization & insights</small>
+              <small>Professional AI insights</small>
             </div>
 
             <div
-              style={pricing}
+              style={pricingCardStyle}
               onClick={() =>
-                handleCheckout("price_1SscaYDyLtejYlZiDjSeF5Wm", "week")
+                handleCheckout("price_WEEK_ID", "premium-week")
               }
             >
               <h3>1 Week Pass</h3>
-              <small>Behavior & trend analysis</small>
+              <small>Behavioral & country-aware analysis</small>
             </div>
 
             <div
-              style={pricing}
+              style={pricingCardStyle}
               onClick={() =>
-                handleCheckout("price_1SscbeDyLtejYlZixJcT3B4o", "month")
+                handleCheckout("price_MONTH_ID", "premium-month")
               }
             >
               <h3>1 Month Pass</h3>
-              <small>Full AI financial dashboard</small>
+              <small>Full AI wealth engine</small>
             </div>
           </div>
         </div>
@@ -182,31 +226,3 @@ export default function UserDashboard() {
     </main>
   );
 }
-
-const card = {
-  background: "rgba(15,23,42,0.6)",
-  borderRadius: "18px",
-  padding: "24px",
-  border: "1px solid rgba(255,255,255,0.08)",
-};
-
-const input = {
-  width: "100%",
-  marginTop: "6px",
-  marginBottom: "12px",
-  padding: "10px",
-  borderRadius: "8px",
-  border: "none",
-  background: "rgba(255,255,255,0.08)",
-  color: "white",
-};
-
-const pricing = {
-  background: "rgba(10,18,35,0.9)",
-  border: "1px solid rgba(255,255,255,0.15)",
-  borderRadius: "18px",
-  padding: "28px",
-  textAlign: "center",
-  cursor: "pointer",
-  minWidth: "220px",
-};
