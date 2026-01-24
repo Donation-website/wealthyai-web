@@ -1,11 +1,22 @@
 import { useEffect, useState } from "react";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
-  BarChart, Bar, ResponsiveContainer
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
 } from "recharts";
 
-export default function PremiumDashboard() {
-  const [data, setData] = useState({ income: 5000, fixed: 2000, variable: 1500 });
+export default function DayPremium() {
+  const [data, setData] = useState({
+    income: 5000,
+    fixed: 2000,
+    variable: 1500,
+  });
   const [aiText, setAiText] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -15,7 +26,8 @@ export default function PremiumDashboard() {
   }, []);
 
   const surplus = data.income - (data.fixed + data.variable);
-  const savingsRate = data.income > 0 ? (surplus / data.income) * 100 : 0;
+  const savingsRate =
+    data.income > 0 ? (surplus / data.income) * 100 : 0;
   const fiveYearProjection = surplus * 60 * 1.45;
 
   const chartData = [
@@ -43,7 +55,6 @@ export default function PremiumDashboard() {
 
   return (
     <div style={page}>
-
       {/* HEADER */}
       <div style={header}>
         <h1 style={title}>WEALTHYAI · PRO INTELLIGENCE</h1>
@@ -55,8 +66,7 @@ export default function PremiumDashboard() {
 
       {/* MAIN GRID */}
       <div style={layout}>
-
-        {/* LEFT – KPIs */}
+        {/* LEFT */}
         <div>
           <Metric label="MONTHLY SURPLUS" value={`$${surplus.toLocaleString()}`} />
           <Metric label="SAVINGS RATE" value={`${savingsRate.toFixed(1)}%`} />
@@ -75,10 +85,8 @@ export default function PremiumDashboard() {
           </div>
         </div>
 
-        {/* RIGHT – INPUTS + CHARTS */}
+        {/* RIGHT */}
         <div>
-
-          {/* INPUTS */}
           <div style={inputPanel}>
             {["income", "fixed", "variable"].map((k) => (
               <div key={k} style={inputRow}>
@@ -95,7 +103,6 @@ export default function PremiumDashboard() {
             ))}
           </div>
 
-          {/* 4 MINI CHARTS */}
           <div style={chartGrid}>
             <MiniChart title="Cash Flow Projection" data={chartData} />
             <MiniBar title="Expense Distribution" value={data.fixed + data.variable} />
@@ -105,7 +112,7 @@ export default function PremiumDashboard() {
         </div>
       </div>
 
-      {/* NAV ACTIONS */}
+      {/* NAV */}
       <div style={navActions}>
         <a href="/" style={outlineBtn}>← Back to WealthyAI Home</a>
         <a href="/how-to-use" style={outlineBtnAlt}>
@@ -116,7 +123,7 @@ export default function PremiumDashboard() {
       {/* UPSELL */}
       <div style={upsell}>
         Weekly and Monthly plans unlock country-specific tax optimization,
-        stress testing, and multi-account projections.
+        stress testing and advanced projections.
       </div>
     </div>
   );
@@ -143,7 +150,12 @@ function MiniChart({ title, data }) {
           <XAxis dataKey="name" stroke="#64748b" />
           <YAxis stroke="#64748b" />
           <Tooltip />
-          <Line type="monotone" dataKey="value" stroke="#38bdf8" strokeWidth={2} />
+          <Line
+            type="monotone"
+            dataKey="value"
+            stroke="#38bdf8"
+            strokeWidth={2}
+          />
         </LineChart>
       </ResponsiveContainer>
     </div>
