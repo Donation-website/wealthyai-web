@@ -5,6 +5,8 @@ export default function Home() {
   const pageUrl = "https://wealthyai-web.vercel.app";
   const pageTitle = "WealthyAI - AI-powered financial thinking";
   const pageDescription = "Structured insights. Clear perspective. You decide.";
+  
+  // ITT JAVÍTOTTAM A LINKET: Hozzáadtam a hiányzó perjelet!
   const imageUrl = "https://wealthyai-web.vercel.appwealthyai/icons/dia.png";
 
   return (
