@@ -72,8 +72,19 @@ export default function UserDashboard() {
     );
   }
 
+  /**
+   * 🔐 OKOS START LOGIKA
+   * – ha már van aktív előfizetés → Premium
+   * – ha nincs / lejárt → Stripe
+   */
   const handleCheckout = async (priceId) => {
     localStorage.setItem('userFinancials', JSON.stringify(data));
+
+    const access = JSON.parse(localStorage.getItem('premiumAccess'));
+    if (access && access.expiresAt > Date.now()) {
+      window.location.href = '/premium';
+      return;
+    }
 
     try {
       const response = await fetch('/api/create-stripe-session', {
