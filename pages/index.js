@@ -7,22 +7,20 @@ export default function Home() {
   const pageDescription = "Structured insights. Clear perspective. You decide.";
   const imageUrl = "https://wealthyai-web.vercel.appwealthyai/icons/dia.png";
 
-  // Itt készítjük elő a linkeket, hogy a HTML-ben már tiszták legyenek
-  const fbShareUrl = "https://www.facebook.com" + encodeURIComponent(pageUrl);
-  const xShareUrl = "https://twitter.com" + encodeURIComponent(pageUrl) + "&text=" + encodeURIComponent(pageTitle);
-
   return (
     <>
       <Head>
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
 
+        {/* Facebook Meta */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={pageUrl} />
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={pageDescription} />
         <meta property="og:image" content={imageUrl} />
 
+        {/* Twitter Meta */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:url" content={pageUrl} />
         <meta name="twitter:title" content={pageTitle} />
@@ -142,9 +140,9 @@ export default function Home() {
           {/* SOCIAL SHARE ICONS */}
           <div style={{ display: "flex", gap: "18px" }}>
             
-            {/* FACEBOOK SHARE */}
+            {/* FACEBOOK */}
             <a
-              href={fbShareUrl}
+              href="https://www.facebook.com/sharer/sharer.php?u=https://wealthyai-web.vercel.app"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -168,9 +166,9 @@ export default function Home() {
               />
             </a>
 
-            {/* X / TWITTER SHARE */}
+            {/* X / TWITTER */}
             <a
-              href={xShareUrl}
+              href="https://twitter.com/intent/tweet?url=https://wealthyai-web.vercel.app&text=WealthyAI%20-%20AI-powered%20financial%20thinking"
               target="_blank"
               rel="noopener noreferrer"
             >
