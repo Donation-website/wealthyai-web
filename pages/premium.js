@@ -1,17 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  BarChart, Bar, ResponsiveContainer
 } from "recharts";
 
 export default function PremiumDashboard() {
   const [data, setData] = useState({ income: 5000, fixed: 2000, variable: 1500 });
-  const [aiResponse, setAiResponse] = useState("");
+  const [aiText, setAiText] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -20,14 +15,14 @@ export default function PremiumDashboard() {
   }, []);
 
   const surplus = data.income - (data.fixed + data.variable);
-  const savingsRate =
-    data.income > 0 ? (surplus / data.income) * 100 : 0;
+  const savingsRate = data.income > 0 ? (surplus / data.income) * 100 : 0;
+  const fiveYearProjection = surplus * 60 * 1.45;
 
   const chartData = [
-    { name: "Now", total: 0 },
-    { name: "Y1", total: surplus * 12 * 1.08 },
-    { name: "Y3", total: surplus * 36 * 1.25 },
-    { name: "Y5", total: surplus * 60 * 1.45 },
+    { name: "Now", value: surplus },
+    { name: "Y1", value: surplus * 12 * 1.08 },
+    { name: "Y3", value: surplus * 36 * 1.25 },
+    { name: "Y5", value: surplus * 60 * 1.45 },
   ];
 
   const askAI = async () => {
@@ -38,31 +33,56 @@ export default function PremiumDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      const json = await res.json();
-      setAiResponse(json.insight);
+      const d = await res.json();
+      setAiText(d.insight);
     } catch {
-      setAiResponse("AI analysis temporarily unavailable.");
+      setAiText("AI system temporarily unavailable.");
     }
     setLoading(false);
   };
 
   return (
-    <main style={page}>
-      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        {/* WELCOME */}
-        <h1> Welcome to WealthyAI – 1 Day Pro Access</h1>
-        <p style={{ opacity: 0.75, maxWidth: 700 }}>
-          Thank you for choosing WealthyAI. You now have access to advanced
-          financial analytics, AI-driven insights and professional projections.
-        </p>
+    <div style={page}>
 
-        {/* INPUTS + METRICS */}
-        <div style={grid}>
-          <div style={card}>
-            <h3>Inputs</h3>
+      {/* HEADER */}
+      <div style={header}>
+        <h1 style={title}>WEALTHYAI · PRO INTELLIGENCE</h1>
+        <p style={subtitle}>
+          Thank you for choosing the <strong>1-Day Professional Access</strong>.
+          You now have access to advanced analytics and AI-driven insights.
+        </p>
+      </div>
+
+      {/* MAIN GRID */}
+      <div style={layout}>
+
+        {/* LEFT – KPIs */}
+        <div>
+          <Metric label="MONTHLY SURPLUS" value={`$${surplus.toLocaleString()}`} />
+          <Metric label="SAVINGS RATE" value={`${savingsRate.toFixed(1)}%`} />
+          <Metric
+            label="5Y PROJECTION"
+            value={`$${Math.round(fiveYearProjection).toLocaleString()}`}
+          />
+
+          <div style={aiBox}>
+            <button onClick={askAI} style={aiButton}>
+              {loading ? "ANALYZING…" : "GENERATE AI STRATEGY"}
+            </button>
+            <pre style={aiTextStyle}>
+              {aiText || "Run AI analysis to generate your professional strategy."}
+            </pre>
+          </div>
+        </div>
+
+        {/* RIGHT – INPUTS + CHARTS */}
+        <div>
+
+          {/* INPUTS */}
+          <div style={inputPanel}>
             {["income", "fixed", "variable"].map((k) => (
-              <div key={k} style={row}>
-                <span>{k}</span>
+              <div key={k} style={inputRow}>
+                <span>{k.toUpperCase()}</span>
                 <input
                   type="number"
                   value={data[k]}
@@ -75,118 +95,159 @@ export default function PremiumDashboard() {
             ))}
           </div>
 
-          <div style={card}>
-            <h3>Key Metrics</h3>
-            <p>Monthly Surplus: <strong>${surplus}</strong></p>
-            <p>Savings Rate: <strong>{savingsRate.toFixed(1)}%</strong></p>
-            <p>Risk Level: <strong>{savingsRate < 10 ? "High" : "Low"}</strong></p>
+          {/* 4 MINI CHARTS */}
+          <div style={chartGrid}>
+            <MiniChart title="Cash Flow Projection" data={chartData} />
+            <MiniBar title="Expense Distribution" value={data.fixed + data.variable} />
+            <MiniChart title="Savings Growth" data={chartData} />
+            <MiniBar title="Risk Exposure Index" value={savingsRate} />
           </div>
-        </div>
-
-        {/* CHART */}
-        <div style={card}>
-          <h3>Wealth Acceleration Projection</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-              <XAxis dataKey="name" stroke="#64748b" />
-              <YAxis stroke="#64748b" />
-              <Tooltip />
-              <Area
-                type="monotone"
-                dataKey="total"
-                stroke="#22d3ee"
-                fill="#22d3ee"
-                fillOpacity={0.15}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* AI */}
-        <div style={card}>
-          <h3>AI Strategy Engine</h3>
-          <button onClick={askAI} style={aiBtn} disabled={loading}>
-            {loading ? "Analyzing…" : "Generate AI Strategy"}
-          </button>
-          <div style={aiBox}>
-            {aiResponse || "Run AI analysis to generate your professional strategy."}
-          </div>
-        </div>
-
-        {/* ACTIONS */}
-        <div style={{ marginTop: 30, display: "flex", gap: 16 }}>
-          <a href="/" style={outlineBtn}>← Back to WealthyAI Home</a>
-          <a href="/how-to-use" style={outlineBtnAlt}>
-            Learn more about Weekly & Monthly →
-          </a>
         </div>
       </div>
-    </main>
+
+      {/* UPSELL */}
+      <div style={upsell}>
+        Weekly and Monthly plans unlock country-specific tax optimization,
+        stress testing, and multi-account projections.
+      </div>
+    </div>
   );
 }
 
-/* STYLES */
+/* ===== COMPONENTS ===== */
+
+function Metric({ label, value }) {
+  return (
+    <div style={metric}>
+      <div style={metricLabel}>{label}</div>
+      <div style={metricValue}>{value}</div>
+    </div>
+  );
+}
+
+function MiniChart({ title, data }) {
+  return (
+    <div style={chartBox}>
+      <div style={chartTitle}>{title}</div>
+      <ResponsiveContainer width="100%" height={120}>
+        <LineChart data={data}>
+          <CartesianGrid stroke="#0f172a" />
+          <XAxis dataKey="name" stroke="#64748b" />
+          <YAxis stroke="#64748b" />
+          <Tooltip />
+          <Line type="monotone" dataKey="value" stroke="#38bdf8" strokeWidth={2} />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+function MiniBar({ title, value }) {
+  const data = [{ name: "Value", v: value }];
+  return (
+    <div style={chartBox}>
+      <div style={chartTitle}>{title}</div>
+      <ResponsiveContainer width="100%" height={120}>
+        <BarChart data={data}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Bar dataKey="v" fill="#22d3ee" />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+/* ===== STYLES ===== */
+
 const page = {
   minHeight: "100vh",
-  background: "#020617",
-  color: "#f8fafc",
+  background: "radial-gradient(circle at top, #020617, #000)",
+  color: "#e5e7eb",
   padding: "40px",
-  fontFamily: "Arial, sans-serif",
+  fontFamily: "Inter, system-ui, sans-serif",
 };
 
-const grid = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 };
+const header = { marginBottom: "30px" };
+const title = { fontSize: "2.6rem", margin: 0 };
+const subtitle = { color: "#94a3b8", marginTop: "10px", maxWidth: "700px" };
 
-const card = {
-  background: "#0f172a",
-  border: "1px solid #1e293b",
-  borderRadius: 14,
-  padding: 24,
-  marginTop: 20,
+const layout = {
+  display: "grid",
+  gridTemplateColumns: "1fr 1.3fr",
+  gap: "40px",
 };
 
-const row = { display: "flex", justifyContent: "space-between", marginBottom: 12 };
-
-const input = {
-  background: "#020617",
-  border: "1px solid #334155",
-  color: "#22d3ee",
-  borderRadius: 6,
-  padding: 6,
-  width: 120,
-};
-
-const aiBtn = {
-  marginTop: 10,
-  background: "#22d3ee",
-  color: "#020617",
-  border: "none",
-  padding: 12,
-  borderRadius: 8,
-  cursor: "pointer",
-  fontWeight: "bold",
-};
+const metric = { marginBottom: "25px" };
+const metricLabel = { color: "#7dd3fc", fontSize: "0.8rem" };
+const metricValue = { fontSize: "2.2rem", fontWeight: "bold" };
 
 const aiBox = {
-  marginTop: 15,
+  marginTop: "30px",
   background: "#020617",
   border: "1px solid #1e293b",
-  padding: 14,
-  borderRadius: 8,
-  minHeight: 120,
-  whiteSpace: "pre-line",
+  borderRadius: "12px",
+  padding: "20px",
 };
 
-const outlineBtn = {
-  border: "1px solid #38bdf8",
+const aiButton = {
+  width: "100%",
+  padding: "12px",
+  background: "#38bdf8",
+  border: "none",
+  borderRadius: "6px",
+  fontWeight: "bold",
+  cursor: "pointer",
+};
+
+const aiTextStyle = {
+  marginTop: "12px",
+  whiteSpace: "pre-wrap",
+  color: "#cbd5f5",
+};
+
+const inputPanel = {
+  marginBottom: "20px",
+  border: "1px solid #1e293b",
+  borderRadius: "12px",
+  padding: "15px",
+};
+
+const inputRow = {
+  display: "flex",
+  justifyContent: "space-between",
+  marginBottom: "10px",
+};
+
+const input = {
+  background: "transparent",
+  border: "none",
   color: "#38bdf8",
-  padding: "10px 16px",
-  borderRadius: 8,
-  textDecoration: "none",
+  textAlign: "right",
+  width: "120px",
 };
 
-const outlineBtnAlt = {
-  ...outlineBtn,
-  borderColor: "#a78bfa",
-  color: "#a78bfa",
+const chartGrid = {
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  gap: "16px",
+};
+
+const chartBox = {
+  background: "#020617",
+  border: "1px solid #1e293b",
+  borderRadius: "12px",
+  padding: "10px",
+};
+
+const chartTitle = {
+  fontSize: "0.75rem",
+  color: "#7dd3fc",
+  marginBottom: "6px",
+};
+
+const upsell = {
+  marginTop: "40px",
+  textAlign: "center",
+  color: "#94a3b8",
 };
