@@ -5,25 +5,25 @@ export default function PremiumDashboard() {
   const router = useRouter();
   const { session_id } = router.query;
 
+  const [loading, setLoading] = useState(true);
   const [tier, setTier] = useState(null);
   const [expired, setExpired] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!session_id) {
-      setExpired(true);
-      setLoading(false);
-      return;
-    }
+    if (!session_id) return;
 
-    fetch(`/api/verify-session?session_id=${session_id}`)
-      .then(res => res.json())
-      .then(data => {
+    const verify = async () => {
+      try {
+        const res = await fetch(`/api/verify-session?session_id=${session_id}`);
+        const data = await res.json();
+
         if (!data.valid) {
           setExpired(true);
+          setLoading(false);
           return;
         }
 
+        // 🔑 EZ HIÁNYZOTT EDDIG
         const access = {
           tier: data.tier,
           expiresAt: data.expiresAt,
@@ -31,13 +31,20 @@ export default function PremiumDashboard() {
 
         localStorage.setItem('premiumAccess', JSON.stringify(access));
         setTier(data.tier);
-      })
-      .catch(() => setExpired(true))
-      .finally(() => setLoading(false));
+        setLoading(false);
+
+      } catch (err) {
+        console.error(err);
+        setExpired(true);
+        setLoading(false);
+      }
+    };
+
+    verify();
   }, [session_id]);
 
   if (loading) {
-    return <div style={center}>Verifying payment…</div>;
+    return <div style={center}>Activating premium access…</div>;
   }
 
   if (expired) {
