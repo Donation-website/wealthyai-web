@@ -35,36 +35,28 @@ export default function UserDashboard() {
 
   if (balance < 0) {
     insights.push(
-      "Your expenses exceed your income. Immediate action is recommended."
-    );
-    insights.push(
-      "Premium AI provides crisis strategies and recovery planning."
+      "Your expenses exceed your income. Premium AI can provide recovery strategies."
     );
   }
 
-  if (balance >= 0 && savingsRate >= 20) {
-    insights.push(
-      "You are saving at a healthy rate. This supports long-term stability."
-    );
-  }
-
-  if (balance >= 0 && savingsRate < 20) {
-    insights.push(
-      "Savings rate is below the recommended 20%. Minor adjustments may help."
-    );
+  if (savingsRate >= 20) {
+    insights.push("You are saving at a healthy rate.");
+  } else {
+    insights.push("Consider increasing savings toward 20%.");
   }
 
   const handleCheckout = async (priceId, tier) => {
     localStorage.setItem("userFinancials", JSON.stringify(data));
 
     try {
-      const response = await fetch("/api/create-stripe-session", {
+      const res = await fetch("/api/create-stripe-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ priceId, tier }),
       });
 
-      const session = await response.json();
+      const session = await res.json();
+
       if (session.url) {
         window.location.href = session.url;
       } else {
@@ -72,37 +64,8 @@ export default function UserDashboard() {
       }
     } catch (err) {
       console.error(err);
-      alert("Unexpected error during checkout.");
+      alert("Payment initialization failed.");
     }
-  };
-
-  /* ===== STYLES ===== */
-
-  const cardStyle = {
-    background: "rgba(15,23,42,0.6)",
-    backdropFilter: "blur(14px)",
-    borderRadius: "22px",
-    padding: "26px",
-    border: "1px solid rgba(255,255,255,0.08)",
-    color: "white",
-  };
-
-  const inputStyle = {
-    background: "rgba(255,255,255,0.08)",
-    border: "none",
-    borderRadius: "8px",
-    padding: "10px",
-    color: "white",
-    width: "100%",
-    marginTop: "6px",
-  };
-
-  const pricingCardStyle = {
-    ...cardStyle,
-    background: "rgba(10,18,35,0.85)",
-    textAlign: "center",
-    cursor: "pointer",
-    transition: "box-shadow 0.2s",
   };
 
   return (
@@ -110,7 +73,7 @@ export default function UserDashboard() {
       style={{
         minHeight: "100vh",
         padding: "40px",
-        fontFamily: "Inter, system-ui, sans-serif",
+        fontFamily: "Inter, Arial, sans-serif",
         color: "white",
         backgroundImage:
           "linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('/wealthyai/icons/hat.png')",
@@ -119,21 +82,18 @@ export default function UserDashboard() {
       }}
     >
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        <h1 style={{ marginBottom: "30px" }}>
-          Your Financial Overview (Basic)
-        </h1>
+        <h1>Your Financial Overview (Basic)</h1>
 
         <div
           style={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
             gap: "20px",
+            marginTop: "30px",
           }}
         >
           {/* INPUTS */}
-          <div style={cardStyle}>
-            <h3>Income & Expenses</h3>
-
+          <div style={card}>
             {[
               ["Monthly Income ($)", "income"],
               ["Fixed Expenses", "fixed"],
@@ -144,7 +104,7 @@ export default function UserDashboard() {
                 <input
                   type="number"
                   value={data[key]}
-                  style={inputStyle}
+                  style={input}
                   onChange={(e) =>
                     setData({ ...data, [key]: Number(e.target.value) })
                   }
@@ -154,8 +114,7 @@ export default function UserDashboard() {
           </div>
 
           {/* INSIGHTS */}
-          <div style={cardStyle}>
-            <h3>Insights (Basic)</h3>
+          <div style={card}>
             <p>
               Risk Level: <strong>{riskLevel}</strong>
             </p>
@@ -165,21 +124,19 @@ export default function UserDashboard() {
 
             <ul>
               {insights.map((i, idx) => (
-                <li key={idx} style={{ marginBottom: "12px" }}>
-                  {i}
-                </li>
+                <li key={idx}>{i}</li>
               ))}
             </ul>
 
-            <p style={{ opacity: 0.65, marginTop: "18px" }}>
-              Advanced AI strategies unlock in Premium plans below.
+            <p style={{ opacity: 0.7, marginTop: "20px" }}>
+              Advanced AI strategies available in premium plans.
             </p>
           </div>
         </div>
 
         {/* PRICING */}
         <div style={{ marginTop: "60px" }}>
-          <h2 style={{ textAlign: "center", marginBottom: "30px" }}>
+          <h2 style={{ textAlign: "center" }}>
             Unlock Advanced AI Optimization
           </h2>
 
@@ -188,33 +145,43 @@ export default function UserDashboard() {
               display: "flex",
               justifyContent: "center",
               gap: "20px",
+              marginTop: "30px",
               flexWrap: "wrap",
             }}
           >
             <div
-              style={pricingCardStyle}
+              style={priceCard}
               onClick={() =>
-                handleCheckout("price_DAY_ID", "day")
+                handleCheckout(
+                  "price_1SscYJDyLtejYlZiyDvhdaIx",
+                  "day"
+                )
               }
             >
               <h3>1 Day Pass</h3>
-              <small>Professional AI insights</small>
+              <small>AI strategy & projections</small>
             </div>
 
             <div
-              style={pricingCardStyle}
+              style={priceCard}
               onClick={() =>
-                handleCheckout("price_WEEK_ID", "premium-week")
+                handleCheckout(
+                  "price_1SscaYDyLtejYlZiDjSeF5Wm",
+                  "premium-week"
+                )
               }
             >
               <h3>1 Week Pass</h3>
-              <small>Behavioral & country-aware analysis</small>
+              <small>Behavior & country optimization</small>
             </div>
 
             <div
-              style={pricingCardStyle}
+              style={priceCard}
               onClick={() =>
-                handleCheckout("price_MONTH_ID", "premium-month")
+                handleCheckout(
+                  "price_1SscbeDyLtejYlZixJcT3B4o",
+                  "premium-month"
+                )
               }
             >
               <h3>1 Month Pass</h3>
@@ -226,3 +193,34 @@ export default function UserDashboard() {
     </main>
   );
 }
+
+/* ===== STYLES ===== */
+
+const card = {
+  background: "rgba(15,23,42,0.6)",
+  backdropFilter: "blur(12px)",
+  borderRadius: "20px",
+  padding: "24px",
+  border: "1px solid rgba(255,255,255,0.1)",
+};
+
+const input = {
+  width: "100%",
+  marginTop: "6px",
+  marginBottom: "14px",
+  padding: "10px",
+  borderRadius: "8px",
+  border: "none",
+  background: "rgba(255,255,255,0.1)",
+  color: "white",
+};
+
+const priceCard = {
+  background: "rgba(10,18,35,0.85)",
+  border: "1px solid rgba(255,255,255,0.15)",
+  borderRadius: "18px",
+  padding: "24px",
+  textAlign: "center",
+  cursor: "pointer",
+  minWidth: "220px",
+};
