@@ -1,67 +1,71 @@
 import { useEffect, useState } from 'react';
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, LineChart, Line
 } from 'recharts';
 
 export default function PremiumDashboard() {
   const [tier, setTier] = useState(null);
-  const [userData, setUserData] = useState(null);
+  const [data, setData] = useState({ income: 5000, fixed: 2000, variable: 1500 });
   const [aiText, setAiText] = useState("");
   const [loadingAI, setLoadingAI] = useState(false);
 
   useEffect(() => {
-    // PREMIUM ACCESS
     const access = JSON.parse(localStorage.getItem('premiumAccess'));
     if (!access || Date.now() > access.expiresAt) return;
-
     setTier(access.tier);
 
-    // USER DATA
     const saved = localStorage.getItem('userFinancials');
-    if (saved) setUserData(JSON.parse(saved));
+    if (saved) setData(JSON.parse(saved));
   }, []);
 
-  if (!tier || !userData) {
-    return (
-      <div style={center}>
-        <p>Loading your Premium workspace…</p>
-      </div>
-    );
+  if (!tier) {
+    return <div style={center}>Loading premium…</div>;
   }
 
-  // BASIC CALCS
-  const totalExpenses = userData.fixed + userData.variable;
-  const surplus = userData.income - totalExpenses;
-  const savingsRate = (surplus / userData.income) * 100;
+  // CALCS
+  const total = data.fixed + data.variable;
+  const surplus = data.income - total;
+  const savingsRate = data.income > 0 ? (surplus / data.income) * 100 : 0;
+  const risk =
+    savingsRate < 5 ? 'High' :
+    savingsRate < 15 ? 'Medium' : 'Low';
 
-  const riskLevel =
-    savingsRate < 5 ? "High"
-    : savingsRate < 15 ? "Medium"
-    : "Low";
-
-  // PROJECTION
-  const chartData = [
+  const projection = [
     { name: 'Now', total: 0 },
     { name: 'Y1', total: surplus * 12 * 1.08 },
     { name: 'Y3', total: surplus * 36 * 1.25 },
     { name: 'Y5', total: surplus * 60 * 1.45 },
   ];
 
-  const opportunityCost = Math.max(0, (surplus * 60 * 1.45) - (surplus * 60));
+  const expenseData = [
+    { name: 'Fixed', value: data.fixed },
+    { name: 'Variable', value: data.variable },
+  ];
 
-  // AI CALL
+  const allocation = [
+    { name: 'Expenses', value: total },
+    { name: 'Savings', value: surplus },
+  ];
+
+  const riskData = [
+    { name: 'Stability', value: savingsRate },
+  ];
+
   const askAI = async () => {
     setLoadingAI(true);
     try {
       const res = await fetch('/api/get-ai-insight', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData),
+        body: JSON.stringify(data),
       });
-      const data = await res.json();
-      setAiText(data.insight);
+      const d = await res.json();
+      setAiText(d.insight);
     } catch {
-      setAiText("AI analysis temporarily unavailable.");
+      setAiText(
+        `• Surplus: $${surplus}\n• Advice: Aim for stable 20% savings.\n• Status: AI temporarily unavailable.`
+      );
     }
     setLoadingAI(false);
   };
@@ -71,75 +75,82 @@ export default function PremiumDashboard() {
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
 
         {/* WELCOME */}
-        <div style={welcomeBox}>
+        <div style={panel}>
           <h1>🎉 Welcome to WealthyAI – 1 Day Pro Access</h1>
           <p>
-            Thank you for choosing WealthyAI.
-            You now have access to advanced financial analytics,
-            AI-driven insights and professional projections.
+            You now have access to advanced analytics, multi-angle projections
+            and AI-powered financial strategy tools.
           </p>
         </div>
 
-        {/* KPI CARDS */}
+        {/* INPUTS */}
+        <div style={panel}>
+          {['income','fixed','variable'].map(k => (
+            <div key={k} style={inputRow}>
+              <span>{k.toUpperCase()}</span>
+              <input
+                type="number"
+                value={data[k]}
+                onChange={e => {
+                  const d = { ...data, [k]: Number(e.target.value) };
+                  setData(d);
+                  localStorage.setItem('userFinancials', JSON.stringify(d));
+                }}
+                style={miniInput}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* KPI */}
         <div style={kpiGrid}>
-          <KPI title="Monthly Surplus" value={`$${surplus.toLocaleString()}`} />
+          <KPI title="Monthly Surplus" value={`$${surplus}`} />
           <KPI title="Savings Rate" value={`${savingsRate.toFixed(1)}%`} />
-          <KPI title="Risk Level" value={riskLevel} />
-          <KPI title="5Y Opportunity Cost" value={`$${opportunityCost.toLocaleString()}`} />
+          <KPI title="Risk Level" value={risk} />
+          <KPI title="5Y Projection" value={`$${(surplus*60*1.45).toFixed(0)}`} />
         </div>
 
-        {/* MAIN GRID */}
-        <div style={grid}>
+        {/* CHART GRID */}
+        <div style={chartGrid}>
+          <ChartBox title="Wealth Growth">
+            <AreaChart data={projection}>
+              <Area dataKey="total" stroke="#22c55e" fill="#22c55e" fillOpacity={0.15} />
+            </AreaChart>
+          </ChartBox>
 
-          {/* CHART */}
-          <div style={panel}>
-            <h3>Wealth Acceleration Projection</h3>
-            <div style={{ height: 300 }}>
-              <ResponsiveContainer>
-                <AreaChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                  <XAxis dataKey="name" stroke="#94a3b8" />
-                  <YAxis stroke="#94a3b8" />
-                  <Tooltip contentStyle={{ background: '#020617', border: '1px solid #1e293b' }} />
-                  <Area type="monotone" dataKey="total" stroke="#22c55e" fill="#22c55e" fillOpacity={0.15} strokeWidth={3} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
+          <ChartBox title="Expense Split">
+            <PieChart>
+              <Pie data={expenseData} dataKey="value" outerRadius={80}>
+                {expenseData.map((_, i) => (
+                  <Cell key={i} fill={['#f43f5e','#3b82f6'][i]} />
+                ))}
+              </Pie>
+            </PieChart>
+          </ChartBox>
 
-          {/* PRO INSIGHTS */}
-          <div style={panel}>
-            <h3>📊 Pro Breakdown</h3>
+          <ChartBox title="Monthly Allocation">
+            <BarChart data={allocation}>
+              <Bar dataKey="value" fill="#22c55e" />
+            </BarChart>
+          </ChartBox>
 
-            <ul>
-              <li>Spending efficiency: <strong>{(totalExpenses / userData.income * 100).toFixed(1)}%</strong></li>
-              <li>Optimal savings target: <strong>20%</strong></li>
-              <li>Savings gap: <strong>${Math.max(0, (0.2 * userData.income) - surplus).toFixed(0)}/month</strong></li>
-              <li>Risk exposure: <strong>{riskLevel}</strong></li>
-            </ul>
-
-            <div style={warningBox}>
-              <strong>If nothing changes:</strong>
-              <p>
-                Over 5 years, you may lose approximately
-                <strong> ${opportunityCost.toLocaleString()}</strong>
-                in unrealized growth.
-              </p>
-            </div>
-
-            <button onClick={askAI} style={aiBtn} disabled={loadingAI}>
-              {loadingAI ? "Analyzing…" : "🤖 Generate AI Strategy"}
-            </button>
-
-            <div style={aiBox}>
-              {aiText || "Run AI analysis to receive personalized strategy."}
-            </div>
-          </div>
+          <ChartBox title="Stability Index">
+            <LineChart data={riskData}>
+              <Line dataKey="value" stroke="#eab308" />
+            </LineChart>
+          </ChartBox>
         </div>
 
-        {/* UPSELL */}
+        {/* AI */}
+        <div style={panel}>
+          <button onClick={askAI} style={aiBtn}>
+            {loadingAI ? 'Analyzing…' : '🤖 Generate AI Strategy'}
+          </button>
+          <div style={aiBox}>{aiText}</div>
+        </div>
+
         <div style={upsell}>
-          🔒 Country-specific tax optimization, provider comparison and stress-testing
+          🔒 Country-specific tax optimization and advanced simulations
           are available in Weekly and Monthly plans.
         </div>
 
@@ -148,103 +159,33 @@ export default function PremiumDashboard() {
   );
 }
 
-/* COMPONENTS */
+/* UI PARTS */
 const KPI = ({ title, value }) => (
   <div style={kpiCard}>
-    <p style={kpiLabel}>{title}</p>
+    <small>{title}</small>
     <h2>{value}</h2>
   </div>
 );
 
+const ChartBox = ({ title, children }) => (
+  <div style={chartBox}>
+    <h4>{title}</h4>
+    <ResponsiveContainer width="100%" height={200}>
+      {children}
+    </ResponsiveContainer>
+  </div>
+);
+
 /* STYLES */
-const page = {
-  minHeight: '100vh',
-  background: '#020617',
-  color: '#f8fafc',
-  padding: '40px',
-  fontFamily: 'Arial, sans-serif'
-};
-
-const center = {
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  minHeight: '100vh',
-  color: 'white'
-};
-
-const welcomeBox = {
-  marginBottom: 40,
-  padding: 25,
-  background: '#0f172a',
-  borderRadius: 16,
-  border: '1px solid #1e293b'
-};
-
-const kpiGrid = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-  gap: 20,
-  marginBottom: 40
-};
-
-const kpiCard = {
-  background: '#0f172a',
-  padding: 20,
-  borderRadius: 14,
-  border: '1px solid #1e293b'
-};
-
-const kpiLabel = {
-  color: '#94a3b8',
-  fontSize: 12,
-  marginBottom: 6
-};
-
-const grid = {
-  display: 'grid',
-  gridTemplateColumns: '1.5fr 1fr',
-  gap: 30
-};
-
-const panel = {
-  background: '#0f172a',
-  padding: 30,
-  borderRadius: 16,
-  border: '1px solid #1e293b'
-};
-
-const warningBox = {
-  marginTop: 20,
-  padding: 15,
-  background: '#020617',
-  borderLeft: '4px solid #f43f5e'
-};
-
-const aiBtn = {
-  marginTop: 20,
-  width: '100%',
-  padding: 14,
-  background: '#22c55e',
-  border: 'none',
-  borderRadius: 8,
-  fontWeight: 'bold',
-  cursor: 'pointer'
-};
-
-const aiBox = {
-  marginTop: 20,
-  padding: 15,
-  background: '#020617',
-  borderRadius: 10,
-  minHeight: 140,
-  whiteSpace: 'pre-line',
-  borderLeft: '4px solid #22c55e'
-};
-
-const upsell = {
-  marginTop: 40,
-  padding: 20,
-  textAlign: 'center',
-  opacity: 0.75
-};
+const page = { background:'#020617', color:'#fff', minHeight:'100vh', padding:'40px' };
+const center = { display:'flex', justifyContent:'center', alignItems:'center', minHeight:'100vh' };
+const panel = { background:'#0f172a', padding:25, borderRadius:16, marginBottom:25 };
+const kpiGrid = { display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))', gap:20 };
+const kpiCard = { background:'#020617', padding:20, borderRadius:12 };
+const chartGrid = { display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:20 };
+const chartBox = { background:'#0f172a', padding:20, borderRadius:16 };
+const inputRow = { display:'flex', justifyContent:'space-between', marginBottom:10 };
+const miniInput = { background:'none', border:'none', color:'#22c55e', fontSize:'16px', textAlign:'right', width:120 };
+const aiBtn = { background:'#22c55e', padding:15, border:'none', borderRadius:8, width:'100%', fontWeight:'bold' };
+const aiBox = { marginTop:15, padding:15, background:'#020617', minHeight:120, whiteSpace:'pre-line' };
+const upsell = { marginTop:30, textAlign:'center', opacity:0.7 };
