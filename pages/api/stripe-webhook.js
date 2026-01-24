@@ -1,53 +1,58 @@
 import Stripe from 'stripe';
-import { buffer } from 'micro';
-
-export const config = {
-  api: { bodyParser: false },
-};
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-export default async function handler(req, res) {
-  const sig = req.headers['stripe-signature'];
-  const buf = await buffer(req);
+export const config = {
+  api: {
+    bodyParser: false, // ⚠️ Stripe KÖTELEZŐ
+  },
+};
 
-  let event;
-  try {
-    event = stripe.webhooks.constructEvent(
-      buf,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET
-    );
-  } catch (err) {
-    console.error('Webhook error:', err.message);
-    return res.status(400).send('Webhook Error');
+function buffer(readable) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    readable.on('data', (chunk) => chunks.push(chunk));
+    readable.on('end', () => resolve(Buffer.concat(chunks)));
+    readable.on('error', reject);
+  });
+}
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).end('Method Not Allowed');
   }
 
+  const sig = req.headers['stripe-signature'];
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  let event;
+
+  try {
+    const buf = await buffer(req);
+    event = stripe.webhooks.constructEvent(buf, sig, webhookSecret);
+  } catch (err) {
+    console.error('Webhook signature verification failed:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  // ✅ EZ A FONTOS ESEMÉNY
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
 
     const priceId = session.metadata?.priceId;
-    let tier = 'day';
-    let durationDays = 1;
+    const customerEmail = session.customer_details?.email;
 
-    if (priceId === 'price_1SscYJDyLtejYlZiyDvhdaIx') {
-      tier = 'day'; durationDays = 1;
-    }
-    if (priceId === 'price_1SscaYDyLtejYlZiDjSeF5Wm') {
-      tier = 'week'; durationDays = 7;
-    }
-    if (priceId === 'price_1SscbeDyLtejYlZixJcT3B4o') {
-      tier = 'month'; durationDays = 30;
-    }
+    console.log('✅ PAYMENT CONFIRMED');
+    console.log('Plan:', priceId);
+    console.log('Customer:', customerEmail);
 
-    const expiresAt = Date.now() + durationDays * 24 * 60 * 60 * 1000;
-
-    console.log('✅ PAYMENT CONFIRMED', {
-      tier,
-      expiresAt,
-      email: session.customer_details?.email,
-    });
+    /**
+     * IDE KÉSŐBB:
+     * - adatbázis
+     * - user jogosultság
+     * - lejárati idő
+     */
   }
 
-  res.json({ received: true });
+  res.status(200).json({ received: true });
 }
