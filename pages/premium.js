@@ -1,41 +1,33 @@
 import React, { useEffect, useState } from "react";
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar,
 } from "recharts";
 
 export default function PremiumDashboard() {
-  const [data, setData] = useState({
-    income: 5000,
-    fixed: 2000,
-    variable: 1500,
-  });
-
+  const [data, setData] = useState({ income: 5000, fixed: 2000, variable: 1500 });
   const [aiResponse, setAiResponse] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const monthlySurplus = data.income - (data.fixed + data.variable);
+  useEffect(() => {
+    const saved = localStorage.getItem("userFinancials");
+    if (saved) setData(JSON.parse(saved));
+  }, []);
+
+  const surplus = data.income - (data.fixed + data.variable);
   const savingsRate =
-    data.income > 0 ? (monthlySurplus / data.income) * 100 : 0;
+    data.income > 0 ? (surplus / data.income) * 100 : 0;
 
-  const projectionData = [
-    { name: "Now", value: 0 },
-    { name: "Y1", value: monthlySurplus * 12 * 1.08 },
-    { name: "Y3", value: monthlySurplus * 36 * 1.25 },
-    { name: "Y5", value: monthlySurplus * 60 * 1.45 },
-  ];
-
-  const breakdownData = [
-    { name: "Fixed", value: data.fixed },
-    { name: "Variable", value: data.variable },
-    { name: "Surplus", value: monthlySurplus },
+  const chartData = [
+    { name: "Now", total: 0 },
+    { name: "Y1", total: surplus * 12 * 1.08 },
+    { name: "Y3", total: surplus * 36 * 1.25 },
+    { name: "Y5", total: surplus * 60 * 1.45 },
   ];
 
   const askAI = async () => {
@@ -55,36 +47,27 @@ export default function PremiumDashboard() {
   };
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        background: "radial-gradient(circle at top, #0b1220, #020617)",
-        color: "#e5e7eb",
-        padding: "40px",
-        fontFamily: "Arial, sans-serif",
-      }}
-    >
-      <div style={{ maxWidth: "1300px", margin: "0 auto" }}>
+    <main style={page}>
+      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         {/* WELCOME */}
-        <h1 style={{ fontSize: "2.2rem", marginBottom: "8px" }}>
-          WealthyAI · 1-Day Professional Access
-        </h1>
-        <p style={{ opacity: 0.7, marginBottom: "30px" }}>
-          Advanced analytics and AI-driven financial intelligence.
+        <h1> Welcome to WealthyAI – 1 Day Pro Access</h1>
+        <p style={{ opacity: 0.75, maxWidth: 700 }}>
+          Thank you for choosing WealthyAI. You now have access to advanced
+          financial analytics, AI-driven insights and professional projections.
         </p>
 
-        {/* INPUTS */}
-        <div style={grid2}>
-          <div style={panel}>
-            <h3>Financial Inputs</h3>
-            {["income", "fixed", "variable"].map((key) => (
-              <div key={key} style={inputRow}>
-                <span>{key}</span>
+        {/* INPUTS + METRICS */}
+        <div style={grid}>
+          <div style={card}>
+            <h3>Inputs</h3>
+            {["income", "fixed", "variable"].map((k) => (
+              <div key={k} style={row}>
+                <span>{k}</span>
                 <input
                   type="number"
-                  value={data[key]}
+                  value={data[k]}
                   onChange={(e) =>
-                    setData({ ...data, [key]: Number(e.target.value) })
+                    setData({ ...data, [k]: Number(e.target.value) })
                   }
                   style={input}
                 />
@@ -92,69 +75,50 @@ export default function PremiumDashboard() {
             ))}
           </div>
 
-          <div style={panel}>
+          <div style={card}>
             <h3>Key Metrics</h3>
-            <p>Monthly Surplus: <strong>${monthlySurplus.toLocaleString()}</strong></p>
+            <p>Monthly Surplus: <strong>${surplus}</strong></p>
             <p>Savings Rate: <strong>{savingsRate.toFixed(1)}%</strong></p>
             <p>Risk Level: <strong>{savingsRate < 10 ? "High" : "Low"}</strong></p>
           </div>
         </div>
 
-        {/* CHARTS */}
-        <div style={grid4}>
-          <ChartCard title="5Y Projection">
-            <LineChart data={projectionData}>
+        {/* CHART */}
+        <div style={card}>
+          <h3>Wealth Acceleration Projection</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
               <XAxis dataKey="name" stroke="#64748b" />
               <YAxis stroke="#64748b" />
               <Tooltip />
-              <Line type="monotone" dataKey="value" stroke="#22d3ee" strokeWidth={2} />
-            </LineChart>
-          </ChartCard>
-
-          <ChartCard title="Expense Breakdown">
-            <BarChart data={breakdownData}>
-              <XAxis dataKey="name" stroke="#64748b" />
-              <YAxis stroke="#64748b" />
-              <Tooltip />
-              <Bar dataKey="value" fill="#38bdf8" />
-            </BarChart>
-          </ChartCard>
-
-          <ChartCard title="Savings Growth">
-            <LineChart data={projectionData}>
-              <XAxis dataKey="name" stroke="#64748b" />
-              <YAxis stroke="#64748b" />
-              <Tooltip />
-              <Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={2} />
-            </LineChart>
-          </ChartCard>
-
-          <ChartCard title="Capital Efficiency">
-            <BarChart data={breakdownData}>
-              <XAxis dataKey="name" stroke="#64748b" />
-              <YAxis stroke="#64748b" />
-              <Tooltip />
-              <Bar dataKey="value" fill="#a78bfa" />
-            </BarChart>
-          </ChartCard>
+              <Area
+                type="monotone"
+                dataKey="total"
+                stroke="#22d3ee"
+                fill="#22d3ee"
+                fillOpacity={0.15}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
         </div>
 
         {/* AI */}
-        <div style={panel}>
+        <div style={card}>
           <h3>AI Strategy Engine</h3>
           <button onClick={askAI} style={aiBtn} disabled={loading}>
-            {loading ? "Analyzing…" : "Generate Strategy"}
+            {loading ? "Analyzing…" : "Generate AI Strategy"}
           </button>
           <div style={aiBox}>
             {aiResponse || "Run AI analysis to generate your professional strategy."}
           </div>
         </div>
 
-        {/* FOOT ACTIONS */}
-        <div style={{ marginTop: "30px" }}>
+        {/* ACTIONS */}
+        <div style={{ marginTop: 30, display: "flex", gap: 16 }}>
           <a href="/" style={outlineBtn}>← Back to WealthyAI Home</a>
           <a href="/how-to-use" style={outlineBtnAlt}>
-            Learn what Weekly & Monthly unlock →
+            Learn more about Weekly & Monthly →
           </a>
         </div>
       </div>
@@ -162,77 +126,65 @@ export default function PremiumDashboard() {
   );
 }
 
-/* COMPONENTS */
-const ChartCard = ({ title, children }) => (
-  <div style={chartCard}>
-    <h4 style={{ marginBottom: "10px" }}>{title}</h4>
-    <ResponsiveContainer width="100%" height={180}>
-      {children}
-    </ResponsiveContainer>
-  </div>
-);
-
 /* STYLES */
-const grid2 = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" };
-const grid4 = {
-  display: "grid",
-  gridTemplateColumns: "repeat(4, 1fr)",
-  gap: "20px",
-  margin: "40px 0",
+const page = {
+  minHeight: "100vh",
+  background: "#020617",
+  color: "#f8fafc",
+  padding: "40px",
+  fontFamily: "Arial, sans-serif",
 };
-const panel = {
-  background: "rgba(15,23,42,0.85)",
+
+const grid = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 };
+
+const card = {
+  background: "#0f172a",
   border: "1px solid #1e293b",
-  borderRadius: "16px",
-  padding: "25px",
+  borderRadius: 14,
+  padding: 24,
+  marginTop: 20,
 };
-const chartCard = {
-  background: "rgba(15,23,42,0.9)",
-  border: "1px solid #1e293b",
-  borderRadius: "14px",
-  padding: "15px",
-};
-const inputRow = {
-  display: "flex",
-  justifyContent: "space-between",
-  marginBottom: "12px",
-};
+
+const row = { display: "flex", justifyContent: "space-between", marginBottom: 12 };
+
 const input = {
   background: "#020617",
   border: "1px solid #334155",
   color: "#22d3ee",
-  borderRadius: "6px",
-  padding: "6px",
-  width: "100px",
+  borderRadius: 6,
+  padding: 6,
+  width: 120,
 };
+
 const aiBtn = {
+  marginTop: 10,
   background: "#22d3ee",
   color: "#020617",
   border: "none",
-  padding: "12px",
-  width: "100%",
-  borderRadius: "8px",
-  fontWeight: "bold",
+  padding: 12,
+  borderRadius: 8,
   cursor: "pointer",
+  fontWeight: "bold",
 };
+
 const aiBox = {
-  marginTop: "15px",
+  marginTop: 15,
   background: "#020617",
   border: "1px solid #1e293b",
-  padding: "15px",
-  borderRadius: "10px",
-  minHeight: "120px",
+  padding: 14,
+  borderRadius: 8,
+  minHeight: 120,
   whiteSpace: "pre-line",
 };
+
 const outlineBtn = {
-  display: "inline-block",
-  marginRight: "15px",
-  padding: "10px 16px",
   border: "1px solid #38bdf8",
   color: "#38bdf8",
-  borderRadius: "8px",
+  padding: "10px 16px",
+  borderRadius: 8,
   textDecoration: "none",
 };
+
 const outlineBtnAlt = {
   ...outlineBtn,
   borderColor: "#a78bfa",
