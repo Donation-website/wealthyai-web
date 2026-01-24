@@ -1,86 +1,79 @@
 import { useState } from "react";
 
-export default function WeeklyInputUI() {
-  const [country, setCountry] = useState("DE");
+export default function PremiumWeek() {
+  const [country, setCountry] = useState("auto");
 
   const [weekly, setWeekly] = useState({
-    coffee: 30,
-    cigarettes: 0,
-    alcohol: 40,
     food: 120,
-    bills: 90,
-    phone: 25,
-    transport: 60,
-    misc: 30,
+    coffee: 25,
+    transport: 40,
+    entertainment: 60,
+    subscriptions: 20,
+    other: 30,
   });
 
-  const update = (k, v) =>
-    setWeekly({ ...weekly, [k]: Number(v) });
+  const totalWeekly =
+    weekly.food +
+    weekly.coffee +
+    weekly.transport +
+    weekly.entertainment +
+    weekly.subscriptions +
+    weekly.other;
 
   return (
     <div style={page}>
+      <h1 style={title}>WEALTHYAI · WEEKLY ANALYSIS</h1>
+      <p style={subtitle}>
+        Behavioral spending analysis & country-aware optimization
+      </p>
 
-      {/* HEADER */}
-      <div style={header}>
-        <h1 style={title}>WEALTHYAI · WEEKLY ANALYSIS</h1>
-        <p style={subtitle}>
-          Behavioral spending analysis with country-specific context.
-        </p>
-      </div>
-
-      {/* COUNTRY SELECT */}
-      <div style={panel}>
-        <label style={label}>Country Context</label>
+      {/* COUNTRY */}
+      <div style={card}>
+        <label style={label}>Country context</label>
         <select
           value={country}
           onChange={(e) => setCountry(e.target.value)}
           style={select}
         >
+          <option value="auto">Auto detect</option>
+          <option value="US">United States</option>
           <option value="DE">Germany</option>
           <option value="UK">United Kingdom</option>
-          <option value="US">United States</option>
           <option value="HU">Hungary</option>
         </select>
         <p style={hint}>
-          Used to normalize costs, habits and financial benchmarks.
+          Country affects tax logic, savings recommendations and provider
+          suggestions.
         </p>
       </div>
 
-      {/* INPUT GRID */}
+      {/* WEEKLY INPUTS */}
       <div style={grid}>
-        {Object.entries({
-          coffee: "☕ Coffee",
-          cigarettes: "🚬 Cigarettes",
-          alcohol: "🍺 Alcohol & Entertainment",
-          food: "🍽 Food (outside)",
-          bills: "🧾 Bills",
-          phone: "📱 Phone & Subscriptions",
-          transport: "🚗 Transport",
-          misc: "💸 Miscellaneous",
-        }).map(([key, labelText]) => (
-          <div key={key} style={inputCard}>
-            <div style={inputLabel}>{labelText}</div>
+        {Object.entries(weekly).map(([key, value]) => (
+          <div key={key} style={card}>
+            <label style={label}>{key.toUpperCase()}</label>
             <input
               type="number"
-              value={weekly[key]}
-              onChange={(e) => update(key, e.target.value)}
+              value={value}
+              onChange={(e) =>
+                setWeekly({ ...weekly, [key]: Number(e.target.value) })
+              }
               style={input}
             />
-            <div style={unit}>per week</div>
           </div>
         ))}
       </div>
 
-      {/* ACTION */}
-      <button style={analyzeBtn}>
-        RUN WEEKLY AI BEHAVIOR ANALYSIS
-      </button>
+      {/* SUMMARY */}
+      <div style={summary}>
+        <span>Total weekly spend</span>
+        <strong>${totalWeekly}</strong>
+      </div>
 
-      {/* UPSELL */}
-      <p style={upsell}>
-        Monthly plan unlocks tax optimization, stress testing and
-        long-term simulations.
-      </p>
+      {/* NEXT */}
+      <button style={button}>
+        Run Weekly AI Optimization
+      </button>
     </div>
   );
 }
@@ -89,87 +82,75 @@ export default function WeeklyInputUI() {
 
 const page = {
   minHeight: "100vh",
-  padding: "40px",
   background: "radial-gradient(circle at top, #020617, #000)",
   color: "#e5e7eb",
+  padding: "40px",
   fontFamily: "Inter, system-ui, sans-serif",
 };
 
-const header = { marginBottom: "30px" };
-const title = { fontSize: "2.4rem", margin: 0 };
-const subtitle = { color: "#94a3b8", marginTop: "8px" };
-
-const panel = {
-  marginBottom: "30px",
-  padding: "20px",
-  border: "1px solid #1e293b",
-  borderRadius: "14px",
-  background: "#020617",
-};
-
-const label = { color: "#7dd3fc", fontSize: "0.85rem" };
-const hint = { fontSize: "0.75rem", color: "#64748b", marginTop: "6px" };
-
-const select = {
-  width: "100%",
-  marginTop: "8px",
-  padding: "10px",
-  background: "#020617",
-  border: "1px solid #1e293b",
-  color: "#38bdf8",
-  borderRadius: "8px",
-};
+const title = { fontSize: "2.4rem", marginBottom: "6px" };
+const subtitle = { color: "#94a3b8", marginBottom: "30px" };
 
 const grid = {
   display: "grid",
   gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-  gap: "16px",
+  gap: "20px",
 };
 
-const inputCard = {
-  padding: "16px",
-  borderRadius: "14px",
+const card = {
   background: "#020617",
   border: "1px solid #1e293b",
+  borderRadius: "14px",
+  padding: "18px",
 };
 
-const inputLabel = {
-  fontSize: "0.85rem",
+const label = {
+  fontSize: "0.75rem",
   color: "#7dd3fc",
   marginBottom: "6px",
+  display: "block",
 };
 
 const input = {
   width: "100%",
-  padding: "10px",
   background: "transparent",
   border: "none",
-  borderBottom: "1px solid #1e293b",
+  borderBottom: "1px solid #38bdf8",
   color: "#38bdf8",
   fontSize: "1.1rem",
-  outline: "none",
+  padding: "6px 0",
 };
 
-const unit = {
+const select = {
+  width: "100%",
+  background: "#020617",
+  color: "#38bdf8",
+  border: "1px solid #1e293b",
+  padding: "8px",
+  borderRadius: "8px",
+};
+
+const hint = {
   fontSize: "0.7rem",
   color: "#64748b",
-  marginTop: "4px",
+  marginTop: "6px",
 };
 
-const analyzeBtn = {
+const summary = {
+  marginTop: "30px",
+  fontSize: "1.2rem",
+  display: "flex",
+  justifyContent: "space-between",
+};
+
+const button = {
   marginTop: "30px",
   width: "100%",
-  padding: "14px",
+  padding: "16px",
   background: "#38bdf8",
   color: "#000",
+  fontWeight: "bold",
   border: "none",
   borderRadius: "10px",
-  fontWeight: "bold",
   cursor: "pointer",
-};
-
-const upsell = {
-  marginTop: "20px",
-  textAlign: "center",
-  color: "#94a3b8",
 };
