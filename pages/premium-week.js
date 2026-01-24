@@ -1,206 +1,166 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
-  BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
 } from "recharts";
 
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-const CATEGORIES = [
-  "rent",
-  "food",
-  "transport",
-  "entertainment",
-  "subscriptions",
-  "utilities",
-  "other",
-];
-
-const LABELS = {
-  rent: "Rent / Loan",
-  food: "Food",
-  transport: "Transport",
-  entertainment: "Entertainment",
-  subscriptions: "Subscriptions",
-  utilities: "Utilities",
-  other: "Other",
-};
-
-const COLORS = ["#38bdf8", "#22d3ee", "#a78bfa", "#f472b6", "#facc15", "#4ade80", "#fb7185"];
-
 export default function PremiumWeek() {
-  const [country, setCountry] = useState("auto");
-  const [openDay, setOpenDay] = useState(0);
+  const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-  const [week, setWeek] = useState(
-    DAYS.map(() =>
-      CATEGORIES.reduce((acc, c) => ({ ...acc, [c]: 0 }), {})
-    )
+  const [country, setCountry] = useState("auto");
+  const [loading, setLoading] = useState(false);
+  const [aiText, setAiText] = useState("");
+
+  const [daily, setDaily] = useState(
+    DAYS.map((d) => ({
+      day: d,
+      rent: 40,
+      food: 35,
+      transport: 15,
+      entertainment: 20,
+    }))
   );
 
-  const updateValue = (dayIndex, category, value) => {
-    const copy = [...week];
-    copy[dayIndex][category] = Number(value);
-    setWeek(copy);
+  const updateValue = (i, key, value) => {
+    const copy = [...daily];
+    copy[i][key] = Number(value);
+    setDaily(copy);
   };
 
-  /* ===== DERIVED DATA ===== */
+  const dailyTotals = daily.map((d) =>
+    d.rent + d.food + d.transport + d.entertainment
+  );
 
-  const dailyTotals = week.map((d, i) => ({
-    day: DAYS[i],
-    total: Object.values(d).reduce((a, b) => a + b, 0),
-    ...d,
-  }));
+  const weeklyTotal = dailyTotals.reduce((a, b) => a + b, 0);
 
-  const weeklyTotal = dailyTotals.reduce((a, b) => a + b.total, 0);
-
-  const pieData = CATEGORIES.map((c) => ({
-    name: LABELS[c],
-    value: week.reduce((sum, d) => sum + d[c], 0),
-  })).filter(d => d.value > 0);
-
-  const fixedVsVariable = dailyTotals.map(d => ({
+  const chartData = daily.map((d, i) => ({
     day: d.day,
-    fixed: d.rent + d.utilities,
-    variable: d.total - (d.rent + d.utilities),
+    total: dailyTotals[i],
+    rent: d.rent,
+    food: d.food,
+    transport: d.transport,
+    entertainment: d.entertainment,
   }));
 
-  const weekdayAvg =
-    dailyTotals.slice(0, 5).reduce((a, b) => a + b.total, 0) / 5;
-  const weekendAvg =
-    dailyTotals.slice(5).reduce((a, b) => a + b.total, 0) / 2;
-
-  /* ===== UI ===== */
+  const runWeeklyAI = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/get-ai-insight", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "weekly",
+          country,
+          days: DAYS,
+          data: chartData,
+          weeklyTotal,
+        }),
+      });
+      const d = await res.json();
+      setAiText(d.insight);
+    } catch {
+      setAiText("AI system temporarily unavailable.");
+    }
+    setLoading(false);
+  };
 
   return (
     <div style={page}>
-      <h1 style={title}>WEALTHYAI · WEEKLY ANALYSIS</h1>
-      <p style={subtitle}>
-        Behavioral spending analysis & country-aware optimization
-      </p>
+      {/* HEADER */}
+      <div style={header}>
+        <h1 style={title}>WEALTHYAI · WEEKLY ANALYSIS</h1>
+        <p style={subtitle}>
+          Thank you for choosing the <strong>Weekly Professional Access</strong>.
+          This module analyzes real daily behavior patterns with country-aware
+          logic.
+        </p>
+      </div>
 
       {/* COUNTRY */}
       <div style={card}>
         <label style={label}>Country context</label>
-        <select value={country} onChange={(e) => setCountry(e.target.value)} style={select}>
+        <select
+          value={country}
+          onChange={(e) => setCountry(e.target.value)}
+          style={select}
+        >
           <option value="auto">Auto detect</option>
           <option value="US">United States</option>
           <option value="DE">Germany</option>
           <option value="UK">United Kingdom</option>
           <option value="HU">Hungary</option>
         </select>
+        <p style={hint}>
+          Country affects tax logic, savings recommendations and provider
+          benchmarks.
+        </p>
       </div>
 
-      {/* INPUT DAYS */}
-      {DAYS.map((day, i) => (
-        <div key={day} style={card}>
-          <div style={dayHeader} onClick={() => setOpenDay(openDay === i ? -1 : i)}>
-            <strong>{day}</strong>
-            <span>${dailyTotals[i].total}</span>
-          </div>
-
-          {openDay === i && (
-            <div style={grid}>
-              {CATEGORIES.map((cat) => (
-                <div key={cat}>
-                  <label style={label}>{LABELS[cat]}</label>
-                  <input
-                    type="number"
-                    value={week[i][cat]}
-                    onChange={(e) => updateValue(i, cat, e.target.value)}
-                    style={input}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      ))}
-
-      {/* ===== CHARTS ===== */}
-
-      <div style={chartsGrid}>
-
-        {/* 1 DAILY TOTAL */}
-        <ChartBox title="Daily Total Spend">
-          <LineChart data={dailyTotals}>
-            <CartesianGrid stroke="#1e293b" />
-            <XAxis dataKey="day" />
-            <YAxis />
-            <Tooltip />
-            <Line dataKey="total" stroke="#38bdf8" strokeWidth={3} />
-          </LineChart>
-        </ChartBox>
-
-        {/* 2 STACKED BAR */}
-        <ChartBox title="Category Breakdown">
-          <BarChart data={dailyTotals}>
-            <XAxis dataKey="day" />
-            <YAxis />
-            <Tooltip />
-            {CATEGORIES.map((c, i) => (
-              <Bar key={c} dataKey={c} stackId="a" fill={COLORS[i]} />
+      {/* DAILY INPUT GRID */}
+      <div style={grid}>
+        {daily.map((d, i) => (
+          <div key={i} style={card}>
+            <h4>{d.day}</h4>
+            {["rent", "food", "transport", "entertainment"].map((k) => (
+              <input
+                key={k}
+                type="number"
+                value={d[k]}
+                onChange={(e) => updateValue(i, k, e.target.value)}
+                style={input}
+                placeholder={k}
+              />
             ))}
-          </BarChart>
-        </ChartBox>
-
-        {/* 3 FIXED VS VARIABLE */}
-        <ChartBox title="Fixed vs Variable">
-          <BarChart data={fixedVsVariable}>
-            <XAxis dataKey="day" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="fixed" fill="#f472b6" />
-            <Bar dataKey="variable" fill="#38bdf8" />
-          </BarChart>
-        </ChartBox>
-
-        {/* 4 PIE */}
-        <ChartBox title="Top Cost Drivers">
-          <PieChart>
-            <Pie data={pieData} dataKey="value" outerRadius={80}>
-              {pieData.map((_, i) => (
-                <Cell key={i} fill={COLORS[i]} />
-              ))}
-            </Pie>
-            <Tooltip />
-          </PieChart>
-        </ChartBox>
-
-        {/* 5 WEEKDAY VS WEEKEND */}
-        <ChartBox title="Weekday vs Weekend Avg">
-          <BarChart
-            data={[
-              { name: "Weekday", value: weekdayAvg },
-              { name: "Weekend", value: weekendAvg },
-            ]}
-          >
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="value" fill="#a78bfa" />
-          </BarChart>
-        </ChartBox>
-
+          </div>
+        ))}
       </div>
 
+      {/* SUMMARY */}
       <div style={summary}>
         <span>Total weekly spend</span>
         <strong>${weeklyTotal}</strong>
       </div>
-    </div>
-  );
-}
 
-/* ===== REUSABLE ===== */
+      {/* CHART */}
+      <div style={chartBox}>
+        <ResponsiveContainer width="100%" height={260}>
+          <LineChart data={chartData}>
+            <CartesianGrid stroke="#0f172a" />
+            <XAxis dataKey="day" stroke="#94a3b8" />
+            <YAxis stroke="#94a3b8" />
+            <Tooltip />
+            <Line type="monotone" dataKey="total" stroke="#38bdf8" strokeWidth={3} />
+            <Line type="monotone" dataKey="rent" stroke="#f472b6" />
+            <Line type="monotone" dataKey="food" stroke="#34d399" />
+            <Line type="monotone" dataKey="transport" stroke="#facc15" />
+            <Line type="monotone" dataKey="entertainment" stroke="#a78bfa" />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
 
-function ChartBox({ title, children }) {
-  return (
-    <div style={chartBox}>
-      <div style={chartTitle}>{title}</div>
-      <ResponsiveContainer width="100%" height={220}>
-        {children}
-      </ResponsiveContainer>
+      {/* AI */}
+      <div style={aiBox}>
+        <button onClick={runWeeklyAI} style={aiButton}>
+          {loading ? "ANALYZING WEEKLY PATTERNS…" : "RUN WEEKLY AI OPTIMIZATION"}
+        </button>
+        <pre style={aiTextStyle}>
+          {aiText ||
+            "AI will analyze your daily volatility, spending behavior and country-specific patterns."}
+        </pre>
+      </div>
+
+      {/* NAV */}
+      <div style={navActions}>
+        <a href="/" style={outlineBtn}>← Back to WealthyAI Home</a>
+        <a href="/how-to-use" style={outlineBtnAlt}>
+          Learn more about Monthly →
+        </a>
+      </div>
     </div>
   );
 }
@@ -215,55 +175,27 @@ const page = {
   fontFamily: "Inter, system-ui, sans-serif",
 };
 
+const header = { marginBottom: "30px" };
 const title = { fontSize: "2.4rem", marginBottom: "6px" };
-const subtitle = { color: "#94a3b8", marginBottom: "30px" };
+const subtitle = { color: "#94a3b8", maxWidth: "760px" };
+
+const grid = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+  gap: "20px",
+};
 
 const card = {
   background: "#020617",
   border: "1px solid #1e293b",
   borderRadius: "14px",
   padding: "18px",
-  marginBottom: "16px",
-};
-
-const dayHeader = {
-  display: "flex",
-  justifyContent: "space-between",
-  cursor: "pointer",
-  color: "#7dd3fc",
-};
-
-const grid = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-  gap: "16px",
-  marginTop: "16px",
-};
-
-const chartsGrid = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-  gap: "20px",
-  marginTop: "40px",
-};
-
-const chartBox = {
-  background: "#020617",
-  border: "1px solid #1e293b",
-  borderRadius: "14px",
-  padding: "14px",
-};
-
-const chartTitle = {
-  fontSize: "0.75rem",
-  color: "#7dd3fc",
-  marginBottom: "8px",
 };
 
 const label = {
   fontSize: "0.75rem",
   color: "#7dd3fc",
-  marginBottom: "4px",
+  marginBottom: "6px",
   display: "block",
 };
 
@@ -275,6 +207,7 @@ const input = {
   color: "#38bdf8",
   fontSize: "1rem",
   padding: "6px 0",
+  marginBottom: "10px",
 };
 
 const select = {
@@ -286,9 +219,72 @@ const select = {
   borderRadius: "8px",
 };
 
+const hint = {
+  fontSize: "0.7rem",
+  color: "#64748b",
+  marginTop: "6px",
+};
+
 const summary = {
-  marginTop: "40px",
-  fontSize: "1.3rem",
+  marginTop: "30px",
+  fontSize: "1.2rem",
   display: "flex",
   justifyContent: "space-between",
+};
+
+const chartBox = {
+  marginTop: "30px",
+  background: "#020617",
+  border: "1px solid #1e293b",
+  borderRadius: "14px",
+  padding: "18px",
+};
+
+const aiBox = {
+  marginTop: "40px",
+  background: "#020617",
+  border: "1px solid #1e293b",
+  borderRadius: "14px",
+  padding: "22px",
+};
+
+const aiButton = {
+  width: "100%",
+  padding: "14px",
+  background: "#38bdf8",
+  color: "#000",
+  border: "none",
+  borderRadius: "8px",
+  fontWeight: "bold",
+  cursor: "pointer",
+};
+
+const aiTextStyle = {
+  marginTop: "14px",
+  whiteSpace: "pre-wrap",
+  color: "#cbd5f5",
+  fontSize: "0.95rem",
+  lineHeight: "1.6",
+};
+
+const navActions = {
+  marginTop: "40px",
+  display: "flex",
+  justifyContent: "center",
+  gap: "18px",
+};
+
+const outlineBtn = {
+  border: "1px solid #38bdf8",
+  color: "#38bdf8",
+  padding: "10px 18px",
+  borderRadius: "10px",
+  textDecoration: "none",
+  fontSize: "0.9rem",
+};
+
+const outlineBtnAlt = {
+  ...outlineBtn,
+  borderColor: "#a78bfa",
+  color: "#a78bfa",
 };
