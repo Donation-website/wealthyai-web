@@ -1,22 +1,17 @@
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ insight: "Method not allowed." });
 
+  // Debug: megnézzük, lát-e bármit is (csak fejlesztés alatt)
   const apiKey = process.env.GEMINI_API_KEY;
   
-  if (!apiKey) {
-    return res.status(200).json({ insight: "Hiba: A GEMINI_API_KEY nem található a környezeti változók között!" });
+  if (!apiKey || apiKey.length < 5) {
+    return res.status(200).json({ 
+      insight: `Hiba: A GEMINI_API_KEY hiányzik. (Környezet: ${process.env.NODE_ENV})` 
+    });
   }
 
   try {
     const { country = "US", weeklyIncome = 0, weeklySpend = 0, dailyTotals = [] } = req.body;
-
-    const promptText = `You are a professional financial analyst. Analyze these numbers:
-    - Country: ${country}
-    - Weekly Income: ${weeklyIncome}
-    - Weekly Spend: ${weeklySpend}
-    - Daily Spendings: ${dailyTotals.join(", ")}
-    
-    Task: Identify the highest/lowest spending days, compare to country average, and give 2 concrete saving tips. Use bullet points and be very concise.`;
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com{apiKey}`,
@@ -24,7 +19,7 @@ export default async function handler(req, res) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: promptText }] }]
+          contents: [{ parts: [{ text: `Analyst mode: Country ${country}, Income ${weeklyIncome}, Spend ${weeklySpend}, Daily: ${dailyTotals.join(",")}. 2 tips please.` }] }]
         }),
       }
     );
@@ -32,20 +27,13 @@ export default async function handler(req, res) {
     const result = await response.json();
 
     if (result.error) {
-      console.error("Gemini Error:", result.error);
-      return res.status(200).json({ insight: `Gemini API Hiba: ${result.error.message}` });
+      return res.status(200).json({ insight: `Google hiba: ${result.error.message}` });
     }
 
-    const aiText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!aiText) {
-      return res.status(200).json({ insight: "Az AI válaszolt, de nem található szöveg a válaszban." });
-    }
-
+    const aiText = result?.candidates?.[0]?.content?.parts?.[0]?.text || "No response text.";
     return res.status(200).json({ insight: aiText.trim() });
 
   } catch (err) {
-    console.error("Server Error:", err);
-    return res.status(200).json({ insight: "Hálózati hiba történt a Google AI elérésekor." });
+    return res.status(200).json({ insight: "Hálózati hiba a Google API hívásakor." });
   }
 }
