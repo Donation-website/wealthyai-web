@@ -11,7 +11,7 @@ export default async function handler(req, res) {
       dailyTotals = [],
     } = req.body;
 
-    /* ===== SAFETY & FORMATTING ===== */
+    /* ===== ADATOK ELŐKÉSZÍTÉSE ===== */
     const safe = (v) => (typeof v === "number" && isFinite(v) ? v : 0);
     const income = safe(weeklyIncome);
     const spend = safe(weeklySpend);
@@ -19,7 +19,7 @@ export default async function handler(req, res) {
     const savingsRate = income > 0 ? surplus / income : 0;
     const days = Array.isArray(dailyTotals) ? dailyTotals.map(safe) : [];
 
-    /* ===== COUNTRY BENCHMARKS ===== */
+    /* ===== ORSZÁG SPECIFIKUS ADATOK ===== */
     const COUNTRY = {
       US: { currency: "USD", avgWeekly: 900 },
       DE: { currency: "EUR", avgWeekly: 650 },
@@ -28,7 +28,7 @@ export default async function handler(req, res) {
     };
     const ref = COUNTRY[country] || COUNTRY.US;
 
-    /* ===== PROMPT ===== */
+    /* ===== PROMPT ÖSSZEÁLLÍTÁSA ===== */
     const prompt = `
 You are a professional financial analyst.
 Context:
@@ -39,7 +39,7 @@ Context:
 - Savings rate: ${(savingsRate * 100).toFixed(1)}%
 - Avg weekly spending in this country: ${ref.avgWeekly}
 
-Daily spending:
+Daily spending values:
 ${days.map((v, i) => `Day ${i + 1}: ${v.toFixed(0)}`).join(", ")}
 
 Task:
@@ -50,17 +50,16 @@ Task:
 Rules: Use bullet points, be specific, no generic fluff.
 `;
 
-    /* ===== HF API CALL WITH WAIT-FOR-MODEL ===== */
-    console.log("Calling Hugging Face API...");
-
+    /* ===== HUGGING FACE ROUTER API HÍVÁS ===== */
+    // Fontos: Az új URL a router.huggingface.co-t használja
     const response = await fetch(
-      "https://api-inference.huggingface.co",
+      "https://router.huggingface.co",
       {
         method: "POST",
         headers: {
           Authorization: `Bearer ${process.env.HF_TOKEN}`,
           "Content-Type": "application/json",
-          "x-wait-for-model": "true", // Fontos: megvárja, amíg a modell betölt
+          "x-wait-for-model": "true",
         },
         body: JSON.stringify({
           inputs: `<s>[INST] ${prompt} [/INST]`,
@@ -75,24 +74,22 @@ Rules: Use bullet points, be specific, no generic fluff.
 
     const result = await response.json();
 
-    // Debug log a szerver oldalon (ezt a terminálban látod)
-    console.log("HF Response status:", response.status);
-
+    /* ===== HIBAKEZELÉS ÉS VÁLASZ ADÁSA ===== */
     if (result.error) {
       console.error("HF API Error:", result.error);
       return res.status(200).json({ 
-        insight: `AI is warming up: ${result.error}. Please try again in 10 seconds.` 
+        insight: `AI Error: ${result.error}. (Ellenőrizd a HF_TOKEN-t!)` 
       });
     }
 
-    // A Hugging Face válasza lehet tömb vagy objektum is
+    // A válasz feldolgozása (kezelve a különböző válaszformátumokat)
     let text = "";
     if (Array.isArray(result) && result[0]?.generated_text) {
       text = result[0].generated_text.trim();
     } else if (result.generated_text) {
       text = result.generated_text.trim();
     } else {
-      text = "AI analysis temporarily unavailable. Please check your HF_TOKEN.";
+      text = "AI analysis temporarily unavailable. No text generated.";
     }
 
     return res.status(200).json({ insight: text });
@@ -100,7 +97,7 @@ Rules: Use bullet points, be specific, no generic fluff.
   } catch (err) {
     console.error("SERVER ERROR:", err);
     return res.status(500).json({
-      insight: "Internal server error. Please check your API configuration.",
+      insight: "Internal server error. Please try again later.",
     });
   }
 }
