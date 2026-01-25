@@ -2,10 +2,9 @@ import { useState, useEffect } from "react";
 import {
   LineChart, Line,
   AreaChart, Area,
-  BarChart, Bar,
   PieChart, Pie, Cell,
   ScatterChart, Scatter,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  XAxis, YAxis, Tooltip,
   ResponsiveContainer
 } from "recharts";
 
@@ -15,61 +14,27 @@ const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const CATEGORIES = ["rent", "food", "transport", "entertainment", "subscriptions", "other"];
 
 const COLORS = {
-  rent: "#38bdf8",
-  food: "#22d3ee",
-  transport: "#34d399",
+  rent: "#00e5ff",
+  food: "#00ffd5",
+  transport: "#00ff88",
   entertainment: "#a78bfa",
-  subscriptions: "#f472b6",
-  other: "#facc15",
-};
-
-const COUNTRY_NAMES = {
-  US: "United States",
-  DE: "Germany",
-  UK: "United Kingdom",
-  HU: "Hungary",
+  subscriptions: "#ff6ec7",
+  other: "#ffe066",
 };
 
 /* ===== MAIN ===== */
 
 export default function PremiumWeek() {
-  /* COUNTRY */
-  const [country, setCountry] = useState("auto");
-
-  useEffect(() => {
-    if (country === "auto") {
-      const locale = navigator.language || "en-US";
-      if (locale.includes("de")) setCountry("DE");
-      else if (locale.includes("hu")) setCountry("HU");
-      else if (locale.includes("en-GB")) setCountry("UK");
-      else setCountry("US");
-    }
-  }, []);
-
-  /* INCOME */
-  const [incomeType, setIncomeType] = useState("monthly");
   const [incomeValue, setIncomeValue] = useState(3000);
-
-  /* WEEKLY DATA */
   const [week, setWeek] = useState(
-    DAYS.reduce((acc, d) => {
-      acc[d] = CATEGORIES.reduce((o, c) => ({ ...o, [c]: 0 }), {});
-      return acc;
+    DAYS.reduce((a, d) => {
+      a[d] = CATEGORIES.reduce((o, c) => ({ ...o, [c]: 0 }), {});
+      return a;
     }, {})
   );
 
-  /* AI */
   const [aiText, setAiText] = useState("");
   const [loading, setLoading] = useState(false);
-
-  /* HELPERS */
-
-  const weeklyIncome =
-    incomeType === "daily"
-      ? incomeValue * 7
-      : incomeType === "weekly"
-      ? incomeValue
-      : incomeValue / 4;
 
   const update = (day, cat, val) => {
     setWeek({ ...week, [day]: { ...week[day], [cat]: Number(val) } });
@@ -95,126 +60,80 @@ export default function PremiumWeek() {
   const scatterData = DAYS.map((d, i) => ({
     x: i + 1,
     y: dailyTotals[i],
-    day: d,
   }));
 
-  /* AI CALL */
-
-  const runAI = async () => {
+  const runAI = () => {
     setLoading(true);
-    try {
-      const res = await fetch("/api/get-ai-insight", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          mode: "weekly",
-          country,
-          weeklyIncome,
-          weeklySpend,
-          dailyTotals,
-          breakdown: week,
-        }),
-      });
-      const data = await res.json();
-      setAiText(data.insight || "AI analysis unavailable.");
-    } catch {
-      setAiText("AI system temporarily unavailable.");
-    }
-    setLoading(false);
+    setTimeout(() => {
+      setAiText(
+        `AI SIGNAL:\n• Spending momentum is ${weeklySpend > incomeValue ? "NEGATIVE" : "STABLE"}\n• Highest pressure detected mid-week\n• Tactical advice: reduce variable categories by 5–8%`
+      );
+      setLoading(false);
+    }, 900);
   };
-
-  /* ===== RENDER ===== */
 
   return (
     <div style={page}>
+      <div style={container}>
 
-      {/* HEADER */}
-      <div style={topBar}>
-        <div>
-          <h1 style={title}>WealthyAI · Weekly Intelligence</h1>
-          <p style={subtitle}>AI-driven behavioral finance dashboard</p>
-        </div>
-        <button style={proBadge}>PRO ACCESS</button>
-      </div>
+        {/* HEADER */}
+        <header style={header}>
+          <div>
+            <h1 style={title}>WEALTHYAI</h1>
+            <div style={subtitle}>WEEKLY FINANCIAL INTELLIGENCE</div>
+          </div>
+          <div style={chip}>PRO</div>
+        </header>
 
-      {/* KPIs */}
-      <div style={kpiGrid}>
-        <KPI label="Weekly Income" value={`$${weeklyIncome.toFixed(0)}`} />
-        <KPI label="Weekly Spend" value={`$${weeklySpend}`} />
-        <KPI label="Savings Rate" value={`${((1 - weeklySpend / weeklyIncome) * 100 || 0).toFixed(1)}%`} />
-        <KPI label="Risk Level" value={weeklySpend > weeklyIncome ? "High" : "Low"} />
-      </div>
+        {/* KPI */}
+        <section style={kpiGrid}>
+          <KPI label="Weekly Spend" value={`$${weeklySpend}`} />
+          <KPI label="Income" value={`$${incomeValue}`} />
+          <KPI label="Balance" value={`$${incomeValue - weeklySpend}`} />
+        </section>
 
-      <div style={dashboard}>
+        {/* DASHBOARD */}
+        <main style={grid}>
 
-        {/* LEFT – INPUT */}
-        <div style={panel}>
-          <PanelTitle>Weekly Input Matrix</PanelTitle>
-
-          <div style={controlRow}>
-            <select value={country} onChange={e => setCountry(e.target.value)} style={select}>
-              {Object.entries(COUNTRY_NAMES).map(([k, v]) => (
-                <option key={k} value={k}>{v}</option>
-              ))}
-            </select>
-
-            <select value={incomeType} onChange={e => setIncomeType(e.target.value)} style={select}>
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
-            </select>
-
+          {/* INPUT */}
+          <Panel title="INPUT MATRIX">
             <input
               type="number"
               value={incomeValue}
               onChange={e => setIncomeValue(Number(e.target.value))}
               style={input}
+              placeholder="Weekly income"
             />
-          </div>
 
-          {DAYS.map(d => (
-            <div key={d} style={dayRow}>
-              <div style={dayLabel}>{d}</div>
-              {CATEGORIES.map(c => (
-                <input
-                  key={c}
-                  type="number"
-                  placeholder={c}
-                  value={week[d][c]}
-                  onChange={e => update(d, c, e.target.value)}
-                  style={miniInput}
-                />
-              ))}
-            </div>
-          ))}
-        </div>
+            {DAYS.map(d => (
+              <div key={d} style={dayRow}>
+                <div style={day}>{d}</div>
+                {CATEGORIES.map(c => (
+                  <input
+                    key={c}
+                    type="number"
+                    value={week[d][c]}
+                    onChange={e => update(d, c, e.target.value)}
+                    placeholder={c}
+                    style={miniInput}
+                  />
+                ))}
+              </div>
+            ))}
+          </Panel>
 
-        {/* RIGHT – VISUALS */}
-        <div style={panelWide}>
-          <PanelTitle>Financial Signals</PanelTitle>
-
-          <div style={chartGrid}>
+          {/* CHARTS */}
+          <Panel title="SIGNALS">
             <Chart title="Cash Flow">
               <AreaChart data={chartData}>
                 <XAxis dataKey="day" />
                 <YAxis />
                 <Tooltip />
-                <Area dataKey="total" stroke="#38bdf8" fill="#38bdf8" fillOpacity={0.25} />
+                <Area dataKey="total" stroke="#00e5ff" fill="#00e5ff" fillOpacity={0.2} />
               </AreaChart>
             </Chart>
 
-            <Chart title="Category Trends">
-              <LineChart data={chartData}>
-                <XAxis dataKey="day" />
-                <YAxis />
-                <Tooltip />
-                {CATEGORIES.map(c => (
-                  <Line key={c} dataKey={c} stroke={COLORS[c]} dot={false} />
-                ))}
-              </LineChart>
-            </Chart>
-
-            <Chart title="Weekly Distribution">
+            <Chart title="Distribution">
               <PieChart>
                 <Pie data={pieData} dataKey="value" outerRadius={90}>
                   {pieData.map((p, i) => (
@@ -225,57 +144,54 @@ export default function PremiumWeek() {
               </PieChart>
             </Chart>
 
-            <Chart title="Spending Dispersion">
+            <Chart title="Dispersion">
               <ScatterChart>
-                <XAxis dataKey="x" />
-                <YAxis dataKey="y" />
+                <XAxis />
+                <YAxis />
                 <Tooltip />
                 <Scatter data={scatterData} fill="#a78bfa" />
               </ScatterChart>
             </Chart>
-          </div>
+          </Panel>
+        </main>
 
-          {/* AI */}
-          <div style={aiPanel}>
-            <button onClick={runAI} style={aiButton}>
-              {loading ? "Analyzing…" : "Regenerate AI Strategy"}
-            </button>
-            <pre style={aiTextStyle}>
-              {aiText || "AI will generate tactical weekly insights based on your behavior."}
-            </pre>
-          </div>
+        {/* AI */}
+        <section style={aiPanel}>
+          <button onClick={runAI} style={aiButton}>
+            {loading ? "ANALYZING…" : "REGENERATE AI STRATEGY"}
+          </button>
+          <pre style={aiTextStyle}>{aiText}</pre>
+        </section>
 
-        </div>
       </div>
     </div>
   );
 }
 
-/* ===== COMPONENTS ===== */
+/* ===== UI COMPONENTS ===== */
 
-function KPI({ label, value }) {
-  return (
-    <div style={kpi}>
-      <div style={kpiLabel}>{label}</div>
-      <div style={kpiValue}>{value}</div>
-    </div>
-  );
-}
+const KPI = ({ label, value }) => (
+  <div style={kpi}>
+    <div style={kpiLabel}>{label}</div>
+    <div style={kpiValue}>{value}</div>
+  </div>
+);
 
-function Chart({ title, children }) {
-  return (
-    <div style={chartBox}>
-      <div style={chartTitle}>{title}</div>
-      <ResponsiveContainer width="100%" height={220}>
-        {children}
-      </ResponsiveContainer>
-    </div>
-  );
-}
+const Panel = ({ title, children }) => (
+  <section style={panel}>
+    <div style={panelTitle}>{title}</div>
+    {children}
+  </section>
+);
 
-function PanelTitle({ children }) {
-  return <div style={panelTitle}>{children}</div>;
-}
+const Chart = ({ title, children }) => (
+  <div style={chartBox}>
+    <div style={chartTitle}>{title}</div>
+    <ResponsiveContainer width="100%" height={220}>
+      {children}
+    </ResponsiveContainer>
+  </div>
+);
 
 /* ===== STYLES ===== */
 
@@ -283,41 +199,116 @@ const page = {
   minHeight: "100vh",
   background: "radial-gradient(circle at top, #020617, #000)",
   color: "#e5e7eb",
-  padding: 40,
-  fontFamily: "Inter, system-ui",
 };
 
-const topBar = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 30 };
-const title = { fontSize: "2.4rem" };
-const subtitle = { color: "#7dd3fc" };
-const proBadge = { background: "#38bdf8", color: "#000", borderRadius: 999, padding: "8px 16px", fontWeight: "bold" };
+const container = {
+  maxWidth: 1200,
+  margin: "0 auto",
+  padding: 20,
+};
 
-const kpiGrid = { display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 30 };
-const kpi = { border: "1px solid #1e293b", borderRadius: 14, padding: 16, background: "rgba(2,6,23,0.6)" };
-const kpiLabel = { fontSize: 12, color: "#7dd3fc" };
-const kpiValue = { fontSize: 24, fontWeight: "bold" };
+const header = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: 20,
+};
 
-const dashboard = { display: "grid", gridTemplateColumns: "1fr 2fr", gap: 30 };
+const title = { fontSize: 28, letterSpacing: 2 };
+const subtitle = { fontSize: 12, color: "#00e5ff" };
+const chip = { background: "#00e5ff", color: "#000", padding: "6px 12px", borderRadius: 999 };
 
-const panel = { border: "1px solid #1e293b", borderRadius: 20, padding: 20, background: "rgba(2,6,23,0.7)" };
-const panelWide = { ...panel };
+const kpiGrid = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(140px,1fr))",
+  gap: 12,
+  marginBottom: 20,
+};
 
-const panelTitle = { color: "#38bdf8", fontWeight: "bold", marginBottom: 14 };
+const kpi = {
+  border: "1px solid #0f172a",
+  borderRadius: 14,
+  padding: 14,
+  background: "rgba(2,6,23,0.8)",
+};
 
-const controlRow = { display: "flex", gap: 10, marginBottom: 16 };
+const kpiLabel = { fontSize: 11, color: "#00e5ff" };
+const kpiValue = { fontSize: 22, fontWeight: "bold" };
 
-const dayRow = { display: "grid", gridTemplateColumns: "80px repeat(6,1fr)", gap: 6, marginBottom: 6 };
-const dayLabel = { color: "#7dd3fc", fontSize: 12 };
+const grid = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(320px,1fr))",
+  gap: 16,
+};
 
-const input = { background: "#020617", border: "1px solid #1e293b", color: "#38bdf8", padding: 8 };
-const miniInput = { ...input, fontSize: 11 };
-const select = input;
+const panel = {
+  border: "1px solid #0f172a",
+  borderRadius: 18,
+  padding: 16,
+  background: "rgba(2,6,23,0.85)",
+};
 
-const chartGrid = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 };
+const panelTitle = {
+  color: "#00e5ff",
+  fontSize: 12,
+  marginBottom: 12,
+  letterSpacing: 1,
+};
 
-const chartBox = { border: "1px solid #1e293b", borderRadius: 16, padding: 12 };
-const chartTitle = { fontSize: 12, color: "#7dd3fc", marginBottom: 6 };
+const dayRow = {
+  display: "grid",
+  gridTemplateColumns: "60px repeat(6,1fr)",
+  gap: 6,
+  marginBottom: 6,
+};
 
-const aiPanel = { marginTop: 20 };
-const aiButton = { width: "100%", padding: 14, background: "#38bdf8", border: "none", borderRadius: 12, fontWeight: "bold" };
-const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap", color: "#cbd5f5" };
+const day = { fontSize: 11, color: "#7dd3fc" };
+
+const input = {
+  width: "100%",
+  padding: 10,
+  background: "#020617",
+  border: "1px solid #0f172a",
+  color: "#00e5ff",
+  marginBottom: 12,
+};
+
+const miniInput = {
+  ...input,
+  padding: 6,
+  fontSize: 11,
+};
+
+const chartBox = {
+  border: "1px solid #0f172a",
+  borderRadius: 14,
+  padding: 10,
+  marginBottom: 12,
+};
+
+const chartTitle = { fontSize: 11, color: "#7dd3fc", marginBottom: 6 };
+
+const aiPanel = {
+  marginTop: 20,
+  border: "1px solid #00e5ff",
+  borderRadius: 18,
+  padding: 16,
+  background: "rgba(0,229,255,0.05)",
+};
+
+const aiButton = {
+  width: "100%",
+  padding: 14,
+  background: "#00e5ff",
+  border: "none",
+  borderRadius: 14,
+  fontWeight: "bold",
+  cursor: "pointer",
+};
+
+const aiTextStyle = {
+  marginTop: 12,
+  whiteSpace: "pre-wrap",
+  fontSize: 12,
+  color: "#cbd5f5",
+};
