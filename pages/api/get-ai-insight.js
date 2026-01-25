@@ -4,132 +4,90 @@ export default async function handler(req, res) {
   }
 
   try {
+    /* =========================
+       PAYLOAD (NEW STRUCTURE)
+    ========================== */
     const {
-      country = "US",
-      weeklyIncome = 0,
-      weeklySpend = 0,
-      dailyTotals = [],
-      breakdown = {},
+      mode = "weekly",
+      context = {},
     } = req.body;
 
-    /* =========================
-       SAFETY / NORMALIZATION
-    ========================== */
+    const {
+      country = "US",
+      income = 0,
+      totalSpend = 0,
+      daily = [],
+    } = context;
+
     const safe = (v) => (typeof v === "number" && !isNaN(v) ? v : 0);
 
-    const income = safe(weeklyIncome);
-    const spend = safe(weeklySpend);
-    const days = dailyTotals.map(safe);
+    const weeklyIncome = safe(income);
+    const weeklySpend = safe(totalSpend);
+    const dailyTotals = daily.map(d => safe(d.total));
 
     /* =========================
-       EXTENDED COUNTRY DATA
+       COUNTRY BENCHMARKS
     ========================== */
     const COUNTRY = {
-      US: {
-        currency: "USD",
-        avgWeeklySpend: 900,
-        rentPct: 0.32,
-        foodPct: 0.17,
-        transportPct: 0.12,
-        entertainmentPct: 0.11,
-        savingsTarget: 0.20,
-      },
-      DE: {
-        currency: "EUR",
-        avgWeeklySpend: 650,
-        rentPct: 0.29,
-        foodPct: 0.16,
-        transportPct: 0.14,
-        entertainmentPct: 0.10,
-        savingsTarget: 0.22,
-      },
-      UK: {
-        currency: "GBP",
-        avgWeeklySpend: 720,
-        rentPct: 0.34,
-        foodPct: 0.18,
-        transportPct: 0.13,
-        entertainmentPct: 0.11,
-        savingsTarget: 0.20,
-      },
-      HU: {
-        currency: "HUF",
-        avgWeeklySpend: 420,
-        rentPct: 0.35,
-        foodPct: 0.22,
-        transportPct: 0.15,
-        entertainmentPct: 0.08,
-        savingsTarget: 0.15,
-      },
-      GLOBAL: {
-        currency: "USD",
-        avgWeeklySpend: 700,
-        rentPct: 0.30,
-        foodPct: 0.18,
-        transportPct: 0.13,
-        entertainmentPct: 0.10,
-        savingsTarget: 0.20,
-      },
+      US: { currency: "USD", avgWeeklySpend: 900, savingsTarget: 0.20 },
+      DE: { currency: "EUR", avgWeeklySpend: 650, savingsTarget: 0.22 },
+      UK: { currency: "GBP", avgWeeklySpend: 720, savingsTarget: 0.20 },
+      HU: { currency: "HUF", avgWeeklySpend: 420, savingsTarget: 0.15 },
+      GLOBAL: { currency: "USD", avgWeeklySpend: 700, savingsTarget: 0.20 },
     };
 
     const ref = COUNTRY[country] || COUNTRY.GLOBAL;
 
     /* =========================
-       DERIVED ANALYTICS
+       DERIVED METRICS
     ========================== */
-    const surplus = income - spend;
-    const savingsRate = income > 0 ? surplus / income : 0;
+    const surplus = weeklyIncome - weeklySpend;
+    const savingsRate =
+      weeklyIncome > 0 ? surplus / weeklyIncome : 0;
 
-    const worstDayIndex = days.length
-      ? days.indexOf(Math.max(...days))
-      : null;
+    const maxDay = Math.max(...dailyTotals);
+    const minDay = Math.min(...dailyTotals);
 
-    const bestDayIndex = days.length
-      ? days.indexOf(Math.min(...days))
-      : null;
+    const worstDay = daily.find(d => d.total === maxDay)?.day || "N/A";
+    const bestDay = daily.find(d => d.total === minDay)?.day || "N/A";
 
     /* =========================
-       AI PROMPT (PRO LEVEL)
+       AI PROMPT (FIXED & CLEAN)
     ========================== */
     const prompt = `
 You are a senior financial behavior analyst.
 
-User context:
-Country: ${country}
-Currency: ${ref.currency}
+User profile:
+- Country: ${country}
+- Currency: ${ref.currency}
 
-Weekly income: ${income}
-Weekly spending: ${spend}
-Weekly surplus: ${surplus}
-Savings rate: ${(savingsRate * 100).toFixed(1)}%
-Country average weekly spend: ${ref.avgWeeklySpend}
+Weekly numbers:
+- Income: ${weeklyIncome}
+- Spending: ${weeklySpend}
+- Surplus: ${surplus}
+- Savings rate: ${(savingsRate * 100).toFixed(1)}%
+- Country average weekly spend: ${ref.avgWeeklySpend}
 
-Daily spending:
-${days.map((v, i) => `Day ${i + 1}: ${v}`).join("\n")}
+Daily spending totals:
+${daily.map(d => `${d.day}: ${d.total}`).join("\n")}
 
-Spending breakdown:
-${JSON.stringify(breakdown, null, 2)}
-
-Country norms:
-- Rent target: ${(ref.rentPct * 100).toFixed(0)}%
-- Food target: ${(ref.foodPct * 100).toFixed(0)}%
-- Transport target: ${(ref.transportPct * 100).toFixed(0)}%
-- Entertainment target: ${(ref.entertainmentPct * 100).toFixed(0)}%
-- Savings target: ${(ref.savingsTarget * 100).toFixed(0)}%
+Key observations:
+- Highest spending day: ${worstDay}
+- Lowest spending day: ${bestDay}
 
 Your task:
-1. Identify the worst spending day and explain WHY.
-2. Identify the best spending day and explain WHAT worked.
-3. Compare the user's spending to country averages.
-4. Highlight one structural risk.
-5. Give 2 concrete behavioral improvements.
-6. End with ONE focus action for next week.
+1. Explain why the worst day is risky.
+2. Explain what worked on the best day.
+3. Compare spending to country norms.
+4. Identify ONE behavioral risk.
+5. Give TWO specific, actionable improvements.
+6. End with ONE clear focus for next week.
 
 Rules:
 - No generic advice.
 - No mentioning missing data.
-- Be precise, professional, calm.
-- Use bullet points.
+- Be concise, professional, and specific.
+- Bullet points only.
 `;
 
     /* =========================
@@ -146,7 +104,7 @@ Rules:
         body: JSON.stringify({
           model: "mistralai/Mistral-7B-Instruct-v0.2",
           messages: [{ role: "user", content: prompt }],
-          temperature: 0.35,
+          temperature: 0.3,
         }),
       }
     );
@@ -157,11 +115,11 @@ Rules:
       "AI analysis temporarily unavailable.";
 
     return res.status(200).json({ insight: text });
+
   } catch (err) {
     console.error("AI ERROR:", err);
     return res.status(200).json({
-      insight:
-        "AI analysis temporarily unavailable. Please try again later.",
+      insight: "AI analysis temporarily unavailable. Please try again later.",
     });
   }
 }
