@@ -128,137 +128,120 @@ export default function PremiumWeek() {
   return (
     <div style={page}>
 
-      {/* NAV */}
-      <div style={nav}>
-        <a href="/" style={navBtn}>← Back to WealthyAI Home</a>
-        <a href="/how-to-use" style={navBtnAlt}>How to use Weekly & Monthly</a>
-      </div>
-
       {/* HEADER */}
-      <h1 style={title}>WEALTHYAI · WEEKLY INTELLIGENCE</h1>
-      <p style={subtitle}>
-        Thank you for choosing the <strong>Weekly Behavioral Analysis</strong>.  
-        This module detects spending patterns and adapts insights to your country.
-      </p>
-
-      {/* COUNTRY */}
-      <div style={card}>
-        <label style={label}>Country context</label>
-        <select value={country} onChange={e => setCountry(e.target.value)} style={select}>
-          <option value="US">United States</option>
-          <option value="DE">Germany</option>
-          <option value="UK">United Kingdom</option>
-          <option value="HU">Hungary</option>
-        </select>
-        <p style={hint}>
-          Active context: {COUNTRY_NAMES[country]}
-        </p>
-      </div>
-
-      {/* INCOME */}
-      <div style={card}>
-        <label style={label}>Income</label>
-        <div style={{ display: "flex", gap: 10 }}>
-          <select value={incomeType} onChange={e => setIncomeType(e.target.value)} style={select}>
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="monthly">Monthly</option>
-          </select>
-          <input
-            type="number"
-            value={incomeValue}
-            onChange={e => setIncomeValue(Number(e.target.value))}
-            style={input}
-          />
+      <div style={topBar}>
+        <div>
+          <h1 style={title}>WealthyAI · Weekly Intelligence</h1>
+          <p style={subtitle}>AI-driven behavioral finance dashboard</p>
         </div>
-        <p style={hint}>Weekly baseline: ${weeklyIncome.toFixed(0)}</p>
+        <button style={proBadge}>PRO ACCESS</button>
       </div>
 
-      <div style={layout}>
+      {/* KPIs */}
+      <div style={kpiGrid}>
+        <KPI label="Weekly Income" value={`$${weeklyIncome.toFixed(0)}`} />
+        <KPI label="Weekly Spend" value={`$${weeklySpend}`} />
+        <KPI label="Savings Rate" value={`${((1 - weeklySpend / weeklyIncome) * 100 || 0).toFixed(1)}%`} />
+        <KPI label="Risk Level" value={weeklySpend > weeklyIncome ? "High" : "Low"} />
+      </div>
 
-        {/* INPUTS */}
-        <div style={left}>
-          {DAYS.map(d => (
-            <details key={d} open style={dayBox}>
-              <summary style={dayTitle}>{d}</summary>
-              {CATEGORIES.map(c => (
-                <div key={c} style={row}>
-                  <span>{c.toUpperCase()}</span>
-                  <input
-                    type="number"
-                    value={week[d][c]}
-                    onChange={e => update(d, c, e.target.value)}
-                    style={input}
-                  />
-                </div>
+      <div style={dashboard}>
+
+        {/* LEFT – INPUT */}
+        <div style={panel}>
+          <PanelTitle>Weekly Input Matrix</PanelTitle>
+
+          <div style={controlRow}>
+            <select value={country} onChange={e => setCountry(e.target.value)} style={select}>
+              {Object.entries(COUNTRY_NAMES).map(([k, v]) => (
+                <option key={k} value={k}>{v}</option>
               ))}
-            </details>
+            </select>
+
+            <select value={incomeType} onChange={e => setIncomeType(e.target.value)} style={select}>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+
+            <input
+              type="number"
+              value={incomeValue}
+              onChange={e => setIncomeValue(Number(e.target.value))}
+              style={input}
+            />
+          </div>
+
+          {DAYS.map(d => (
+            <div key={d} style={dayRow}>
+              <div style={dayLabel}>{d}</div>
+              {CATEGORIES.map(c => (
+                <input
+                  key={c}
+                  type="number"
+                  placeholder={c}
+                  value={week[d][c]}
+                  onChange={e => update(d, c, e.target.value)}
+                  style={miniInput}
+                />
+              ))}
+            </div>
           ))}
         </div>
 
-        {/* CHARTS */}
-        <div style={right}>
-          <Chart title="Daily total spending">
-            <LineChart data={chartData}>
-              <XAxis dataKey="day" />
-              <YAxis />
-              <Tooltip />
-              <Line dataKey="total" stroke="#38bdf8" strokeWidth={3} />
-            </LineChart>
-          </Chart>
+        {/* RIGHT – VISUALS */}
+        <div style={panelWide}>
+          <PanelTitle>Financial Signals</PanelTitle>
 
-          <Chart title="Category trends">
-            <LineChart data={chartData}>
-              <XAxis dataKey="day" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              {CATEGORIES.map(c => (
-                <Line key={c} dataKey={c} stroke={COLORS[c]} />
-              ))}
-            </LineChart>
-          </Chart>
+          <div style={chartGrid}>
+            <Chart title="Cash Flow">
+              <AreaChart data={chartData}>
+                <XAxis dataKey="day" />
+                <YAxis />
+                <Tooltip />
+                <Area dataKey="total" stroke="#38bdf8" fill="#38bdf8" fillOpacity={0.25} />
+              </AreaChart>
+            </Chart>
 
-          <Chart title="Weekly distribution">
-            <PieChart>
-              <Pie data={pieData} dataKey="value" outerRadius={80}>
-                {pieData.map((p, i) => (
-                  <Cell key={i} fill={COLORS[p.name]} />
+            <Chart title="Category Trends">
+              <LineChart data={chartData}>
+                <XAxis dataKey="day" />
+                <YAxis />
+                <Tooltip />
+                {CATEGORIES.map(c => (
+                  <Line key={c} dataKey={c} stroke={COLORS[c]} dot={false} />
                 ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </Chart>
+              </LineChart>
+            </Chart>
 
-          <Chart title="Spending momentum">
-            <AreaChart data={chartData}>
-              <XAxis dataKey="day" />
-              <YAxis />
-              <Tooltip />
-              <Area dataKey="total" stroke="#38bdf8" fill="#38bdf8" fillOpacity={0.25} />
-            </AreaChart>
-          </Chart>
+            <Chart title="Weekly Distribution">
+              <PieChart>
+                <Pie data={pieData} dataKey="value" outerRadius={90}>
+                  {pieData.map((p, i) => (
+                    <Cell key={i} fill={COLORS[p.name]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </Chart>
 
-          <Chart title="Daily dispersion">
-            <ScatterChart>
-              <XAxis dataKey="x" />
-              <YAxis dataKey="y" />
-              <Tooltip />
-              <Scatter data={scatterData} fill="#a78bfa" />
-            </ScatterChart>
-          </Chart>
-
-          <div style={summary}>
-            Weekly spend: <strong>${weeklySpend}</strong> · Income: <strong>${weeklyIncome.toFixed(0)}</strong>
+            <Chart title="Spending Dispersion">
+              <ScatterChart>
+                <XAxis dataKey="x" />
+                <YAxis dataKey="y" />
+                <Tooltip />
+                <Scatter data={scatterData} fill="#a78bfa" />
+              </ScatterChart>
+            </Chart>
           </div>
 
           {/* AI */}
-          <div style={aiBox}>
+          <div style={aiPanel}>
             <button onClick={runAI} style={aiButton}>
-              {loading ? "Analyzing…" : "Run Weekly AI Analysis"}
+              {loading ? "Analyzing…" : "Regenerate AI Strategy"}
             </button>
             <pre style={aiTextStyle}>
-              {aiText || "AI will analyze your weekly behavior once data is provided."}
+              {aiText || "AI will generate tactical weekly insights based on your behavior."}
             </pre>
           </div>
 
@@ -268,7 +251,16 @@ export default function PremiumWeek() {
   );
 }
 
-/* ===== UI HELPERS ===== */
+/* ===== COMPONENTS ===== */
+
+function KPI({ label, value }) {
+  return (
+    <div style={kpi}>
+      <div style={kpiLabel}>{label}</div>
+      <div style={kpiValue}>{value}</div>
+    </div>
+  );
+}
 
 function Chart({ title, children }) {
   return (
@@ -281,6 +273,10 @@ function Chart({ title, children }) {
   );
 }
 
+function PanelTitle({ children }) {
+  return <div style={panelTitle}>{children}</div>;
+}
+
 /* ===== STYLES ===== */
 
 const page = {
@@ -291,71 +287,37 @@ const page = {
   fontFamily: "Inter, system-ui",
 };
 
-const nav = { display: "flex", gap: 16, marginBottom: 20 };
-const navBtn = {
-  border: "1px solid #38bdf8",
-  color: "#38bdf8",
-  padding: "8px 16px",
-  borderRadius: 10,
-  textDecoration: "none",
-  fontSize: 13,
-};
-const navBtnAlt = { ...navBtn, borderColor: "#a78bfa", color: "#a78bfa" };
+const topBar = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 30 };
+const title = { fontSize: "2.4rem" };
+const subtitle = { color: "#7dd3fc" };
+const proBadge = { background: "#38bdf8", color: "#000", borderRadius: 999, padding: "8px 16px", fontWeight: "bold" };
 
-const title = { fontSize: "2.6rem" };
-const subtitle = { color: "#94a3b8", marginBottom: 30 };
+const kpiGrid = { display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 30 };
+const kpi = { border: "1px solid #1e293b", borderRadius: 14, padding: 16, background: "rgba(2,6,23,0.6)" };
+const kpiLabel = { fontSize: 12, color: "#7dd3fc" };
+const kpiValue = { fontSize: 24, fontWeight: "bold" };
 
-const layout = { display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 30 };
+const dashboard = { display: "grid", gridTemplateColumns: "1fr 2fr", gap: 30 };
 
-const left = { maxHeight: "70vh", overflowY: "auto" };
-const right = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 };
+const panel = { border: "1px solid #1e293b", borderRadius: 20, padding: 20, background: "rgba(2,6,23,0.7)" };
+const panelWide = { ...panel };
 
-const card = { border: "1px solid #1e293b", borderRadius: 14, padding: 16, marginBottom: 20 };
+const panelTitle = { color: "#38bdf8", fontWeight: "bold", marginBottom: 14 };
 
-const dayBox = { ...card, marginBottom: 12 };
-const dayTitle = { cursor: "pointer", color: "#38bdf8", fontWeight: "bold" };
+const controlRow = { display: "flex", gap: 10, marginBottom: 16 };
 
-const row = { display: "flex", justifyContent: "space-between", marginBottom: 8 };
+const dayRow = { display: "grid", gridTemplateColumns: "80px repeat(6,1fr)", gap: 6, marginBottom: 6 };
+const dayLabel = { color: "#7dd3fc", fontSize: 12 };
 
-const input = {
-  background: "transparent",
-  border: "none",
-  borderBottom: "1px solid #38bdf8",
-  color: "#38bdf8",
-  width: 90,
-  textAlign: "right",
-};
+const input = { background: "#020617", border: "1px solid #1e293b", color: "#38bdf8", padding: 8 };
+const miniInput = { ...input, fontSize: 11 };
+const select = input;
 
-const select = { background: "#020617", color: "#38bdf8", border: "1px solid #1e293b", padding: 8 };
+const chartGrid = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 };
 
-const label = { color: "#7dd3fc", fontSize: 12 };
-const hint = { fontSize: 11, color: "#64748b" };
-
-const chartBox = { border: "1px solid #1e293b", borderRadius: 14, padding: 12 };
+const chartBox = { border: "1px solid #1e293b", borderRadius: 16, padding: 12 };
 const chartTitle = { fontSize: 12, color: "#7dd3fc", marginBottom: 6 };
 
-const summary = { gridColumn: "1 / -1", textAlign: "right", marginTop: 10 };
-
-const aiBox = {
-  gridColumn: "1 / -1",
-  border: "1px solid #1e293b",
-  borderRadius: 14,
-  padding: 16,
-  marginTop: 10,
-};
-
-const aiButton = {
-  width: "100%",
-  padding: 14,
-  background: "#38bdf8",
-  border: "none",
-  borderRadius: 10,
-  fontWeight: "bold",
-  cursor: "pointer",
-};
-
-const aiTextStyle = {
-  marginTop: 10,
-  whiteSpace: "pre-wrap",
-  color: "#cbd5f5",
-};
+const aiPanel = { marginTop: 20 };
+const aiButton = { width: "100%", padding: 14, background: "#38bdf8", border: "none", borderRadius: 12, fontWeight: "bold" };
+const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap", color: "#cbd5f5" };
