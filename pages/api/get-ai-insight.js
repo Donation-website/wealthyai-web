@@ -4,36 +4,14 @@ export default async function handler(req, res) {
   }
 
   try {
-    const {
-      country = "US",
-      weeklyIncome = 0,
-      weeklySpend = 0,
-      dailyTotals = [],
-    } = req.body;
+    const { country = "US", weeklyIncome = 0, weeklySpend = 0, dailyTotals = [] } = req.body;
 
-    const safe = (v) => (typeof v === "number" && isFinite(v) ? v : 0);
-    const income = safe(weeklyIncome);
-    const spend = safe(weeklySpend);
-    const surplus = income - spend;
-    const days = Array.isArray(dailyTotals) ? dailyTotals.map(safe) : [];
+    // Egyszerűbb prompt a stabilitásért
+    const prompt = `Analyze this weekly spending: Income ${weeklyIncome}, Spend ${weeklySpend}, Daily: ${dailyTotals.join(",")}. Country: ${country}. Give 2 tips.`;
 
-    const COUNTRY = {
-      US: { currency: "USD", avgWeekly: 900 },
-      DE: { currency: "EUR", avgWeekly: 650 },
-      UK: { currency: "GBP", avgWeekly: 720 },
-      HU: { currency: "HUF", avgWeekly: 420 },
-    };
-    const ref = COUNTRY[country] || COUNTRY.US;
-
-    const prompt = `[INST] You are a financial analyst. Analyze this:
-    - Country: ${country} (${ref.currency})
-    - Weekly income: ${income}
-    - Weekly spending: ${spend}
-    - Daily data: ${days.join(", ")}
-    Give 2 tips and a short outlook. [/INST]`;
-
+    // 1. ÚJ ENDPOINT: Próbáljuk a közvetlen hívást a stabilabb Llama modellel
     const response = await fetch(
-      "https://router.huggingface.co",
+      "https://api-inference.huggingface.co",
       {
         method: "POST",
         headers: {
@@ -43,38 +21,42 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           inputs: prompt,
-          parameters: { max_new_tokens: 500, temperature: 0.7 }
+          parameters: { max_new_tokens: 300, temperature: 0.7 }
         }),
       }
     );
 
-    const result = await response.json();
-    console.log("HF API RAW RESULT:", JSON.stringify(result)); // Ezt nézd a terminálban!
-
-    // 1. HIBAKEZELÉS: Ha az API hibaüzenetet küld
-    if (result.error) {
-      return res.status(200).json({ insight: `HF API Error: ${result.error}` });
+    // Ha nem JSON jön vissza (pl. Not Found), itt kezeljük
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      const rawText = await response.text();
+      console.error("Nem JSON válasz érkezett:", rawText);
+      return res.status(200).json({ insight: "AI endpoint error. Please check your HF_TOKEN or try again later." });
     }
 
-    // 2. ADATKINYERÉS: A Router API gyakran listát ad vissza: [{ generated_text: "..." }]
+    const result = await response.json();
+
+    if (result.error) {
+      return res.status(200).json({ insight: `AI error: ${result.error}` });
+    }
+
+    // A kinyerés módja: result[0].generated_text
     let aiText = "";
     if (Array.isArray(result) && result[0]?.generated_text) {
       aiText = result[0].generated_text;
     } else if (result.generated_text) {
       aiText = result.generated_text;
     } else {
-      aiText = "Could not parse AI response. Check server logs.";
+      aiText = "Analysis ready, but response format was unexpected.";
     }
 
-    // Tisztítás: néha az AI megismétli a promptot, ezt vágjuk le
-    const cleanText = aiText.replace(prompt, "").trim();
+    // Levágjuk a promptot a válaszból, ha benne maradt volna
+    const finalInsight = aiText.replace(prompt, "").trim();
 
-    return res.status(200).json({ insight: cleanText });
+    return res.status(200).json({ insight: finalInsight });
 
   } catch (err) {
-    console.error("CRITICAL SERVER ERROR:", err);
-    return res.status(200).json({
-      insight: `System Error: ${err.message}. Please check your environment variables.`
-    });
+    console.error("SERVER ERROR:", err);
+    return res.status(200).json({ insight: `Connection error: ${err.message}` });
   }
 }
