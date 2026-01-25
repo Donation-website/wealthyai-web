@@ -94,7 +94,12 @@ export default function PremiumWeek() {
 
   return (
     <div style={page}>
-      {/* HELP BUTTON */}
+      {/* BACKGROUND LAYERS */}
+      <div style={bgGrid} />
+      <div style={bgCharts} />
+      <div style={bgFlow} />
+
+      {/* HELP */}
       <a href="/help" style={helpButton}>Help</a>
 
       <h1 style={title}>WEALTHYAI · WEEKLY INTELLIGENCE</h1>
@@ -180,7 +185,7 @@ export default function PremiumWeek() {
   );
 }
 
-/* ===== COMPONENTS ===== */
+/* ===== COMPONENT ===== */
 
 function Chart({ title, children }) {
   return (
@@ -198,14 +203,42 @@ function Chart({ title, children }) {
 const page = {
   minHeight: "100vh",
   position: "relative",
-  backgroundImage:
-    "linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('/wealthyai/icons/week.png')",
-  backgroundSize: "cover",
-  backgroundPosition: "center",
+  background: "#020617",
   color: "#e5e7eb",
   padding: 40,
   fontFamily: "Inter, system-ui",
+  overflow: "hidden",
 };
+
+/* === BACKGROUND COMBO === */
+
+const bgGrid = {
+  position: "fixed",
+  inset: 0,
+  backgroundImage:
+    "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
+  backgroundSize: "100px 100px",
+  zIndex: 0,
+};
+
+const bgCharts = {
+  position: "fixed",
+  inset: 0,
+  background:
+    "radial-gradient(circle at 20% 30%, rgba(56,189,248,0.12), transparent 45%), radial-gradient(circle at 80% 60%, rgba(167,139,250,0.12), transparent 50%)",
+  zIndex: 1,
+};
+
+const bgFlow = {
+  position: "fixed",
+  inset: 0,
+  backgroundImage:
+    "linear-gradient(90deg, transparent 0%, rgba(56,189,248,0.08) 50%, transparent 100%)",
+  backgroundSize: "1400px 1400px",
+  zIndex: 2,
+};
+
+/* === UI === */
 
 const helpButton = {
   position: "absolute",
@@ -262,4 +295,5 @@ const aiButton = {
   borderRadius: 10,
   fontWeight: "bold",
 };
+
 const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap" };
