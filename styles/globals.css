@@ -1,6 +1,8 @@
-@tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ⛔️ ideiglenesen KIKAPCSOLJUK a preflight resetet */
+/* @tailwind base; */
 
 body {
   background: radial-gradient(circle at top, #020617, #000);
