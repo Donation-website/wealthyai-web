@@ -184,25 +184,28 @@ const page = {
   backgroundImage: `
     repeating-linear-gradient(
       -25deg,
-      rgba(56,189,248,0.07) 0px,
-      rgba(56,189,248,0.07) 1px,
+      rgba(56,189,248,0.06) 0px,
+      rgba(56,189,248,0.06) 1px,
       transparent 1px,
-      transparent 160px
+      transparent 180px
     ),
     repeating-linear-gradient(
       35deg,
-      rgba(167,139,250,0.06) 0px,
-      rgba(167,139,250,0.06) 1px,
+      rgba(167,139,250,0.05) 0px,
+      rgba(167,139,250,0.05) 1px,
       transparent 1px,
-      transparent 220px
+      transparent 260px
     ),
-    radial-gradient(circle at 20% 30%, rgba(56,189,248,0.22), transparent 40%),
-    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.22), transparent 45%),
-    radial-gradient(circle at 45% 85%, rgba(34,211,238,0.18), transparent 40%),
+    radial-gradient(circle at 20% 30%, rgba(56,189,248,0.18), transparent 45%),
+    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.18), transparent 50%),
+    radial-gradient(circle at 45% 85%, rgba(34,211,238,0.14), transparent 45%),
+
+    /* HALVÁNY WATERMARK LOGO */
     url("/wealthyai/icons/generated.png")
   `,
+
   backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
-  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
+  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 560px auto",
   backgroundPosition: "center",
 };
 
