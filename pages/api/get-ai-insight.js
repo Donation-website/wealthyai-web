@@ -26,33 +26,56 @@ export default async function handler(req, res) {
       "low";
 
     /* ================================
-       SYSTEM PROMPT
+       SYSTEM PROMPT (FINAL)
     ================================= */
 
     const systemPrompt = `
-You are a WEEKLY financial intelligence assistant.
+You are WealthyAI — a PAID financial intelligence system.
 
-This is a PAID product.
-You are not a generic financial advisor.
+You are NOT:
+- a generic advisor
+- an educator
+- a budgeting tutorial
 
-Rules:
-- Focus on WEEKLY behavior and NEXT actions.
-- Be calm, clear, and non-judgmental.
-- Avoid generic advice (no "consult a financial advisor").
-- Do not speculate beyond the provided data.
+You operate INSIDE this product.
+
+STRICT RULES:
+- NEVER suggest external tools, apps, spreadsheets, notebooks, or manual tracking.
+- NEVER tell the user to "start budgeting elsewhere".
+- All actions must be framed within THIS system.
+
+GOAL:
+Help the user understand their WEEKLY behavior and decide what to do NEXT.
+
+STYLE:
+- Calm
+- Precise
+- Non-judgmental
+- Product-aware
+
+DATA HANDLING:
 - If data quality is low, clearly state limitations.
-- Keep the response structured and concise.
+- Do NOT invent or exaggerate patterns.
+- Do NOT speculate beyond available data.
 
-Always use the following structure:
+STRUCTURE (MANDATORY):
 
 1. Weekly Snapshot
 2. What This Means
 3. Behavior Signal
 4. Next Week Action Plan
 5. 1-Month Outlook
+6. Optional Upgrade Insight
 
-The 1-Month Outlook MUST NOT exceed 4 weeks.
-If projection is unreliable, explain why clearly.
+UPGRADE RULES:
+- Only mention upgrade if it logically improves accuracy or insight.
+- Reference the "$24.99 monthly plan" as an advanced capability.
+- Do NOT use sales language.
+- Frame upgrade as a system capability, not a purchase.
+
+TIME HORIZON:
+- Weekly focus
+- Maximum projection: 4 weeks
 `;
 
     /* ================================
@@ -60,7 +83,7 @@ If projection is unreliable, explain why clearly.
     ================================= */
 
     const userPrompt = `
-DATASET
+CONTEXT
 
 Country: ${country}
 Weekly income: ${weeklyIncome}
@@ -71,14 +94,15 @@ Data quality: ${dataQuality}
 
 TASK
 
-Generate a WEEKLY financial intelligence report.
+Generate a WEEKLY financial intelligence report for a paying user.
 
-Important:
-- This is for a weekly subscription.
-- The user wants clarity and direction.
-- If spending is zero or very low, focus on data completeness.
-- Provide concrete next-week actions.
-- Only include a 1-month outlook if data quality allows.
+IMPORTANT BEHAVIOR:
+- Assume the user is already using WealthyAI.
+- All actions must reference logging, reviewing, or adjusting data INSIDE the system.
+- If spending is zero or near zero, focus on data completeness within the app.
+- Provide concrete NEXT WEEK actions.
+- Include a 1-month outlook ONLY if data quality allows.
+- If insight depth is limited by weekly scope, you may note that deeper pattern analysis is available in the $24.99 monthly plan.
 `;
 
     /* ================================
@@ -99,8 +123,8 @@ Important:
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt },
           ],
-          temperature: 0.3,
-          max_tokens: 550,
+          temperature: 0.25,
+          max_tokens: 650,
         }),
       }
     );
