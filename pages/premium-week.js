@@ -95,13 +95,7 @@ export default function PremiumWeek() {
     <div style={page}>
       <a href="/help" style={helpButton}>Help</a>
 
-      {/* LOGO */}
-      <img
-        src="/wealthyai/logo/wealthyai-logo.png"
-        alt="WealthyAI"
-        style={logo}
-      />
-
+      <h1 style={title}>WEALTHYAI · WEEKLY INTELLIGENCE</h1>
       <p style={subtitle}>
         Weekly behavioral analysis with country-aware intelligence.
       </p>
@@ -201,23 +195,52 @@ function Chart({ title, children }) {
 
 const page = {
   minHeight: "100vh",
-  padding: 40,
+  position: "relative",
   color: "#e5e7eb",
+  padding: 40,
   fontFamily: "Inter, system-ui",
   backgroundColor: "#020617",
-  backgroundImage: `
-    linear-gradient(transparent 95%, rgba(56,189,248,0.08) 96%),
-    linear-gradient(90deg, transparent 95%, rgba(56,189,248,0.08) 96%),
-    radial-gradient(circle at 20% 20%, rgba(56,189,248,0.12), transparent 40%),
-    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.12), transparent 40%)
-  `,
-  backgroundSize: "40px 40px, 40px 40px, 100% 100%, 100% 100%",
-  backgroundRepeat: "repeat",
-};
 
-const logo = {
-  width: 260,
-  marginBottom: 12,
+  backgroundImage: `
+    repeating-linear-gradient(
+      -25deg,
+      rgba(56,189,248,0.07) 0px,
+      rgba(56,189,248,0.07) 1px,
+      transparent 1px,
+      transparent 160px
+    ),
+    repeating-linear-gradient(
+      35deg,
+      rgba(167,139,250,0.06) 0px,
+      rgba(167,139,250,0.06) 1px,
+      transparent 1px,
+      transparent 220px
+    ),
+    radial-gradient(circle at 20% 30%, rgba(56,189,248,0.22), transparent 40%),
+    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.22), transparent 45%),
+    radial-gradient(circle at 45% 85%, rgba(34,211,238,0.18), transparent 40%),
+    url("/wealthyai/icons/generated.png")
+  `,
+
+  backgroundRepeat: `
+    repeat,
+    repeat,
+    no-repeat,
+    no-repeat,
+    no-repeat,
+    repeat
+  `,
+
+  backgroundSize: `
+    auto,
+    auto,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    420px auto
+  `,
+
+  backgroundPosition: "center",
 };
 
 const helpButton = {
@@ -234,6 +257,7 @@ const helpButton = {
   backdropFilter: "blur(6px)",
 };
 
+const title = { fontSize: "2.6rem" };
 const subtitle = { color: "#94a3b8", marginBottom: 30 };
 
 const layout = { display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 30 };
