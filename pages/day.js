@@ -55,7 +55,6 @@ export default function DayPremium() {
 
   return (
     <div style={page}>
-      {/* HEADER */}
       <div style={header}>
         <h1 style={title}>WEALTHYAI · PRO INTELLIGENCE</h1>
         <p style={subtitle}>
@@ -64,9 +63,7 @@ export default function DayPremium() {
         </p>
       </div>
 
-      {/* MAIN GRID */}
       <div style={layout}>
-        {/* LEFT */}
         <div>
           <Metric label="MONTHLY SURPLUS" value={`$${surplus.toLocaleString()}`} />
           <Metric label="SAVINGS RATE" value={`${savingsRate.toFixed(1)}%`} />
@@ -85,7 +82,6 @@ export default function DayPremium() {
           </div>
         </div>
 
-        {/* RIGHT */}
         <div>
           <div style={inputPanel}>
             {["income", "fixed", "variable"].map((k) => (
@@ -112,7 +108,6 @@ export default function DayPremium() {
         </div>
       </div>
 
-      {/* NAV */}
       <div style={navActions}>
         <a href="/" style={outlineBtn}>← Back to WealthyAI Home</a>
         <a href="/how-to-use" style={outlineBtnAlt}>
@@ -120,7 +115,6 @@ export default function DayPremium() {
         </a>
       </div>
 
-      {/* UPSELL */}
       <div style={upsell}>
         Weekly and Monthly plans unlock country-specific tax optimization,
         stress testing and advanced projections.
@@ -182,10 +176,34 @@ function MiniBar({ title, value }) {
 
 const page = {
   minHeight: "100vh",
-  background: "radial-gradient(circle at top, #020617, #000)",
   color: "#e5e7eb",
   padding: "40px",
   fontFamily: "Inter, system-ui, sans-serif",
+  backgroundColor: "#020617",
+
+  backgroundImage: `
+    repeating-linear-gradient(
+      -25deg,
+      rgba(56,189,248,0.07) 0px,
+      rgba(56,189,248,0.07) 1px,
+      transparent 1px,
+      transparent 160px
+    ),
+    repeating-linear-gradient(
+      35deg,
+      rgba(167,139,250,0.06) 0px,
+      rgba(167,139,250,0.06) 1px,
+      transparent 1px,
+      transparent 220px
+    ),
+    radial-gradient(circle at 20% 30%, rgba(56,189,248,0.22), transparent 40%),
+    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.22), transparent 45%),
+    radial-gradient(circle at 45% 85%, rgba(34,211,238,0.18), transparent 40%),
+    url("/wealthyai/icons/generated.png")
+  `,
+  backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
+  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
+  backgroundPosition: "center",
 };
 
 const header = { marginBottom: "30px" };
