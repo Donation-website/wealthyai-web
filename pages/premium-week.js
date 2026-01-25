@@ -25,7 +25,8 @@ const COLORS = {
 /* ===== MAIN ===== */
 
 export default function PremiumWeek() {
-  const [incomeValue] = useState(3000);
+  const [incomeType, setIncomeType] = useState("monthly");
+  const [incomeValue, setIncomeValue] = useState(3000);
 
   const [week, setWeek] = useState(
     DAYS.reduce((acc, d) => {
@@ -37,7 +38,10 @@ export default function PremiumWeek() {
   const [aiText, setAiText] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const weeklyIncome = incomeValue / 4;
+  const weeklyIncome =
+    incomeType === "daily" ? incomeValue * 7 :
+    incomeType === "weekly" ? incomeValue :
+    incomeValue / 4;
 
   const update = (day, cat, val) => {
     setWeek({ ...week, [day]: { ...week[day], [cat]: Number(val) } });
@@ -63,6 +67,7 @@ export default function PremiumWeek() {
   const scatterData = DAYS.map((d, i) => ({
     x: i + 1,
     y: dailyTotals[i],
+    day: d,
   }));
 
   const runAI = async () => {
@@ -89,12 +94,7 @@ export default function PremiumWeek() {
 
   return (
     <div style={page}>
-      {/* === FUTURISTIC BACKGROUND === */}
-      <div style={bgBase} />
-      <div style={bgGhostCharts} />
-      <div style={bgFlow} />
-
-      {/* HELP */}
+      {/* HELP BUTTON */}
       <a href="/help" style={helpButton}>Help</a>
 
       <h1 style={title}>WEALTHYAI · WEEKLY INTELLIGENCE</h1>
@@ -155,20 +155,6 @@ export default function PremiumWeek() {
             </PieChart>
           </Chart>
 
-          <Chart title="Spending momentum">
-            <AreaChart data={chartData}>
-              <XAxis dataKey="day" />
-              <YAxis />
-              <Tooltip />
-              <Area
-                dataKey="total"
-                stroke="#38bdf8"
-                fill="#38bdf8"
-                fillOpacity={0.25}
-              />
-            </AreaChart>
-          </Chart>
-
           <Chart title="Daily dispersion">
             <ScatterChart>
               <XAxis dataKey="x" />
@@ -179,8 +165,7 @@ export default function PremiumWeek() {
           </Chart>
 
           <div style={summary}>
-            Weekly spend: <strong>${weeklySpend}</strong> · Income:{" "}
-            <strong>${weeklyIncome.toFixed(0)}</strong>
+            Weekly spend: <strong>${weeklySpend}</strong> · Income: <strong>${weeklyIncome.toFixed(0)}</strong>
           </div>
 
           <div style={aiBox}>
@@ -195,7 +180,7 @@ export default function PremiumWeek() {
   );
 }
 
-/* ===== COMPONENT ===== */
+/* ===== COMPONENTS ===== */
 
 function Chart({ title, children }) {
   return (
@@ -213,45 +198,14 @@ function Chart({ title, children }) {
 const page = {
   minHeight: "100vh",
   position: "relative",
-  background: "#020617",
+  backgroundImage:
+    "linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('/wealthyai/icons/week.png')",
+  backgroundSize: "cover",
+  backgroundPosition: "center",
   color: "#e5e7eb",
   padding: 40,
   fontFamily: "Inter, system-ui",
-  overflow: "hidden",
 };
-
-/* === BACKGROUND (VISIBLE, NOT GRID) === */
-
-const bgBase = {
-  position: "fixed",
-  inset: 0,
-  background: "#020617",
-  zIndex: 0,
-  pointerEvents: "none",
-};
-
-const bgGhostCharts = {
-  position: "fixed",
-  inset: 0,
-  background:
-    "radial-gradient(circle at 15% 25%, rgba(56,189,248,0.25), transparent 45%)," +
-    "radial-gradient(circle at 70% 35%, rgba(167,139,250,0.22), transparent 50%)," +
-    "radial-gradient(circle at 40% 80%, rgba(34,211,238,0.18), transparent 55%)",
-  zIndex: 1,
-  pointerEvents: "none",
-};
-
-const bgFlow = {
-  position: "fixed",
-  inset: 0,
-  backgroundImage:
-    "linear-gradient(90deg, transparent 0%, rgba(56,189,248,0.18) 50%, transparent 100%)",
-  backgroundSize: "1400px 1400px",
-  zIndex: 2,
-  pointerEvents: "none",
-};
-
-/* === UI === */
 
 const helpButton = {
   position: "absolute",
@@ -264,20 +218,13 @@ const helpButton = {
   color: "#7dd3fc",
   border: "1px solid #1e293b",
   background: "rgba(2,6,23,0.6)",
-  zIndex: 10,
+  backdropFilter: "blur(6px)",
 };
 
-const title = { fontSize: "2.6rem", position: "relative", zIndex: 5 };
-const subtitle = { color: "#94a3b8", marginBottom: 30, position: "relative", zIndex: 5 };
+const title = { fontSize: "2.6rem" };
+const subtitle = { color: "#94a3b8", marginBottom: 30 };
 
-const layout = {
-  display: "grid",
-  gridTemplateColumns: "1.2fr 1fr",
-  gap: 30,
-  position: "relative",
-  zIndex: 5,
-};
-
+const layout = { display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 30 };
 const left = { maxHeight: "70vh", overflowY: "auto" };
 const right = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 };
 
@@ -315,5 +262,4 @@ const aiButton = {
   borderRadius: 10,
   fontWeight: "bold",
 };
-
 const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap" };
