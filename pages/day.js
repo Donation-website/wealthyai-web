@@ -115,6 +115,7 @@ export default function DayPremium() {
         </a>
       </div>
 
+      {/* ⬇️ CSAK EZ LETT ERŐSEBB FEHÉR */}
       <div style={upsell}>
         Weekly and Monthly plans unlock country-specific tax optimization,
         stress testing and advanced projections.
@@ -199,11 +200,8 @@ const page = {
     radial-gradient(circle at 20% 30%, rgba(56,189,248,0.18), transparent 45%),
     radial-gradient(circle at 80% 60%, rgba(167,139,250,0.18), transparent 50%),
     radial-gradient(circle at 45% 85%, rgba(34,211,238,0.14), transparent 45%),
-
-    /* HALVÁNY WATERMARK LOGO */
     url("/wealthyai/icons/generated.png")
   `,
-
   backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
   backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 560px auto",
   backgroundPosition: "center",
@@ -309,8 +307,10 @@ const outlineBtnAlt = {
   color: "#a78bfa",
 };
 
+/* ⬇️ CSAK EZ VÁLTOZOTT */
 const upsell = {
   marginTop: "20px",
   textAlign: "center",
-  color: "#94a3b8",
+  color: "#f8fafc",        // erősebb fehér
+  fontWeight: 500,
 };
