@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   LineChart, Line,
+  AreaChart, Area,
   PieChart, Pie, Cell,
   ScatterChart, Scatter,
   XAxis, YAxis, Tooltip, Legend,
@@ -88,9 +89,9 @@ export default function PremiumWeek() {
 
   return (
     <div style={page}>
-      {/* === FUTURISTIC BACKGROUND (SAFE) === */}
+      {/* === FUTURISTIC BACKGROUND === */}
       <div style={bgBase} />
-      <div style={bgChartGhosts} />
+      <div style={bgGhostCharts} />
       <div style={bgFlow} />
 
       {/* HELP */}
@@ -131,6 +132,18 @@ export default function PremiumWeek() {
             </LineChart>
           </Chart>
 
+          <Chart title="Category trends">
+            <LineChart data={chartData}>
+              <XAxis dataKey="day" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              {CATEGORIES.map(c => (
+                <Line key={c} dataKey={c} stroke={COLORS[c]} />
+              ))}
+            </LineChart>
+          </Chart>
+
           <Chart title="Weekly distribution">
             <PieChart>
               <Pie data={pieData} dataKey="value" outerRadius={80}>
@@ -140,6 +153,20 @@ export default function PremiumWeek() {
               </Pie>
               <Tooltip />
             </PieChart>
+          </Chart>
+
+          <Chart title="Spending momentum">
+            <AreaChart data={chartData}>
+              <XAxis dataKey="day" />
+              <YAxis />
+              <Tooltip />
+              <Area
+                dataKey="total"
+                stroke="#38bdf8"
+                fill="#38bdf8"
+                fillOpacity={0.25}
+              />
+            </AreaChart>
           </Chart>
 
           <Chart title="Daily dispersion">
@@ -152,7 +179,8 @@ export default function PremiumWeek() {
           </Chart>
 
           <div style={summary}>
-            Weekly spend: <strong>${weeklySpend}</strong> · Income: <strong>${weeklyIncome.toFixed(0)}</strong>
+            Weekly spend: <strong>${weeklySpend}</strong> · Income:{" "}
+            <strong>${weeklyIncome.toFixed(0)}</strong>
           </div>
 
           <div style={aiBox}>
@@ -192,7 +220,7 @@ const page = {
   overflow: "hidden",
 };
 
-/* === BACKGROUND COMBO (NO GRID) === */
+/* === BACKGROUND (VISIBLE, NOT GRID) === */
 
 const bgBase = {
   position: "fixed",
@@ -202,13 +230,13 @@ const bgBase = {
   pointerEvents: "none",
 };
 
-const bgChartGhosts = {
+const bgGhostCharts = {
   position: "fixed",
   inset: 0,
   background:
-    "radial-gradient(circle at 20% 30%, rgba(56,189,248,0.18), transparent 45%)," +
-    "radial-gradient(circle at 70% 40%, rgba(167,139,250,0.15), transparent 50%)," +
-    "radial-gradient(circle at 50% 80%, rgba(34,211,238,0.12), transparent 55%)",
+    "radial-gradient(circle at 15% 25%, rgba(56,189,248,0.25), transparent 45%)," +
+    "radial-gradient(circle at 70% 35%, rgba(167,139,250,0.22), transparent 50%)," +
+    "radial-gradient(circle at 40% 80%, rgba(34,211,238,0.18), transparent 55%)",
   zIndex: 1,
   pointerEvents: "none",
 };
@@ -217,8 +245,8 @@ const bgFlow = {
   position: "fixed",
   inset: 0,
   backgroundImage:
-    "linear-gradient(90deg, transparent 0%, rgba(56,189,248,0.10) 50%, transparent 100%)",
-  backgroundSize: "1800px 1800px",
+    "linear-gradient(90deg, transparent 0%, rgba(56,189,248,0.18) 50%, transparent 100%)",
+  backgroundSize: "1400px 1400px",
   zIndex: 2,
   pointerEvents: "none",
 };
