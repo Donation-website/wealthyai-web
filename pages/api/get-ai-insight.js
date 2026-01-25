@@ -1,17 +1,10 @@
-import OpenAI from "openai";
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({ insight: "Method not allowed." });
   }
 
   try {
     const {
-      mode,
       country,
       weeklyIncome,
       weeklySpend,
@@ -23,33 +16,34 @@ export default async function handler(req, res) {
        DATA QUALITY CHECK
     ================================= */
 
-    const hasAnySpending = weeklySpend > 0;
-    const nonZeroDays = dailyTotals.filter(v => v > 0).length;
+    const nonZeroDays = Array.isArray(dailyTotals)
+      ? dailyTotals.filter(v => v > 0).length
+      : 0;
+
     const dataQuality =
       nonZeroDays >= 3 ? "good" :
       nonZeroDays >= 1 ? "partial" :
       "low";
 
     /* ================================
-       SYSTEM PROMPT (CORE BEHAVIOR)
+       SYSTEM PROMPT
     ================================= */
 
     const systemPrompt = `
-You are a WEEKLY financial decision assistant.
+You are a WEEKLY financial intelligence assistant.
 
-Your job is NOT to educate in general finance.
-Your job is to help the user decide what to do NEXT WEEK.
+This is a PAID product.
+You are not a generic financial advisor.
 
 Rules:
-- Focus on weekly behavior and short-term decisions.
-- Be clear, calm, and non-judgmental.
+- Focus on WEEKLY behavior and NEXT actions.
+- Be calm, clear, and non-judgmental.
 - Avoid generic advice (no "consult a financial advisor").
-- Do not speculate beyond the data.
+- Do not speculate beyond the provided data.
 - If data quality is low, clearly state limitations.
-- Do NOT repeat obvious facts excessively.
-- Keep answers concise but structured.
+- Keep the response structured and concise.
 
-You must ALWAYS respond using this structure:
+Always use the following structure:
 
 1. Weekly Snapshot
 2. What This Means
@@ -57,56 +51,80 @@ You must ALWAYS respond using this structure:
 4. Next Week Action Plan
 5. 1-Month Outlook
 
-The 1-Month Outlook MUST NOT go beyond 4 weeks.
-If projection is unreliable, explain why.
+The 1-Month Outlook MUST NOT exceed 4 weeks.
+If projection is unreliable, explain why clearly.
 `;
 
     /* ================================
-       USER PROMPT (CONTEXT)
+       USER PROMPT
     ================================= */
 
     const userPrompt = `
-Context:
-- Mode: ${mode}
-- Country: ${country}
-- Weekly income: ${weeklyIncome}
-- Weekly spending: ${weeklySpend}
-- Daily totals: ${JSON.stringify(dailyTotals)}
-- Category breakdown: ${JSON.stringify(breakdown)}
-- Data quality: ${dataQuality}
+DATASET
 
-Task:
-Generate a WEEKLY financial intelligence response.
-This is for a PAID weekly subscription.
+Country: ${country}
+Weekly income: ${weeklyIncome}
+Weekly spending: ${weeklySpend}
+Daily totals: ${JSON.stringify(dailyTotals)}
+Category breakdown: ${JSON.stringify(breakdown)}
+Data quality: ${dataQuality}
 
-Remember:
-- The user wants clarity and next actions.
-- Avoid unnecessary assumptions.
-- If spending is zero or near zero, focus on data completeness.
-- Include a realistic 1-month projection ONLY if data allows.
+TASK
+
+Generate a WEEKLY financial intelligence report.
+
+Important:
+- This is for a weekly subscription.
+- The user wants clarity and direction.
+- If spending is zero or very low, focus on data completeness.
+- Provide concrete next-week actions.
+- Only include a 1-month outlook if data quality allows.
 `;
 
     /* ================================
-       OPENAI CALL
+       GROQ API CALL
     ================================= */
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      temperature: 0.4,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-    });
+    const groqRes = await fetch(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "llama-3.1-8b-instant",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          temperature: 0.3,
+          max_tokens: 550,
+        }),
+      }
+    );
 
-    const insight = completion.choices[0].message.content;
+    if (!groqRes.ok) {
+      const err = await groqRes.text();
+      console.error("Groq API error:", err);
+      return res.status(500).json({
+        insight: "AI backend unavailable.",
+      });
+    }
 
-    return res.status(200).json({ insight });
+    const json = await groqRes.json();
+
+    const text =
+      json?.choices?.[0]?.message?.content ||
+      "AI returned no usable output.";
+
+    return res.status(200).json({ insight: text.trim() });
 
   } catch (err) {
-    console.error("AI ERROR:", err);
+    console.error("AI crash:", err);
     return res.status(500).json({
-      insight: "AI analysis is temporarily unavailable. Please try again later.",
+      insight: "AI system error.",
     });
   }
 }
