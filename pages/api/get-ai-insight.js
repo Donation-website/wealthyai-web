@@ -3,61 +3,66 @@ export default async function handler(req, res) {
     return res.status(405).json({ insight: "Method not allowed." });
   }
 
+  // 1. TOKEN ELLENŐRZÉSE
+  if (!process.env.HF_TOKEN) {
+    return res.status(200).json({ 
+      insight: "Hiba: A HF_TOKEN hiányzik a környezeti változók közül (.env.local)!" 
+    });
+  }
+
   try {
     const { country = "US", weeklyIncome = 0, weeklySpend = 0, dailyTotals = [] } = req.body;
 
-    const safe = (v) => (typeof v === "number" && isFinite(v) ? v : 0);
-    const income = safe(weeklyIncome);
-    const spend = safe(weeklySpend);
-    const days = Array.isArray(dailyTotals) ? dailyTotals.map(safe) : [];
+    const prompt = `<s>[INST] Analyze financial data: Country: ${country}, Income: ${weeklyIncome}, Spend: ${weeklySpend}, Daily: ${dailyTotals.join(",")}. Give 2 tips. [/INST]`;
 
-    const prompt = `<s>[INST] Analyze this weekly spending:
-    - Country: ${country}
-    - Income: ${income}
-    - Spending: ${spend}
-    - Daily Breakdown: ${days.join(", ")}
-    Identify the highest/lowest days and give 2 saving tips. [/INST]`;
+    console.log("Indul a hívás a Hugging Face-re...");
 
-    // AZ ÚJ ROUTER URL
     const response = await fetch(
       "https://router.huggingface.co",
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${process.env.HF_TOKEN}`,
+          "Authorization": `Bearer ${process.env.HF_TOKEN.trim()}`,
           "Content-Type": "application/json",
           "x-wait-for-model": "true",
         },
         body: JSON.stringify({
           inputs: prompt,
-          parameters: { max_new_tokens: 400, temperature: 0.7 }
+          parameters: { max_new_tokens: 300, temperature: 0.7 }
         }),
       }
     );
 
-    const result = await response.json();
-
-    if (result.error) {
-      return res.status(200).json({ insight: `AI error: ${result.error}` });
+    // Ha a válasz nem OK (pl. 401 Unauthorized vagy 404)
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error("HF API Hiba:", errorData);
+      return res.status(200).json({ insight: `API hiba (${response.status}): ${errorData.slice(0, 100)}` });
     }
 
-    // FONTOS: A Router API szinte mindig tömbbel tér vissza: [{ generated_text: "..." }]
+    const result = await response.json();
+
+    // Adat kinyerése a listából
     let aiText = "";
     if (Array.isArray(result) && result[0]?.generated_text) {
       aiText = result[0].generated_text;
     } else if (result.generated_text) {
       aiText = result.generated_text;
     } else {
-      aiText = "Analysis complete, but the response format was unusual.";
+      aiText = "Az AI válasz formátuma ismeretlen.";
     }
 
-    // A prompt levágása a válaszból (tisztítás)
-    const cleanText = aiText.split("[/INST]").pop().trim();
+    // Tisztítás: Csak az AI válasza kell az [/INST] után
+    const cleanText = aiText.includes("[/INST]") 
+      ? aiText.split("[/INST]").pop().trim() 
+      : aiText.trim();
 
     return res.status(200).json({ insight: cleanText });
 
   } catch (err) {
-    console.error("SERVER ERROR:", err);
-    return res.status(200).json({ insight: "Connection error. Please try again." });
+    console.error("Fetch hiba:", err);
+    return res.status(200).json({ 
+      insight: `Kapcsolódási hiba: ${err.message}. Ellenőrizd az internetkapcsolatot és a tokent!` 
+    });
   }
 }
