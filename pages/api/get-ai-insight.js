@@ -13,30 +13,22 @@ export default async function handler(req, res) {
     } = req.body;
 
     const prompt = `
-You are a financial behavior analysis AI.
+Analyze the following financial data and produce an analytical report.
 
-INPUT DATA:
 Country: ${country}
 Weekly income: ${weeklyIncome}
 Weekly spending: ${weeklySpend}
 Daily totals: ${JSON.stringify(dailyTotals)}
 Category breakdown: ${JSON.stringify(breakdown)}
 
-TASK:
-- Analyze spending behavior
-- Detect inefficiencies or risk
-- Evaluate sustainability
-- Give 3 actionable recommendations
-
-RULES:
-- Analytical tone
-- No greetings
-- No emojis
-- Structured output
+Return:
+- Spending pattern analysis
+- Financial risk assessment
+- 3 improvement recommendations
 `;
 
     const hfRes = await fetch(
-      "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta",
+      "https://api-inference.huggingface.co/models/google/flan-t5-large",
       {
         method: "POST",
         headers: {
@@ -46,13 +38,7 @@ RULES:
         body: JSON.stringify({
           inputs: prompt,
           parameters: {
-            max_new_tokens: 300,
-            temperature: 0.2,
-            top_p: 0.9,
-            return_full_text: false,
-          },
-          options: {
-            wait_for_model: true, // 🔥 EZ A KULCS
+            max_new_tokens: 250,
           },
         }),
       }
@@ -61,9 +47,9 @@ RULES:
     const raw = await hfRes.text();
 
     if (!hfRes.ok) {
-      console.error("HF RAW ERROR:", raw);
+      console.error("HF ERROR:", raw);
       return res.status(500).json({
-        insight: "AI engine unavailable (HF backend). Try again.",
+        insight: "AI backend unavailable.",
       });
     }
 
@@ -71,7 +57,7 @@ RULES:
 
     const text =
       json?.[0]?.generated_text ||
-      "AI produced no usable output.";
+      "AI returned no analysis.";
 
     return res.status(200).json({ insight: text.trim() });
 
