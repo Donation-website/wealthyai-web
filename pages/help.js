@@ -118,9 +118,9 @@ const back = {
   padding: "6px 12px",
   fontSize: 13,
   borderRadius: 8,
-  background: "rgba(255,255,255,0.15)",
+  background: "rgba(255,255,255,0.18)",
   border: "1px solid rgba(255,255,255,0.35)",
-  color: "#e5e7eb",
+  color: "#ffffff",
   cursor: "pointer",
 };
 
@@ -130,39 +130,39 @@ const title = {
 };
 
 const intro = {
-  color: "#cbd5f5",
+  color: "#e5e7eb",
   maxWidth: 720,
   marginBottom: 32,
   fontSize: 15,
 };
 
-/* LIGHTER, GLASS-LIKE CARDS */
+/* LIGHT GLASS CARDS */
 
 const section = {
   maxWidth: 820,
   marginBottom: 28,
   padding: 24,
   borderRadius: 16,
-  background: "rgba(255,255,255,0.14)",
+  background: "rgba(255,255,255,0.18)",
   border: "1px solid rgba(255,255,255,0.35)",
   backdropFilter: "blur(10px)",
 };
 
 const sectionTitle = {
   fontSize: "1.15rem",
-  color: "#0f172a",
+  color: "#ffffff",
   marginBottom: 10,
 };
 
 const sectionText = {
   fontSize: 15,
   lineHeight: 1.65,
-  color: "#020617",
+  color: "#ffffff",
 };
 
 const footer = {
   marginTop: 48,
   fontSize: 14,
-  color: "#cbd5f5",
+  color: "#e5e7eb",
   maxWidth: 720,
 };
