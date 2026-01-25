@@ -33,7 +33,6 @@ const COUNTRY_NAMES = {
 /* ===== MAIN ===== */
 
 export default function PremiumWeek() {
-  /* COUNTRY */
   const [country, setCountry] = useState("auto");
 
   useEffect(() => {
@@ -46,11 +45,9 @@ export default function PremiumWeek() {
     }
   }, []);
 
-  /* INCOME */
   const [incomeType, setIncomeType] = useState("monthly");
   const [incomeValue, setIncomeValue] = useState(3000);
 
-  /* WEEKLY DATA */
   const [week, setWeek] = useState(
     DAYS.reduce((acc, d) => {
       acc[d] = CATEGORIES.reduce((o, c) => ({ ...o, [c]: 0 }), {});
@@ -58,11 +55,8 @@ export default function PremiumWeek() {
     }, {})
   );
 
-  /* AI */
   const [aiText, setAiText] = useState("");
   const [loading, setLoading] = useState(false);
-
-  /* HELPERS */
 
   const weeklyIncome =
     incomeType === "daily"
@@ -98,8 +92,6 @@ export default function PremiumWeek() {
     day: d,
   }));
 
-  /* AI CALL */
-
   const runAI = async () => {
     setLoading(true);
     try {
@@ -123,8 +115,6 @@ export default function PremiumWeek() {
     setLoading(false);
   };
 
-  /* ===== RENDER ===== */
-
   return (
     <div style={page}>
 
@@ -134,14 +124,12 @@ export default function PremiumWeek() {
         <a href="/how-to-use" style={navBtnAlt}>How to use Weekly & Monthly</a>
       </div>
 
-      {/* HEADER */}
       <h1 style={title}>WEALTHYAI · WEEKLY INTELLIGENCE</h1>
       <p style={subtitle}>
-        Thank you for choosing the <strong>Weekly Behavioral Analysis</strong>.  
+        Thank you for choosing the <strong>Weekly Behavioral Analysis</strong>.
         This module detects spending patterns and adapts insights to your country.
       </p>
 
-      {/* COUNTRY */}
       <div style={card}>
         <label style={label}>Country context</label>
         <select value={country} onChange={e => setCountry(e.target.value)} style={select}>
@@ -150,12 +138,9 @@ export default function PremiumWeek() {
           <option value="UK">United Kingdom</option>
           <option value="HU">Hungary</option>
         </select>
-        <p style={hint}>
-          Active context: {COUNTRY_NAMES[country]}
-        </p>
+        <p style={hint}>Active context: {COUNTRY_NAMES[country]}</p>
       </div>
 
-      {/* INCOME */}
       <div style={card}>
         <label style={label}>Income</label>
         <div style={{ display: "flex", gap: 10 }}>
@@ -179,7 +164,7 @@ export default function PremiumWeek() {
         {/* INPUTS */}
         <div style={left}>
           {DAYS.map(d => (
-            <details key={d} open style={dayBox}>
+            <details key={d} open={d === "Mon"} style={dayBox}>
               <summary style={dayTitle}>{d}</summary>
               {CATEGORIES.map(c => (
                 <div key={c} style={row}>
@@ -252,7 +237,6 @@ export default function PremiumWeek() {
             Weekly spend: <strong>${weeklySpend}</strong> · Income: <strong>${weeklyIncome.toFixed(0)}</strong>
           </div>
 
-          {/* AI */}
           <div style={aiBox}>
             <button onClick={runAI} style={aiButton}>
               {loading ? "Analyzing…" : "Run Weekly AI Analysis"}
@@ -261,7 +245,6 @@ export default function PremiumWeek() {
               {aiText || "AI will analyze your weekly behavior once data is provided."}
             </pre>
           </div>
-
         </div>
       </div>
     </div>
@@ -285,7 +268,10 @@ function Chart({ title, children }) {
 
 const page = {
   minHeight: "100vh",
-  background: "radial-gradient(circle at top, #020617, #000)",
+  backgroundImage:
+    "linear-gradient(rgba(2,6,23,0.85), rgba(0,0,0,0.9)), url('/wealthyai/icons/week.png')",
+  backgroundSize: "cover",
+  backgroundPosition: "center",
   color: "#e5e7eb",
   padding: 40,
   fontFamily: "Inter, system-ui",
