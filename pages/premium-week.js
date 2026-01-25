@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   LineChart, Line,
-  AreaChart, Area,
   PieChart, Pie, Cell,
   ScatterChart, Scatter,
   XAxis, YAxis, Tooltip, Legend,
@@ -94,10 +93,15 @@ export default function PremiumWeek() {
 
   return (
     <div style={page}>
-      {/* HELP BUTTON */}
       <a href="/help" style={helpButton}>Help</a>
 
-      <h1 style={title}>WEALTHYAI · WEEKLY INTELLIGENCE</h1>
+      {/* LOGO */}
+      <img
+        src="/wealthyai/logo/wealthyai-logo.png"
+        alt="WealthyAI"
+        style={logo}
+      />
+
       <p style={subtitle}>
         Weekly behavioral analysis with country-aware intelligence.
       </p>
@@ -197,14 +201,23 @@ function Chart({ title, children }) {
 
 const page = {
   minHeight: "100vh",
-  position: "relative",
-  backgroundImage:
-    "linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('/wealthyai/icons/week.png')",
-  backgroundSize: "cover",
-  backgroundPosition: "center",
-  color: "#e5e7eb",
   padding: 40,
+  color: "#e5e7eb",
   fontFamily: "Inter, system-ui",
+  backgroundColor: "#020617",
+  backgroundImage: `
+    linear-gradient(transparent 95%, rgba(56,189,248,0.08) 96%),
+    linear-gradient(90deg, transparent 95%, rgba(56,189,248,0.08) 96%),
+    radial-gradient(circle at 20% 20%, rgba(56,189,248,0.12), transparent 40%),
+    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.12), transparent 40%)
+  `,
+  backgroundSize: "40px 40px, 40px 40px, 100% 100%, 100% 100%",
+  backgroundRepeat: "repeat",
+};
+
+const logo = {
+  width: 260,
+  marginBottom: 12,
 };
 
 const helpButton = {
@@ -221,7 +234,6 @@ const helpButton = {
   backdropFilter: "blur(6px)",
 };
 
-const title = { fontSize: "2.6rem" };
 const subtitle = { color: "#94a3b8", marginBottom: 30 };
 
 const layout = { display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 30 };
