@@ -3,20 +3,16 @@ export default async function handler(req, res) {
     return res.status(405).json({ insight: "Method not allowed." });
   }
 
-  // 1. TOKEN ELLENŐRZÉSE
   if (!process.env.HF_TOKEN) {
-    return res.status(200).json({ 
-      insight: "Hiba: A HF_TOKEN hiányzik a környezeti változók közül (.env.local)!" 
-    });
+    return res.status(200).json({ insight: "Hiba: HF_TOKEN hiányzik!" });
   }
 
   try {
     const { country = "US", weeklyIncome = 0, weeklySpend = 0, dailyTotals = [] } = req.body;
 
-    const prompt = `<s>[INST] Analyze financial data: Country: ${country}, Income: ${weeklyIncome}, Spend: ${weeklySpend}, Daily: ${dailyTotals.join(",")}. Give 2 tips. [/INST]`;
+    const prompt = `<s>[INST] Analyze this: Income ${weeklyIncome}, Spend ${weeklySpend}, Daily: ${dailyTotals.join(",")}. Give 2 tips. [/INST]`;
 
-    console.log("Indul a hívás a Hugging Face-re...");
-
+    // ÚJ, STABILABB MODELL URL (Zephyr vagy Llama 3.2)
     const response = await fetch(
       "https://router.huggingface.co",
       {
@@ -33,36 +29,28 @@ export default async function handler(req, res) {
       }
     );
 
-    // Ha a válasz nem OK (pl. 401 Unauthorized vagy 404)
     if (!response.ok) {
-      const errorData = await response.text();
-      console.error("HF API Hiba:", errorData);
-      return res.status(200).json({ insight: `API hiba (${response.status}): ${errorData.slice(0, 100)}` });
+      const errorText = await response.text();
+      // Ha még mindig 404, próbáljuk meg a Llama modellt
+      return res.status(200).json({ insight: `API hiba (${response.status}): Próbálj másik modellt vagy ellenőrizd a végpontot.` });
     }
 
     const result = await response.json();
 
-    // Adat kinyerése a listából
+    // A válasz kinyerése (Zephyr/Mistral esetén tömb jön vissza)
     let aiText = "";
-    if (Array.isArray(result) && result[0]?.generated_text) {
-      aiText = result[0].generated_text;
-    } else if (result.generated_text) {
-      aiText = result.generated_text;
+    const data = Array.isArray(result) ? result[0] : result;
+    
+    if (data && data.generated_text) {
+      aiText = data.generated_text;
     } else {
-      aiText = "Az AI válasz formátuma ismeretlen.";
+      aiText = "Ismeretlen válaszformátum.";
     }
 
-    // Tisztítás: Csak az AI válasza kell az [/INST] után
-    const cleanText = aiText.includes("[/INST]") 
-      ? aiText.split("[/INST]").pop().trim() 
-      : aiText.trim();
-
+    const cleanText = aiText.split("[/INST]").pop().trim();
     return res.status(200).json({ insight: cleanText });
 
   } catch (err) {
-    console.error("Fetch hiba:", err);
-    return res.status(200).json({ 
-      insight: `Kapcsolódási hiba: ${err.message}. Ellenőrizd az internetkapcsolatot és a tokent!` 
-    });
+    return res.status(200).json({ insight: `Hiba: ${err.message}` });
   }
 }
