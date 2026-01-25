@@ -1,9 +1,227 @@
+import { useState, useEffect } from "react";
+import {
+  LineChart, Line,
+  AreaChart, Area,
+  BarChart, Bar,
+  PieChart, Pie, Cell,
+  ScatterChart, Scatter,
+  XAxis, YAxis, Tooltip, Legend,
+  ResponsiveContainer
+} from "recharts";
+
+/* ===== CONSTANTS ===== */
+
+const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const CATEGORIES = ["rent", "food", "transport", "entertainment", "subscriptions", "other"];
+
+const COLORS = {
+  rent: "#38bdf8",
+  food: "#22d3ee",
+  transport: "#34d399",
+  entertainment: "#a78bfa",
+  subscriptions: "#f472b6",
+  other: "#facc15",
+};
+
+const COUNTRY_NAMES = {
+  US: "United States",
+  DE: "Germany",
+  UK: "United Kingdom",
+  HU: "Hungary",
+};
+
+/* ===== MAIN ===== */
+
+export default function PremiumWeek() {
+  const [country, setCountry] = useState("auto");
+
+  useEffect(() => {
+    if (country === "auto") {
+      const locale = navigator.language || "en-US";
+      if (locale.includes("de")) setCountry("DE");
+      else if (locale.includes("hu")) setCountry("HU");
+      else if (locale.includes("en-GB")) setCountry("UK");
+      else setCountry("US");
+    }
+  }, []);
+
+  const [incomeType, setIncomeType] = useState("monthly");
+  const [incomeValue, setIncomeValue] = useState(3000);
+
+  const [week, setWeek] = useState(
+    DAYS.reduce((acc, d) => {
+      acc[d] = CATEGORIES.reduce((o, c) => ({ ...o, [c]: 0 }), {});
+      return acc;
+    }, {})
+  );
+
+  const [aiText, setAiText] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const weeklyIncome =
+    incomeType === "daily" ? incomeValue * 7 :
+    incomeType === "weekly" ? incomeValue :
+    incomeValue / 4;
+
+  const update = (day, cat, val) => {
+    setWeek({ ...week, [day]: { ...week[day], [cat]: Number(val) } });
+  };
+
+  const dailyTotals = DAYS.map(d =>
+    Object.values(week[d]).reduce((a, b) => a + b, 0)
+  );
+
+  const weeklySpend = dailyTotals.reduce((a, b) => a + b, 0);
+
+  const chartData = DAYS.map((d, i) => ({
+    day: d,
+    total: dailyTotals[i],
+    ...week[d],
+  }));
+
+  const pieData = CATEGORIES.map(c => ({
+    name: c,
+    value: DAYS.reduce((s, d) => s + week[d][c], 0),
+  }));
+
+  const scatterData = DAYS.map((d, i) => ({
+    x: i + 1,
+    y: dailyTotals[i],
+    day: d,
+  }));
+
+  const runAI = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/get-ai-insight", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: "weekly",
+          country,
+          weeklyIncome,
+          weeklySpend,
+          dailyTotals,
+          breakdown: week,
+        }),
+      });
+      const data = await res.json();
+      setAiText(data.insight || "AI analysis unavailable.");
+    } catch {
+      setAiText("AI system temporarily unavailable.");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div style={page}>
+      <h1 style={title}>WEALTHYAI · WEEKLY INTELLIGENCE</h1>
+      <p style={subtitle}>
+        Weekly behavioral analysis with country-aware intelligence.
+      </p>
+
+      <div style={layout}>
+        <div style={left}>
+          {DAYS.map((d, i) => (
+            <details key={d} open={i === 0} style={dayBox}>
+              <summary style={dayTitle}>{d}</summary>
+              {CATEGORIES.map(c => (
+                <div key={c} style={row}>
+                  <span>{c.toUpperCase()}</span>
+                  <input
+                    type="number"
+                    value={week[d][c]}
+                    onChange={e => update(d, c, e.target.value)}
+                    style={input}
+                  />
+                </div>
+              ))}
+            </details>
+          ))}
+        </div>
+
+        <div style={right}>
+          <Chart title="Daily total spending">
+            <LineChart data={chartData}>
+              <XAxis dataKey="day" />
+              <YAxis />
+              <Tooltip />
+              <Line dataKey="total" stroke="#38bdf8" strokeWidth={3} />
+            </LineChart>
+          </Chart>
+
+          <Chart title="Category trends">
+            <LineChart data={chartData}>
+              <XAxis dataKey="day" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              {CATEGORIES.map(c => (
+                <Line key={c} dataKey={c} stroke={COLORS[c]} />
+              ))}
+            </LineChart>
+          </Chart>
+
+          <Chart title="Weekly distribution">
+            <PieChart>
+              <Pie data={pieData} dataKey="value" outerRadius={80}>
+                {pieData.map((p, i) => (
+                  <Cell key={i} fill={COLORS[p.name]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </Chart>
+
+          <Chart title="Spending momentum">
+            <AreaChart data={chartData}>
+              <XAxis dataKey="day" />
+              <YAxis />
+              <Tooltip />
+              <Area dataKey="total" stroke="#38bdf8" fill="#38bdf8" fillOpacity={0.25} />
+            </AreaChart>
+          </Chart>
+
+          <Chart title="Daily dispersion">
+            <ScatterChart>
+              <XAxis dataKey="x" />
+              <YAxis dataKey="y" />
+              <Tooltip />
+              <Scatter data={scatterData} fill="#a78bfa" />
+            </ScatterChart>
+          </Chart>
+
+          <div style={summary}>
+            Weekly spend: <strong>${weeklySpend}</strong> · Income: <strong>${weeklyIncome.toFixed(0)}</strong>
+          </div>
+
+          <div style={aiBox}>
+            <button onClick={runAI} style={aiButton}>
+              {loading ? "Analyzing…" : "Run Weekly AI Analysis"}
+            </button>
+            <pre style={aiTextStyle}>{aiText}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ===== SHARED CARD STYLE ===== */
+
+const glass = {
+  background: "rgba(255,255,255,0.08)",
+  backdropFilter: "blur(14px)",
+  border: "1px solid rgba(255,255,255,0.18)",
+  borderRadius: 14,
+};
+
 /* ===== STYLES ===== */
 
 const page = {
   minHeight: "100vh",
   backgroundImage:
-    "linear-gradient(rgba(2,6,23,0.85), rgba(0,0,0,0.9)), url('/wealthyai/icons/week.png')",
+    "linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('/wealthyai/icons/week.png')",
   backgroundSize: "cover",
   backgroundPosition: "center",
   color: "#e5e7eb",
@@ -11,76 +229,16 @@ const page = {
   fontFamily: "Inter, system-ui",
 };
 
-const glass = {
-  background: "rgba(255,255,255,0.06)",
-  backdropFilter: "blur(14px)",
-  border: "1px solid rgba(255,255,255,0.12)",
-  boxShadow: "0 0 40px rgba(56,189,248,0.08)",
-};
-
-const nav = { display: "flex", gap: 16, marginBottom: 20 };
-
-const navBtn = {
-  border: "1px solid #38bdf8",
-  color: "#38bdf8",
-  padding: "8px 16px",
-  borderRadius: 10,
-  textDecoration: "none",
-  fontSize: 13,
-  background: "rgba(0,0,0,0.3)",
-};
-
-const navBtnAlt = {
-  ...navBtn,
-  borderColor: "#a78bfa",
-  color: "#a78bfa",
-};
-
 const title = { fontSize: "2.6rem" };
 const subtitle = { color: "#94a3b8", marginBottom: 30 };
 
-const layout = {
-  display: "grid",
-  gridTemplateColumns: "1.2fr 1fr",
-  gap: 30,
-};
+const layout = { display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 30 };
+const left = { maxHeight: "70vh", overflowY: "auto" };
+const right = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 };
 
-const left = {
-  maxHeight: "70vh",
-  overflowY: "auto",
-};
-
-const right = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: 16,
-};
-
-const card = {
-  ...glass,
-  borderRadius: 16,
-  padding: 16,
-  marginBottom: 20,
-};
-
-const dayBox = {
-  ...glass,
-  borderRadius: 16,
-  padding: 14,
-  marginBottom: 12,
-};
-
-const dayTitle = {
-  cursor: "pointer",
-  color: "#38bdf8",
-  fontWeight: "bold",
-};
-
-const row = {
-  display: "flex",
-  justifyContent: "space-between",
-  marginBottom: 8,
-};
+const dayBox = { ...glass, padding: 16, marginBottom: 12 };
+const dayTitle = { cursor: "pointer", color: "#38bdf8", fontWeight: "bold" };
+const row = { display: "flex", justifyContent: "space-between", marginBottom: 8 };
 
 const input = {
   background: "transparent",
@@ -91,55 +249,29 @@ const input = {
   textAlign: "right",
 };
 
-const select = {
-  background: "rgba(0,0,0,0.4)",
-  color: "#38bdf8",
-  border: "1px solid rgba(255,255,255,0.15)",
-  padding: 8,
-  borderRadius: 8,
-};
+const chartBox = { ...glass, padding: 12 };
+const chartTitle = { fontSize: 12, color: "#7dd3fc", marginBottom: 6 };
 
-const label = { color: "#7dd3fc", fontSize: 12 };
-const hint = { fontSize: 11, color: "#94a3b8" };
+const summary = { gridColumn: "1 / -1", textAlign: "right", marginTop: 10 };
 
-const chartBox = {
-  ...glass,
-  borderRadius: 16,
-  padding: 14,
-};
-
-const chartTitle = {
-  fontSize: 12,
-  color: "#7dd3fc",
-  marginBottom: 6,
-};
-
-const summary = {
-  gridColumn: "1 / -1",
-  textAlign: "right",
-  marginTop: 10,
-};
-
-const aiBox = {
-  ...glass,
-  gridColumn: "1 / -1",
-  borderRadius: 16,
-  padding: 16,
-  marginTop: 10,
-};
-
+const aiBox = { ...glass, padding: 16, gridColumn: "1 / -1" };
 const aiButton = {
   width: "100%",
   padding: 14,
   background: "#38bdf8",
   border: "none",
-  borderRadius: 12,
+  borderRadius: 10,
   fontWeight: "bold",
-  cursor: "pointer",
 };
+const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap" };
 
-const aiTextStyle = {
-  marginTop: 10,
-  whiteSpace: "pre-wrap",
-  color: "#cbd5f5",
-};
+function Chart({ title, children }) {
+  return (
+    <div style={chartBox}>
+      <div style={chartTitle}>{title}</div>
+      <ResponsiveContainer width="100%" height={220}>
+        {children}
+      </ResponsiveContainer>
+    </div>
+  );
+}
