@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   LineChart, Line,
   AreaChart, Area,
@@ -23,9 +23,29 @@ const COLORS = {
   other: "#facc15",
 };
 
+const COUNTRY_NAMES = {
+  US: "United States",
+  DE: "Germany",
+  UK: "United Kingdom",
+  HU: "Hungary",
+};
+
 /* ===== MAIN ===== */
 
 export default function PremiumWeek() {
+  /* COUNTRY */
+  const [country, setCountry] = useState("auto");
+
+  useEffect(() => {
+    if (country === "auto") {
+      const locale = navigator.language || "en-US";
+      if (locale.includes("de")) setCountry("DE");
+      else if (locale.includes("hu")) setCountry("HU");
+      else if (locale.includes("en-GB")) setCountry("UK");
+      else setCountry("US");
+    }
+  }, []);
+
   /* INCOME */
   const [incomeType, setIncomeType] = useState("monthly");
   const [incomeValue, setIncomeValue] = useState(3000);
@@ -37,6 +57,10 @@ export default function PremiumWeek() {
       return acc;
     }, {})
   );
+
+  /* AI */
+  const [aiText, setAiText] = useState("");
+  const [loading, setLoading] = useState(false);
 
   /* HELPERS */
 
@@ -74,15 +98,62 @@ export default function PremiumWeek() {
     day: d,
   }));
 
+  /* AI CALL */
+
+  const runAI = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/get-ai-insight", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: "weekly",
+          country,
+          weeklyIncome,
+          weeklySpend,
+          dailyTotals,
+          breakdown: week,
+        }),
+      });
+      const data = await res.json();
+      setAiText(data.insight || "AI analysis unavailable.");
+    } catch {
+      setAiText("AI system temporarily unavailable.");
+    }
+    setLoading(false);
+  };
+
   /* ===== RENDER ===== */
 
   return (
     <div style={page}>
 
+      {/* NAV */}
+      <div style={nav}>
+        <a href="/" style={navBtn}>← Back to WealthyAI Home</a>
+        <a href="/how-to-use" style={navBtnAlt}>How to use Weekly & Monthly</a>
+      </div>
+
+      {/* HEADER */}
       <h1 style={title}>WEALTHYAI · WEEKLY INTELLIGENCE</h1>
       <p style={subtitle}>
-        Multi-dimensional behavioral analysis with income awareness.
+        Thank you for choosing the <strong>Weekly Behavioral Analysis</strong>.  
+        This module detects spending patterns and adapts insights to your country.
       </p>
+
+      {/* COUNTRY */}
+      <div style={card}>
+        <label style={label}>Country context</label>
+        <select value={country} onChange={e => setCountry(e.target.value)} style={select}>
+          <option value="US">United States</option>
+          <option value="DE">Germany</option>
+          <option value="UK">United Kingdom</option>
+          <option value="HU">Hungary</option>
+        </select>
+        <p style={hint}>
+          Active context: {COUNTRY_NAMES[country]}
+        </p>
+      </div>
 
       {/* INCOME */}
       <div style={card}>
@@ -127,11 +198,8 @@ export default function PremiumWeek() {
 
         {/* CHARTS */}
         <div style={right}>
-
-          {/* 1 – DAILY TOTAL LINE */}
           <Chart title="Daily total spending">
             <LineChart data={chartData}>
-              <CartesianGrid stroke="#0f172a" />
               <XAxis dataKey="day" />
               <YAxis />
               <Tooltip />
@@ -139,10 +207,8 @@ export default function PremiumWeek() {
             </LineChart>
           </Chart>
 
-          {/* 2 – MULTI LINE */}
-          <Chart title="Category trends by day">
+          <Chart title="Category trends">
             <LineChart data={chartData}>
-              <CartesianGrid stroke="#0f172a" />
               <XAxis dataKey="day" />
               <YAxis />
               <Tooltip />
@@ -153,30 +219,6 @@ export default function PremiumWeek() {
             </LineChart>
           </Chart>
 
-          {/* 3 – STACKED BAR */}
-          <Chart title="Daily spending composition">
-            <BarChart data={chartData}>
-              <XAxis dataKey="day" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              {CATEGORIES.map(c => (
-                <Bar key={c} dataKey={c} stackId="a" fill={COLORS[c]} />
-              ))}
-            </BarChart>
-          </Chart>
-
-          {/* 4 – AREA (HEGY) */}
-          <Chart title="Spending momentum">
-            <AreaChart data={chartData}>
-              <XAxis dataKey="day" />
-              <YAxis />
-              <Tooltip />
-              <Area dataKey="total" stroke="#38bdf8" fill="#38bdf8" fillOpacity={0.25} />
-            </AreaChart>
-          </Chart>
-
-          {/* 5 – PIE */}
           <Chart title="Weekly distribution">
             <PieChart>
               <Pie data={pieData} dataKey="value" outerRadius={80}>
@@ -188,18 +230,36 @@ export default function PremiumWeek() {
             </PieChart>
           </Chart>
 
-          {/* 6 – SCATTER */}
-          <Chart title="Daily spending dispersion">
+          <Chart title="Spending momentum">
+            <AreaChart data={chartData}>
+              <XAxis dataKey="day" />
+              <YAxis />
+              <Tooltip />
+              <Area dataKey="total" stroke="#38bdf8" fill="#38bdf8" fillOpacity={0.25} />
+            </AreaChart>
+          </Chart>
+
+          <Chart title="Daily dispersion">
             <ScatterChart>
-              <XAxis dataKey="x" name="Day" />
-              <YAxis dataKey="y" name="Spend" />
-              <Tooltip cursor={{ strokeDasharray: "3 3" }} />
+              <XAxis dataKey="x" />
+              <YAxis dataKey="y" />
+              <Tooltip />
               <Scatter data={scatterData} fill="#a78bfa" />
             </ScatterChart>
           </Chart>
 
           <div style={summary}>
             Weekly spend: <strong>${weeklySpend}</strong> · Income: <strong>${weeklyIncome.toFixed(0)}</strong>
+          </div>
+
+          {/* AI */}
+          <div style={aiBox}>
+            <button onClick={runAI} style={aiButton}>
+              {loading ? "Analyzing…" : "Run Weekly AI Analysis"}
+            </button>
+            <pre style={aiTextStyle}>
+              {aiText || "AI will analyze your weekly behavior once data is provided."}
+            </pre>
           </div>
 
         </div>
@@ -231,12 +291,23 @@ const page = {
   fontFamily: "Inter, system-ui",
 };
 
+const nav = { display: "flex", gap: 16, marginBottom: 20 };
+const navBtn = {
+  border: "1px solid #38bdf8",
+  color: "#38bdf8",
+  padding: "8px 16px",
+  borderRadius: 10,
+  textDecoration: "none",
+  fontSize: 13,
+};
+const navBtnAlt = { ...navBtn, borderColor: "#a78bfa", color: "#a78bfa" };
+
 const title = { fontSize: "2.6rem" };
 const subtitle = { color: "#94a3b8", marginBottom: 30 };
 
 const layout = { display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 30 };
 
-const left = { maxHeight: "75vh", overflowY: "auto" };
+const left = { maxHeight: "70vh", overflowY: "auto" };
 const right = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 };
 
 const card = { border: "1px solid #1e293b", borderRadius: 14, padding: 16, marginBottom: 20 };
@@ -263,4 +334,28 @@ const hint = { fontSize: 11, color: "#64748b" };
 const chartBox = { border: "1px solid #1e293b", borderRadius: 14, padding: 12 };
 const chartTitle = { fontSize: 12, color: "#7dd3fc", marginBottom: 6 };
 
-const summary = { marginTop: 20, gridColumn: "1 / -1", textAlign: "right" };
+const summary = { gridColumn: "1 / -1", textAlign: "right", marginTop: 10 };
+
+const aiBox = {
+  gridColumn: "1 / -1",
+  border: "1px solid #1e293b",
+  borderRadius: 14,
+  padding: 16,
+  marginTop: 10,
+};
+
+const aiButton = {
+  width: "100%",
+  padding: 14,
+  background: "#38bdf8",
+  border: "none",
+  borderRadius: 10,
+  fontWeight: "bold",
+  cursor: "pointer",
+};
+
+const aiTextStyle = {
+  marginTop: 10,
+  whiteSpace: "pre-wrap",
+  color: "#cbd5f5",
+};
