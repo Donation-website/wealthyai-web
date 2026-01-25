@@ -12,8 +12,26 @@ export default async function handler(req, res) {
       breakdown,
     } = req.body;
 
-    const prompt = `
-Analyze the following financial data and produce an analytical report.
+    const systemPrompt = `
+You are a professional financial behavior analysis AI.
+This is NOT a chat assistant.
+
+Your task:
+- Analyze financial behavior
+- Identify inefficiencies and risks
+- Evaluate sustainability
+- Provide clear, actionable insights
+
+Tone:
+- Analytical
+- Professional
+- Concise
+- No greetings
+- No emojis
+`;
+
+    const userPrompt = `
+DATASET
 
 Country: ${country}
 Weekly income: ${weeklyIncome}
@@ -21,43 +39,46 @@ Weekly spending: ${weeklySpend}
 Daily totals: ${JSON.stringify(dailyTotals)}
 Category breakdown: ${JSON.stringify(breakdown)}
 
-Return:
-- Spending pattern analysis
-- Financial risk assessment
-- 3 improvement recommendations
+OUTPUT STRUCTURE:
+1. Spending behavior analysis
+2. Financial health assessment
+3. Risk signals (if any)
+4. 3 concrete improvement recommendations
 `;
 
-    const hfRes = await fetch(
-      "https://api-inference.huggingface.co/models/google/flan-t5-large",
+    const groqRes = await fetch(
+      "https://api.groq.com/openai/v1/chat/completions",
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${process.env.HF_TOKEN}`,
+          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          inputs: prompt,
-          parameters: {
-            max_new_tokens: 250,
-          },
+          model: "llama3-8b-8192",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          temperature: 0.2,
+          max_tokens: 500,
         }),
       }
     );
 
-    const raw = await hfRes.text();
-
-    if (!hfRes.ok) {
-      console.error("HF ERROR:", raw);
+    if (!groqRes.ok) {
+      const err = await groqRes.text();
+      console.error("Groq API error:", err);
       return res.status(500).json({
         insight: "AI backend unavailable.",
       });
     }
 
-    const json = JSON.parse(raw);
+    const json = await groqRes.json();
 
     const text =
-      json?.[0]?.generated_text ||
-      "AI returned no analysis.";
+      json?.choices?.[0]?.message?.content ||
+      "AI returned no usable output.";
 
     return res.status(200).json({ insight: text.trim() });
 
