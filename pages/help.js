@@ -163,6 +163,7 @@ const back = {
 const title = {
   fontSize: "2.2rem",
   marginBottom: 12,
+  color: "#ffffff", // ✅ FIX: explicit white
 };
 
 const intro = {
