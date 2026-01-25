@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   LineChart, Line,
   AreaChart, Area,
@@ -198,8 +198,10 @@ function Chart({ title, children }) {
 const page = {
   minHeight: "100vh",
   position: "relative",
-  background:
-    "radial-gradient(circle at top, #020617, #000)",
+  backgroundImage:
+    "linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('/wealthyai/icons/week.png')",
+  backgroundSize: "cover",
+  backgroundPosition: "center",
   color: "#e5e7eb",
   padding: 40,
   fontFamily: "Inter, system-ui",
