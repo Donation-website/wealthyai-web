@@ -128,7 +128,6 @@ const bgLines = {
   backgroundImage:
     "linear-gradient(120deg, transparent 40%, rgba(56,189,248,0.08) 50%, transparent 60%)",
   backgroundSize: "1200px 1200px",
-  animation: "moveLines 40s linear infinite",
   zIndex: 2,
 };
 
@@ -147,8 +146,8 @@ const back = {
   padding: "6px 12px",
   fontSize: 13,
   borderRadius: 8,
-  background: "rgba(255,255,255,0.18)",
-  border: "1px solid rgba(255,255,255,0.35)",
+  background: "rgba(148,163,184,0.18)",
+  border: "1px solid rgba(148,163,184,0.35)",
   color: "#ffffff",
   cursor: "pointer",
 };
@@ -165,28 +164,28 @@ const intro = {
   fontSize: 15,
 };
 
-/* ===== GLASS SECTIONS ===== */
+/* ===== GLASS SECTIONS – BLUE-TINTED ===== */
 
 const section = {
   maxWidth: 820,
   marginBottom: 28,
   padding: 24,
   borderRadius: 16,
-  background: "rgba(255,255,255,0.18)",
-  border: "1px solid rgba(255,255,255,0.35)",
-  backdropFilter: "blur(10px)",
+  background: "rgba(56,189,248,0.14)",   // ← kékesített alap
+  border: "1px solid rgba(125,211,252,0.35)",
+  backdropFilter: "blur(12px)",
 };
 
 const sectionTitle = {
   fontSize: "1.15rem",
-  color: "#ffffff",
+  color: "#f0f9ff",
   marginBottom: 10,
 };
 
 const sectionText = {
   fontSize: 15,
   lineHeight: 1.65,
-  color: "#ffffff",
+  color: "#f8fafc",
 };
 
 const footer = {
