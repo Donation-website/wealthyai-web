@@ -6,12 +6,21 @@ export default async function handler(req, res) {
   try {
     const { country = "US", weeklyIncome = 0, weeklySpend = 0, dailyTotals = [] } = req.body;
 
-    // Egyszerűbb prompt a stabilitásért
-    const prompt = `Analyze this weekly spending: Income ${weeklyIncome}, Spend ${weeklySpend}, Daily: ${dailyTotals.join(",")}. Country: ${country}. Give 2 tips.`;
+    const safe = (v) => (typeof v === "number" && isFinite(v) ? v : 0);
+    const income = safe(weeklyIncome);
+    const spend = safe(weeklySpend);
+    const days = Array.isArray(dailyTotals) ? dailyTotals.map(safe) : [];
 
-    // 1. ÚJ ENDPOINT: Próbáljuk a közvetlen hívást a stabilabb Llama modellel
+    const prompt = `<s>[INST] Analyze this weekly spending:
+    - Country: ${country}
+    - Income: ${income}
+    - Spending: ${spend}
+    - Daily Breakdown: ${days.join(", ")}
+    Identify the highest/lowest days and give 2 saving tips. [/INST]`;
+
+    // AZ ÚJ ROUTER URL
     const response = await fetch(
-      "https://api-inference.huggingface.co",
+      "https://router.huggingface.co",
       {
         method: "POST",
         headers: {
@@ -21,18 +30,10 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           inputs: prompt,
-          parameters: { max_new_tokens: 300, temperature: 0.7 }
+          parameters: { max_new_tokens: 400, temperature: 0.7 }
         }),
       }
     );
-
-    // Ha nem JSON jön vissza (pl. Not Found), itt kezeljük
-    const contentType = response.headers.get("content-type");
-    if (!contentType || !contentType.includes("application/json")) {
-      const rawText = await response.text();
-      console.error("Nem JSON válasz érkezett:", rawText);
-      return res.status(200).json({ insight: "AI endpoint error. Please check your HF_TOKEN or try again later." });
-    }
 
     const result = await response.json();
 
@@ -40,23 +41,23 @@ export default async function handler(req, res) {
       return res.status(200).json({ insight: `AI error: ${result.error}` });
     }
 
-    // A kinyerés módja: result[0].generated_text
+    // FONTOS: A Router API szinte mindig tömbbel tér vissza: [{ generated_text: "..." }]
     let aiText = "";
     if (Array.isArray(result) && result[0]?.generated_text) {
       aiText = result[0].generated_text;
     } else if (result.generated_text) {
       aiText = result.generated_text;
     } else {
-      aiText = "Analysis ready, but response format was unexpected.";
+      aiText = "Analysis complete, but the response format was unusual.";
     }
 
-    // Levágjuk a promptot a válaszból, ha benne maradt volna
-    const finalInsight = aiText.replace(prompt, "").trim();
+    // A prompt levágása a válaszból (tisztítás)
+    const cleanText = aiText.split("[/INST]").pop().trim();
 
-    return res.status(200).json({ insight: finalInsight });
+    return res.status(200).json({ insight: cleanText });
 
   } catch (err) {
     console.error("SERVER ERROR:", err);
-    return res.status(200).json({ insight: `Connection error: ${err.message}` });
+    return res.status(200).json({ insight: "Connection error. Please try again." });
   }
 }
