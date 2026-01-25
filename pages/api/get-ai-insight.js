@@ -4,6 +4,8 @@ export default async function handler(req, res) {
   }
 
   try {
+    const body = req.body || {};
+
     const {
       mode = "weekly",
       country = "US",
@@ -11,7 +13,7 @@ export default async function handler(req, res) {
       weeklySpend = 0,
       dailyTotals = [],
       breakdown = {},
-    } = req.body;
+    } = body;
 
     /* ===== SAFETY ===== */
     const safe = (v) => (typeof v === "number" && isFinite(v) ? v : 0);
@@ -25,10 +27,10 @@ export default async function handler(req, res) {
       ? dailyTotals.map(safe)
       : [];
 
-    const worstDayIndex =
-      days.length > 0 ? days.indexOf(Math.max(...days)) : null;
-    const bestDayIndex =
-      days.length > 0 ? days.indexOf(Math.min(...days)) : null;
+    const worstDay =
+      days.length > 0 ? days.indexOf(Math.max(...days)) + 1 : null;
+    const bestDay =
+      days.length > 0 ? days.indexOf(Math.min(...days)) + 1 : null;
 
     /* ===== COUNTRY BENCHMARKS ===== */
     const COUNTRY = {
@@ -40,40 +42,41 @@ export default async function handler(req, res) {
 
     const ref = COUNTRY[country] || COUNTRY.US;
 
-    /* ===== PROMPT (STABLE, NOT OVERCOMPLEX) ===== */
+    /* ===== PROMPT ===== */
     const prompt = `
-You are a professional financial analyst.
+You are a senior financial behavior analyst.
 
-Context:
-- Country: ${country}
-- Currency: ${ref.currency}
-- Weekly income: ${income}
-- Weekly spending: ${spend}
-- Weekly surplus: ${surplus}
-- Savings rate: ${(savingsRate * 100).toFixed(1)}%
-- Country average weekly spending: ${ref.avgWeekly}
+User context:
+Country: ${country}
+Currency: ${ref.currency}
 
-Daily spending totals:
+Weekly income: ${income}
+Weekly spending: ${spend}
+Weekly surplus: ${surplus}
+Savings rate: ${(savingsRate * 100).toFixed(1)}%
+Country average weekly spend: ${ref.avgWeekly}
+
+Daily totals:
 ${days.map((v, i) => `Day ${i + 1}: ${v}`).join("\n")}
 
 Task:
-- Identify the highest spending day and explain why.
-- Identify the lowest spending day and explain what worked.
-- Compare spending to country average.
-- Comment on savings health.
-- Give 2 concrete, realistic improvements.
-- Give a short outlook for monthly and yearly impact.
+- Identify the highest spending day (Day ${worstDay}) and explain why.
+- Identify the lowest spending day (Day ${bestDay}) and explain what worked.
+- Compare spending to country norms.
+- Evaluate savings health.
+- Give 2 concrete behavior improvements.
+- Give a short monthly and yearly outlook.
 
 Rules:
-- Be specific.
 - No generic advice.
 - No mentioning missing data.
 - Use bullet points.
+- Be professional and concise.
 `;
 
-    /* ===== HF API CALL ===== */
-    const response = await fetch(
-      "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2",
+    /* ===== HUGGINGFACE ROUTER (STABLE) ===== */
+    const hfResponse = await fetch(
+      "https://router.huggingface.co/v1/chat/completions",
       {
         method: "POST",
         headers: {
@@ -81,29 +84,25 @@ Rules:
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          inputs: prompt,
-          parameters: {
-            max_new_tokens: 350,
-            temperature: 0.3,
-            return_full_text: false,
-          },
+          model: "mistralai/Mistral-7B-Instruct-v0.2",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.35,
+          max_tokens: 400,
         }),
       }
     );
 
-    const result = await response.json();
+    const hfJson = await hfResponse.json();
 
-    const text =
-      Array.isArray(result) && result[0]?.generated_text
-        ? result[0].generated_text.trim()
-        : "AI analysis temporarily unavailable.";
+    const insight =
+      hfJson?.choices?.[0]?.message?.content?.trim() ||
+      "AI analysis temporarily unavailable.";
 
-    return res.status(200).json({ insight: text });
+    return res.status(200).json({ insight });
   } catch (err) {
-    console.error("HF AI ERROR:", err);
+    console.error("HF ROUTER ERROR:", err);
     return res.status(200).json({
-      insight:
-        "AI analysis temporarily unavailable. Please try again in a moment.",
+      insight: "AI analysis temporarily unavailable.",
     });
   }
 }
