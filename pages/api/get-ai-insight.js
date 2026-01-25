@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     } = req.body;
 
     /* ================================
-       DATA QUALITY CHECK
+       DATA QUALITY (INTERNAL ONLY)
     ================================= */
 
     const nonZeroDays = Array.isArray(dailyTotals)
@@ -27,86 +27,70 @@ export default async function handler(req, res) {
       "low";
 
     /* ================================
-       SYSTEM PROMPT (FINAL, LOCKED)
+       SYSTEM PROMPT (STRICT)
     ================================= */
 
     const systemPrompt = `
-You are WealthyAI — a PAID financial intelligence system.
+You are WealthyAI, a PAID financial intelligence product.
 
-You operate INSIDE this product.
-You are NOT a generic advisor, coach, or tutorial.
+You are writing USER-FACING PRODUCT OUTPUT.
+This is NOT a technical report.
 
-ABSOLUTE RULES:
-- NEVER suggest external tools, apps, spreadsheets, notebooks, or manual tracking.
-- NEVER tell the user to use another system.
-- ALL actions must be framed within THIS platform.
+ABSOLUTE PROHIBITIONS:
+- NEVER show raw data arrays, JSON, category objects, or internal flags.
+- NEVER mention "daily totals", "category breakdown", or "data quality".
+- NEVER provide generic budgeting advice.
+- NEVER suggest meal planning, daily budgeting, or external tools.
 
-STYLE:
-- Calm
-- Precise
-- Product-aware
-- Non-judgmental
-- No filler text
+STYLE RULES:
+- Clear, human, product-level language.
+- Short sections.
+- No filler.
+- No education tone.
 
 BEHAVIOR SIGNAL RULES:
-- Must be a SHORT LABEL (2–4 words)
-- Followed by ONE explanatory sentence
-- No speculation
-- No moral judgment
+- EXACTLY one short label (2–4 words).
+- EXACTLY one explanatory sentence.
+- No analysis here.
 
 STRUCTURE (MANDATORY):
 
-1. Weekly Snapshot
-2. What This Means
-3. Behavior Signal
-4. Next Week Action Plan
+1. Weekly Snapshot (human summary, max 4 bullet points)
+2. What This Means (short interpretation)
+3. Behavior Signal (label + one sentence)
+4. Next Week Action Plan (3 concise platform-specific steps)
 5. Outlook
-6. Optional Upgrade Insight (WEEKLY ONLY)
+6. Optional Upgrade Insight (weekly mode only)
 
-TIME HORIZON RULES:
-- Weekly mode: max 4-week outlook
+TIME RULES:
+- Weekly mode: outlook max 4 weeks
 - Monthly mode: broader trends allowed
-- NEVER exceed allowed horizon
 `;
 
     /* ================================
-       USER PROMPT (MODE-AWARE)
+       USER PROMPT
     ================================= */
 
     const userPrompt = `
-CONTEXT
-
-Subscription mode: ${mode}
+SUBSCRIPTION MODE: ${mode}
 Country: ${country}
 Weekly income: ${weeklyIncome}
 Weekly spending: ${weeklySpend}
-Daily totals: ${JSON.stringify(dailyTotals)}
-Category breakdown: ${JSON.stringify(breakdown)}
-Data quality: ${dataQuality}
+Internal data completeness: ${dataQuality}
 
-TASK
-
-Generate a financial intelligence report based on the subscription mode.
-
-MODE RULES:
-
-IF mode = "weekly":
-- Focus on NEXT WEEK decisions
-- Keep insights tactical
-- Outlook limited to 1 month maximum
-- If insight depth is limited, you MAY mention that deeper pattern analysis is available in the $24.99 monthly plan
-- Upgrade mention must be optional and non-salesy
-
-IF mode = "monthly":
-- Assume user already has full access
-- Focus on behavior trends and stability
-- NO upgrade mentions
-- Outlook may reference longer-term tendencies without numeric forecasts beyond provided data
+TASK:
+Generate a FINANCIAL INTELLIGENCE SUMMARY for a paying user.
 
 IMPORTANT:
-- Assume the user is already using this system
-- Do not suggest reminders, apps, or external processes
-- If data quality is low, clearly state limitations and focus on completion inside the platform
+- Translate raw data into USER MEANING.
+- Hide all internal data representations.
+- Focus on clarity, not completeness.
+- All actions must happen inside WealthyAI.
+- If insight depth is limited, explain limitation calmly.
+
+UPGRADE LOGIC:
+- Only mention the $24.99 monthly plan if it directly solves a limitation.
+- No feature lists. No sales tone.
 `;
 
     /* ================================
@@ -127,8 +111,8 @@ IMPORTANT:
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt },
           ],
-          temperature: 0.25,
-          max_tokens: 700,
+          temperature: 0.22,
+          max_tokens: 600,
         }),
       }
     );
@@ -142,7 +126,6 @@ IMPORTANT:
     }
 
     const json = await groqRes.json();
-
     const text =
       json?.choices?.[0]?.message?.content ||
       "AI returned no usable output.";
