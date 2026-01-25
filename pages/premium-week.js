@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   LineChart, Line,
-  AreaChart, Area,
   PieChart, Pie, Cell,
   ScatterChart, Scatter,
   XAxis, YAxis, Tooltip, Legend,
@@ -25,8 +24,7 @@ const COLORS = {
 /* ===== MAIN ===== */
 
 export default function PremiumWeek() {
-  const [incomeType, setIncomeType] = useState("monthly");
-  const [incomeValue, setIncomeValue] = useState(3000);
+  const [incomeValue] = useState(3000);
 
   const [week, setWeek] = useState(
     DAYS.reduce((acc, d) => {
@@ -38,10 +36,7 @@ export default function PremiumWeek() {
   const [aiText, setAiText] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const weeklyIncome =
-    incomeType === "daily" ? incomeValue * 7 :
-    incomeType === "weekly" ? incomeValue :
-    incomeValue / 4;
+  const weeklyIncome = incomeValue / 4;
 
   const update = (day, cat, val) => {
     setWeek({ ...week, [day]: { ...week[day], [cat]: Number(val) } });
@@ -67,7 +62,6 @@ export default function PremiumWeek() {
   const scatterData = DAYS.map((d, i) => ({
     x: i + 1,
     y: dailyTotals[i],
-    day: d,
   }));
 
   const runAI = async () => {
@@ -94,9 +88,9 @@ export default function PremiumWeek() {
 
   return (
     <div style={page}>
-      {/* BACKGROUND LAYERS */}
-      <div style={bgGrid} />
-      <div style={bgCharts} />
+      {/* === FUTURISTIC BACKGROUND (SAFE) === */}
+      <div style={bgBase} />
+      <div style={bgChartGhosts} />
       <div style={bgFlow} />
 
       {/* HELP */}
@@ -134,18 +128,6 @@ export default function PremiumWeek() {
               <YAxis />
               <Tooltip />
               <Line dataKey="total" stroke="#38bdf8" strokeWidth={3} />
-            </LineChart>
-          </Chart>
-
-          <Chart title="Category trends">
-            <LineChart data={chartData}>
-              <XAxis dataKey="day" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              {CATEGORIES.map(c => (
-                <Line key={c} dataKey={c} stroke={COLORS[c]} />
-              ))}
             </LineChart>
           </Chart>
 
@@ -210,32 +192,35 @@ const page = {
   overflow: "hidden",
 };
 
-/* === BACKGROUND COMBO === */
+/* === BACKGROUND COMBO (NO GRID) === */
 
-const bgGrid = {
+const bgBase = {
   position: "fixed",
   inset: 0,
-  backgroundImage:
-    "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
-  backgroundSize: "100px 100px",
+  background: "#020617",
   zIndex: 0,
+  pointerEvents: "none",
 };
 
-const bgCharts = {
+const bgChartGhosts = {
   position: "fixed",
   inset: 0,
   background:
-    "radial-gradient(circle at 20% 30%, rgba(56,189,248,0.12), transparent 45%), radial-gradient(circle at 80% 60%, rgba(167,139,250,0.12), transparent 50%)",
+    "radial-gradient(circle at 20% 30%, rgba(56,189,248,0.18), transparent 45%)," +
+    "radial-gradient(circle at 70% 40%, rgba(167,139,250,0.15), transparent 50%)," +
+    "radial-gradient(circle at 50% 80%, rgba(34,211,238,0.12), transparent 55%)",
   zIndex: 1,
+  pointerEvents: "none",
 };
 
 const bgFlow = {
   position: "fixed",
   inset: 0,
   backgroundImage:
-    "linear-gradient(90deg, transparent 0%, rgba(56,189,248,0.08) 50%, transparent 100%)",
-  backgroundSize: "1400px 1400px",
+    "linear-gradient(90deg, transparent 0%, rgba(56,189,248,0.10) 50%, transparent 100%)",
+  backgroundSize: "1800px 1800px",
   zIndex: 2,
+  pointerEvents: "none",
 };
 
 /* === UI === */
@@ -251,13 +236,20 @@ const helpButton = {
   color: "#7dd3fc",
   border: "1px solid #1e293b",
   background: "rgba(2,6,23,0.6)",
-  backdropFilter: "blur(6px)",
+  zIndex: 10,
 };
 
-const title = { fontSize: "2.6rem" };
-const subtitle = { color: "#94a3b8", marginBottom: 30 };
+const title = { fontSize: "2.6rem", position: "relative", zIndex: 5 };
+const subtitle = { color: "#94a3b8", marginBottom: 30, position: "relative", zIndex: 5 };
 
-const layout = { display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 30 };
+const layout = {
+  display: "grid",
+  gridTemplateColumns: "1.2fr 1fr",
+  gap: 30,
+  position: "relative",
+  zIndex: 5,
+};
+
 const left = { maxHeight: "70vh", overflowY: "auto" };
 const right = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 };
 
