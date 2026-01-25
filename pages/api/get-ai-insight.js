@@ -5,7 +5,7 @@ export default async function handler(req, res) {
 
   try {
     const {
-      mode = "weekly", // "weekly" | "monthly"
+      mode = "weekly",
       country,
       weeklyIncome,
       weeklySpend,
@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     } = req.body;
 
     /* ================================
-       DATA QUALITY (INTERNAL ONLY)
+       INTERNAL DATA CHECK
     ================================= */
 
     const nonZeroDays = Array.isArray(dailyTotals)
@@ -27,44 +27,38 @@ export default async function handler(req, res) {
       "low";
 
     /* ================================
-       SYSTEM PROMPT (STRICT)
+       SYSTEM PROMPT (BEHAVIOR-FOCUSED)
     ================================= */
 
     const systemPrompt = `
-You are WealthyAI, a PAID financial intelligence product.
+You are WealthyAI, a PAID financial intelligence system.
 
-You are writing USER-FACING PRODUCT OUTPUT.
-This is NOT a technical report.
+You do NOT repeat obvious facts.
+You do NOT act as a budgeting tutorial.
+You do NOT issue generic alerts.
 
-ABSOLUTE PROHIBITIONS:
-- NEVER show raw data arrays, JSON, category objects, or internal flags.
-- NEVER mention "daily totals", "category breakdown", or "data quality".
-- NEVER provide generic budgeting advice.
-- NEVER suggest meal planning, daily budgeting, or external tools.
+Your purpose:
+- Identify BEHAVIORAL PATTERNS
+- Translate them into DECISION SIGNALS
 
-STYLE RULES:
-- Clear, human, product-level language.
-- Short sections.
-- No filler.
-- No education tone.
+CRITICAL RULES:
+- Behavior Signal MUST describe HOW the user spends, not HOW MUCH.
+- Never restate income, spending, or ratios in the Behavior Signal.
+- The Behavior Signal must add NEW understanding.
 
-BEHAVIOR SIGNAL RULES:
-- EXACTLY one short label (2–4 words).
-- EXACTLY one explanatory sentence.
-- No analysis here.
+STYLE:
+- Product-level language
+- Calm, precise, non-judgmental
+- No filler, no education tone
 
 STRUCTURE (MANDATORY):
 
-1. Weekly Snapshot (human summary, max 4 bullet points)
-2. What This Means (short interpretation)
-3. Behavior Signal (label + one sentence)
-4. Next Week Action Plan (3 concise platform-specific steps)
+1. Weekly Snapshot (facts only, human-readable)
+2. What This Means (why it matters)
+3. Behavior Signal (pattern label + one sentence)
+4. Next Week Action Plan (pattern-breaking steps inside WealthyAI)
 5. Outlook
 6. Optional Upgrade Insight (weekly mode only)
-
-TIME RULES:
-- Weekly mode: outlook max 4 weeks
-- Monthly mode: broader trends allowed
 `;
 
     /* ================================
@@ -79,18 +73,14 @@ Weekly spending: ${weeklySpend}
 Internal data completeness: ${dataQuality}
 
 TASK:
-Generate a FINANCIAL INTELLIGENCE SUMMARY for a paying user.
+Generate a WEEKLY financial intelligence report.
 
 IMPORTANT:
-- Translate raw data into USER MEANING.
-- Hide all internal data representations.
-- Focus on clarity, not completeness.
-- All actions must happen inside WealthyAI.
-- If insight depth is limited, explain limitation calmly.
-
-UPGRADE LOGIC:
-- Only mention the $24.99 monthly plan if it directly solves a limitation.
-- No feature lists. No sales tone.
+- Do NOT repeat numeric facts outside the Snapshot.
+- Behavior Signal must explain the spending PATTERN.
+- Action Plan must respond directly to that pattern.
+- All actions occur inside WealthyAI.
+- Mention the $24.99 monthly plan only if it resolves a limitation.
 `;
 
     /* ================================
@@ -111,8 +101,8 @@ UPGRADE LOGIC:
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt },
           ],
-          temperature: 0.22,
-          max_tokens: 600,
+          temperature: 0.2,
+          max_tokens: 620,
         }),
       }
     );
