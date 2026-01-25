@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import {
   LineChart, Line,
   AreaChart, Area,
-  BarChart, Bar,
   PieChart, Pie, Cell,
   ScatterChart, Scatter,
   XAxis, YAxis, Tooltip, Legend,
@@ -23,28 +22,9 @@ const COLORS = {
   other: "#facc15",
 };
 
-const COUNTRY_NAMES = {
-  US: "United States",
-  DE: "Germany",
-  UK: "United Kingdom",
-  HU: "Hungary",
-};
-
 /* ===== MAIN ===== */
 
 export default function PremiumWeek() {
-  const [country, setCountry] = useState("auto");
-
-  useEffect(() => {
-    if (country === "auto") {
-      const locale = navigator.language || "en-US";
-      if (locale.includes("de")) setCountry("DE");
-      else if (locale.includes("hu")) setCountry("HU");
-      else if (locale.includes("en-GB")) setCountry("UK");
-      else setCountry("US");
-    }
-  }, []);
-
   const [incomeType, setIncomeType] = useState("monthly");
   const [incomeValue, setIncomeValue] = useState(3000);
 
@@ -98,7 +78,6 @@ export default function PremiumWeek() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           mode: "weekly",
-          country,
           weeklyIncome,
           weeklySpend,
           dailyTotals,
@@ -115,6 +94,9 @@ export default function PremiumWeek() {
 
   return (
     <div style={page}>
+      {/* HELP BUTTON */}
+      <a href="/help" style={helpButton}>Help</a>
+
       <h1 style={title}>WEALTHYAI · WEEKLY INTELLIGENCE</h1>
       <p style={subtitle}>
         Weekly behavioral analysis with country-aware intelligence.
@@ -173,15 +155,6 @@ export default function PremiumWeek() {
             </PieChart>
           </Chart>
 
-          <Chart title="Spending momentum">
-            <AreaChart data={chartData}>
-              <XAxis dataKey="day" />
-              <YAxis />
-              <Tooltip />
-              <Area dataKey="total" stroke="#38bdf8" fill="#38bdf8" fillOpacity={0.25} />
-            </AreaChart>
-          </Chart>
-
           <Chart title="Daily dispersion">
             <ScatterChart>
               <XAxis dataKey="x" />
@@ -207,26 +180,43 @@ export default function PremiumWeek() {
   );
 }
 
-/* ===== SHARED CARD STYLE ===== */
+/* ===== COMPONENTS ===== */
 
-const glass = {
-  background: "rgba(255,255,255,0.08)",
-  backdropFilter: "blur(14px)",
-  border: "1px solid rgba(255,255,255,0.18)",
-  borderRadius: 14,
-};
+function Chart({ title, children }) {
+  return (
+    <div style={chartBox}>
+      <div style={chartTitle}>{title}</div>
+      <ResponsiveContainer width="100%" height={220}>
+        {children}
+      </ResponsiveContainer>
+    </div>
+  );
+}
 
 /* ===== STYLES ===== */
 
 const page = {
   minHeight: "100vh",
-  backgroundImage:
-    "linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('/wealthyai/icons/week.png')",
-  backgroundSize: "cover",
-  backgroundPosition: "center",
+  position: "relative",
+  background:
+    "radial-gradient(circle at top, #020617, #000)",
   color: "#e5e7eb",
   padding: 40,
   fontFamily: "Inter, system-ui",
+};
+
+const helpButton = {
+  position: "absolute",
+  top: 24,
+  right: 24,
+  padding: "8px 14px",
+  borderRadius: 10,
+  fontSize: 13,
+  textDecoration: "none",
+  color: "#7dd3fc",
+  border: "1px solid #1e293b",
+  background: "rgba(2,6,23,0.6)",
+  backdropFilter: "blur(6px)",
 };
 
 const title = { fontSize: "2.6rem" };
@@ -235,6 +225,13 @@ const subtitle = { color: "#94a3b8", marginBottom: 30 };
 const layout = { display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 30 };
 const left = { maxHeight: "70vh", overflowY: "auto" };
 const right = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 };
+
+const glass = {
+  background: "rgba(255,255,255,0.08)",
+  backdropFilter: "blur(14px)",
+  border: "1px solid rgba(255,255,255,0.18)",
+  borderRadius: 14,
+};
 
 const dayBox = { ...glass, padding: 16, marginBottom: 12 };
 const dayTitle = { cursor: "pointer", color: "#38bdf8", fontWeight: "bold" };
@@ -264,14 +261,3 @@ const aiButton = {
   fontWeight: "bold",
 };
 const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap" };
-
-function Chart({ title, children }) {
-  return (
-    <div style={chartBox}>
-      <div style={chartTitle}>{title}</div>
-      <ResponsiveContainer width="100%" height={220}>
-        {children}
-      </ResponsiveContainer>
-    </div>
-  );
-}
