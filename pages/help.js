@@ -7,77 +7,79 @@ export default function HelpPage() {
       <div style={bgGlow} />
 
       <div style={content}>
-        <button onClick={() => window.history.back()} style={back}>
-          ← Back
-        </button>
+        <div style={container}>
+          <button onClick={() => window.history.back()} style={back}>
+            ← Back
+          </button>
 
-        <h1 style={title}>How Weekly Financial Intelligence Works</h1>
+          <h1 style={title}>How Weekly Financial Intelligence Works</h1>
 
-        <p style={intro}>
-          This page explains how to read and use your weekly insights in WealthyAI.
-          The goal is clarity — not judgment, not pressure.
-        </p>
+          <p style={intro}>
+            This page explains how to read and use your weekly insights in WealthyAI.
+            The goal is clarity — not judgment, not pressure.
+          </p>
 
-        <Section title="What this page is">
-          WealthyAI provides <strong>weekly financial intelligence</strong>.
-          This is not a budgeting spreadsheet, not a finance course, and not daily coaching.
-          <br /><br />
-          The weekly view is designed to help you understand how your financial behavior
-          evolves over short periods — before small issues turn into long-term problems.
-        </Section>
+          <Section title="What this page is">
+            WealthyAI provides <strong>weekly financial intelligence</strong>.
+            This is not a budgeting spreadsheet, not a finance course, and not daily coaching.
+            <br /><br />
+            The weekly view is designed to help you understand how your financial behavior
+            evolves over short periods — before small issues turn into long-term problems.
+          </Section>
 
-        <Section title="What the weekly analysis does">
-          Each week, the system looks at:
-          <ul>
-            <li>your reported weekly income</li>
-            <li>your total weekly spending</li>
-            <li>how spending is distributed across days</li>
-            <li>how spending is distributed across categories</li>
-          </ul>
-          From this, it highlights patterns that are difficult to notice day-by-day.
-        </Section>
+          <Section title="What the weekly analysis does">
+            Each week, the system looks at:
+            <ul>
+              <li>your reported weekly income</li>
+              <li>your total weekly spending</li>
+              <li>how spending is distributed across days</li>
+              <li>how spending is distributed across categories</li>
+            </ul>
+            From this, it highlights patterns that are difficult to notice day-by-day.
+          </Section>
 
-        <Section title="What this analysis does NOT do">
-          <ul>
-            <li>It does not judge or score you</li>
-            <li>It does not assume perfect data</li>
-            <li>It does not replace professional financial advice</li>
-            <li>It does not force budgeting rules on you</li>
-          </ul>
-        </Section>
+          <Section title="What this analysis does NOT do">
+            <ul>
+              <li>It does not judge or score you</li>
+              <li>It does not assume perfect data</li>
+              <li>It does not replace professional financial advice</li>
+              <li>It does not force budgeting rules on you</li>
+            </ul>
+          </Section>
 
-        <Section title="How to read the insights">
-          <p><strong>Weekly Snapshot</strong><br />
-          A factual summary of what happened this week.</p>
+          <Section title="How to read the insights">
+            <p><strong>Weekly Snapshot</strong><br />
+            A factual summary of what happened this week.</p>
 
-          <p><strong>What This Means</strong><br />
-          Explains why the snapshot matters.</p>
+            <p><strong>What This Means</strong><br />
+            Explains why the snapshot matters.</p>
 
-          <p><strong>Behavior Signal</strong><br />
-          Describes a pattern — not a verdict.</p>
+            <p><strong>Behavior Signal</strong><br />
+            Describes a pattern — not a verdict.</p>
 
-          <p><strong>Next Week Action Plan</strong><br />
-          Focused actions for the coming week only.</p>
+            <p><strong>Next Week Action Plan</strong><br />
+            Focused actions for the coming week only.</p>
 
-          <p><strong>1-Month Outlook</strong><br />
-          Short forward-looking context when data allows.</p>
-        </Section>
+            <p><strong>1-Month Outlook</strong><br />
+            Short forward-looking context when data allows.</p>
+          </Section>
 
-        <Section title="Why weekly analysis matters">
-          Financial problems rarely appear overnight.
-          <br /><br />
-          Weekly analysis helps you notice drift early — while correction is easy.
-        </Section>
+          <Section title="Why weekly analysis matters">
+            Financial problems rarely appear overnight.
+            <br /><br />
+            Weekly analysis helps you notice drift early — while correction is easy.
+          </Section>
 
-        <Section title="Weekly vs Monthly plans">
-          Weekly focuses on short-term awareness.
-          <br /><br />
-          Monthly plans unlock deeper pattern recognition across multiple weeks.
-        </Section>
+          <Section title="Weekly vs Monthly plans">
+            Weekly focuses on short-term awareness.
+            <br /><br />
+            Monthly plans unlock deeper pattern recognition across multiple weeks.
+          </Section>
 
-        <p style={footer}>
-          WealthyAI supports awareness — not control.
-        </p>
+          <p style={footer}>
+            WealthyAI supports awareness — not control.
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -108,7 +110,13 @@ const content = {
   position: "relative",
   zIndex: 10,
   padding: 40,
-  color: "#e5e7eb",
+  display: "flex",
+  justifyContent: "center",
+};
+
+const container = {
+  width: "100%",
+  maxWidth: 900,
 };
 
 /* ===== FUTURISTIC BACKGROUND ===== */
@@ -167,11 +175,11 @@ const intro = {
 /* ===== GLASS SECTIONS – BLUE-TINTED ===== */
 
 const section = {
-  maxWidth: 820,
+  width: "100%",
   marginBottom: 28,
   padding: 24,
   borderRadius: 16,
-  background: "rgba(56,189,248,0.14)",   // ← kékesített alap
+  background: "rgba(56,189,248,0.14)",
   border: "1px solid rgba(125,211,252,0.35)",
   backdropFilter: "blur(12px)",
 };
