@@ -4,18 +4,13 @@ export default async function handler(req, res) {
   }
 
   try {
-    const body = req.body || {};
-
     const {
-      mode = "weekly",
       country = "US",
       weeklyIncome = 0,
       weeklySpend = 0,
       dailyTotals = [],
-      breakdown = {},
-    } = body;
+    } = req.body;
 
-    /* ===== SAFETY ===== */
     const safe = (v) => (typeof v === "number" && isFinite(v) ? v : 0);
 
     const income = safe(weeklyIncome);
@@ -23,86 +18,54 @@ export default async function handler(req, res) {
     const surplus = income - spend;
     const savingsRate = income > 0 ? surplus / income : 0;
 
-    const days = Array.isArray(dailyTotals)
-      ? dailyTotals.map(safe)
-      : [];
+    const days = dailyTotals.map(safe);
 
-    const worstDay =
-      days.length > 0 ? days.indexOf(Math.max(...days)) + 1 : null;
-    const bestDay =
-      days.length > 0 ? days.indexOf(Math.min(...days)) + 1 : null;
+    const worstDayIndex = days.indexOf(Math.max(...days));
+    const bestDayIndex = days.indexOf(Math.min(...days));
 
-    /* ===== COUNTRY BENCHMARKS ===== */
     const COUNTRY = {
-      US: { currency: "USD", avgWeekly: 900, savings: 0.2 },
-      DE: { currency: "EUR", avgWeekly: 650, savings: 0.22 },
-      UK: { currency: "GBP", avgWeekly: 720, savings: 0.2 },
-      HU: { currency: "HUF", avgWeekly: 420, savings: 0.15 },
+      US: { avg: 900, currency: "USD", target: 0.2 },
+      DE: { avg: 650, currency: "EUR", target: 0.22 },
+      UK: { avg: 720, currency: "GBP", target: 0.2 },
+      HU: { avg: 420, currency: "HUF", target: 0.15 },
     };
 
     const ref = COUNTRY[country] || COUNTRY.US;
 
-    /* ===== PROMPT ===== */
-    const prompt = `
-You are a senior financial behavior analyst.
+    const insight = `
+WEEKLY FINANCIAL INTELLIGENCE (${country})
 
-User context:
-Country: ${country}
-Currency: ${ref.currency}
+• Weekly income: ${income} ${ref.currency}
+• Weekly spending: ${spend} ${ref.currency}
+• Weekly surplus: ${surplus} ${ref.currency}
+• Savings rate: ${(savingsRate * 100).toFixed(1)}%
+• Country average spend: ${ref.avg} ${ref.currency}
 
-Weekly income: ${income}
-Weekly spending: ${spend}
-Weekly surplus: ${surplus}
-Savings rate: ${(savingsRate * 100).toFixed(1)}%
-Country average weekly spend: ${ref.avgWeekly}
+Behavior analysis:
+• Highest spending day: Day ${worstDayIndex + 1}
+• Lowest spending day: Day ${bestDayIndex + 1}
 
-Daily totals:
-${days.map((v, i) => `Day ${i + 1}: ${v}`).join("\n")}
+Assessment:
+• Your spending is ${
+      spend > ref.avg ? "above" : "below"
+    } the national average.
+• Your savings rate is ${
+      savingsRate >= ref.target ? "healthy" : "below target"
+    }.
 
-Task:
-- Identify the highest spending day (Day ${worstDay}) and explain why.
-- Identify the lowest spending day (Day ${bestDay}) and explain what worked.
-- Compare spending to country norms.
-- Evaluate savings health.
-- Give 2 concrete behavior improvements.
-- Give a short monthly and yearly outlook.
+Outlook:
+• Monthly projection: ${(surplus * 4).toFixed(0)} ${ref.currency}
+• Yearly projection: ${(surplus * 52).toFixed(0)} ${ref.currency}
 
-Rules:
-- No generic advice.
-- No mentioning missing data.
-- Use bullet points.
-- Be professional and concise.
+Focus action for next week:
+Reduce spending on the highest-cost day and aim to stabilize daily variance.
 `;
 
-    /* ===== HUGGINGFACE ROUTER (STABLE) ===== */
-    const hfResponse = await fetch(
-      "https://router.huggingface.co/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${process.env.HF_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "mistralai/Mistral-7B-Instruct-v0.2",
-          messages: [{ role: "user", content: prompt }],
-          temperature: 0.35,
-          max_tokens: 400,
-        }),
-      }
-    );
-
-    const hfJson = await hfResponse.json();
-
-    const insight =
-      hfJson?.choices?.[0]?.message?.content?.trim() ||
-      "AI analysis temporarily unavailable.";
-
-    return res.status(200).json({ insight });
+    return res.status(200).json({ insight: insight.trim() });
   } catch (err) {
-    console.error("HF ROUTER ERROR:", err);
+    console.error(err);
     return res.status(200).json({
-      insight: "AI analysis temporarily unavailable.",
+      insight: "Analysis unavailable.",
     });
   }
 }
