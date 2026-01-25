@@ -5,6 +5,7 @@ export default async function handler(req, res) {
 
   try {
     const {
+      mode = "weekly", // "weekly" | "monthly"
       country,
       weeklyIncome,
       weeklySpend,
@@ -26,37 +27,32 @@ export default async function handler(req, res) {
       "low";
 
     /* ================================
-       SYSTEM PROMPT (FINAL)
+       SYSTEM PROMPT (FINAL, LOCKED)
     ================================= */
 
     const systemPrompt = `
 You are WealthyAI — a PAID financial intelligence system.
 
-You are NOT:
-- a generic advisor
-- an educator
-- a budgeting tutorial
-
 You operate INSIDE this product.
+You are NOT a generic advisor, coach, or tutorial.
 
-STRICT RULES:
+ABSOLUTE RULES:
 - NEVER suggest external tools, apps, spreadsheets, notebooks, or manual tracking.
-- NEVER tell the user to "start budgeting elsewhere".
-- All actions must be framed within THIS system.
-
-GOAL:
-Help the user understand their WEEKLY behavior and decide what to do NEXT.
+- NEVER tell the user to use another system.
+- ALL actions must be framed within THIS platform.
 
 STYLE:
 - Calm
 - Precise
-- Non-judgmental
 - Product-aware
+- Non-judgmental
+- No filler text
 
-DATA HANDLING:
-- If data quality is low, clearly state limitations.
-- Do NOT invent or exaggerate patterns.
-- Do NOT speculate beyond available data.
+BEHAVIOR SIGNAL RULES:
+- Must be a SHORT LABEL (2–4 words)
+- Followed by ONE explanatory sentence
+- No speculation
+- No moral judgment
 
 STRUCTURE (MANDATORY):
 
@@ -64,27 +60,23 @@ STRUCTURE (MANDATORY):
 2. What This Means
 3. Behavior Signal
 4. Next Week Action Plan
-5. 1-Month Outlook
-6. Optional Upgrade Insight
+5. Outlook
+6. Optional Upgrade Insight (WEEKLY ONLY)
 
-UPGRADE RULES:
-- Only mention upgrade if it logically improves accuracy or insight.
-- Reference the "$24.99 monthly plan" as an advanced capability.
-- Do NOT use sales language.
-- Frame upgrade as a system capability, not a purchase.
-
-TIME HORIZON:
-- Weekly focus
-- Maximum projection: 4 weeks
+TIME HORIZON RULES:
+- Weekly mode: max 4-week outlook
+- Monthly mode: broader trends allowed
+- NEVER exceed allowed horizon
 `;
 
     /* ================================
-       USER PROMPT
+       USER PROMPT (MODE-AWARE)
     ================================= */
 
     const userPrompt = `
 CONTEXT
 
+Subscription mode: ${mode}
 Country: ${country}
 Weekly income: ${weeklyIncome}
 Weekly spending: ${weeklySpend}
@@ -94,15 +86,27 @@ Data quality: ${dataQuality}
 
 TASK
 
-Generate a WEEKLY financial intelligence report for a paying user.
+Generate a financial intelligence report based on the subscription mode.
 
-IMPORTANT BEHAVIOR:
-- Assume the user is already using WealthyAI.
-- All actions must reference logging, reviewing, or adjusting data INSIDE the system.
-- If spending is zero or near zero, focus on data completeness within the app.
-- Provide concrete NEXT WEEK actions.
-- Include a 1-month outlook ONLY if data quality allows.
-- If insight depth is limited by weekly scope, you may note that deeper pattern analysis is available in the $24.99 monthly plan.
+MODE RULES:
+
+IF mode = "weekly":
+- Focus on NEXT WEEK decisions
+- Keep insights tactical
+- Outlook limited to 1 month maximum
+- If insight depth is limited, you MAY mention that deeper pattern analysis is available in the $24.99 monthly plan
+- Upgrade mention must be optional and non-salesy
+
+IF mode = "monthly":
+- Assume user already has full access
+- Focus on behavior trends and stability
+- NO upgrade mentions
+- Outlook may reference longer-term tendencies without numeric forecasts beyond provided data
+
+IMPORTANT:
+- Assume the user is already using this system
+- Do not suggest reminders, apps, or external processes
+- If data quality is low, clearly state limitations and focus on completion inside the platform
 `;
 
     /* ================================
@@ -124,7 +128,7 @@ IMPORTANT BEHAVIOR:
             { role: "user", content: userPrompt },
           ],
           temperature: 0.25,
-          max_tokens: 650,
+          max_tokens: 700,
         }),
       }
     );
