@@ -59,26 +59,34 @@ export default function Home() {
           </a>
         </div>
 
-        {/* CENTER */}
+        {/* CENTER BRAND */}
         <div style={{ textAlign: "center", zIndex: 2 }}>
-          <h1 style={{ fontSize: "3.6rem", fontWeight: "bold", marginBottom: "18px" }}>
-            WealthyAI
-          </h1>
+          <img
+            src="/wealthyai/icons/generated.png"
+            alt="WealthyAI logo"
+            className="brand-logo"
+            style={{
+              width: "220px",
+              marginBottom: "26px",
+              cursor: "default",
+            }}
+          />
 
           <p style={{ maxWidth: "520px", margin: "0 auto", opacity: 0.9, lineHeight: "1.6" }}>
             AI-powered financial thinking.<br />
             Structured insights.<br />
-            Clear perspective.<br />
+            Clear perspective.
+            <br />
             <strong>You decide.</strong>
           </p>
 
           <div
             className="pulse-group"
             style={{
-              marginTop: "28px",
+              marginTop: "26px",
               display: "flex",
               justifyContent: "center",
-              gap: "26px",
+              gap: "28px",
               fontSize: "0.95rem",
               opacity: 0.9,
             }}
@@ -123,7 +131,7 @@ export default function Home() {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            background: "transparent",   // ✅ TELJESEN ÁTLÁTSZÓ
+            background: "transparent",
             boxSizing: "border-box",
             zIndex: 4,
           }}
@@ -159,9 +167,25 @@ export default function Home() {
           </div>
         </div>
 
+        {/* ANIMATIONS */}
         <style>{`
+          .brand-logo {
+            animation: logoBreathe 11s ease-in-out infinite;
+            transition: filter 0.4s ease;
+          }
+
+          .brand-logo:hover {
+            filter: drop-shadow(0 0 22px rgba(56,189,248,0.55));
+          }
+
+          @keyframes logoBreathe {
+            0%   { transform: scale(1); opacity: 0.9; }
+            50%  { transform: scale(1.04); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.9; }
+          }
+
           .pulse-group span {
-            animation: pulseSoft 3.2s ease-in-out infinite;
+            animation: pulseSoft 3s ease-in-out infinite;
           }
 
           .pulse-group span:nth-child(2) {
@@ -173,9 +197,9 @@ export default function Home() {
           }
 
           @keyframes pulseSoft {
-            0%   { opacity: 0.55; transform: scale(1); }
-            50%  { opacity: 1;    transform: scale(1.05); }
-            100% { opacity: 0.55; transform: scale(1); }
+            0%   { opacity: 0.55; }
+            50%  { opacity: 1; }
+            100% { opacity: 0.55; }
           }
 
           .start-btn {
