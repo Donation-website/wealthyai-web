@@ -199,7 +199,7 @@ const page = {
     url("/wealthyai/icons/generated.png")
   `,
   backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
-  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 560px auto",
+  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 280px auto",
   backgroundPosition: "center",
 };
 
