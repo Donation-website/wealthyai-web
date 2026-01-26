@@ -31,7 +31,7 @@ export default function Home() {
           color: "white",
           fontFamily: "Arial, sans-serif",
           position: "relative",
-          overflow: "hidden",
+          overflow: "hidden", // 👉 CSAK A FŐOLDALRA VONATKOZIK
           margin: 0,
           padding: 0,
         }}
@@ -145,9 +145,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ANIMATIONS & HOVERS */}
+        {/* ANIMATIONS & HOVERS – ÉRINTETLEN */}
         <style>{`
-          /* LOGO – INTENZÍVEBB, DE FINOM */
           .brand-logo {
             animation: logoFloat 9s ease-in-out infinite;
             transition: filter 0.4s ease;
@@ -158,25 +157,12 @@ export default function Home() {
           }
 
           @keyframes logoFloat {
-            0% {
-              transform: scale(1) translateY(0);
-              opacity: 0.92;
-            }
-            35% {
-              transform: scale(1.035) translateY(-6px);
-              opacity: 1;
-            }
-            70% {
-              transform: scale(1.02) translateY(3px);
-              opacity: 0.97;
-            }
-            100% {
-              transform: scale(1) translateY(0);
-              opacity: 0.92;
-            }
+            0% { transform: scale(1) translateY(0); opacity: 0.92; }
+            35% { transform: scale(1.035) translateY(-6px); opacity: 1; }
+            70% { transform: scale(1.02) translateY(3px); opacity: 0.97; }
+            100% { transform: scale(1) translateY(0); opacity: 0.92; }
           }
 
-          /* START + NAV + ICON GLOW */
           .start-btn,
           .nav-link,
           .icon-link {
