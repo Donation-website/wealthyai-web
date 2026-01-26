@@ -5,7 +5,7 @@ export default async function handler(req, res) {
 
   try {
     const {
-      mode, // "day" | "week"
+      mode,
       country,
       weeklyIncome,
       weeklySpend,
@@ -45,48 +45,42 @@ You are WealthyAI — a PAID financial intelligence system.
 
 MODE: DAILY FINANCIAL PULSE
 
-STRICT RULES:
+ABSOLUTE RULES (CRITICAL):
+- NEVER output raw numbers lists, arrays, JSON, or data dumps.
+- NEVER repeat user input verbatim.
+- NEVER show category tables or technical structures.
+- ALL data must be summarized in natural language only.
+
+SCOPE RULES:
 - This is NOT a strategy session.
 - This is NOT a long-term forecast.
-- Do NOT mention months or yearly outcomes.
-- Do NOT ask questions.
+- Maximum outlook: 7 days.
 
-GOAL:
-Give clarity about TODAY and a short-term (max 7-day) direction.
-
-OUTPUT LIMITS:
-- Max 3 short sections.
-- Calm, reassuring, precise.
-
-STRUCTURE:
+STRUCTURE (MAX 3 SECTIONS):
 1. Today's Financial State
 2. What This Means
 3. 7-Day Direction
 
 STYLE:
 - Calm
-- Grounded
+- Professional
 - Non-judgmental
 `;
 
       userPrompt = `
-CONTEXT
-
 Income: ${income}
 Fixed costs: ${fixed}
 Variable spending: ${variable}
 
-TASK
-
+Task:
 Provide a DAILY financial pulse.
-Include a conservative 7-day direction if reasonable.
-Focus only on immediately controllable factors.
-Avoid speculation.
+Summarize patterns in words.
+Avoid any technical or raw data output.
 `;
 
       upgradeHint = `
 This daily snapshot works best as a short-term signal.
-Weekly and Monthly views allow confirmation of patterns and forward-looking insight.
+Weekly and Monthly views help confirm patterns and provide forward-looking insight.
 `;
     }
 
@@ -98,60 +92,49 @@ You are WealthyAI — a PAID financial intelligence system.
 
 MODE: WEEKLY BEHAVIOR INTERPRETER
 
-STRICT RULES:
-- NOT a generic advisor.
-- NOT a budgeting tutorial.
-- Operate strictly inside this system.
+ABSOLUTE RULES (CRITICAL):
+- NEVER output arrays, JSON, tables, or raw structures.
+- NEVER echo daily totals or category objects.
+- Summarize behavior patterns only.
 
 GOAL:
-Help the user understand WEEKLY behavior and decide what to do NEXT.
-
-DATA HANDLING:
-- State limitations clearly if data quality is low.
-- Do NOT exaggerate or invent patterns.
+Explain WEEKLY behavior and guide the next step.
 
 STRUCTURE (MANDATORY):
-1. Weekly Snapshot
+1. Weekly Snapshot (in words, no numbers list)
 2. What This Means
 3. Behavior Signal
 4. Next Week Action Plan
-5. 1-Month Outlook
+5. 1-Month Outlook (only if data allows)
 6. Optional System Capability Note
 
 UPGRADE RULE:
-- Mention advanced analysis ONLY as a system capability.
-- Do NOT use sales language.
-
-TIME HORIZON:
-- Weekly behavior
-- Max projection: 1 month
+- Mention advanced analysis only as a system capability.
+- No pricing. No CTA. No sales tone.
 `;
 
       userPrompt = `
-CONTEXT
-
 Country: ${country}
 Weekly income: ${weeklyIncome}
 Weekly spending: ${weeklySpend}
-Daily totals: ${JSON.stringify(dailyTotals)}
-Category breakdown: ${JSON.stringify(breakdown)}
+Daily totals provided internally
+Category data provided internally
 Data quality: ${dataQuality}
 
-TASK
-
-Generate a WEEKLY financial intelligence report.
-Provide concrete next-week actions.
-Include a 1-month outlook only if data quality allows.
+Task:
+Generate a WEEKLY intelligence report.
+DO NOT show raw data.
+Interpret behavior in natural language only.
 `;
 
       upgradeHint = `
 For deeper, country-adjusted projections and longer-term pattern detection,
-the Monthly Intelligence tier expands this analysis beyond the weekly scope.
+the Monthly Intelligence tier expands analysis beyond the weekly scope.
 `;
     }
 
     /* ================================
-       GROQ API CALL
+       GROQ CALL
     ================================= */
 
     const groqRes = await fetch(
@@ -169,7 +152,7 @@ the Monthly Intelligence tier expands this analysis beyond the weekly scope.
             { role: "user", content: userPrompt },
           ],
           temperature: 0.25,
-          max_tokens: mode === "day" ? 300 : 650,
+          max_tokens: mode === "day" ? 280 : 620,
         }),
       }
     );
@@ -183,7 +166,6 @@ the Monthly Intelligence tier expands this analysis beyond the weekly scope.
       json?.choices?.[0]?.message?.content ||
       "AI returned no usable output.";
 
-    // 🔑 DISCREET UPGRADE HINT (ONLY IF DATA IS GOOD)
     if (dataQuality === "good" && upgradeHint) {
       text += "\n\n" + upgradeHint.trim();
     }
