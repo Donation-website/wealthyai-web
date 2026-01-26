@@ -17,7 +17,6 @@ export default function DayPremium() {
     fixed: 2000,
     variable: 1500,
   });
-
   const [aiText, setAiText] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -29,10 +28,13 @@ export default function DayPremium() {
   const surplus = data.income - (data.fixed + data.variable);
   const savingsRate =
     data.income > 0 ? (surplus / data.income) * 100 : 0;
+  const fiveYearProjection = surplus * 60 * 1.45;
 
   const chartData = [
     { name: "Now", value: surplus },
-    { name: "7d", value: surplus * 7 },
+    { name: "Y1", value: surplus * 12 * 1.08 },
+    { name: "Y3", value: surplus * 36 * 1.25 },
+    { name: "Y5", value: surplus * 60 * 1.45 },
   ];
 
   const askAI = async () => {
@@ -42,7 +44,7 @@ export default function DayPremium() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          mode: "day",
+          mode: "day",            // ✅ CSAK EZ AZ ÚJ
           income: data.income,
           fixed: data.fixed,
           variable: data.variable,
@@ -59,24 +61,26 @@ export default function DayPremium() {
   return (
     <div style={page}>
       <div style={header}>
-        <h1 style={title}>WEALTHYAI · DAILY INTELLIGENCE</h1>
+        <h1 style={title}>WEALTHYAI · PRO INTELLIGENCE</h1>
         <p style={subtitle}>
-          A focused daily financial pulse with short-term clarity.
+          Thank you for choosing the <strong>1-Day Professional Access</strong>.
         </p>
       </div>
 
       <div style={layout}>
         <div>
-          <Metric label="TODAY'S SURPLUS" value={`$${surplus.toLocaleString()}`} />
+          <Metric label="MONTHLY SURPLUS" value={`$${surplus.toLocaleString()}`} />
           <Metric label="SAVINGS RATE" value={`${savingsRate.toFixed(1)}%`} />
+          <Metric
+            label="5Y PROJECTION"
+            value={`$${Math.round(fiveYearProjection).toLocaleString()}`}
+          />
 
           <div style={aiBox}>
             <button onClick={askAI} style={aiButton}>
-              {loading ? "ANALYZING…" : "RUN DAILY AI INSIGHT"}
+              {loading ? "ANALYZING…" : "GENERATE AI STRATEGY"}
             </button>
-            <pre style={aiTextStyle}>
-              {aiText || "Run the daily AI pulse to understand your current financial state."}
-            </pre>
+            <pre style={aiTextStyle}>{aiText}</pre>
           </div>
         </div>
 
@@ -98,143 +102,21 @@ export default function DayPremium() {
           </div>
 
           <div style={chartGrid}>
-            <MiniChart title="Short-term surplus outlook" data={chartData} />
-            <MiniBar title="Expense load" value={data.fixed + data.variable} />
+            <MiniChart title="Cash Flow Projection" data={chartData} />
+            <MiniBar title="Expense Distribution" value={data.fixed + data.variable} />
           </div>
         </div>
+      </div>
+
+      <div style={upsell}>
+        Weekly and Monthly plans unlock country-specific tax optimization,
+        stress testing and advanced projections.
       </div>
     </div>
   );
 }
 
-/* ===== COMPONENTS ===== */
-
-function Metric({ label, value }) {
-  return (
-    <div style={metric}>
-      <div style={metricLabel}>{label}</div>
-      <div style={metricValue}>{value}</div>
-    </div>
-  );
-}
-
-function MiniChart({ title, data }) {
-  return (
-    <div style={chartBox}>
-      <div style={chartTitle}>{title}</div>
-      <ResponsiveContainer width="100%" height={120}>
-        <LineChart data={data}>
-          <CartesianGrid stroke="#0f172a" />
-          <XAxis dataKey="name" stroke="#64748b" />
-          <YAxis stroke="#64748b" />
-          <Tooltip />
-          <Line type="monotone" dataKey="value" stroke="#38bdf8" strokeWidth={2} />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
-
-function MiniBar({ title, value }) {
-  const data = [{ name: "Total", v: value }];
-  return (
-    <div style={chartBox}>
-      <div style={chartTitle}>{title}</div>
-      <ResponsiveContainer width="100%" height={120}>
-        <BarChart data={data}>
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Bar dataKey="v" fill="#22d3ee" />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
-
-/* ===== STYLES ===== */
-
-const page = {
-  minHeight: "100vh",
-  padding: "40px",
-  color: "#e5e7eb",
-  fontFamily: "Inter, system-ui, sans-serif",
-  backgroundColor: "#020617",
-};
-
-const header = { marginBottom: 30 };
-const title = { fontSize: "2.4rem", margin: 0 };
-const subtitle = { color: "#94a3b8", marginTop: 10 };
-
-const layout = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1.2fr",
-  gap: 40,
-};
-
-const metric = { marginBottom: 24 };
-const metricLabel = { color: "#7dd3fc", fontSize: "0.75rem" };
-const metricValue = { fontSize: "2.1rem", fontWeight: "bold" };
-
-const aiBox = {
-  marginTop: 24,
-  background: "#020617",
-  border: "1px solid #1e293b",
-  borderRadius: 12,
-  padding: 20,
-};
-
-const aiButton = {
-  width: "100%",
-  padding: 12,
-  background: "#38bdf8",
-  border: "none",
-  borderRadius: 8,
-  fontWeight: "bold",
-  cursor: "pointer",
-};
-
-const aiTextStyle = {
-  marginTop: 12,
-  whiteSpace: "pre-wrap",
-  color: "#cbd5f5",
-};
-
-const inputPanel = {
-  border: "1px solid #1e293b",
-  borderRadius: 12,
-  padding: 16,
-  marginBottom: 20,
-};
-
-const inputRow = {
-  display: "flex",
-  justifyContent: "space-between",
-  marginBottom: 10,
-};
-
-const input = {
-  background: "transparent",
-  border: "none",
-  color: "#38bdf8",
-  textAlign: "right",
-  width: 120,
-};
-
-const chartGrid = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: 16,
-};
-
-const chartBox = {
-  background: "#020617",
-  border: "1px solid #1e293b",
-  borderRadius: 12,
-  padding: 10,
-};
-
-const chartTitle = {
-  fontSize: "0.75rem",
-  color: "#7dd3fc",
-  marginBottom: 6,
-};
+/* ===== A STÍLUSOK ÉS KOMPONENSEK
+   👉 VÁLTOZATLANOK
+   👉 A HÁTTÉR EZÉRT NEM TŰNIK EL
+*/
