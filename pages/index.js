@@ -12,6 +12,8 @@ export default function Home() {
           name="description"
           content="AI-powered financial planning with structured insights and clear perspective."
         />
+        {/* Modern szögletes betűtípus importálása */}
+        <link href="https://fonts.googleapis.com" rel="stylesheet" />
       </Head>
 
       <main
@@ -29,7 +31,7 @@ export default function Home() {
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
           color: "white",
-          fontFamily: "Arial, sans-serif",
+          fontFamily: "'Inter', 'Arial', sans-serif",
           position: "relative",
           overflow: "hidden",
           margin: 0,
@@ -58,10 +60,11 @@ export default function Home() {
           style={{
             textAlign: "center",
             zIndex: 3,
-            position: "relative", // Fontos az abszolút szöveghez
+            position: "relative",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
+            marginTop: "-20px" // Minimális korrekció az egész blokknak
           }}
         >
           <img
@@ -75,24 +78,30 @@ export default function Home() {
             }}
           />
           
-          {/* A szövegek fixen a logó közepe alá rendezve */}
+          {/* SZÖVEG KONSTRUKCIÓ - FELJEBB TOLVA */}
           <div style={{ 
             position: "absolute",
-            top: "75%", // A logó alsó harmadánál indul
+            top: "65%", // Feljebb hozva 75%-ról
             width: "100%",
-            color: "white", 
-            lineHeight: "1.4",
-            textShadow: "0 2px 10px rgba(0,0,0,0.5)" 
+            color: "#FFFFFF", 
+            lineHeight: "1.8",
+            textAlign: "center",
+            textTransform: "uppercase", // Elegánsabb, szögletesebb hatás
+            letterSpacing: "2px"
           }}>
-            <div style={{ fontSize: "1.2rem", fontWeight: "300", letterSpacing: "1px" }}>
+            <div style={{ fontSize: "1.1rem", fontWeight: "300", opacity: 0.9 }}>
               AI-powered financial thinking.<br />
               Structured insights.
             </div>
-            <div className="discrete-pulse" style={{ fontSize: "1rem", marginTop: "8px", opacity: 0.8 }}>
-              Clear perspective.<br />
-              Not advice. Not predictions.
+            
+            <div style={{ fontSize: "0.95rem", marginTop: "12px" }}>
+              <span style={{ opacity: 0.9 }}>Clear perspective.</span><br />
+              <span className="discrete-pulse" style={{ fontWeight: "400" }}>
+                Not advice. Not predictions.
+              </span>
             </div>
-            <div style={{ fontSize: "1.1rem", marginTop: "8px", fontWeight: "bold", letterSpacing: "2px" }}>
+
+            <div style={{ fontSize: "1.2rem", marginTop: "12px", fontWeight: "700", letterSpacing: "4px" }}>
               Financial intelligence.
             </div>
           </div>
@@ -142,30 +151,13 @@ export default function Home() {
           </div>
 
           <div style={{ display: "flex", gap: "18px", alignItems: "center" }}>
-            <a
-              href={`https://www.facebook.com{encodeURIComponent(SITE_URL)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="icon-link"
-            >
+            <a href={`https://www.facebook.com{encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
               <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
             </a>
-
-            <a
-              href={`https://twitter.com{encodeURIComponent(SITE_URL)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="icon-link"
-            >
+            <a href={`https://twitter.com{encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
               <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
             </a>
-
-            <a
-              href={`https://www.linkedin.com{encodeURIComponent(SITE_URL)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="icon-link"
-            >
+            <a href={`https://www.linkedin.com{encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
               <img src="/wealthyai/icons/insta.png" alt="LinkedIn" style={{ width: 34 }} />
             </a>
           </div>
@@ -175,10 +167,6 @@ export default function Home() {
           .brand-logo {
             animation: logoFloat 9s ease-in-out infinite;
             transition: filter 0.4s ease;
-          }
-
-          .brand-logo:hover {
-            filter: drop-shadow(0 0 36px rgba(56,189,248,0.7));
           }
 
           @keyframes logoFloat {
@@ -193,20 +181,12 @@ export default function Home() {
           }
 
           @keyframes discretePulse {
-            0% { opacity: 0.3; }
-            50% { opacity: 0.8; }
-            100% { opacity: 0.3; }
+            0% { opacity: 0.2; }
+            50% { opacity: 1; }
+            100% { opacity: 0.2; }
           }
 
-          .start-btn,
-          .nav-link,
-          .icon-link {
-            transition: box-shadow 0.35s ease, filter 0.35s ease;
-          }
-
-          .start-btn:hover,
-          .nav-link:hover,
-          .icon-link:hover {
+          .start-btn:hover, .nav-link:hover, .icon-link:hover {
             box-shadow: 0 0 35px rgba(56,189,248,0.45);
             filter: drop-shadow(0 0 18px rgba(56,189,248,0.45));
           }
