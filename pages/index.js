@@ -66,13 +66,13 @@ export default function Home() {
             alt="WealthyAI logo"
             className="brand-logo"
             style={{
-              width: "420px",          // 🔥 NAGY, DOMINÁNS MÉRET
-              maxWidth: "80vw",
-              marginBottom: "34px",
+              width: "860px",          // 🔥 KÉTSZERES MÉRET (HERO)
+              maxWidth: "95vw",        // mobilon se lógjon ki
+              marginBottom: "40px",
             }}
           />
 
-          <p style={{ maxWidth: "560px", margin: "0 auto", opacity: 0.9, lineHeight: "1.6" }}>
+          <p style={{ maxWidth: "600px", margin: "0 auto", opacity: 0.9, lineHeight: "1.6" }}>
             AI-powered financial thinking.<br />
             Structured insights.<br />
             Clear perspective.
@@ -83,11 +83,11 @@ export default function Home() {
           <div
             className="pulse-group"
             style={{
-              marginTop: "30px",
+              marginTop: "34px",
               display: "flex",
               justifyContent: "center",
-              gap: "32px",
-              fontSize: "1rem",
+              gap: "36px",
+              fontSize: "1.05rem",
               opacity: 0.9,
             }}
           >
@@ -170,17 +170,17 @@ export default function Home() {
         {/* ANIMATIONS */}
         <style>{`
           .brand-logo {
-            animation: logoBreathe 11s ease-in-out infinite;
+            animation: logoBreathe 12s ease-in-out infinite;
             transition: filter 0.4s ease;
           }
 
           .brand-logo:hover {
-            filter: drop-shadow(0 0 26px rgba(56,189,248,0.55));
+            filter: drop-shadow(0 0 30px rgba(56,189,248,0.6));
           }
 
           @keyframes logoBreathe {
             0%   { transform: scale(1); opacity: 0.9; }
-            50%  { transform: scale(1.035); opacity: 1; }
+            50%  { transform: scale(1.025); opacity: 1; }
             100% { transform: scale(1); opacity: 0.9; }
           }
 
