@@ -17,6 +17,7 @@ export default function DayPremium() {
     fixed: 2000,
     variable: 1500,
   });
+
   const [aiText, setAiText] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -28,13 +29,10 @@ export default function DayPremium() {
   const surplus = data.income - (data.fixed + data.variable);
   const savingsRate =
     data.income > 0 ? (surplus / data.income) * 100 : 0;
-  const fiveYearProjection = surplus * 60 * 1.45;
 
   const chartData = [
     { name: "Now", value: surplus },
-    { name: "Y1", value: surplus * 12 * 1.08 },
-    { name: "Y3", value: surplus * 36 * 1.25 },
-    { name: "Y5", value: surplus * 60 * 1.45 },
+    { name: "7d", value: surplus * 7 },
   ];
 
   const askAI = async () => {
@@ -43,7 +41,12 @@ export default function DayPremium() {
       const res = await fetch("/api/get-ai-insight", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          mode: "day",
+          income: data.income,
+          fixed: data.fixed,
+          variable: data.variable,
+        }),
       });
       const d = await res.json();
       setAiText(d.insight);
@@ -56,28 +59,23 @@ export default function DayPremium() {
   return (
     <div style={page}>
       <div style={header}>
-        <h1 style={title}>WEALTHYAI · PRO INTELLIGENCE</h1>
+        <h1 style={title}>WEALTHYAI · DAILY INTELLIGENCE</h1>
         <p style={subtitle}>
-          Thank you for choosing the <strong>1-Day Professional Access</strong>.
-          You now have access to advanced analytics and AI-driven insights.
+          A focused daily financial pulse with short-term clarity.
         </p>
       </div>
 
       <div style={layout}>
         <div>
-          <Metric label="MONTHLY SURPLUS" value={`$${surplus.toLocaleString()}`} />
+          <Metric label="TODAY'S SURPLUS" value={`$${surplus.toLocaleString()}`} />
           <Metric label="SAVINGS RATE" value={`${savingsRate.toFixed(1)}%`} />
-          <Metric
-            label="5Y PROJECTION"
-            value={`$${Math.round(fiveYearProjection).toLocaleString()}`}
-          />
 
           <div style={aiBox}>
             <button onClick={askAI} style={aiButton}>
-              {loading ? "ANALYZING…" : "GENERATE AI STRATEGY"}
+              {loading ? "ANALYZING…" : "RUN DAILY AI INSIGHT"}
             </button>
             <pre style={aiTextStyle}>
-              {aiText || "Run AI analysis to generate your professional strategy."}
+              {aiText || "Run the daily AI pulse to understand your current financial state."}
             </pre>
           </div>
         </div>
@@ -100,25 +98,10 @@ export default function DayPremium() {
           </div>
 
           <div style={chartGrid}>
-            <MiniChart title="Cash Flow Projection" data={chartData} />
-            <MiniBar title="Expense Distribution" value={data.fixed + data.variable} />
-            <MiniChart title="Savings Growth" data={chartData} />
-            <MiniBar title="Risk Exposure Index" value={savingsRate} />
+            <MiniChart title="Short-term surplus outlook" data={chartData} />
+            <MiniBar title="Expense load" value={data.fixed + data.variable} />
           </div>
         </div>
-      </div>
-
-      <div style={navActions}>
-        <a href="/" style={outlineBtn}>← Back to WealthyAI Home</a>
-        <a href="/how-to-use" style={outlineBtnAlt}>
-          Learn more about Weekly & Monthly →
-        </a>
-      </div>
-
-      {/* ⬇️ CSAK EZ LETT ERŐSEBB FEHÉR */}
-      <div style={upsell}>
-        Weekly and Monthly plans unlock country-specific tax optimization,
-        stress testing and advanced projections.
       </div>
     </div>
   );
@@ -145,12 +128,7 @@ function MiniChart({ title, data }) {
           <XAxis dataKey="name" stroke="#64748b" />
           <YAxis stroke="#64748b" />
           <Tooltip />
-          <Line
-            type="monotone"
-            dataKey="value"
-            stroke="#38bdf8"
-            strokeWidth={2}
-          />
+          <Line type="monotone" dataKey="value" stroke="#38bdf8" strokeWidth={2} />
         </LineChart>
       </ResponsiveContainer>
     </div>
@@ -158,7 +136,7 @@ function MiniChart({ title, data }) {
 }
 
 function MiniBar({ title, value }) {
-  const data = [{ name: "Value", v: value }];
+  const data = [{ name: "Total", v: value }];
   return (
     <div style={chartBox}>
       <div style={chartTitle}>{title}</div>
@@ -177,85 +155,61 @@ function MiniBar({ title, value }) {
 
 const page = {
   minHeight: "100vh",
-  color: "#e5e7eb",
   padding: "40px",
+  color: "#e5e7eb",
   fontFamily: "Inter, system-ui, sans-serif",
   backgroundColor: "#020617",
-
-  backgroundImage: `
-    repeating-linear-gradient(
-      -25deg,
-      rgba(56,189,248,0.06) 0px,
-      rgba(56,189,248,0.06) 1px,
-      transparent 1px,
-      transparent 180px
-    ),
-    repeating-linear-gradient(
-      35deg,
-      rgba(167,139,250,0.05) 0px,
-      rgba(167,139,250,0.05) 1px,
-      transparent 1px,
-      transparent 260px
-    ),
-    radial-gradient(circle at 20% 30%, rgba(56,189,248,0.18), transparent 45%),
-    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.18), transparent 50%),
-    radial-gradient(circle at 45% 85%, rgba(34,211,238,0.14), transparent 45%),
-    url("/wealthyai/icons/generated.png")
-  `,
-  backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
-  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 560px auto",
-  backgroundPosition: "center",
 };
 
-const header = { marginBottom: "30px" };
-const title = { fontSize: "2.6rem", margin: 0 };
-const subtitle = { color: "#94a3b8", marginTop: "10px", maxWidth: "700px" };
+const header = { marginBottom: 30 };
+const title = { fontSize: "2.4rem", margin: 0 };
+const subtitle = { color: "#94a3b8", marginTop: 10 };
 
 const layout = {
   display: "grid",
-  gridTemplateColumns: "1fr 1.3fr",
-  gap: "40px",
+  gridTemplateColumns: "1fr 1.2fr",
+  gap: 40,
 };
 
-const metric = { marginBottom: "25px" };
-const metricLabel = { color: "#7dd3fc", fontSize: "0.8rem" };
-const metricValue = { fontSize: "2.2rem", fontWeight: "bold" };
+const metric = { marginBottom: 24 };
+const metricLabel = { color: "#7dd3fc", fontSize: "0.75rem" };
+const metricValue = { fontSize: "2.1rem", fontWeight: "bold" };
 
 const aiBox = {
-  marginTop: "30px",
+  marginTop: 24,
   background: "#020617",
   border: "1px solid #1e293b",
-  borderRadius: "12px",
-  padding: "20px",
+  borderRadius: 12,
+  padding: 20,
 };
 
 const aiButton = {
   width: "100%",
-  padding: "12px",
+  padding: 12,
   background: "#38bdf8",
   border: "none",
-  borderRadius: "6px",
+  borderRadius: 8,
   fontWeight: "bold",
   cursor: "pointer",
 };
 
 const aiTextStyle = {
-  marginTop: "12px",
+  marginTop: 12,
   whiteSpace: "pre-wrap",
   color: "#cbd5f5",
 };
 
 const inputPanel = {
-  marginBottom: "20px",
   border: "1px solid #1e293b",
-  borderRadius: "12px",
-  padding: "15px",
+  borderRadius: 12,
+  padding: 16,
+  marginBottom: 20,
 };
 
 const inputRow = {
   display: "flex",
   justifyContent: "space-between",
-  marginBottom: "10px",
+  marginBottom: 10,
 };
 
 const input = {
@@ -263,54 +217,24 @@ const input = {
   border: "none",
   color: "#38bdf8",
   textAlign: "right",
-  width: "120px",
+  width: 120,
 };
 
 const chartGrid = {
   display: "grid",
   gridTemplateColumns: "1fr 1fr",
-  gap: "16px",
+  gap: 16,
 };
 
 const chartBox = {
   background: "#020617",
   border: "1px solid #1e293b",
-  borderRadius: "12px",
-  padding: "10px",
+  borderRadius: 12,
+  padding: 10,
 };
 
 const chartTitle = {
   fontSize: "0.75rem",
   color: "#7dd3fc",
-  marginBottom: "6px",
-};
-
-const navActions = {
-  marginTop: "30px",
-  display: "flex",
-  justifyContent: "center",
-  gap: "18px",
-};
-
-const outlineBtn = {
-  border: "1px solid #38bdf8",
-  color: "#38bdf8",
-  padding: "10px 18px",
-  borderRadius: "10px",
-  textDecoration: "none",
-  fontSize: "0.9rem",
-};
-
-const outlineBtnAlt = {
-  ...outlineBtn,
-  borderColor: "#a78bfa",
-  color: "#a78bfa",
-};
-
-/* ⬇️ CSAK EZ VÁLTOZOTT */
-const upsell = {
-  marginTop: "20px",
-  textAlign: "center",
-  color: "#f8fafc",        // erősebb fehér
-  fontWeight: 500,
+  marginBottom: 6,
 };
