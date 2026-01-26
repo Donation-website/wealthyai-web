@@ -13,13 +13,16 @@ export default function Home() {
           content="AI-powered financial planning with structured insights and clear perspective."
         />
 
-        {/* 🔒 GLOBÁLIS FIXEK */}
+        {/* HARD FIX: NINCS OLDALCSÚSZÁS */}
         <style>{`
           html, body {
             margin: 0;
             padding: 0;
             width: 100%;
-            overflow-x: hidden;
+            overflow-x: hidden !important;
+          }
+          * {
+            box-sizing: border-box;
           }
         `}</style>
       </Head>
@@ -28,6 +31,7 @@ export default function Home() {
         style={{
           height: "100vh",
           width: "100%",
+          overflowX: "hidden",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -40,7 +44,6 @@ export default function Home() {
           color: "white",
           fontFamily: "Arial, sans-serif",
           position: "relative",
-          overflow: "hidden",
         }}
       >
         {/* TOP NAV */}
@@ -51,7 +54,7 @@ export default function Home() {
             right: 40,
             display: "flex",
             gap: 28,
-            zIndex: 10,
+            zIndex: 20,
             fontSize: "0.95rem",
           }}
         >
@@ -60,40 +63,38 @@ export default function Home() {
           <a href="/terms" className="nav-link">Terms</a>
         </div>
 
-        {/* HERO STACK – EGYETLEN AKTÍV RÉTEG */}
+        {/* HERO – LOGÓ */}
         <div
           style={{
-            zIndex: 5,
+            position: "relative",
+            zIndex: 10,
             textAlign: "center",
-            marginTop: "40px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            maxWidth: "100%",
           }}
         >
-          {/* AKTÍV, ANIMÁLT LOGÓ */}
           <img
             src="/wealthyai/icons/generated.png"
             alt="WealthyAI logo"
             className="brand-logo"
             style={{
               width: "860px",
-              maxWidth: "95vw",
+              maxWidth: "90vw",
               height: "auto",
-              marginBottom: "28px",
+              display: "block",
+              margin: "0 auto 24px auto",
             }}
           />
 
-          {/* 🔒 FEHÉR SZÖVEG – STATIKUS, NEM ANIMÁLT */}
+          {/* FEHÉR SZÖVEG – KÜLÖN RÉTEG, FIX */}
           <div
             style={{
+              position: "relative",
+              zIndex: 30,
               color: "#ffffff",
               fontSize: "1.1rem",
               lineHeight: "1.6",
               maxWidth: "620px",
-              marginBottom: "22px",
-              opacity: 0.95,
+              margin: "0 auto 18px auto",
+              opacity: 1,
             }}
           >
             AI-powered financial thinking.<br />
@@ -101,11 +102,14 @@ export default function Home() {
             Clear perspective.
           </div>
 
-          {/* 🔒 CSAK EZEK PULZÁLNAK */}
+          {/* PULZÁLÓ SOR – CSAK A SPAN MOZOG */}
           <div
             className="pulse-group"
             style={{
+              position: "relative",
+              zIndex: 30,
               display: "flex",
+              justifyContent: "center",
               gap: "34px",
               fontSize: "1.05rem",
               color: "#ffffff",
@@ -134,7 +138,7 @@ export default function Home() {
             textDecoration: "none",
             fontWeight: "bold",
             fontSize: "1.2rem",
-            zIndex: 6,
+            zIndex: 20,
           }}
         >
           Start
@@ -152,7 +156,7 @@ export default function Home() {
             justifyContent: "space-between",
             alignItems: "center",
             background: "transparent",
-            zIndex: 6,
+            zIndex: 20,
           }}
         >
           <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
@@ -184,9 +188,9 @@ export default function Home() {
           }
 
           @keyframes logoBreathe {
-            0% { transform: scale(1); opacity: 0.9; }
-            50% { transform: scale(1.025); opacity: 1; }
-            100% { transform: scale(1); opacity: 0.9; }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
           }
 
           .pulse-group span {
