@@ -17,7 +17,8 @@ export default function Home() {
             margin: 0;
             padding: 0;
             width: 100%;
-            overflow-x: hidden;
+            height: 100%;
+            overflow: hidden;
           }
           * {
             box-sizing: border-box;
@@ -30,46 +31,50 @@ export default function Home() {
           minHeight: "100vh",
           width: "100%",
           display: "flex",
-          flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
           backgroundColor: "#060b13",
           backgroundImage:
-            "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
+            "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/hat.png')",
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
-          color: "white",
           fontFamily: "Arial, sans-serif",
+          color: "white",
           position: "relative",
+          overflow: "hidden",
         }}
       >
         {/* TOP NAV */}
-        <div
+        <nav
           style={{
             position: "absolute",
             top: 30,
             right: 40,
             display: "flex",
             gap: 28,
-            zIndex: 10,
             fontSize: "0.95rem",
+            zIndex: 10,
           }}
         >
           <a href="/how-it-works" className="nav-link">How it works</a>
           <a href="/how-to-use" className="nav-link">How to use</a>
           <a href="/terms" className="nav-link">Terms</a>
-        </div>
+        </nav>
 
-        {/* HERO – EZ MOST STABIL FLOW */}
-        <div
+        {/* HERO – EGYETLEN STABIL KÖZÉP */}
+        <section
           style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
             textAlign: "center",
             maxWidth: "100%",
-            paddingTop: "40px",
+            zIndex: 5,
           }}
         >
-          {/* LOGÓ */}
+          {/* ANIMÁLT LOGÓ */}
           <img
             src="/wealthyai/icons/generated.png"
             alt="WealthyAI logo"
@@ -79,17 +84,16 @@ export default function Home() {
               maxWidth: "95vw",
               height: "auto",
               marginBottom: "28px",
-              display: "block",
             }}
           />
 
-          {/* FEHÉR SZÖVEG – HELYES POZÍCIÓ */}
+          {/* FEHÉR SZÖVEG – LOGÓ ALATT */}
           <div
             style={{
               fontSize: "1.1rem",
               lineHeight: "1.6",
               maxWidth: "620px",
-              margin: "0 auto 22px auto",
+              marginBottom: "22px",
               opacity: 0.95,
             }}
           >
@@ -98,12 +102,11 @@ export default function Home() {
             Clear perspective.
           </div>
 
-          {/* PULZÁLÓ SOR */}
+          {/* PULZÁLÓ MICRO-CLAIM */}
           <div
             className="pulse-group"
             style={{
               display: "flex",
-              justifyContent: "center",
               gap: "34px",
               fontSize: "1.05rem",
             }}
@@ -112,9 +115,9 @@ export default function Home() {
             <span>Not predictions.</span>
             <span>Financial intelligence.</span>
           </div>
-        </div>
+        </section>
 
-        {/* START */}
+        {/* START GOMB */}
         <a
           href="/start"
           className="start-btn"
@@ -137,8 +140,8 @@ export default function Home() {
           Start
         </a>
 
-        {/* FOOTER */}
-        <div
+        {/* ALSÓ SÁV – TELJESEN ÁTLÁTSZÓ */}
+        <footer
           style={{
             position: "absolute",
             bottom: 0,
@@ -149,27 +152,27 @@ export default function Home() {
             justifyContent: "space-between",
             alignItems: "center",
             background: "transparent",
+            fontSize: "0.85rem",
+            opacity: 0.85,
             zIndex: 10,
           }}
         >
-          <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
-            © 2026 WealthyAI — All rights reserved.
-          </div>
+          <span>© 2026 WealthyAI — All rights reserved.</span>
 
           <div style={{ display: "flex", gap: "18px" }}>
-            <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
+            <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer">
               <img src="/wealthyai/icons/fb.png" style={{ width: 34 }} />
             </a>
-            <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
+            <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer">
               <img src="/wealthyai/icons/x.png" style={{ width: 34 }} />
             </a>
-            <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
+            <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer">
               <img src="/wealthyai/icons/insta.png" style={{ width: 34 }} />
             </a>
           </div>
-        </div>
+        </footer>
 
-        {/* ANIMATIONS */}
+        {/* ANIMÁCIÓK */}
         <style>{`
           .brand-logo {
             animation: logoBreathe 12s ease-in-out infinite;
@@ -200,14 +203,12 @@ export default function Home() {
           }
 
           .start-btn,
-          .nav-link,
-          .icon-link {
+          .nav-link {
             transition: box-shadow 0.35s ease, filter 0.35s ease;
           }
 
           .start-btn:hover,
-          .nav-link:hover,
-          .icon-link:hover {
+          .nav-link:hover {
             box-shadow: 0 0 35px rgba(56,189,248,0.45);
             filter: drop-shadow(0 0 18px rgba(56,189,248,0.45));
           }
