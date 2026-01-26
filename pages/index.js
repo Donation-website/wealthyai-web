@@ -18,6 +18,7 @@ export default function Home() {
         style={{
           height: "100vh",
           width: "100%",
+          boxSizing: "border-box",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -39,11 +40,11 @@ export default function Home() {
         <div
           style={{
             position: "absolute",
-            top: 30,
-            right: 40,
+            top: "30px",
+            right: "40px",
             display: "flex",
-            gap: 28,
-            zIndex: 10,
+            gap: "28px",
+            zIndex: 6,
             fontSize: "0.95rem",
           }}
         >
@@ -52,18 +53,14 @@ export default function Home() {
           <a href="/terms" className="nav-link">Terms</a>
         </div>
 
-        {/* CENTER STACK */}
+        {/* CENTER BRAND */}
         <div
           style={{
-            zIndex: 5,
             textAlign: "center",
-            transform: "translateY(40px)",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
+            zIndex: 3,
+            transform: "translateY(40px)", // 🔥 LOGÓ LEJJEBB, DE NEM KÖZÉPRE
           }}
         >
-          {/* ANIMÁLT LOGÓ */}
           <img
             src="/wealthyai/icons/generated.png"
             alt="WealthyAI logo"
@@ -71,34 +68,36 @@ export default function Home() {
             style={{
               width: "860px",
               maxWidth: "95vw",
-              marginBottom: "28px",
+              marginBottom: "36px",
             }}
           />
 
-          {/* FEHÉR SZÖVEG – LOGÓ ALATT */}
-          <div
+          {/* FEHÉR SZÖVEGEK – VISSZA */}
+          <p
             style={{
-              color: "#ffffff",
-              fontSize: "1.1rem",
-              lineHeight: "1.6",
-              maxWidth: "620px",
-              marginBottom: "22px",
+              maxWidth: "600px",
+              margin: "0 auto",
               opacity: 0.95,
+              lineHeight: "1.6",
+              fontSize: "1rem",
             }}
           >
             AI-powered financial thinking.<br />
             Structured insights.<br />
-            Clear perspective.
-          </div>
+            Clear perspective.<br />
+            <strong>You decide.</strong>
+          </p>
 
-          {/* PULZÁLÓ FEHÉR SOR – LOGÓ ALATT */}
+          {/* PULZÁLÓ SOR */}
           <div
             className="pulse-group"
             style={{
+              marginTop: "34px",
               display: "flex",
-              gap: "34px",
+              justifyContent: "center",
+              gap: "36px",
               fontSize: "1.05rem",
-              color: "#ffffff",
+              opacity: 0.9,
             }}
           >
             <span>Not advice.</span>
@@ -124,13 +123,13 @@ export default function Home() {
             textDecoration: "none",
             fontWeight: "bold",
             fontSize: "1.2rem",
-            zIndex: 6,
+            zIndex: 4,
           }}
         >
           Start
         </a>
 
-        {/* BOTTOM BAR */}
+        {/* BOTTOM BAR – TELJESEN ÁTLÁTSZÓ */}
         <div
           style={{
             position: "absolute",
@@ -142,42 +141,47 @@ export default function Home() {
             justifyContent: "space-between",
             alignItems: "center",
             background: "transparent",
-            zIndex: 6,
+            boxSizing: "border-box",
+            zIndex: 5,
           }}
         >
           <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
             © 2026 WealthyAI — All rights reserved.
           </div>
 
-          <div style={{ display: "flex", gap: "18px" }}>
+          <div style={{ display: "flex", gap: "18px", alignItems: "center" }}>
             <a
               href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="icon-link"
             >
-              <img src="/wealthyai/icons/fb.png" style={{ width: 34 }} />
+              <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
             </a>
+
             <a
               href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="icon-link"
             >
-              <img src="/wealthyai/icons/x.png" style={{ width: 34 }} />
+              <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
             </a>
+
             <a
               href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="icon-link"
             >
-              <img src="/wealthyai/icons/insta.png" style={{ width: 34 }} />
+              <img src="/wealthyai/icons/insta.png" alt="LinkedIn" style={{ width: 34 }} />
             </a>
           </div>
         </div>
 
+        {/* ANIMATIONS & HOVERS */}
         <style>{`
+          /* LOGO */
           .brand-logo {
             animation: logoBreathe 12s ease-in-out infinite;
             transition: filter 0.4s ease;
@@ -188,11 +192,12 @@ export default function Home() {
           }
 
           @keyframes logoBreathe {
-            0% { transform: scale(1); opacity: 0.9; }
-            50% { transform: scale(1.025); opacity: 1; }
+            0%   { transform: scale(1); opacity: 0.9; }
+            50%  { transform: scale(1.025); opacity: 1; }
             100% { transform: scale(1); opacity: 0.9; }
           }
 
+          /* PULSE TEXT */
           .pulse-group span {
             animation: pulseSoft 3s ease-in-out infinite;
           }
@@ -201,11 +206,12 @@ export default function Home() {
           .pulse-group span:nth-child(3) { animation-delay: 2s; }
 
           @keyframes pulseSoft {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
+            0%   { opacity: 0.6; }
+            50%  { opacity: 1; }
             100% { opacity: 0.6; }
           }
 
+          /* START + NAV + ICON GLOW */
           .start-btn,
           .nav-link,
           .icon-link {
