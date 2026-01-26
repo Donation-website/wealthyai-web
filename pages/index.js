@@ -55,7 +55,7 @@ export default function Home() {
           <a href="/terms" className="nav-link">Terms</a>
         </div>
 
-        {/* CENTER BRAND & TEXT CONTAINER (Új elrendezés a kép alapján) */}
+        {/* CENTER BRAND & TEXT CONTAINER (Az egész blokk most fixen középen marad) */}
         <div
           style={{
             textAlign: "center",
@@ -63,8 +63,6 @@ export default function Home() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            // Az egész blokk jelentősen feljebb tolva a középponthoz képest
-            transform: "translateY(-120px)", 
             width: "100%",
           }}
         >
@@ -79,13 +77,13 @@ export default function Home() {
             }}
           />
           
-          {/* SZÖVEG KONSTRUKCIÓ A KÉP STÍLUSÁBAN */}
+          {/* SZÖVEG KONSTRUKCIÓ A KÉP STÍLUSÁBAN (Csak ez van pozicionálva) */}
           <div style={{ 
             color: "#FFFFFF", 
-            lineHeight: "1.4", // Csökkentett sorköz
+            lineHeight: "1.4",
             textAlign: "center",
             textShadow: "0 2px 10px rgba(0,0,0,0.5)",
-            // A szöveg tömb feljebb tolása a logóhoz képest (kisebb margó)
+            // A szöveg tömb feljebb tolása a logóhoz képest
             marginTop: "-110px", 
             width: "100%",
             maxWidth: "800px",
@@ -97,7 +95,7 @@ export default function Home() {
               fontSize: "1.6rem", 
               fontWeight: "300", 
               opacity: 0.9,
-              marginBottom: "30px", // Csökkentett margó az alsó blokkhoz
+              marginBottom: "15px", // Még közelebb hozva az alsó blokkhoz
               lineHeight: "1.4"
             }}>
               AI-powered financial thinking.<br />
@@ -108,13 +106,13 @@ export default function Home() {
             {/* Alsó, kisebb méretű, sorba rendezett blokk (mind pulzál, szűkebb sorköz) */}
             <div style={{ 
               display: "flex", 
-              justifyContent: "center", // Középre igazítva
+              justifyContent: "center",
               alignItems: "center",
               fontSize: "0.95rem",
               textTransform: "uppercase",
-              letterSpacing: "2px",
+              letterSpacing: "1.5px", // Kicsit kisebb szóköz a betűk között is
               opacity: 0.8,
-              gap: "20px" // Szűkebb rés az elemek között
+              gap: "15px" // Szűkebb rés az elemek között
             }}>
               <span className="discrete-pulse">Not advice.</span>
               <span className="discrete-pulse">Not predictions.</span>
