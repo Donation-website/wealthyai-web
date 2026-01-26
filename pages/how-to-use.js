@@ -18,8 +18,8 @@ export default function HowToUse() {
       <div
         style={{
           maxWidth: "800px",
-          /* 🔵 WealthyAI sötétkék – a főoldallal egyező hangulat */
-          backgroundColor: "rgba(6, 11, 19, 0.75)",
+          /* 🔵 UGYANAZ A SÖTÉTKÉK, MINT A FŐOLDALON */
+          backgroundColor: "rgba(6, 11, 19, 0.88)",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
           padding: "40px",
@@ -27,8 +27,8 @@ export default function HowToUse() {
           color: "#ffffff",
           fontFamily: "Arial, sans-serif",
           lineHeight: "1.6",
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.35)",
-          border: "1px solid rgba(255, 255, 255, 0.15)",
+          boxShadow: "0 10px 40px rgba(0, 0, 0, 0.55)",
+          border: "1px solid rgba(56, 189, 248, 0.15)", // finom kék él
         }}
       >
         <h1 style={{ marginBottom: "20px", fontWeight: "bold" }}>
