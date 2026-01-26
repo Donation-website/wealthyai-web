@@ -2,28 +2,50 @@ import React, { useEffect } from "react";
 import Head from "next/head";
 
 export default function Home() {
+  const SITE_URL = "https://wealthyai-web.vercel.app";
+
   useEffect(() => {
     document.body.style.margin = "0";
-    document.body.style.overflowX = "hidden";
+    document.body.style.overflow = "hidden";
   }, []);
 
   return (
     <>
       <Head>
         <title>WealthyAI – AI-powered financial clarity</title>
+        <meta
+          name="description"
+          content="AI-powered financial thinking. Structured insights. Clear perspective."
+        />
+
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={SITE_URL} />
+        <meta property="og:title" content="WealthyAI – AI-powered financial clarity" />
+        <meta
+          property="og:description"
+          content="Structured financial insights and AI-powered optimization."
+        />
+        <meta property="og:image" content={`${SITE_URL}/wealthyai/wealthyai.png`} />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
       </Head>
 
       <main style={page}>
+        {/* BACKGROUND LAYERS */}
         <div style={bgImage} />
         <div style={bgGlow} />
         <div style={bgGrid} />
 
+        {/* TOP NAV */}
         <nav style={nav}>
           <a href="/how-it-works" style={navLink}>How it works</a>
           <a href="/how-to-use" style={navLink}>How to use</a>
           <a href="/terms" style={navLink}>Terms</a>
         </nav>
 
+        {/* CENTER CONTENT */}
         <div style={center}>
           <div style={logoWrap}>
             <h1 style={logo}>WealthyAI</h1>
@@ -42,24 +64,20 @@ export default function Home() {
           </div>
         </div>
 
-        <a href="/start" style={startButton} className="start-btn">
+        {/* START BUTTON */}
+        <a href="/start" style={startButton}>
           Start
           <div style={startSub}>Begin with your current situation</div>
         </a>
 
+        {/* FOOTER */}
         <footer style={footer}>
           <span>© 2026 WealthyAI — All rights reserved.</span>
 
           <div style={socials}>
-            <a href="https://www.facebook.com/sharer/sharer.php?u=https://wealthyai-web.vercel.app" target="_blank" rel="noreferrer">
-              <img src="/wealthyai/icons/fb.png" style={icon} />
-            </a>
-            <a href="https://twitter.com/intent/tweet?url=https://wealthyai-web.vercel.app" target="_blank" rel="noreferrer">
-              <img src="/wealthyai/icons/x.png" style={icon} />
-            </a>
-            <a href="https://www.instagram.com/" target="_blank" rel="noreferrer">
-              <img src="/wealthyai/icons/insta.png" style={icon} />
-            </a>
+            <img src="/wealthyai/icons/fb.png" style={icon} />
+            <img src="/wealthyai/icons/x.png" style={icon} />
+            <img src="/wealthyai/icons/insta.png" style={icon} />
           </div>
         </footer>
       </main>
@@ -71,13 +89,14 @@ export default function Home() {
 
 const page = {
   position: "relative",
-  width: "100%",
-  maxWidth: "100vw",
+  width: "100vw",
   height: "100vh",
   overflow: "hidden",
   fontFamily: "Inter, system-ui, sans-serif",
   color: "white",
 };
+
+/* BACKGROUND */
 
 const bgImage = {
   position: "absolute",
@@ -108,6 +127,8 @@ const bgGrid = {
   zIndex: 3,
 };
 
+/* NAV */
+
 const nav = {
   position: "absolute",
   top: 30,
@@ -123,6 +144,8 @@ const navLink = {
   opacity: 0.75,
   fontSize: "0.95rem",
 };
+
+/* CENTER */
 
 const center = {
   position: "relative",
@@ -157,8 +180,10 @@ const microCopy = {
   display: "flex",
   gap: 14,
   fontSize: "0.85rem",
-  opacity: 0.75,
+  opacity: 0.7,
 };
+
+/* START */
 
 const startButton = {
   position: "absolute",
@@ -182,12 +207,14 @@ const startSub = {
   opacity: 0.75,
 };
 
+/* FOOTER */
+
 const footer = {
   position: "absolute",
   bottom: 0,
   left: 0,
   width: "100%",
-  padding: "14px 24px",
+  padding: "16px 24px",
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
@@ -195,6 +222,7 @@ const footer = {
   backdropFilter: "blur(6px)",
   zIndex: 10,
   fontSize: "0.85rem",
+  opacity: 0.85,
 };
 
 const socials = {
@@ -203,17 +231,18 @@ const socials = {
 };
 
 const icon = {
-  width: 32,
-  cursor: "pointer",
+  width: 34,
 };
+
+/* ===== KEYFRAMES ===== */
 
 if (typeof document !== "undefined") {
   const style = document.createElement("style");
   style.innerHTML = `
     @keyframes float {
-      0% { transform: translateY(0); }
+      0% { transform: translateY(0px); }
       50% { transform: translateY(-4px); }
-      100% { transform: translateY(0); }
+      100% { transform: translateY(0px); }
     }
 
     @keyframes pulse {
