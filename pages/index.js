@@ -58,7 +58,7 @@ export default function Home() {
           style={{
             textAlign: "center",
             zIndex: 3,
-            transform: "translateY(40px)", // 🔥 LOGÓ LEJJEBB, DE NEM KÖZÉPRE
+            transform: "translateY(40px)",
           }}
         >
           <img
@@ -68,11 +68,28 @@ export default function Home() {
             style={{
               width: "860px",
               maxWidth: "95vw",
-              marginBottom: "36px",
+              marginBottom: "24px",
             }}
           />
 
-          {/* FEHÉR SZÖVEGEK – VISSZA */}
+          {/* 🔥 FEHÉR, PULZÁLÓ SZÖVEGEK – VISSZAÁLLÍTVA */}
+          <div
+            className="pulse-group"
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "36px",
+              fontSize: "1.05rem",
+              color: "#ffffff",
+              marginBottom: "32px",
+            }}
+          >
+            <span>Not advice.</span>
+            <span>Not predictions.</span>
+            <span>Financial intelligence.</span>
+          </div>
+
+          {/* FEHÉR LEÍRÓ SZÖVEG */}
           <p
             style={{
               maxWidth: "600px",
@@ -80,6 +97,7 @@ export default function Home() {
               opacity: 0.95,
               lineHeight: "1.6",
               fontSize: "1rem",
+              color: "#ffffff",
             }}
           >
             AI-powered financial thinking.<br />
@@ -87,23 +105,6 @@ export default function Home() {
             Clear perspective.<br />
             <strong>You decide.</strong>
           </p>
-
-          {/* PULZÁLÓ SOR */}
-          <div
-            className="pulse-group"
-            style={{
-              marginTop: "34px",
-              display: "flex",
-              justifyContent: "center",
-              gap: "36px",
-              fontSize: "1.05rem",
-              opacity: 0.9,
-            }}
-          >
-            <span>Not advice.</span>
-            <span>Not predictions.</span>
-            <span>Financial intelligence.</span>
-          </div>
         </div>
 
         {/* START */}
@@ -129,7 +130,7 @@ export default function Home() {
           Start
         </a>
 
-        {/* BOTTOM BAR – TELJESEN ÁTLÁTSZÓ */}
+        {/* BOTTOM BAR */}
         <div
           style={{
             position: "absolute",
@@ -179,16 +180,10 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ANIMATIONS & HOVERS */}
+        {/* ANIMATIONS */}
         <style>{`
-          /* LOGO */
           .brand-logo {
             animation: logoBreathe 12s ease-in-out infinite;
-            transition: filter 0.4s ease;
-          }
-
-          .brand-logo:hover {
-            filter: drop-shadow(0 0 30px rgba(56,189,248,0.6));
           }
 
           @keyframes logoBreathe {
@@ -197,7 +192,6 @@ export default function Home() {
             100% { transform: scale(1); opacity: 0.9; }
           }
 
-          /* PULSE TEXT */
           .pulse-group span {
             animation: pulseSoft 3s ease-in-out infinite;
           }
@@ -211,7 +205,6 @@ export default function Home() {
             100% { opacity: 0.6; }
           }
 
-          /* START + NAV + ICON GLOW */
           .start-btn,
           .nav-link,
           .icon-link {
