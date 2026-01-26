@@ -82,11 +82,11 @@ export default function Home() {
           {/* SZÖVEGEK (Szorosan a logó alatt) */}
           <div style={{ 
             color: "#FFFFFF", 
-            lineHeight: "1.4",
+            lineHeight: "1.2", // Még szűkebb sorköz
             textAlign: "center",
             textShadow: "0 2px 10px rgba(0,0,0,0.5)",
-            // Szorosan a logó alá pozícionálva
-            marginTop: "-110px", 
+            // Extrém negatív margó a távolság megszüntetésére
+            marginTop: "-160px", 
             width: "100%",
             maxWidth: "800px",
             padding: "0 20px"
@@ -97,8 +97,7 @@ export default function Home() {
               fontSize: "1.6rem", 
               fontWeight: "300", 
               opacity: 0.9,
-              marginBottom: "15px", // Még közelebb hozva az alsó blokkhoz
-              lineHeight: "1.4"
+              marginBottom: "10px", // Minimális margó az alsó blokkhoz
             }}>
               AI-powered financial thinking.<br />
               Structured insights.<br />
@@ -114,7 +113,7 @@ export default function Home() {
               textTransform: "uppercase",
               letterSpacing: "1.5px",
               opacity: 0.8,
-              gap: "15px" // Szűkebb rés az elemek között
+              gap: "10px" // Minimális rés az elemek között
             }}>
               <span className="discrete-pulse">Not advice.</span>
               <span className="discrete-pulse">Not predictions.</span>
