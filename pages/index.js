@@ -31,36 +31,38 @@ export default function Home() {
       </Head>
 
       <main style={page}>
-        {/* BACKGROUND */}
-        <div style={bgBase} />
+        {/* BACKGROUND LAYERS */}
+        <div style={bgImage} />
         <div style={bgGlow} />
         <div style={bgGrid} />
 
-        {/* NAV */}
+        {/* TOP NAV */}
         <nav style={nav}>
           <a href="/how-it-works" style={navLink}>How it works</a>
           <a href="/how-to-use" style={navLink}>How to use</a>
           <a href="/terms" style={navLink}>Terms</a>
         </nav>
 
-        {/* CENTER */}
+        {/* CENTER CONTENT */}
         <div style={center}>
-          <h1 style={logo}>WealthyAI</h1>
+          <div style={logoWrap}>
+            <h1 style={logo}>WealthyAI</h1>
+          </div>
 
-          <p style={tagline}>
+          <p style={tagline} className="fade-text">
             AI-powered financial thinking.<br />
             Structured insights. Clear perspective.<br />
             <strong>You decide.</strong>
           </p>
 
-          <div style={microCopy}>
+          <div style={microCopy} className="fade-text delay">
             <span>Not advice.</span>
             <span>Not predictions.</span>
             <span>Financial intelligence.</span>
           </div>
         </div>
 
-        {/* START */}
+        {/* START BUTTON */}
         <a href="/start" style={startButton} className="start-btn">
           Start
           <div style={startSub}>Begin with your current situation</div>
@@ -94,14 +96,13 @@ const page = {
 
 /* BACKGROUND */
 
-const bgBase = {
+const bgImage = {
   position: "absolute",
   inset: 0,
   backgroundImage:
-    "linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('/wealthyai/wealthyai.png')",
+    "linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('/wealthyai/wealthyai.png')",
   backgroundSize: "cover",
   backgroundPosition: "center",
-  animation: "slowZoom 40s ease-in-out infinite",
   zIndex: 1,
 };
 
@@ -109,8 +110,8 @@ const bgGlow = {
   position: "absolute",
   inset: 0,
   background:
-    "radial-gradient(circle at 30% 40%, rgba(56,189,248,0.22), transparent 45%), radial-gradient(circle at 70% 60%, rgba(167,139,250,0.22), transparent 45%)",
-  animation: "glowMove 18s ease-in-out infinite",
+    "radial-gradient(circle at 30% 40%, rgba(56,189,248,0.18), transparent 45%), radial-gradient(circle at 70% 60%, rgba(167,139,250,0.18), transparent 45%)",
+  animation: "pulse 14s ease-in-out infinite",
   zIndex: 2,
 };
 
@@ -118,9 +119,9 @@ const bgGrid = {
   position: "absolute",
   inset: 0,
   backgroundImage:
-    "linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)",
-  backgroundSize: "140px 140px",
-  opacity: 0.15,
+    "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
+  backgroundSize: "120px 120px",
+  opacity: 0.2,
   zIndex: 3,
 };
 
@@ -155,20 +156,21 @@ const center = {
   textAlign: "center",
 };
 
+const logoWrap = {
+  animation: "float 10s ease-in-out infinite",
+};
+
 const logo = {
-  fontSize: "3.9rem",
+  fontSize: "3.8rem",
   margin: 0,
   fontWeight: "bold",
-  animation: "float 8s ease-in-out infinite, fadeIn 1.4s ease forwards",
 };
 
 const tagline = {
-  marginTop: 18,
+  marginTop: 16,
   fontSize: "1.05rem",
   lineHeight: 1.6,
   opacity: 0,
-  animation: "fadeIn 1.6s ease forwards",
-  animationDelay: "0.6s",
 };
 
 const microCopy = {
@@ -177,8 +179,6 @@ const microCopy = {
   gap: 14,
   fontSize: "0.85rem",
   opacity: 0,
-  animation: "fadeIn 1.6s ease forwards",
-  animationDelay: "1.1s",
 };
 
 /* START */
@@ -190,14 +190,13 @@ const startButton = {
   transform: "translateY(-50%)",
   padding: "16px 42px",
   background: "rgba(26,37,58,0.9)",
-  border: "1px solid rgba(255,255,255,0.35)",
-  borderRadius: 14,
+  border: "1px solid rgba(255,255,255,0.4)",
+  borderRadius: 12,
   color: "white",
   fontSize: "1.2rem",
   fontWeight: "bold",
   textDecoration: "none",
   zIndex: 6,
-  transition: "all 0.35s ease",
 };
 
 const startSub = {
@@ -233,37 +232,42 @@ const icon = {
   width: 34,
 };
 
-/* ===== KEYFRAMES ===== */
+/* ===== KEYFRAMES & SAFE EFFECTS ===== */
 
 if (typeof document !== "undefined") {
   const style = document.createElement("style");
   style.innerHTML = `
     @keyframes float {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-6px); }
-      100% { transform: translateY(0px); }
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+      100% { transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.6; }
+      50% { opacity: 1; }
+      100% { opacity: 0.6; }
+    }
+
+    .fade-text {
+      animation: fadeIn 1.4s ease forwards;
+    }
+
+    .fade-text.delay {
+      animation-delay: 0.6s;
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; }
+      to { opacity: 0.9; }
     }
 
-    @keyframes glowMove {
-      0% { opacity: 0.7; }
-      50% { opacity: 1; }
-      100% { opacity: 0.7; }
-    }
-
-    @keyframes slowZoom {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.04); }
-      100% { transform: scale(1); }
+    .start-btn {
+      transition: box-shadow 0.3s ease, border-color 0.3s ease;
     }
 
     .start-btn:hover {
-      transform: translateY(-50%) translateY(-4px);
-      box-shadow: 0 10px 40px rgba(56,189,248,0.35);
+      box-shadow: 0 8px 28px rgba(56,189,248,0.35);
       border-color: rgba(255,255,255,0.7);
     }
   `;
