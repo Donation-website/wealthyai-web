@@ -5,11 +5,15 @@ export default async function handler(req, res) {
 
   try {
     const {
+      mode, // "day" | "week"
       country,
       weeklyIncome,
       weeklySpend,
       dailyTotals,
       breakdown,
+      income,
+      fixed,
+      variable,
     } = req.body;
 
     /* ================================
@@ -26,37 +30,79 @@ export default async function handler(req, res) {
       "low";
 
     /* ================================
-       SYSTEM PROMPT (FINAL)
+       SYSTEM PROMPT SELECTION
     ================================= */
 
-    const systemPrompt = `
+    let systemPrompt = "";
+    let userPrompt = "";
+
+    /* ===== DAY MODE ===== */
+
+    if (mode === "day") {
+      systemPrompt = `
 You are WealthyAI — a PAID financial intelligence system.
 
-You are NOT:
-- a generic advisor
-- an educator
-- a budgeting tutorial
-
-You operate INSIDE this product.
+MODE: DAILY FINANCIAL PULSE
 
 STRICT RULES:
-- NEVER suggest external tools, apps, spreadsheets, notebooks, or manual tracking.
-- NEVER tell the user to "start budgeting elsewhere".
-- All actions must be framed within THIS system.
+- This is NOT a strategy session.
+- This is NOT a long-term forecast.
+- Do NOT mention months or yearly outcomes.
+- Do NOT mention upgrades or plans.
+- Do NOT ask questions.
 
 GOAL:
-Help the user understand their WEEKLY behavior and decide what to do NEXT.
+Give the user clarity about TODAY and a short-term (1 week max) direction.
+
+OUTPUT LIMITS:
+- Max 3 short sections.
+- Concise, calm, reassuring tone.
+
+STRUCTURE:
+1. Today's Financial State
+2. What This Means
+3. 7-Day Direction
 
 STYLE:
 - Calm
-- Precise
+- Grounded
 - Non-judgmental
-- Product-aware
+`;
+      userPrompt = `
+CONTEXT
+
+Income: ${income}
+Fixed costs: ${fixed}
+Variable spending: ${variable}
+
+TASK
+
+Provide a DAILY financial pulse.
+If possible, include a conservative 7-day outlook.
+Avoid speculation.
+Focus only on what the user can control immediately.
+`;
+    }
+
+    /* ===== WEEK MODE ===== */
+
+    if (mode === "week") {
+      systemPrompt = `
+You are WealthyAI — a PAID financial intelligence system.
+
+MODE: WEEKLY BEHAVIOR INTERPRETER
+
+STRICT RULES:
+- NOT a generic advisor.
+- NOT a budgeting tutorial.
+- Operate strictly inside this system.
+
+GOAL:
+Help the user understand WEEKLY behavior and decide what to do NEXT.
 
 DATA HANDLING:
-- If data quality is low, clearly state limitations.
-- Do NOT invent or exaggerate patterns.
-- Do NOT speculate beyond available data.
+- State limitations clearly if data quality is low.
+- Do NOT exaggerate or invent patterns.
 
 STRUCTURE (MANDATORY):
 
@@ -65,24 +111,17 @@ STRUCTURE (MANDATORY):
 3. Behavior Signal
 4. Next Week Action Plan
 5. 1-Month Outlook
-6. Optional Upgrade Insight
+6. Optional System Capability Note
 
-UPGRADE RULES:
-- Only mention upgrade if it logically improves accuracy or insight.
-- Reference the "$24.99 monthly plan" as an advanced capability.
+UPGRADE RULE:
+- Mention advanced analysis ONLY as a system capability.
 - Do NOT use sales language.
-- Frame upgrade as a system capability, not a purchase.
 
 TIME HORIZON:
-- Weekly focus
-- Maximum projection: 4 weeks
+- Weekly behavior
+- Max projection: 1 month
 `;
-
-    /* ================================
-       USER PROMPT
-    ================================= */
-
-    const userPrompt = `
+      userPrompt = `
 CONTEXT
 
 Country: ${country}
@@ -94,16 +133,11 @@ Data quality: ${dataQuality}
 
 TASK
 
-Generate a WEEKLY financial intelligence report for a paying user.
-
-IMPORTANT BEHAVIOR:
-- Assume the user is already using WealthyAI.
-- All actions must reference logging, reviewing, or adjusting data INSIDE the system.
-- If spending is zero or near zero, focus on data completeness within the app.
-- Provide concrete NEXT WEEK actions.
-- Include a 1-month outlook ONLY if data quality allows.
-- If insight depth is limited by weekly scope, you may note that deeper pattern analysis is available in the $24.99 monthly plan.
+Generate a WEEKLY financial intelligence report.
+Provide concrete next-week actions.
+Include a 1-month outlook only if data quality allows.
 `;
+    }
 
     /* ================================
        GROQ API CALL
@@ -124,21 +158,16 @@ IMPORTANT BEHAVIOR:
             { role: "user", content: userPrompt },
           ],
           temperature: 0.25,
-          max_tokens: 650,
+          max_tokens: mode === "day" ? 300 : 650,
         }),
       }
     );
 
     if (!groqRes.ok) {
-      const err = await groqRes.text();
-      console.error("Groq API error:", err);
-      return res.status(500).json({
-        insight: "AI backend unavailable.",
-      });
+      return res.status(500).json({ insight: "AI backend unavailable." });
     }
 
     const json = await groqRes.json();
-
     const text =
       json?.choices?.[0]?.message?.content ||
       "AI returned no usable output.";
@@ -147,8 +176,6 @@ IMPORTANT BEHAVIOR:
 
   } catch (err) {
     console.error("AI crash:", err);
-    return res.status(500).json({
-      insight: "AI system error.",
-    });
+    return res.status(500).json({ insight: "AI system error." });
   }
 }
