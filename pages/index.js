@@ -53,12 +53,17 @@ export default function Home() {
           <a href="/terms" className="nav-link">Terms</a>
         </div>
 
-        {/* CENTER BRAND */}
+        {/* CENTER BRAND & TEXT CONTAINER (ÚJ KONSTRUKCIÓ) */}
         <div
           style={{
             textAlign: "center",
             zIndex: 3,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
             transform: "translateY(0px)",
+            width: "100%", // Biztosítja a teljes szélességet a középre igazításhoz
           }}
         >
           <img
@@ -71,7 +76,7 @@ export default function Home() {
             }}
           />
           
-          {/* ADDED TEXT SECTION */}
+          {/* BEILLESZTETT SZÖVEGEK, MÁR A LOGÓVAL EGY KERETBEN */}
           <div style={{ marginTop: "20px", color: "white", lineHeight: "1.6" }}>
             <div style={{ fontSize: "1.2rem", fontWeight: "300", letterSpacing: "1px" }}>
               AI-powered financial thinking.<br />
@@ -132,7 +137,7 @@ export default function Home() {
 
           <div style={{ display: "flex", gap: "18px", alignItems: "center" }}>
             <a
-              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`}
+              href={`https://www.facebook.com{encodeURIComponent(SITE_URL)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="icon-link"
@@ -141,7 +146,7 @@ export default function Home() {
             </a>
 
             <a
-              href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}`}
+              href={`https://twitter.com{encodeURIComponent(SITE_URL)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="icon-link"
@@ -150,7 +155,7 @@ export default function Home() {
             </a>
 
             <a
-              href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`}
+              href={`https://www.linkedin.com{encodeURIComponent(SITE_URL)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="icon-link"
@@ -160,7 +165,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ANIMATIONS & HOVERS */}
+        {/* ANIMATIONS & HOVERS – AZ ÚJ PULZÁLÓ ANIMÁCIÓ HOZZÁADVA */}
         <style>{`
           .brand-logo {
             animation: logoFloat 9s ease-in-out infinite;
