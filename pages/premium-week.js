@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   LineChart, Line,
+  AreaChart, Area,
   PieChart, Pie, Cell,
   ScatterChart, Scatter,
   XAxis, YAxis, Tooltip, Legend,
@@ -26,6 +27,9 @@ const COLORS = {
 export default function PremiumWeek() {
   const [incomeType, setIncomeType] = useState("monthly");
   const [incomeValue, setIncomeValue] = useState(3000);
+
+  /* 🔹 NEW: region / country */
+  const [country, setCountry] = useState("US");
 
   const [week, setWeek] = useState(
     DAYS.reduce((acc, d) => {
@@ -69,6 +73,8 @@ export default function PremiumWeek() {
     day: d,
   }));
 
+  /* ===== AI CALL ===== */
+
   const runAI = async () => {
     setLoading(true);
     try {
@@ -76,7 +82,8 @@ export default function PremiumWeek() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          mode: "weekly",
+          mode: "week",              // ✅ WEEK MODE
+          country,                   // ✅ REGION CONTEXT
           weeklyIncome,
           weeklySpend,
           dailyTotals,
@@ -99,6 +106,22 @@ export default function PremiumWeek() {
       <p style={subtitle}>
         Weekly behavioral analysis with country-aware intelligence.
       </p>
+
+      {/* 🔹 NEW: COUNTRY SELECTOR */}
+      <div style={regionRow}>
+        <label style={regionLabel}>Region:</label>
+        <select
+          value={country}
+          onChange={e => setCountry(e.target.value)}
+          style={regionSelect}
+        >
+          <option value="US">United States</option>
+          <option value="EU">European Union</option>
+          <option value="UK">United Kingdom</option>
+          <option value="HU">Hungary</option>
+          <option value="OTHER">Other</option>
+        </select>
+      </div>
 
       <div style={layout}>
         <div style={left}>
@@ -163,7 +186,8 @@ export default function PremiumWeek() {
           </Chart>
 
           <div style={summary}>
-            Weekly spend: <strong>${weeklySpend}</strong> · Income: <strong>${weeklyIncome.toFixed(0)}</strong>
+            Weekly spend: <strong>${weeklySpend}</strong> ·
+            Income: <strong>${weeklyIncome.toFixed(0)}</strong>
           </div>
 
           <div style={aiBox}>
@@ -221,25 +245,8 @@ const page = {
     radial-gradient(circle at 45% 85%, rgba(34,211,238,0.18), transparent 40%),
     url("/wealthyai/icons/generated.png")
   `,
-
-  backgroundRepeat: `
-    repeat,
-    repeat,
-    no-repeat,
-    no-repeat,
-    no-repeat,
-    repeat
-  `,
-
-  backgroundSize: `
-    auto,
-    auto,
-    100% 100%,
-    100% 100%,
-    100% 100%,
-    420px auto
-  `,
-
+  backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
+  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
   backgroundPosition: "center",
 };
 
@@ -258,7 +265,17 @@ const helpButton = {
 };
 
 const title = { fontSize: "2.6rem" };
-const subtitle = { color: "#94a3b8", marginBottom: 30 };
+const subtitle = { color: "#94a3b8", marginBottom: 20 };
+
+const regionRow = { marginBottom: 20 };
+const regionLabel = { marginRight: 8, color: "#7dd3fc" };
+const regionSelect = {
+  background: "#020617",
+  color: "#e5e7eb",
+  border: "1px solid #1e293b",
+  padding: "6px 10px",
+  borderRadius: 6,
+};
 
 const layout = { display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 30 };
 const left = { maxHeight: "70vh", overflowY: "auto" };
