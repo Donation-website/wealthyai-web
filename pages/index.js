@@ -64,7 +64,7 @@ export default function Home() {
             flexDirection: "column",
             alignItems: "center",
             // Az egész blokk még feljebb tolva a középponthoz képest
-            transform: "translateY(-35px)", 
+            transform: "translateY(-60px)", 
             width: "100%",
           }}
         >
@@ -82,11 +82,11 @@ export default function Home() {
           {/* SZÖVEG KONSTRUKCIÓ A KÉP STÍLUSÁBAN */}
           <div style={{ 
             color: "#FFFFFF", 
-            lineHeight: "1.6",
+            lineHeight: "1.4", // Csökkentett sorköz
             textAlign: "center",
             textShadow: "0 2px 10px rgba(0,0,0,0.5)",
-            // A szöveg tömb feljebb tolása a logóhoz képest
-            marginTop: "-140px", 
+            // A szöveg tömb feljebb tolása a logóhoz képest (kisebb margó)
+            marginTop: "-110px", 
             width: "100%",
             maxWidth: "800px",
             padding: "0 20px"
@@ -97,7 +97,7 @@ export default function Home() {
               fontSize: "1.6rem", 
               fontWeight: "300", 
               opacity: 0.9,
-              marginBottom: "80px", // Hely a logó és az alsó szöveg között
+              marginBottom: "40px", // Csökkentett margó az alsó blokkhoz
               lineHeight: "1.4"
             }}>
               AI-powered financial thinking.<br />
@@ -105,7 +105,7 @@ export default function Home() {
               Clear perspective.
             </div>
             
-            {/* Alsó, kisebb méretű, sorba rendezett blokk (mind pulzál) */}
+            {/* Alsó, kisebb méretű, sorba rendezett blokk (mind pulzál, szűkebb sorköz) */}
             <div style={{ 
               display: "flex", 
               justifyContent: "space-between", 
@@ -115,9 +115,9 @@ export default function Home() {
               letterSpacing: "2px",
               opacity: 0.8
             }}>
-              <span className="discrete-pulse">Not advice.</span>
-              <span className="discrete-pulse">Not predictions.</span>
-              <span className="discrete-pulse">Financial intelligence.</span>
+              <span className="discrete-pulse" style={{ padding: "0 5px" }}>Not advice.</span>
+              <span className="discrete-pulse" style={{ padding: "0 5px" }}>Not predictions.</span>
+              <span className="discrete-pulse" style={{ padding: "0 5px" }}>Financial intelligence.</span>
             </div>
           </div>
         </div>
