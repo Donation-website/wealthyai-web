@@ -1,255 +1,121 @@
-import React, { useEffect } from "react";
-import Head from "next/head";
-
-export default function Home() {
-  const SITE_URL = "https://wealthyai-web.vercel.app";
-
-  useEffect(() => {
-    document.body.style.margin = "0";
-    document.body.style.overflow = "hidden";
-  }, []);
-
+how it works: export default function HowItWorks() {
   return (
-    <>
-      <Head>
-        <title>WealthyAI – AI-powered financial clarity</title>
-        <meta
-          name="description"
-          content="AI-powered financial thinking. Structured insights. Clear perspective."
-        />
+    <main style={{
+      minHeight: "100vh",
+      width: "100vw",
+      backgroundImage: "linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('/wealthyai/icons/dia.png')",
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+      color: "white",
+      fontFamily: "Arial, sans-serif",
+      display: "flex",
+      alignItems: "flex-start",
+      justifyContent: "center",
+      paddingTop: "80px",
+      boxSizing: "border-box"
+    }}>
+      <div style={{
+        maxWidth: "900px",
+        background: "rgba(0,0,0,0.35)",
+        padding: "40px",
+        borderRadius: "14px",
+        backdropFilter: "blur(8px)",
+        lineHeight: "1.7",
+        margin: "20px"
+      }}>
+        <h1>How WealthyAI Works</h1>
+        <p>WealthyAI is designed to help individuals understand their financial situation through structured insights and clear explanations.</p>
+        <p>The platform focuses on clarity, planning, and long-term thinking, helping users see their finances in context rather than isolated numbers.</p>
+        <p>Visual elements and structured outputs help users better grasp trends, proportions, and potential outcomes.</p>
+        <p>WealthyAI does not replace professional financial advisors and does not provide investment, tax, or legal advice.</p>
+        
+        {/* BACK TO HOME GOMB */}
+        <div style={{ marginTop: "30px", borderTop: "1px solid rgba(255,255,255,0.2)", paddingTop: "20px" }}>
+          <a href="/" style={{ color: "white", textDecoration: "underline", opacity: 0.8, fontSize: "0.9rem" }}>
+            ← Back to Home
+          </a>
+        </div>
+      </div>
+    </main>
+  );
+}                                                    How to use: export default function HowToUse() {
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        width: "100vw",
+        backgroundImage: "url('/wealthyai/icons/use.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: "40px",
+        boxSizing: "border-box"
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "800px",
+          // Módosított áttetszőség: 0.25-ről 0.1-re csökkentve
+          backgroundColor: "rgba(255, 255, 255, 0.1)", 
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          padding: "40px",
+          borderRadius: "20px",
+          // Szöveg színe fehérre javítva
+          color: "#ffffff", 
+          fontFamily: "Arial, sans-serif",
+          lineHeight: "1.6",
+          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
+          border: "1px solid rgba(255, 255, 255, 0.2)"
+        }}
+      >
+        <h1 style={{ marginBottom: "20px", fontWeight: "bold" }}>How to use WealthyAI</h1>
 
-        {/* Open Graph */}
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={SITE_URL} />
-        <meta property="og:title" content="WealthyAI – AI-powered financial clarity" />
-        <meta
-          property="og:description"
-          content="Structured financial insights and AI-powered optimization."
-        />
-        <meta property="og:image" content={`${SITE_URL}/wealthyai/wealthyai.png`} />
-
-        {/* Twitter */}
-        <meta name="twitter:card" content="summary_large_image" />
-      </Head>
-
-      <main style={page}>
-        {/* BACKGROUND LAYERS */}
-        <div style={bgImage} />
-        <div style={bgGlow} />
-        <div style={bgGrid} />
-
-        {/* TOP NAV */}
-        <nav style={nav}>
-          <a href="/how-it-works" style={navLink}>How it works</a>
-          <a href="/how-to-use" style={navLink}>How to use</a>
-          <a href="/terms" style={navLink}>Terms</a>
-        </nav>
-
-        {/* CENTER CONTENT */}
-        <div style={center}>
-          <div style={logoWrap}>
-            <h1 style={logo}>WealthyAI</h1>
-          </div>
-
-          <p style={tagline}>
-            AI-powered financial thinking.<br />
-            Structured insights. Clear perspective.<br />
-            <strong>You decide.</strong>
+        <section>
+          <h2 style={{ fontSize: "1.4rem" }}>1. What is WealthyAI?</h2>
+          <p>
+            WealthyAI is an AI-powered financial planning and analysis platform.
+            It helps you understand your financial situation, assess potential
+            risks, and explore possible strategies.
           </p>
 
-          <div style={microCopy}>
-            <span>Not advice.</span>
-            <span>Not predictions.</span>
-            <span>Financial intelligence.</span>
-          </div>
+          <h2 style={{ fontSize: "1.4rem" }}>2. How do I get started?</h2>
+          <p>
+            To begin, simply click the <strong>Start</strong> button on the main page.
+            You will be asked to enter basic financial information such as goals and risk tolerance.
+          </p>
+
+          <h2 style={{ fontSize: "1.4rem" }}>3. What do I receive?</h2>
+          <p>
+            You receive a personalized overview focusing on:
+          </p>
+          <ul style={{ paddingLeft: "20px" }}>
+            <li>Risk awareness</li>
+            <li>Scenario-based thinking</li>
+            <li>Strategic considerations</li>
+          </ul>
+
+          <h2 style={{ fontSize: "1.4rem" }}>4. Access plans</h2>
+          <p>
+            WealthyAI offers daily, weekly, and monthly access options to fit your needs.
+          </p>
+        </section>
+
+        <p style={{ marginTop: "30px", fontStyle: "italic", fontWeight: "500" }}>
+          Always make financial decisions responsibly. You remain fully in control.
+        </p>
+
+        {/* Vissza gomb fehér színnel */}
+        <div style={{ marginTop: "20px" }}>
+          <a href="/" style={{ color: "#ffffff", textDecoration: "underline", fontSize: "0.9rem" }}>
+            Back to Home
+          </a>
         </div>
-
-        {/* START BUTTON */}
-        <a href="/start" style={startButton}>
-          Start
-          <div style={startSub}>Begin with your current situation</div>
-        </a>
-
-        {/* FOOTER */}
-        <footer style={footer}>
-          <span>© 2026 WealthyAI — All rights reserved.</span>
-
-          <div style={socials}>
-            <img src="/wealthyai/icons/fb.png" style={icon} />
-            <img src="/wealthyai/icons/x.png" style={icon} />
-            <img src="/wealthyai/icons/insta.png" style={icon} />
-          </div>
-        </footer>
-      </main>
-    </>
+      </div>
+    </main>
   );
-}
-
-/* ===== STYLES ===== */
-
-const page = {
-  position: "relative",
-  width: "100vw",
-  height: "100vh",
-  overflow: "hidden",
-  fontFamily: "Inter, system-ui, sans-serif",
-  color: "white",
-};
-
-/* BACKGROUND */
-
-const bgImage = {
-  position: "absolute",
-  inset: 0,
-  backgroundImage:
-    "linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('/wealthyai/wealthyai.png')",
-  backgroundSize: "cover",
-  backgroundPosition: "center",
-  zIndex: 1,
-};
-
-const bgGlow = {
-  position: "absolute",
-  inset: 0,
-  background:
-    "radial-gradient(circle at 30% 40%, rgba(56,189,248,0.18), transparent 45%), radial-gradient(circle at 70% 60%, rgba(167,139,250,0.18), transparent 45%)",
-  animation: "pulse 14s ease-in-out infinite",
-  zIndex: 2,
-};
-
-const bgGrid = {
-  position: "absolute",
-  inset: 0,
-  backgroundImage:
-    "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
-  backgroundSize: "120px 120px",
-  opacity: 0.2,
-  zIndex: 3,
-};
-
-/* NAV */
-
-const nav = {
-  position: "absolute",
-  top: 30,
-  right: 40,
-  display: "flex",
-  gap: 28,
-  zIndex: 10,
-};
-
-const navLink = {
-  color: "white",
-  textDecoration: "none",
-  opacity: 0.75,
-  fontSize: "0.95rem",
-};
-
-/* CENTER */
-
-const center = {
-  position: "relative",
-  zIndex: 5,
-  height: "100%",
-  display: "flex",
-  flexDirection: "column",
-  justifyContent: "center",
-  alignItems: "center",
-  textAlign: "center",
-};
-
-const logoWrap = {
-  animation: "float 10s ease-in-out infinite",
-};
-
-const logo = {
-  fontSize: "3.8rem",
-  margin: 0,
-  fontWeight: "bold",
-};
-
-const tagline = {
-  marginTop: 16,
-  fontSize: "1.05rem",
-  lineHeight: 1.6,
-  opacity: 0.9,
-};
-
-const microCopy = {
-  marginTop: 22,
-  display: "flex",
-  gap: 14,
-  fontSize: "0.85rem",
-  opacity: 0.7,
-};
-
-/* START */
-
-const startButton = {
-  position: "absolute",
-  left: "8%",
-  top: "50%",
-  transform: "translateY(-50%)",
-  padding: "16px 42px",
-  background: "rgba(26,37,58,0.9)",
-  border: "1px solid rgba(255,255,255,0.4)",
-  borderRadius: 12,
-  color: "white",
-  fontSize: "1.2rem",
-  fontWeight: "bold",
-  textDecoration: "none",
-  zIndex: 6,
-};
-
-const startSub = {
-  fontSize: "0.75rem",
-  marginTop: 6,
-  opacity: 0.75,
-};
-
-/* FOOTER */
-
-const footer = {
-  position: "absolute",
-  bottom: 0,
-  left: 0,
-  width: "100%",
-  padding: "16px 24px",
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  background: "rgba(0,0,0,0.35)",
-  backdropFilter: "blur(6px)",
-  zIndex: 10,
-  fontSize: "0.85rem",
-  opacity: 0.85,
-};
-
-const socials = {
-  display: "flex",
-  gap: 18,
-};
-
-const icon = {
-  width: 34,
-};
-
-/* ===== KEYFRAMES ===== */
-
-if (typeof document !== "undefined") {
-  const style = document.createElement("style");
-  style.innerHTML = `
-    @keyframes float {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-4px); }
-      100% { transform: translateY(0px); }
-    }
-
-    @keyframes pulse {
-      0% { opacity: 0.6; }
-      50% { opacity: 1; }
-      100% { opacity: 0.6; }
-    }
-  `;
-  document.head.appendChild(style);
-}
+}     
