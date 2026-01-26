@@ -33,7 +33,7 @@ export default function Home() {
       </Head>
 
       <main style={page}>
-        {/* BACKGROUND LAYERS */}
+        {/* BACKGROUND */}
         <div style={bgImage} />
         <div style={bgGlow} />
         <div style={bgGrid} />
@@ -45,11 +45,9 @@ export default function Home() {
           <a href="/terms" style={navLink}>Terms</a>
         </nav>
 
-        {/* CENTER CONTENT */}
+        {/* CENTER */}
         <div style={center}>
-          <div style={logoWrap}>
-            <h1 style={logo}>WealthyAI</h1>
-          </div>
+          <h1 style={logo}>WealthyAI</h1>
 
           <p style={tagline}>
             AI-powered financial thinking.<br />
@@ -64,7 +62,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* START BUTTON */}
+        {/* START */}
         <a href="/start" style={startButton}>
           Start
           <div style={startSub}>Begin with your current situation</div>
@@ -75,9 +73,33 @@ export default function Home() {
           <span>© 2026 WealthyAI — All rights reserved.</span>
 
           <div style={socials}>
-            <img src="/wealthyai/icons/fb.png" style={icon} />
-            <img src="/wealthyai/icons/x.png" style={icon} />
-            <img src="/wealthyai/icons/insta.png" style={icon} />
+            <a
+              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img src="/wealthyai/icons/fb.png" style={icon} />
+            </a>
+
+            <a
+              href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(
+                SITE_URL
+              )}&text=AI-powered%20financial%20clarity%20with%20WealthyAI`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img src="/wealthyai/icons/x.png" style={icon} />
+            </a>
+
+            <a
+              href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+                SITE_URL
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img src="/wealthyai/icons/insta.png" style={icon} />
+            </a>
           </div>
         </footer>
       </main>
@@ -89,11 +111,12 @@ export default function Home() {
 
 const page = {
   position: "relative",
-  width: "100vw",
+  width: "100%",
   height: "100vh",
   overflow: "hidden",
   fontFamily: "Inter, system-ui, sans-serif",
   color: "white",
+  boxSizing: "border-box",
 };
 
 /* BACKGROUND */
@@ -112,8 +135,8 @@ const bgGlow = {
   position: "absolute",
   inset: 0,
   background:
-    "radial-gradient(circle at 30% 40%, rgba(56,189,248,0.18), transparent 45%), radial-gradient(circle at 70% 60%, rgba(167,139,250,0.18), transparent 45%)",
-  animation: "pulse 14s ease-in-out infinite",
+    "radial-gradient(circle at 30% 40%, rgba(56,189,248,0.22), transparent 45%), radial-gradient(circle at 70% 60%, rgba(167,139,250,0.22), transparent 45%)",
+  animation: "pulseGlow 14s ease-in-out infinite",
   zIndex: 2,
 };
 
@@ -121,9 +144,9 @@ const bgGrid = {
   position: "absolute",
   inset: 0,
   backgroundImage:
-    "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
-  backgroundSize: "120px 120px",
-  opacity: 0.2,
+    "linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)",
+  backgroundSize: "140px 140px",
+  opacity: 0.18,
   zIndex: 3,
 };
 
@@ -158,14 +181,11 @@ const center = {
   textAlign: "center",
 };
 
-const logoWrap = {
-  animation: "float 10s ease-in-out infinite",
-};
-
 const logo = {
   fontSize: "3.8rem",
   margin: 0,
   fontWeight: "bold",
+  animation: "floatLogo 10s ease-in-out infinite",
 };
 
 const tagline = {
@@ -218,11 +238,11 @@ const footer = {
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
-  background: "rgba(0,0,0,0.35)",
+  background: "rgba(0,0,0,0.25)",
   backdropFilter: "blur(6px)",
   zIndex: 10,
   fontSize: "0.85rem",
-  opacity: 0.85,
+  boxSizing: "border-box",
 };
 
 const socials = {
@@ -232,23 +252,24 @@ const socials = {
 
 const icon = {
   width: 34,
+  cursor: "pointer",
 };
 
-/* ===== KEYFRAMES ===== */
+/* ===== KEYFRAMES (SSR-SAFE INLINE) ===== */
 
-if (typeof document !== "undefined") {
+if (typeof window !== "undefined") {
   const style = document.createElement("style");
   style.innerHTML = `
-    @keyframes float {
+    @keyframes floatLogo {
       0% { transform: translateY(0px); }
-      50% { transform: translateY(-4px); }
+      50% { transform: translateY(-6px); }
       100% { transform: translateY(0px); }
     }
 
-    @keyframes pulse {
-      0% { opacity: 0.6; }
+    @keyframes pulseGlow {
+      0% { opacity: 0.55; }
       50% { opacity: 1; }
-      100% { opacity: 0.6; }
+      100% { opacity: 0.55; }
     }
   `;
   document.head.appendChild(style);
