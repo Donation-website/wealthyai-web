@@ -25,7 +25,7 @@ export default function Home() {
           backgroundColor: "#060b13",
           backgroundImage:
             "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
-          backgroundSize: "cover",          // ✅ KITÖLTI AZ OLDALT
+          backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
           color: "white",
@@ -79,8 +79,8 @@ export default function Home() {
               display: "flex",
               justifyContent: "center",
               gap: "26px",
-              fontSize: "0.9rem",
-              opacity: 0.75,
+              fontSize: "0.95rem",
+              opacity: 0.85,
             }}
           >
             <span>Not advice.</span>
@@ -123,8 +123,9 @@ export default function Home() {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            backgroundColor: "rgba(0,0,0,0.35)",
-            backdropFilter: "blur(6px)",
+            background: "rgba(0,0,0,0.22)",   // ✅ áttetszőbb
+            backdropFilter: "blur(10px)",    // ✅ háttér átjön
+            WebkitBackdropFilter: "blur(10px)",
             boxSizing: "border-box",
             zIndex: 4,
           }}
@@ -160,24 +161,23 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ANIMATIONS */}
         <style>{`
           .pulse-group span {
-            animation: pulseSoft 4.5s ease-in-out infinite;
+            animation: pulseSoft 3.2s ease-in-out infinite;
           }
 
           .pulse-group span:nth-child(2) {
-            animation-delay: 1.5s;
+            animation-delay: 1s;
           }
 
           .pulse-group span:nth-child(3) {
-            animation-delay: 3s;
+            animation-delay: 2s;
           }
 
           @keyframes pulseSoft {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
+            0%   { opacity: 0.55; transform: scale(1); }
+            50%  { opacity: 1;    transform: scale(1.05); }
+            100% { opacity: 0.55; transform: scale(1); }
           }
 
           .start-btn {
