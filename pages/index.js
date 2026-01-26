@@ -61,6 +61,7 @@ export default function Home() {
             transform: "translateY(40px)",
           }}
         >
+          {/* ANIMÁLT LOGÓ */}
           <img
             src="/wealthyai/icons/generated.png"
             alt="WealthyAI logo"
@@ -68,43 +69,42 @@ export default function Home() {
             style={{
               width: "860px",
               maxWidth: "95vw",
-              marginBottom: "24px",
+              marginBottom: "28px",
             }}
           />
 
-          {/* 🔥 FEHÉR, PULZÁLÓ SZÖVEGEK – VISSZAÁLLÍTVA */}
+          {/* FEHÉR LEÍRÓ SZÖVEG – LOGÓ ALATT */}
+          <p
+            style={{
+              maxWidth: "600px",
+              margin: "0 auto",
+              lineHeight: "1.6",
+              fontSize: "1.05rem",
+              color: "#ffffff",
+              opacity: 0.95,
+            }}
+          >
+            AI-powered financial thinking.<br />
+            Structured insights.<br />
+            Clear perspective.
+          </p>
+
+          {/* PULZÁLÓ FEHÉR SOR – ALATTA */}
           <div
             className="pulse-group"
             style={{
+              marginTop: "24px",
               display: "flex",
               justifyContent: "center",
               gap: "36px",
               fontSize: "1.05rem",
               color: "#ffffff",
-              marginBottom: "32px",
             }}
           >
             <span>Not advice.</span>
             <span>Not predictions.</span>
             <span>Financial intelligence.</span>
           </div>
-
-          {/* FEHÉR LEÍRÓ SZÖVEG */}
-          <p
-            style={{
-              maxWidth: "600px",
-              margin: "0 auto",
-              opacity: 0.95,
-              lineHeight: "1.6",
-              fontSize: "1rem",
-              color: "#ffffff",
-            }}
-          >
-            AI-powered financial thinking.<br />
-            Structured insights.<br />
-            Clear perspective.<br />
-            <strong>You decide.</strong>
-          </p>
         </div>
 
         {/* START */}
@@ -182,8 +182,14 @@ export default function Home() {
 
         {/* ANIMATIONS */}
         <style>{`
+          /* LOGÓ – HOVER FÉNY VISSZAÁLLÍTVA */
           .brand-logo {
             animation: logoBreathe 12s ease-in-out infinite;
+            transition: filter 0.4s ease;
+          }
+
+          .brand-logo:hover {
+            filter: drop-shadow(0 0 30px rgba(56,189,248,0.6));
           }
 
           @keyframes logoBreathe {
@@ -192,6 +198,7 @@ export default function Home() {
             100% { transform: scale(1); opacity: 0.9; }
           }
 
+          /* PULZÁLÓ SZÖVEG */
           .pulse-group span {
             animation: pulseSoft 3s ease-in-out infinite;
           }
@@ -205,6 +212,7 @@ export default function Home() {
             100% { opacity: 0.6; }
           }
 
+          /* HOVER FÉNYEK */
           .start-btn,
           .nav-link,
           .icon-link {
