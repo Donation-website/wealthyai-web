@@ -58,7 +58,7 @@ export default function Home() {
           style={{
             textAlign: "center",
             zIndex: 3,
-            transform: "translateY(0px)", // ⬆️ LOGÓ FELJEBB ~1 CM
+            transform: "translateY(0px)",
           }}
         >
           <img
@@ -70,6 +70,32 @@ export default function Home() {
               maxWidth: "95vw",
             }}
           />
+
+          {/* BRAND TEXT */}
+          <div
+            style={{
+              marginTop: "26px",
+              lineHeight: 1.55,
+              fontSize: "1.05rem",
+              letterSpacing: "0.02em",
+              opacity: 0.95,
+            }}
+          >
+            <div>AI-powered financial thinking.</div>
+            <div>Structured insights.</div>
+
+            <div className="pulse-soft" style={{ marginTop: "6px" }}>
+              Clear perspective.
+            </div>
+
+            <div className="pulse-soft">
+              Not advice. Not predictions.
+            </div>
+
+            <div style={{ marginTop: "6px" }}>
+              Financial intelligence.
+            </div>
+          </div>
         </div>
 
         {/* START */}
@@ -145,7 +171,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ANIMATIONS & HOVERS – ÉRINTETLEN */}
+        {/* ANIMATIONS & HOVERS – ÉRINTETLEN + ÚJ */}
         <style>{`
           .brand-logo {
             animation: logoFloat 9s ease-in-out infinite;
@@ -161,6 +187,16 @@ export default function Home() {
             35% { transform: scale(1.035) translateY(-6px); opacity: 1; }
             70% { transform: scale(1.02) translateY(3px); opacity: 0.97; }
             100% { transform: scale(1) translateY(0); opacity: 0.92; }
+          }
+
+          .pulse-soft {
+            animation: pulseSoft 5.5s ease-in-out infinite;
+          }
+
+          @keyframes pulseSoft {
+            0% { opacity: 0.75; }
+            50% { opacity: 1; }
+            100% { opacity: 0.75; }
           }
 
           .start-btn,
