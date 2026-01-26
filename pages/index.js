@@ -63,8 +63,8 @@ export default function Home() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            // Állítsuk az egész blokkot egy kicsit feljebb a középponthoz képest
-            transform: "translateY(-15px)", 
+            // Az egész blokk még feljebb tolva a középponthoz képest
+            transform: "translateY(-35px)", 
             width: "100%",
           }}
         >
@@ -105,7 +105,7 @@ export default function Home() {
               Clear perspective.
             </div>
             
-            {/* Alsó, kisebb méretű, sorba rendezett blokk */}
+            {/* Alsó, kisebb méretű, sorba rendezett blokk (mind pulzál) */}
             <div style={{ 
               display: "flex", 
               justifyContent: "space-between", 
@@ -117,7 +117,7 @@ export default function Home() {
             }}>
               <span className="discrete-pulse">Not advice.</span>
               <span className="discrete-pulse">Not predictions.</span>
-              <span>Financial intelligence.</span> {/* Ez nem pulzál */}
+              <span className="discrete-pulse">Financial intelligence.</span>
             </div>
           </div>
         </div>
