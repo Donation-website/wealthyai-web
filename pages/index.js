@@ -18,7 +18,6 @@ export default function Home() {
         style={{
           height: "100vh",
           width: "100%",
-          boxSizing: "border-box",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -40,11 +39,11 @@ export default function Home() {
         <div
           style={{
             position: "absolute",
-            top: "30px",
-            right: "40px",
+            top: 30,
+            right: 40,
             display: "flex",
-            gap: "28px",
-            zIndex: 6,
+            gap: 28,
+            zIndex: 10,
             fontSize: "0.95rem",
           }}
         >
@@ -53,12 +52,15 @@ export default function Home() {
           <a href="/terms" className="nav-link">Terms</a>
         </div>
 
-        {/* CENTER BRAND */}
+        {/* CENTER STACK */}
         <div
           style={{
+            zIndex: 5,
             textAlign: "center",
-            zIndex: 3,
             transform: "translateY(40px)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
           }}
         >
           {/* ANIMÁLT LOGÓ */}
@@ -73,30 +75,28 @@ export default function Home() {
             }}
           />
 
-          {/* FEHÉR LEÍRÓ SZÖVEG – LOGÓ ALATT */}
-          <p
+          {/* FEHÉR SZÖVEG – LOGÓ ALATT */}
+          <div
             style={{
-              maxWidth: "600px",
-              margin: "0 auto",
-              lineHeight: "1.6",
-              fontSize: "1.05rem",
               color: "#ffffff",
+              fontSize: "1.1rem",
+              lineHeight: "1.6",
+              maxWidth: "620px",
+              marginBottom: "22px",
               opacity: 0.95,
             }}
           >
             AI-powered financial thinking.<br />
             Structured insights.<br />
             Clear perspective.
-          </p>
+          </div>
 
-          {/* PULZÁLÓ FEHÉR SOR – ALATTA */}
+          {/* PULZÁLÓ FEHÉR SOR – LOGÓ ALATT */}
           <div
             className="pulse-group"
             style={{
-              marginTop: "24px",
               display: "flex",
-              justifyContent: "center",
-              gap: "36px",
+              gap: "34px",
               fontSize: "1.05rem",
               color: "#ffffff",
             }}
@@ -124,7 +124,7 @@ export default function Home() {
             textDecoration: "none",
             fontWeight: "bold",
             fontSize: "1.2rem",
-            zIndex: 4,
+            zIndex: 6,
           }}
         >
           Start
@@ -142,47 +142,42 @@ export default function Home() {
             justifyContent: "space-between",
             alignItems: "center",
             background: "transparent",
-            boxSizing: "border-box",
-            zIndex: 5,
+            zIndex: 6,
           }}
         >
           <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
             © 2026 WealthyAI — All rights reserved.
           </div>
 
-          <div style={{ display: "flex", gap: "18px", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: "18px" }}>
             <a
               href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="icon-link"
             >
-              <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
+              <img src="/wealthyai/icons/fb.png" style={{ width: 34 }} />
             </a>
-
             <a
               href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="icon-link"
             >
-              <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
+              <img src="/wealthyai/icons/x.png" style={{ width: 34 }} />
             </a>
-
             <a
               href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="icon-link"
             >
-              <img src="/wealthyai/icons/insta.png" alt="LinkedIn" style={{ width: 34 }} />
+              <img src="/wealthyai/icons/insta.png" style={{ width: 34 }} />
             </a>
           </div>
         </div>
 
-        {/* ANIMATIONS */}
         <style>{`
-          /* LOGÓ – HOVER FÉNY VISSZAÁLLÍTVA */
           .brand-logo {
             animation: logoBreathe 12s ease-in-out infinite;
             transition: filter 0.4s ease;
@@ -193,12 +188,11 @@ export default function Home() {
           }
 
           @keyframes logoBreathe {
-            0%   { transform: scale(1); opacity: 0.9; }
-            50%  { transform: scale(1.025); opacity: 1; }
+            0% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.025); opacity: 1; }
             100% { transform: scale(1); opacity: 0.9; }
           }
 
-          /* PULZÁLÓ SZÖVEG */
           .pulse-group span {
             animation: pulseSoft 3s ease-in-out infinite;
           }
@@ -207,12 +201,11 @@ export default function Home() {
           .pulse-group span:nth-child(3) { animation-delay: 2s; }
 
           @keyframes pulseSoft {
-            0%   { opacity: 0.6; }
-            50%  { opacity: 1; }
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
             100% { opacity: 0.6; }
           }
 
-          /* HOVER FÉNYEK */
           .start-btn,
           .nav-link,
           .icon-link {
