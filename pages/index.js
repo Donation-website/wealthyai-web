@@ -55,7 +55,7 @@ export default function Home() {
           <a href="/terms" className="nav-link">Terms</a>
         </div>
 
-        {/* CENTER BRAND & TEXT CONTAINER (Az egész blokk most fixen középen marad) */}
+        {/* CENTER BRAND & TEXT CONTAINER (Az egész blokk együtt mozog felfelé) */}
         <div
           style={{
             textAlign: "center",
@@ -64,6 +64,8 @@ export default function Home() {
             flexDirection: "column",
             alignItems: "center",
             width: "100%",
+            // Az egész tartalom feljebb tolva a középpontból (~2 cm)
+            transform: "translateY(-40px)", 
           }}
         >
           <img
@@ -77,13 +79,13 @@ export default function Home() {
             }}
           />
           
-          {/* SZÖVEG KONSTRUKCIÓ A KÉP STÍLUSÁBAN (Csak ez van pozicionálva) */}
+          {/* SZÖVEGEK (Szorosan a logó alatt) */}
           <div style={{ 
             color: "#FFFFFF", 
             lineHeight: "1.4",
             textAlign: "center",
             textShadow: "0 2px 10px rgba(0,0,0,0.5)",
-            // A szöveg tömb feljebb tolása a logóhoz képest
+            // Szorosan a logó alá pozícionálva
             marginTop: "-110px", 
             width: "100%",
             maxWidth: "800px",
@@ -110,7 +112,7 @@ export default function Home() {
               alignItems: "center",
               fontSize: "0.95rem",
               textTransform: "uppercase",
-              letterSpacing: "1.5px", // Kicsit kisebb szóköz a betűk között is
+              letterSpacing: "1.5px",
               opacity: 0.8,
               gap: "15px" // Szűkebb rés az elemek között
             }}>
