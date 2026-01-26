@@ -7,6 +7,7 @@ export default function Home() {
   useEffect(() => {
     document.body.style.margin = "0";
     document.body.style.overflow = "hidden";
+    document.body.style.boxSizing = "border-box";
   }, []);
 
   return (
@@ -17,52 +18,41 @@ export default function Home() {
           name="description"
           content="AI-powered financial thinking. Structured insights. Clear perspective."
         />
-
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={SITE_URL} />
-        <meta property="og:title" content="WealthyAI – AI-powered financial clarity" />
-        <meta
-          property="og:description"
-          content="Structured financial insights and AI-powered optimization."
-        />
-        <meta property="og:image" content={`${SITE_URL}/wealthyai/wealthyai.png`} />
-
-        <meta name="twitter:card" content="summary_large_image" />
       </Head>
 
       <main style={page}>
-        {/* BACKGROUND LAYERS */}
+        {/* BACKGROUND */}
         <div style={bgImage} />
         <div style={bgGlow} />
         <div style={bgGrid} />
 
-        {/* TOP NAV */}
+        {/* NAV */}
         <nav style={nav}>
           <a href="/how-it-works" style={navLink}>How it works</a>
           <a href="/how-to-use" style={navLink}>How to use</a>
           <a href="/terms" style={navLink}>Terms</a>
         </nav>
 
-        {/* CENTER CONTENT */}
+        {/* CENTER */}
         <div style={center}>
           <div style={logoWrap}>
             <h1 style={logo}>WealthyAI</h1>
           </div>
 
-          <p style={tagline} className="fade-text">
+          <p style={tagline}>
             AI-powered financial thinking.<br />
             Structured insights. Clear perspective.<br />
             <strong>You decide.</strong>
           </p>
 
-          <div style={microCopy} className="fade-text delay">
+          <div style={microCopy} className="pulse-text">
             <span>Not advice.</span>
             <span>Not predictions.</span>
             <span>Financial intelligence.</span>
           </div>
         </div>
 
-        {/* START BUTTON */}
+        {/* START */}
         <a href="/start" style={startButton} className="start-btn">
           Start
           <div style={startSub}>Begin with your current situation</div>
@@ -73,9 +63,29 @@ export default function Home() {
           <span>© 2026 WealthyAI — All rights reserved.</span>
 
           <div style={socials}>
-            <img src="/wealthyai/icons/fb.png" style={icon} />
-            <img src="/wealthyai/icons/x.png" style={icon} />
-            <img src="/wealthyai/icons/insta.png" style={icon} />
+            <a
+              href="https://www.facebook.com/sharer/sharer.php?u=https://wealthyai-web.vercel.app"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <img src="/wealthyai/icons/fb.png" style={icon} />
+            </a>
+
+            <a
+              href="https://twitter.com/intent/tweet?url=https://wealthyai-web.vercel.app"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <img src="/wealthyai/icons/x.png" style={icon} />
+            </a>
+
+            <a
+              href="https://www.instagram.com/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <img src="/wealthyai/icons/insta.png" style={icon} />
+            </a>
           </div>
         </footer>
       </main>
@@ -87,7 +97,7 @@ export default function Home() {
 
 const page = {
   position: "relative",
-  width: "100vw",
+  width: "100%",
   height: "100vh",
   overflow: "hidden",
   fontFamily: "Inter, system-ui, sans-serif",
@@ -170,7 +180,7 @@ const tagline = {
   marginTop: 16,
   fontSize: "1.05rem",
   lineHeight: 1.6,
-  opacity: 0,
+  opacity: 0.9,
 };
 
 const microCopy = {
@@ -178,7 +188,7 @@ const microCopy = {
   display: "flex",
   gap: 14,
   fontSize: "0.85rem",
-  opacity: 0,
+  opacity: 0.75,
 };
 
 /* START */
@@ -212,7 +222,7 @@ const footer = {
   bottom: 0,
   left: 0,
   width: "100%",
-  padding: "16px 24px",
+  padding: "14px 24px",
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
@@ -220,7 +230,6 @@ const footer = {
   backdropFilter: "blur(6px)",
   zIndex: 10,
   fontSize: "0.85rem",
-  opacity: 0.85,
 };
 
 const socials = {
@@ -229,10 +238,11 @@ const socials = {
 };
 
 const icon = {
-  width: 34,
+  width: 32,
+  cursor: "pointer",
 };
 
-/* ===== KEYFRAMES & SAFE EFFECTS ===== */
+/* ===== ANIMATIONS ===== */
 
 if (typeof document !== "undefined") {
   const style = document.createElement("style");
@@ -249,26 +259,22 @@ if (typeof document !== "undefined") {
       100% { opacity: 0.6; }
     }
 
-    .fade-text {
-      animation: fadeIn 1.4s ease forwards;
+    .pulse-text span {
+      animation: breathe 4.5s ease-in-out infinite;
     }
 
-    .fade-text.delay {
-      animation-delay: 0.6s;
+    .pulse-text span:nth-child(2) {
+      animation-delay: 1.5s;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 0.9; }
+    .pulse-text span:nth-child(3) {
+      animation-delay: 3s;
     }
 
-    .start-btn {
-      transition: box-shadow 0.3s ease, border-color 0.3s ease;
-    }
-
-    .start-btn:hover {
-      box-shadow: 0 8px 28px rgba(56,189,248,0.35);
-      border-color: rgba(255,255,255,0.7);
+    @keyframes breathe {
+      0% { opacity: 0.6; }
+      50% { opacity: 1; }
+      100% { opacity: 0.6; }
     }
   `;
   document.head.appendChild(style);
