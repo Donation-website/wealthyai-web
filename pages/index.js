@@ -54,6 +54,7 @@ export default function Home() {
           <a href="/terms" className="nav-link">Terms</a>
         </div>
 
+        {/* CENTER BRAND & TEXT CONTAINER */}
         <div
           style={{
             textAlign: "center",
@@ -86,29 +87,12 @@ export default function Home() {
             maxWidth: "800px",
             padding: "0 20px"
           }}>
-            
-            <div style={{ 
-              fontSize: "1.6rem", 
-              fontWeight: "300", 
-              opacity: 0.9,
-              marginBottom: "15px", 
-              lineHeight: "1.4"
-            }}>
+            <div style={{ fontSize: "1.6rem", fontWeight: "300", opacity: 0.9, marginBottom: "15px", lineHeight: "1.4" }}>
               AI-powered financial thinking.<br />
               Structured insights.<br />
               Clear perspective.
             </div>
-            
-            <div style={{ 
-              display: "flex", 
-              justifyContent: "center",
-              alignItems: "center",
-              fontSize: "0.95rem",
-              textTransform: "uppercase",
-              letterSpacing: "1.5px",
-              opacity: 0.8,
-              gap: "15px"
-            }}>
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", fontSize: "0.95rem", textTransform: "uppercase", letterSpacing: "1.5px", opacity: 0.8, gap: "15px" }}>
               <span className="discrete-pulse">Not advice.</span>
               <span className="discrete-pulse">Not predictions.</span>
               <span className="discrete-pulse">Financial intelligence.</span>
@@ -116,6 +100,7 @@ export default function Home() {
           </div>
         </div>
 
+        {/* START */}
         <a
           href="/start"
           className="start-btn"
@@ -138,7 +123,7 @@ export default function Home() {
           Start
         </a>
 
-        {/* BOTTOM BAR */}
+        {/* BOTTOM BAR - FIX LINKEK */}
         <div
           style={{
             position: "absolute",
@@ -160,7 +145,7 @@ export default function Home() {
 
           <div style={{ display: "flex", gap: "18px", alignItems: "center" }}>
             <a
-              href={`https://www.facebook.com{encodeURIComponent(SITE_URL)}`}
+              href="https://www.facebook.com"
               target="_blank"
               rel="noopener noreferrer"
               className="icon-link"
@@ -168,7 +153,7 @@ export default function Home() {
               <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
             </a>
             <a
-              href={`https://twitter.com{encodeURIComponent(SITE_URL)}`}
+              href="https://twitter.com"
               target="_blank"
               rel="noopener noreferrer"
               className="icon-link"
@@ -187,33 +172,20 @@ export default function Home() {
         </div>
 
         <style>{`
-          .brand-logo {
-            animation: logoFloat 9s ease-in-out infinite;
-            transition: filter 0.4s ease;
-          }
+          .brand-logo { animation: logoFloat 9s ease-in-out infinite; transition: filter 0.4s ease; }
           @keyframes logoFloat {
             0% { transform: scale(1) translateY(0); opacity: 0.92; }
             35% { transform: scale(1.035) translateY(-6px); opacity: 1; }
             70% { transform: scale(1.02) translateY(3px); opacity: 0.97; }
             100% { transform: scale(1) translateY(0); opacity: 0.92; }
           }
-          .discrete-pulse {
-            animation: discretePulse 3s ease-in-out infinite;
-          }
-          @keyframes discretePulse {
-            0% { opacity: 0.4; }
-            50% { opacity: 1; }
-            100% { opacity: 0.4; }
-          }
+          .discrete-pulse { animation: discretePulse 3s ease-in-out infinite; }
+          @keyframes discretePulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
           .start-btn:hover, .nav-link:hover, .icon-link:hover {
             box-shadow: 0 0 35px rgba(56,189,248,0.45);
             filter: drop-shadow(0 0 18px rgba(56,189,248,0.45));
           }
-          .nav-link {
-            color: white;
-            text-decoration: none;
-            opacity: 0.85;
-          }
+          .nav-link { color: white; text-decoration: none; opacity: 0.85; }
         `}</style>
       </main>
     </>
