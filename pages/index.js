@@ -3,6 +3,7 @@ import Head from "next/head";
 
 export default function Home() {
   const SITE_URL = "https://wealthyai-web.vercel.app";
+  const SHARE_TEXT = "AI-powered financial clarity with WealthyAI";
 
   return (
     <>
@@ -12,11 +13,32 @@ export default function Home() {
           name="description"
           content="AI-powered financial planning with structured insights and clear perspective."
         />
-        {/* Open Graph Meta adatok a képhez megosztáskor */}
-        <meta property="og:title" content="WealthyAI" />
-        <meta property="og:image" content="https://wealthyai-web.vercel.app" />
+
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={SITE_URL} />
+        <meta property="og:title" content="WealthyAI – AI-powered financial clarity" />
+        <meta
+          property="og:description"
+          content="Structured insights. Clear perspective. Financial intelligence."
+        />
+        <meta
+          property="og:image"
+          content="https://wealthyai-web.vercel.app/wealthyai/wealthyai.png"
+        />
+
+        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        
+        <meta name="twitter:title" content="WealthyAI – AI-powered financial clarity" />
+        <meta
+          name="twitter:description"
+          content="Structured insights. Clear perspective. Financial intelligence."
+        />
+        <meta
+          name="twitter:image"
+          content="https://wealthyai-web.vercel.app/wealthyai/wealthyai.png"
+        />
+
         <link href="https://fonts.googleapis.com" rel="stylesheet" />
       </Head>
 
@@ -152,7 +174,7 @@ export default function Home() {
           <div style={{ display: "flex", gap: "18px", alignItems: "center" }}>
             {/* FACEBOOK SHARE */}
             <a
-              href="https://www.facebook.com"
+              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="icon-link"
@@ -162,7 +184,7 @@ export default function Home() {
 
             {/* X (TWITTER) SHARE */}
             <a
-              href="https://twitter.com"
+              href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="icon-link"
