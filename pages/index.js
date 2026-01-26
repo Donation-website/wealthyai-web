@@ -80,7 +80,7 @@ export default function Home() {
               justifyContent: "center",
               gap: "26px",
               fontSize: "0.95rem",
-              opacity: 0.85,
+              opacity: 0.9,
             }}
           >
             <span>Not advice.</span>
@@ -112,7 +112,7 @@ export default function Home() {
           Start
         </a>
 
-        {/* BOTTOM BAR */}
+        {/* BOTTOM BAR – TELJESEN ÁTLÁTSZÓ */}
         <div
           style={{
             position: "absolute",
@@ -123,9 +123,7 @@ export default function Home() {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            background: "rgba(0,0,0,0.22)",   // ✅ áttetszőbb
-            backdropFilter: "blur(10px)",    // ✅ háttér átjön
-            WebkitBackdropFilter: "blur(10px)",
+            background: "transparent",   // ✅ TELJESEN ÁTLÁTSZÓ
             boxSizing: "border-box",
             zIndex: 4,
           }}
