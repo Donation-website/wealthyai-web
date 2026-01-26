@@ -167,7 +167,7 @@ export default function Home() {
           </div>
 
           <div style={{ display: "flex", gap: "18px", alignItems: "center" }}>
-             {/* JAVÍTOTT LINKEK */}
+            {/* FACEBOOK */}
             <a
               href={`https://www.facebook.com{encodeURIComponent(SITE_URL)}`}
               target="_blank"
@@ -176,6 +176,8 @@ export default function Home() {
             >
               <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
             </a>
+
+            {/* X (TWITTER) */}
             <a
               href={`https://twitter.com{encodeURIComponent(SITE_URL)}`}
               target="_blank"
@@ -184,8 +186,10 @@ export default function Home() {
             >
               <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
             </a>
+
+            {/* INSTAGRAM */}
             <a
-              href={`https://www.instagram.com`}
+              href="https://www.instagram.com"
               target="_blank"
               rel="noopener noreferrer"
               className="icon-link"
