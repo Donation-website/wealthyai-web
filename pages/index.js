@@ -12,6 +12,16 @@ export default function Home() {
           name="description"
           content="AI-powered financial planning with structured insights and clear perspective."
         />
+
+        {/* 🔒 GLOBÁLIS FIXEK */}
+        <style>{`
+          html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            overflow-x: hidden;
+          }
+        `}</style>
       </Head>
 
       <main
@@ -31,8 +41,6 @@ export default function Home() {
           fontFamily: "Arial, sans-serif",
           position: "relative",
           overflow: "hidden",
-          margin: 0,
-          padding: 0,
         }}
       >
         {/* TOP NAV */}
@@ -52,15 +60,16 @@ export default function Home() {
           <a href="/terms" className="nav-link">Terms</a>
         </div>
 
-        {/* HERO STACK – EZ AZ AKTÍV RÉTEG */}
+        {/* HERO STACK – EGYETLEN AKTÍV RÉTEG */}
         <div
           style={{
             zIndex: 5,
             textAlign: "center",
-            transform: "translateY(40px)",
+            marginTop: "40px",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
+            maxWidth: "100%",
           }}
         >
           {/* AKTÍV, ANIMÁLT LOGÓ */}
@@ -71,11 +80,12 @@ export default function Home() {
             style={{
               width: "860px",
               maxWidth: "95vw",
+              height: "auto",
               marginBottom: "28px",
             }}
           />
 
-          {/* FEHÉR LEÍRÓ SZÖVEG – KÖZVETLENÜL A LOGÓ ALATT */}
+          {/* 🔒 FEHÉR SZÖVEG – STATIKUS, NEM ANIMÁLT */}
           <div
             style={{
               color: "#ffffff",
@@ -91,7 +101,7 @@ export default function Home() {
             Clear perspective.
           </div>
 
-          {/* PULZÁLÓ FEHÉR MICRO-CLAIM – EZ IS A LOGÓ ALATT */}
+          {/* 🔒 CSAK EZEK PULZÁLNAK */}
           <div
             className="pulse-group"
             style={{
@@ -150,28 +160,13 @@ export default function Home() {
           </div>
 
           <div style={{ display: "flex", gap: "18px" }}>
-            <a
-              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="icon-link"
-            >
+            <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
               <img src="/wealthyai/icons/fb.png" style={{ width: 34 }} />
             </a>
-            <a
-              href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="icon-link"
-            >
+            <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
               <img src="/wealthyai/icons/x.png" style={{ width: 34 }} />
             </a>
-            <a
-              href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="icon-link"
-            >
+            <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
               <img src="/wealthyai/icons/insta.png" style={{ width: 34 }} />
             </a>
           </div>
