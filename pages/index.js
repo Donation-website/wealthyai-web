@@ -63,8 +63,8 @@ export default function Home() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            // Az egész blokk még feljebb tolva a középponthoz képest
-            transform: "translateY(-60px)", 
+            // Az egész blokk jelentősen feljebb tolva a középponthoz képest
+            transform: "translateY(-120px)", 
             width: "100%",
           }}
         >
@@ -97,7 +97,7 @@ export default function Home() {
               fontSize: "1.6rem", 
               fontWeight: "300", 
               opacity: 0.9,
-              marginBottom: "40px", // Csökkentett margó az alsó blokkhoz
+              marginBottom: "30px", // Csökkentett margó az alsó blokkhoz
               lineHeight: "1.4"
             }}>
               AI-powered financial thinking.<br />
@@ -108,16 +108,17 @@ export default function Home() {
             {/* Alsó, kisebb méretű, sorba rendezett blokk (mind pulzál, szűkebb sorköz) */}
             <div style={{ 
               display: "flex", 
-              justifyContent: "space-between", 
+              justifyContent: "center", // Középre igazítva
               alignItems: "center",
               fontSize: "0.95rem",
               textTransform: "uppercase",
               letterSpacing: "2px",
-              opacity: 0.8
+              opacity: 0.8,
+              gap: "20px" // Szűkebb rés az elemek között
             }}>
-              <span className="discrete-pulse" style={{ padding: "0 5px" }}>Not advice.</span>
-              <span className="discrete-pulse" style={{ padding: "0 5px" }}>Not predictions.</span>
-              <span className="discrete-pulse" style={{ padding: "0 5px" }}>Financial intelligence.</span>
+              <span className="discrete-pulse">Not advice.</span>
+              <span className="discrete-pulse">Not predictions.</span>
+              <span className="discrete-pulse">Financial intelligence.</span>
             </div>
           </div>
         </div>
