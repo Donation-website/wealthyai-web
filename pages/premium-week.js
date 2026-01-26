@@ -28,7 +28,6 @@ export default function PremiumWeek() {
   const [incomeType, setIncomeType] = useState("monthly");
   const [incomeValue, setIncomeValue] = useState(3000);
 
-  /* 🔹 NEW: region / country */
   const [country, setCountry] = useState("US");
 
   const [week, setWeek] = useState(
@@ -73,7 +72,7 @@ export default function PremiumWeek() {
     day: d,
   }));
 
-  /* ===== AI CALL ===== */
+  /* ===== AI CALL (FIXED) ===== */
 
   const runAI = async () => {
     setLoading(true);
@@ -82,8 +81,8 @@ export default function PremiumWeek() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          mode: "week",              // ✅ WEEK MODE
-          country,                   // ✅ REGION CONTEXT
+          mode: "week",          // ✅ EZ A LÉNYEG
+          country,               // ✅ RÉGIÓ
           weeklyIncome,
           weeklySpend,
           dailyTotals,
@@ -107,12 +106,11 @@ export default function PremiumWeek() {
         Weekly behavioral analysis with country-aware intelligence.
       </p>
 
-      {/* 🔹 NEW: COUNTRY SELECTOR */}
       <div style={regionRow}>
-        <label style={regionLabel}>Region:</label>
+        <span style={regionLabel}>Region</span>
         <select
           value={country}
-          onChange={e => setCountry(e.target.value)}
+          onChange={(e) => setCountry(e.target.value)}
           style={regionSelect}
         >
           <option value="US">United States</option>
@@ -224,7 +222,6 @@ const page = {
   padding: 40,
   fontFamily: "Inter, system-ui",
   backgroundColor: "#020617",
-
   backgroundImage: `
     repeating-linear-gradient(
       -25deg,
