@@ -17,8 +17,7 @@ export default function Home() {
             margin: 0;
             padding: 0;
             width: 100%;
-            height: 100%;
-            overflow: hidden;
+            overflow-x: hidden;
           }
           * {
             box-sizing: border-box;
@@ -31,29 +30,25 @@ export default function Home() {
           minHeight: "100vh",
           width: "100%",
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
-          position: "relative",
-          overflow: "hidden",
-          fontFamily: "Arial, sans-serif",
-          color: "white",
           backgroundImage:
             "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
+          fontFamily: "Arial, sans-serif",
+          color: "white",
         }}
       >
         {/* TOP NAV */}
         <nav
           style={{
-            position: "absolute",
-            top: 30,
-            right: 40,
+            alignSelf: "flex-end",
+            padding: "30px 40px 0",
             display: "flex",
             gap: 28,
             fontSize: "0.95rem",
-            zIndex: 10,
           }}
         >
           <a href="/how-it-works" className="nav-link">How it works</a>
@@ -61,31 +56,28 @@ export default function Home() {
           <a href="/terms" className="nav-link">Terms</a>
         </nav>
 
-        {/* HERO – EGYETLEN KÖZÉPSŐ BLOKK */}
+        {/* HERO – FLEX, DE NEM ABSOLUTE */}
         <section
           style={{
+            flex: 1,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
+            padding: "40px 20px",
             textAlign: "center",
-            zIndex: 5,
           }}
         >
-          {/* ANIMÁLT LOGÓ */}
           <img
             src="/wealthyai/icons/generated.png"
             alt="WealthyAI logo"
-            className="brand-logo"
             style={{
               width: "860px",
               maxWidth: "95vw",
-              height: "auto",
               marginBottom: "28px",
             }}
           />
 
-          {/* FEHÉR SZÖVEG */}
           <div
             style={{
               fontSize: "1.1rem",
@@ -100,7 +92,6 @@ export default function Home() {
             Clear perspective.
           </div>
 
-          {/* PULZÁLÓ SOR */}
           <div
             className="pulse-group"
             style={{
@@ -115,44 +106,36 @@ export default function Home() {
           </div>
         </section>
 
-        {/* START */}
-        <a
-          href="/start"
-          className="start-btn"
-          style={{
-            position: "absolute",
-            top: "45%",
-            left: "10%",
-            transform: "translateY(-50%)",
-            padding: "14px 40px",
-            backgroundColor: "#1a253a",
-            border: "1px solid rgba(255,255,255,0.4)",
-            borderRadius: "10px",
-            color: "white",
-            textDecoration: "none",
-            fontWeight: "bold",
-            fontSize: "1.2rem",
-            zIndex: 10,
-          }}
-        >
-          Start
-        </a>
+        {/* START – RELATÍV POZÍCIÓ */}
+        <div style={{ marginBottom: "20px" }}>
+          <a
+            href="/start"
+            className="start-btn"
+            style={{
+              padding: "14px 40px",
+              backgroundColor: "#1a253a",
+              border: "1px solid rgba(255,255,255,0.4)",
+              borderRadius: "10px",
+              color: "white",
+              textDecoration: "none",
+              fontWeight: "bold",
+              fontSize: "1.2rem",
+            }}
+          >
+            Start
+          </a>
+        </div>
 
-        {/* FOOTER – ÁTLÁTSZÓ */}
+        {/* FOOTER – MOST MÁR LÁTSZANI FOG */}
         <footer
           style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
             width: "100%",
             padding: "18px 24px",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            background: "transparent",
             fontSize: "0.85rem",
             opacity: 0.85,
-            zIndex: 10,
           }}
         >
           <span>© 2026 WealthyAI — All rights reserved.</span>
@@ -164,27 +147,10 @@ export default function Home() {
           </div>
         </footer>
 
-        {/* ANIMÁCIÓK */}
         <style>{`
-          .brand-logo {
-            animation: logoBreathe 12s ease-in-out infinite;
-            transition: filter 0.4s ease;
-          }
-
-          .brand-logo:hover {
-            filter: drop-shadow(0 0 30px rgba(56,189,248,0.6));
-          }
-
-          @keyframes logoBreathe {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-            100% { transform: scale(1); }
-          }
-
           .pulse-group span {
             animation: pulseSoft 3s ease-in-out infinite;
           }
-
           .pulse-group span:nth-child(2) { animation-delay: 1s; }
           .pulse-group span:nth-child(3) { animation-delay: 2s; }
 
