@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import {
   LineChart, Line,
-  AreaChart, Area,
   PieChart, Pie, Cell,
   ScatterChart, Scatter,
   XAxis, YAxis, Tooltip, Legend,
@@ -25,8 +24,8 @@ const COLORS = {
 export default function PremiumWeek() {
   const [incomeType, setIncomeType] = useState("monthly");
   const [incomeValue, setIncomeValue] = useState(3000);
-
   const [country, setCountry] = useState("US");
+
   const [aiOpen, setAiOpen] = useState(false);
   const [aiText, setAiText] = useState("");
   const [loading, setLoading] = useState(false);
@@ -108,10 +107,13 @@ export default function PremiumWeek() {
     <div style={page}>
       <a href="/help" style={helpButton}>Help</a>
 
-      <h1 style={title}>WEALTHYAI · WEEKLY INTELLIGENCE</h1>
-      <p style={subtitle}>
-        Weekly behavioral analysis with country-aware intelligence.
-      </p>
+      {/* HEADER */}
+      <div style={header}>
+        <h1 style={title}>WEALTHYAI · WEEKLY INTELLIGENCE</h1>
+        <p style={subtitle}>
+          Weekly behavioral analysis with country-aware intelligence.
+        </p>
+      </div>
 
       <div style={regionRow}>
         <span style={regionLabel}>Region</span>
@@ -209,6 +211,15 @@ export default function PremiumWeek() {
           )}
         </div>
       </div>
+
+      {/* FOOTER */}
+      <div style={footerRow}>
+        <span>© 2026 WealthyAI — All rights reserved.</span>
+        <span style={upsell}>
+          Weekly and Monthly plans unlock country-specific tax optimization,
+          stress testing and advanced projections.
+        </span>
+      </div>
     </div>
   );
 }
@@ -230,26 +241,15 @@ function Chart({ title, children }) {
 
 const page = {
   minHeight: "100vh",
-  position: "relative",
-  color: "#e5e7eb",
+  display: "flex",
+  flexDirection: "column",
   padding: 40,
   fontFamily: "Inter, system-ui",
   backgroundColor: "#020617",
+  color: "#e5e7eb",
   backgroundImage: `
-    repeating-linear-gradient(
-      -25deg,
-      rgba(56,189,248,0.07) 0px,
-      rgba(56,189,248,0.07) 1px,
-      transparent 1px,
-      transparent 160px
-    ),
-    repeating-linear-gradient(
-      35deg,
-      rgba(167,139,250,0.06) 0px,
-      rgba(167,139,250,0.06) 1px,
-      transparent 1px,
-      transparent 220px
-    ),
+    repeating-linear-gradient(-25deg, rgba(56,189,248,0.07) 0px, rgba(56,189,248,0.07) 1px, transparent 1px, transparent 160px),
+    repeating-linear-gradient(35deg, rgba(167,139,250,0.06) 0px, rgba(167,139,250,0.06) 1px, transparent 1px, transparent 220px),
     radial-gradient(circle at 20% 30%, rgba(56,189,248,0.22), transparent 40%),
     radial-gradient(circle at 80% 60%, rgba(167,139,250,0.22), transparent 45%),
     radial-gradient(circle at 45% 85%, rgba(34,211,238,0.18), transparent 40%),
@@ -257,8 +257,25 @@ const page = {
   `,
   backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
   backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
-  backgroundPosition: "center",
 };
+
+const header = {
+  textAlign: "center",
+  marginBottom: 20,
+};
+
+const title = { fontSize: "2.6rem", margin: 0 };
+const subtitle = { color: "#f8fafc", marginTop: 10 };
+
+const footerRow = {
+  marginTop: "auto",
+  display: "flex",
+  justifyContent: "space-between",
+  fontSize: 13,
+  color: "#f8fafc",
+};
+
+const upsell = { fontWeight: 500 };
 
 const helpButton = {
   position: "absolute",
@@ -271,11 +288,7 @@ const helpButton = {
   color: "#7dd3fc",
   border: "1px solid #1e293b",
   background: "rgba(2,6,23,0.6)",
-  backdropFilter: "blur(6px)",
 };
-
-const title = { fontSize: "2.6rem" };
-const subtitle = { color: "#94a3b8", marginBottom: 20 };
 
 const regionRow = { marginBottom: 20 };
 const regionLabel = { marginRight: 8, color: "#7dd3fc" };
