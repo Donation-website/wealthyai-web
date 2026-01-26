@@ -8,52 +8,30 @@ export default function Home() {
     <>
       <Head>
         <title>WealthyAI – AI-powered financial clarity</title>
-
         <meta
           name="description"
           content="AI-powered financial planning with structured insights and clear perspective."
         />
-
-        {/* Open Graph */}
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={SITE_URL} />
-        <meta property="og:title" content="WealthyAI – AI-powered financial clarity" />
-        <meta
-          property="og:description"
-          content="Structured financial insights and AI-powered optimization."
-        />
-        <meta property="og:image" content={`${SITE_URL}/wealthyai/wealthyai.png`} />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-
-        {/* Twitter / X */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="WealthyAI – AI-powered financial clarity" />
-        <meta
-          name="twitter:description"
-          content="Structured financial insights and AI-powered optimization."
-        />
-        <meta name="twitter:image" content={`${SITE_URL}/wealthyai/wealthyai.png`} />
       </Head>
 
       <main
         style={{
           height: "100vh",
-          width: "100%",              // 🔥 EZ A KULCS
-          boxSizing: "border-box",    // 🔥 BIZTOSÍTÁS
+          width: "100%",
+          boxSizing: "border-box",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           backgroundColor: "#060b13",
           backgroundImage:
             "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
-          backgroundSize: "contain",
+          backgroundSize: "cover",          // ✅ KITÖLTI AZ OLDALT
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
           color: "white",
           fontFamily: "Arial, sans-serif",
           position: "relative",
-          overflow: "hidden",         // 🔒 NINCS CSÚSZKA
+          overflow: "hidden",
           margin: 0,
           padding: 0,
         }}
@@ -83,15 +61,38 @@ export default function Home() {
 
         {/* CENTER */}
         <div style={{ textAlign: "center", zIndex: 2 }}>
-          <h1 style={{ fontSize: "3.6rem", fontWeight: "bold" }}>WealthyAI</h1>
-          <p style={{ maxWidth: "520px", margin: "0 auto", opacity: 0.9 }}>
-            AI-powered financial thinking. Structured insights. Clear perspective. You decide.
+          <h1 style={{ fontSize: "3.6rem", fontWeight: "bold", marginBottom: "18px" }}>
+            WealthyAI
+          </h1>
+
+          <p style={{ maxWidth: "520px", margin: "0 auto", opacity: 0.9, lineHeight: "1.6" }}>
+            AI-powered financial thinking.<br />
+            Structured insights.<br />
+            Clear perspective.<br />
+            <strong>You decide.</strong>
           </p>
+
+          <div
+            className="pulse-group"
+            style={{
+              marginTop: "28px",
+              display: "flex",
+              justifyContent: "center",
+              gap: "26px",
+              fontSize: "0.9rem",
+              opacity: 0.75,
+            }}
+          >
+            <span>Not advice.</span>
+            <span>Not predictions.</span>
+            <span>Financial intelligence.</span>
+          </div>
         </div>
 
         {/* START */}
         <a
           href="/start"
+          className="start-btn"
           style={{
             position: "absolute",
             top: "45%",
@@ -117,7 +118,7 @@ export default function Home() {
             position: "absolute",
             bottom: 0,
             left: 0,
-            width: "100%",             // 🔥 NEM 100vw
+            width: "100%",
             padding: "18px 24px",
             display: "flex",
             justifyContent: "space-between",
@@ -142,9 +143,7 @@ export default function Home() {
             </a>
 
             <a
-              href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(
-                SITE_URL
-              )}&text=AI-powered%20financial%20clarity%20with%20WealthyAI`}
+              href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}`}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -152,9 +151,7 @@ export default function Home() {
             </a>
 
             <a
-              href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-                SITE_URL
-              )}`}
+              href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -162,7 +159,36 @@ export default function Home() {
             </a>
           </div>
         </div>
+
+        {/* ANIMATIONS */}
+        <style>{`
+          .pulse-group span {
+            animation: pulseSoft 4.5s ease-in-out infinite;
+          }
+
+          .pulse-group span:nth-child(2) {
+            animation-delay: 1.5s;
+          }
+
+          .pulse-group span:nth-child(3) {
+            animation-delay: 3s;
+          }
+
+          @keyframes pulseSoft {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+          }
+
+          .start-btn {
+            transition: box-shadow 0.35s ease;
+          }
+
+          .start-btn:hover {
+            box-shadow: 0 0 40px rgba(56,189,248,0.45);
+          }
+        `}</style>
       </main>
     </>
   );
-}     
+}
