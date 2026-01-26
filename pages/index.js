@@ -167,13 +167,29 @@ export default function Home() {
           </div>
 
           <div style={{ display: "flex", gap: "18px", alignItems: "center" }}>
-            <a href={`https://www.facebook.com{encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
+             {/* JAVÍTOTT LINKEK: Használja a SITE_URL változót megfelelően */}
+            <a
+              href={`https://www.facebook.com{encodeURIComponent(SITE_URL)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="icon-link"
+            >
               <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
             </a>
-            <a href={`https://twitter.com{encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
+            <a
+              href={`https://twitter.com{encodeURIComponent(SITE_URL)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="icon-link"
+            >
               <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
             </a>
-            <a href={`https://www.linkedin.com{encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
+            <a
+              href={`https://www.linkedin.com{encodeURIComponent(SITE_URL)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="icon-link"
+            >
               <img src="/wealthyai/icons/insta.png" alt="LinkedIn" style={{ width: 34 }} />
             </a>
           </div>
