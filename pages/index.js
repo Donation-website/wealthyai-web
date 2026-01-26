@@ -31,7 +31,7 @@ export default function Home() {
           color: "white",
           fontFamily: "Arial, sans-serif",
           position: "relative",
-          overflow: "hidden", // 👉 CSAK A FŐOLDALRA VONATKOZIK
+          overflow: "hidden",
           margin: 0,
           padding: 0,
         }}
@@ -58,7 +58,7 @@ export default function Home() {
           style={{
             textAlign: "center",
             zIndex: 3,
-            transform: "translateY(40px)",
+            transform: "translateY(0px)", // ⬆️ LOGÓ FELJEBB ~1 CM
           }}
         >
           <img
