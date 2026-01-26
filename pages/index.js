@@ -12,14 +12,12 @@ export default function Home() {
           name="description"
           content="AI-powered financial planning with structured insights and clear perspective."
         />
-
-        {/* HARD FIX: NINCS OLDALCSÚSZÁS */}
         <style>{`
           html, body {
             margin: 0;
             padding: 0;
             width: 100%;
-            overflow-x: hidden !important;
+            overflow-x: hidden;
           }
           * {
             box-sizing: border-box;
@@ -29,10 +27,10 @@ export default function Home() {
 
       <main
         style={{
-          height: "100vh",
+          minHeight: "100vh",
           width: "100%",
-          overflowX: "hidden",
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
           backgroundColor: "#060b13",
@@ -54,7 +52,7 @@ export default function Home() {
             right: 40,
             display: "flex",
             gap: 28,
-            zIndex: 20,
+            zIndex: 10,
             fontSize: "0.95rem",
           }}
         >
@@ -63,38 +61,36 @@ export default function Home() {
           <a href="/terms" className="nav-link">Terms</a>
         </div>
 
-        {/* HERO – LOGÓ */}
+        {/* HERO – EZ MOST STABIL FLOW */}
         <div
           style={{
-            position: "relative",
-            zIndex: 10,
             textAlign: "center",
+            maxWidth: "100%",
+            paddingTop: "40px",
           }}
         >
+          {/* LOGÓ */}
           <img
             src="/wealthyai/icons/generated.png"
             alt="WealthyAI logo"
             className="brand-logo"
             style={{
               width: "860px",
-              maxWidth: "90vw",
+              maxWidth: "95vw",
               height: "auto",
+              marginBottom: "28px",
               display: "block",
-              margin: "0 auto 24px auto",
             }}
           />
 
-          {/* FEHÉR SZÖVEG – KÜLÖN RÉTEG, FIX */}
+          {/* FEHÉR SZÖVEG – HELYES POZÍCIÓ */}
           <div
             style={{
-              position: "relative",
-              zIndex: 30,
-              color: "#ffffff",
               fontSize: "1.1rem",
               lineHeight: "1.6",
               maxWidth: "620px",
-              margin: "0 auto 18px auto",
-              opacity: 1,
+              margin: "0 auto 22px auto",
+              opacity: 0.95,
             }}
           >
             AI-powered financial thinking.<br />
@@ -102,17 +98,14 @@ export default function Home() {
             Clear perspective.
           </div>
 
-          {/* PULZÁLÓ SOR – CSAK A SPAN MOZOG */}
+          {/* PULZÁLÓ SOR */}
           <div
             className="pulse-group"
             style={{
-              position: "relative",
-              zIndex: 30,
               display: "flex",
               justifyContent: "center",
               gap: "34px",
               fontSize: "1.05rem",
-              color: "#ffffff",
             }}
           >
             <span>Not advice.</span>
@@ -138,13 +131,13 @@ export default function Home() {
             textDecoration: "none",
             fontWeight: "bold",
             fontSize: "1.2rem",
-            zIndex: 20,
+            zIndex: 10,
           }}
         >
           Start
         </a>
 
-        {/* BOTTOM BAR */}
+        {/* FOOTER */}
         <div
           style={{
             position: "absolute",
@@ -156,7 +149,7 @@ export default function Home() {
             justifyContent: "space-between",
             alignItems: "center",
             background: "transparent",
-            zIndex: 20,
+            zIndex: 10,
           }}
         >
           <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
