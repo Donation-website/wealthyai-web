@@ -167,7 +167,7 @@ export default function Home() {
           </div>
 
           <div style={{ display: "flex", gap: "18px", alignItems: "center" }}>
-             {/* JAVÍTOTT LINKEK: Használja a SITE_URL változót megfelelően */}
+             {/* JAVÍTOTT LINKEK TEMPLATE LITERALS HASZNÁLATÁVAL */}
             <a
               href={`https://www.facebook.com{encodeURIComponent(SITE_URL)}`}
               target="_blank"
