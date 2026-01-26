@@ -30,11 +30,12 @@ export default async function handler(req, res) {
       "low";
 
     /* ================================
-       SYSTEM PROMPT SELECTION
+       PROMPTS
     ================================= */
 
     let systemPrompt = "";
     let userPrompt = "";
+    let upgradeHint = "";
 
     /* ===== DAY MODE ===== */
 
@@ -48,15 +49,14 @@ STRICT RULES:
 - This is NOT a strategy session.
 - This is NOT a long-term forecast.
 - Do NOT mention months or yearly outcomes.
-- Do NOT mention upgrades or plans.
 - Do NOT ask questions.
 
 GOAL:
-Give the user clarity about TODAY and a short-term (1 week max) direction.
+Give clarity about TODAY and a short-term (max 7-day) direction.
 
 OUTPUT LIMITS:
 - Max 3 short sections.
-- Concise, calm, reassuring tone.
+- Calm, reassuring, precise.
 
 STRUCTURE:
 1. Today's Financial State
@@ -68,6 +68,7 @@ STYLE:
 - Grounded
 - Non-judgmental
 `;
+
       userPrompt = `
 CONTEXT
 
@@ -78,9 +79,14 @@ Variable spending: ${variable}
 TASK
 
 Provide a DAILY financial pulse.
-If possible, include a conservative 7-day outlook.
+Include a conservative 7-day direction if reasonable.
+Focus only on immediately controllable factors.
 Avoid speculation.
-Focus only on what the user can control immediately.
+`;
+
+      upgradeHint = `
+This daily snapshot works best as a short-term signal.
+Weekly and Monthly views allow confirmation of patterns and forward-looking insight.
 `;
     }
 
@@ -105,7 +111,6 @@ DATA HANDLING:
 - Do NOT exaggerate or invent patterns.
 
 STRUCTURE (MANDATORY):
-
 1. Weekly Snapshot
 2. What This Means
 3. Behavior Signal
@@ -121,6 +126,7 @@ TIME HORIZON:
 - Weekly behavior
 - Max projection: 1 month
 `;
+
       userPrompt = `
 CONTEXT
 
@@ -136,6 +142,11 @@ TASK
 Generate a WEEKLY financial intelligence report.
 Provide concrete next-week actions.
 Include a 1-month outlook only if data quality allows.
+`;
+
+      upgradeHint = `
+For deeper, country-adjusted projections and longer-term pattern detection,
+the Monthly Intelligence tier expands this analysis beyond the weekly scope.
 `;
     }
 
@@ -168,9 +179,14 @@ Include a 1-month outlook only if data quality allows.
     }
 
     const json = await groqRes.json();
-    const text =
+    let text =
       json?.choices?.[0]?.message?.content ||
       "AI returned no usable output.";
+
+    // 🔑 DISCREET UPGRADE HINT (ONLY IF DATA IS GOOD)
+    if (dataQuality === "good" && upgradeHint) {
+      text += "\n\n" + upgradeHint.trim();
+    }
 
     return res.status(200).json({ insight: text.trim() });
 
