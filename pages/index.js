@@ -53,17 +53,15 @@ export default function Home() {
           <a href="/terms" className="nav-link">Terms</a>
         </div>
 
-        {/* CENTER BRAND & TEXT CONTAINER (ÚJ KONSTRUKCIÓ) */}
+        {/* CENTER BRAND & TEXT CONTAINER */}
         <div
           style={{
             textAlign: "center",
             zIndex: 3,
+            position: "relative", // Fontos az abszolút szöveghez
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
-            transform: "translateY(0px)",
-            width: "100%", // Biztosítja a teljes szélességet a középre igazításhoz
           }}
         >
           <img
@@ -73,20 +71,28 @@ export default function Home() {
             style={{
               width: "860px",
               maxWidth: "95vw",
+              display: "block"
             }}
           />
           
-          {/* BEILLESZTETT SZÖVEGEK, MÁR A LOGÓVAL EGY KERETBEN */}
-          <div style={{ marginTop: "20px", color: "white", lineHeight: "1.6" }}>
+          {/* A szövegek fixen a logó közepe alá rendezve */}
+          <div style={{ 
+            position: "absolute",
+            top: "75%", // A logó alsó harmadánál indul
+            width: "100%",
+            color: "white", 
+            lineHeight: "1.4",
+            textShadow: "0 2px 10px rgba(0,0,0,0.5)" 
+          }}>
             <div style={{ fontSize: "1.2rem", fontWeight: "300", letterSpacing: "1px" }}>
               AI-powered financial thinking.<br />
               Structured insights.
             </div>
-            <div className="discrete-pulse" style={{ fontSize: "1rem", marginTop: "10px", opacity: 0.8 }}>
+            <div className="discrete-pulse" style={{ fontSize: "1rem", marginTop: "8px", opacity: 0.8 }}>
               Clear perspective.<br />
               Not advice. Not predictions.
             </div>
-            <div style={{ fontSize: "1.1rem", marginTop: "10px", fontWeight: "bold", letterSpacing: "2px" }}>
+            <div style={{ fontSize: "1.1rem", marginTop: "8px", fontWeight: "bold", letterSpacing: "2px" }}>
               Financial intelligence.
             </div>
           </div>
@@ -165,7 +171,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ANIMATIONS & HOVERS – AZ ÚJ PULZÁLÓ ANIMÁCIÓ HOZZÁADVA */}
         <style>{`
           .brand-logo {
             animation: logoFloat 9s ease-in-out infinite;
@@ -184,13 +189,13 @@ export default function Home() {
           }
 
           .discrete-pulse {
-            animation: discretePulse 4s ease-in-out infinite;
+            animation: discretePulse 3s ease-in-out infinite;
           }
 
           @keyframes discretePulse {
-            0% { opacity: 0.5; }
-            50% { opacity: 0.9; }
-            100% { opacity: 0.5; }
+            0% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+            100% { opacity: 0.3; }
           }
 
           .start-btn,
