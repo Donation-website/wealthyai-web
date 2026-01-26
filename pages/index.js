@@ -55,16 +55,17 @@ export default function Home() {
           <a href="/terms" className="nav-link">Terms</a>
         </div>
 
-        {/* CENTER BRAND & TEXT CONTAINER */}
+        {/* CENTER BRAND & TEXT CONTAINER (Új elrendezés a kép alapján) */}
         <div
           style={{
             textAlign: "center",
             zIndex: 3,
-            position: "relative",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            marginTop: "-20px" // Minimális korrekció az egész blokknak
+            // Állítsuk az egész blokkot egy kicsit feljebb a középponthoz képest
+            transform: "translateY(-15px)", 
+            width: "100%",
           }}
         >
           <img
@@ -78,31 +79,45 @@ export default function Home() {
             }}
           />
           
-          {/* SZÖVEG KONSTRUKCIÓ - FELJEBB TOLVA */}
+          {/* SZÖVEG KONSTRUKCIÓ A KÉP STÍLUSÁBAN */}
           <div style={{ 
-            position: "absolute",
-            top: "65%", // Feljebb hozva 75%-ról
-            width: "100%",
             color: "#FFFFFF", 
-            lineHeight: "1.8",
+            lineHeight: "1.6",
             textAlign: "center",
-            textTransform: "uppercase", // Elegánsabb, szögletesebb hatás
-            letterSpacing: "2px"
+            textShadow: "0 2px 10px rgba(0,0,0,0.5)",
+            // A szöveg tömb feljebb tolása a logóhoz képest
+            marginTop: "-140px", 
+            width: "100%",
+            maxWidth: "800px",
+            padding: "0 20px"
           }}>
-            <div style={{ fontSize: "1.1rem", fontWeight: "300", opacity: 0.9 }}>
+            
+            {/* Felső, nagy méretű blokk */}
+            <div style={{ 
+              fontSize: "1.6rem", 
+              fontWeight: "300", 
+              opacity: 0.9,
+              marginBottom: "80px", // Hely a logó és az alsó szöveg között
+              lineHeight: "1.4"
+            }}>
               AI-powered financial thinking.<br />
-              Structured insights.
+              Structured insights.<br />
+              Clear perspective.
             </div>
             
-            <div style={{ fontSize: "0.95rem", marginTop: "12px" }}>
-              <span style={{ opacity: 0.9 }}>Clear perspective.</span><br />
-              <span className="discrete-pulse" style={{ fontWeight: "400" }}>
-                Not advice. Not predictions.
-              </span>
-            </div>
-
-            <div style={{ fontSize: "1.2rem", marginTop: "12px", fontWeight: "700", letterSpacing: "4px" }}>
-              Financial intelligence.
+            {/* Alsó, kisebb méretű, sorba rendezett blokk */}
+            <div style={{ 
+              display: "flex", 
+              justifyContent: "space-between", 
+              alignItems: "center",
+              fontSize: "0.95rem",
+              textTransform: "uppercase",
+              letterSpacing: "2px",
+              opacity: 0.8
+            }}>
+              <span className="discrete-pulse">Not advice.</span>
+              <span className="discrete-pulse">Not predictions.</span>
+              <span>Financial intelligence.</span> {/* Ez nem pulzál */}
             </div>
           </div>
         </div>
@@ -181,9 +196,9 @@ export default function Home() {
           }
 
           @keyframes discretePulse {
-            0% { opacity: 0.2; }
+            0% { opacity: 0.4; }
             50% { opacity: 1; }
-            100% { opacity: 0.2; }
+            100% { opacity: 0.4; }
           }
 
           .start-btn:hover, .nav-link:hover, .icon-link:hover {
