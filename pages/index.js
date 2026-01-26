@@ -44,42 +44,51 @@ export default function Home() {
             right: "40px",
             display: "flex",
             gap: "28px",
-            zIndex: 5,
+            zIndex: 6,
             fontSize: "0.95rem",
           }}
         >
-          <a href="/how-it-works" style={{ color: "white", textDecoration: "none", opacity: 0.85 }}>
-            How it works
-          </a>
-          <a href="/how-to-use" style={{ color: "white", textDecoration: "none", opacity: 0.85 }}>
-            How to use
-          </a>
-          <a href="/terms" style={{ color: "white", textDecoration: "none", opacity: 0.85 }}>
-            Terms
-          </a>
+          <a href="/how-it-works" className="nav-link">How it works</a>
+          <a href="/how-to-use" className="nav-link">How to use</a>
+          <a href="/terms" className="nav-link">Terms</a>
         </div>
 
         {/* CENTER BRAND */}
-        <div style={{ textAlign: "center", zIndex: 2 }}>
+        <div
+          style={{
+            textAlign: "center",
+            zIndex: 3,
+            transform: "translateY(40px)", // 🔥 LOGÓ LEJJEBB, DE NEM KÖZÉPRE
+          }}
+        >
           <img
             src="/wealthyai/icons/generated.png"
             alt="WealthyAI logo"
             className="brand-logo"
             style={{
-              width: "860px",          // 🔥 KÉTSZERES MÉRET (HERO)
-              maxWidth: "95vw",        // mobilon se lógjon ki
-              marginBottom: "40px",
+              width: "860px",
+              maxWidth: "95vw",
+              marginBottom: "36px",
             }}
           />
 
-          <p style={{ maxWidth: "600px", margin: "0 auto", opacity: 0.9, lineHeight: "1.6" }}>
+          {/* FEHÉR SZÖVEGEK – VISSZA */}
+          <p
+            style={{
+              maxWidth: "600px",
+              margin: "0 auto",
+              opacity: 0.95,
+              lineHeight: "1.6",
+              fontSize: "1rem",
+            }}
+          >
             AI-powered financial thinking.<br />
             Structured insights.<br />
-            Clear perspective.
-            <br />
+            Clear perspective.<br />
             <strong>You decide.</strong>
           </p>
 
+          {/* PULZÁLÓ SOR */}
           <div
             className="pulse-group"
             style={{
@@ -114,7 +123,7 @@ export default function Home() {
             textDecoration: "none",
             fontWeight: "bold",
             fontSize: "1.2rem",
-            zIndex: 3,
+            zIndex: 4,
           }}
         >
           Start
@@ -133,7 +142,7 @@ export default function Home() {
             alignItems: "center",
             background: "transparent",
             boxSizing: "border-box",
-            zIndex: 4,
+            zIndex: 5,
           }}
         >
           <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
@@ -145,6 +154,7 @@ export default function Home() {
               href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`}
               target="_blank"
               rel="noopener noreferrer"
+              className="icon-link"
             >
               <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
             </a>
@@ -153,6 +163,7 @@ export default function Home() {
               href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}`}
               target="_blank"
               rel="noopener noreferrer"
+              className="icon-link"
             >
               <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
             </a>
@@ -161,14 +172,16 @@ export default function Home() {
               href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`}
               target="_blank"
               rel="noopener noreferrer"
+              className="icon-link"
             >
               <img src="/wealthyai/icons/insta.png" alt="LinkedIn" style={{ width: 34 }} />
             </a>
           </div>
         </div>
 
-        {/* ANIMATIONS */}
+        {/* ANIMATIONS & HOVERS */}
         <style>{`
+          /* LOGO */
           .brand-logo {
             animation: logoBreathe 12s ease-in-out infinite;
             transition: filter 0.4s ease;
@@ -184,30 +197,38 @@ export default function Home() {
             100% { transform: scale(1); opacity: 0.9; }
           }
 
+          /* PULSE TEXT */
           .pulse-group span {
             animation: pulseSoft 3s ease-in-out infinite;
           }
 
-          .pulse-group span:nth-child(2) {
-            animation-delay: 1s;
-          }
-
-          .pulse-group span:nth-child(3) {
-            animation-delay: 2s;
-          }
+          .pulse-group span:nth-child(2) { animation-delay: 1s; }
+          .pulse-group span:nth-child(3) { animation-delay: 2s; }
 
           @keyframes pulseSoft {
-            0%   { opacity: 0.55; }
+            0%   { opacity: 0.6; }
             50%  { opacity: 1; }
-            100% { opacity: 0.55; }
+            100% { opacity: 0.6; }
           }
 
-          .start-btn {
-            transition: box-shadow 0.35s ease;
+          /* START + NAV + ICON GLOW */
+          .start-btn,
+          .nav-link,
+          .icon-link {
+            transition: box-shadow 0.35s ease, filter 0.35s ease;
           }
 
-          .start-btn:hover {
-            box-shadow: 0 0 40px rgba(56,189,248,0.45);
+          .start-btn:hover,
+          .nav-link:hover,
+          .icon-link:hover {
+            box-shadow: 0 0 35px rgba(56,189,248,0.45);
+            filter: drop-shadow(0 0 18px rgba(56,189,248,0.45));
+          }
+
+          .nav-link {
+            color: white;
+            text-decoration: none;
+            opacity: 0.85;
           }
         `}</style>
       </main>
