@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   LineChart, Line,
   AreaChart, Area,
@@ -22,13 +22,24 @@ const COLORS = {
   other: "#facc15",
 };
 
-/* ===== MAIN ===== */
-
 export default function PremiumWeek() {
   const [incomeType, setIncomeType] = useState("monthly");
   const [incomeValue, setIncomeValue] = useState(3000);
 
   const [country, setCountry] = useState("US");
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiText, setAiText] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const lang = navigator.language || "";
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+
+    if (lang.startsWith("hu") || tz.includes("Budapest")) setCountry("HU");
+    else if (lang.startsWith("en-GB")) setCountry("UK");
+    else if (lang.startsWith("en")) setCountry("US");
+    else setCountry("EU");
+  }, []);
 
   const [week, setWeek] = useState(
     DAYS.reduce((acc, d) => {
@@ -36,9 +47,6 @@ export default function PremiumWeek() {
       return acc;
     }, {})
   );
-
-  const [aiText, setAiText] = useState("");
-  const [loading, setLoading] = useState(false);
 
   const weeklyIncome =
     incomeType === "daily" ? incomeValue * 7 :
@@ -72,17 +80,16 @@ export default function PremiumWeek() {
     day: d,
   }));
 
-  /* ===== AI CALL (FIXED) ===== */
-
   const runAI = async () => {
     setLoading(true);
+    setAiOpen(true);
     try {
       const res = await fetch("/api/get-ai-insight", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          mode: "week",          // ✅ EZ A LÉNYEG
-          country,               // ✅ RÉGIÓ
+          mode: "week",
+          country,
           weeklyIncome,
           weeklySpend,
           dailyTotals,
@@ -117,7 +124,6 @@ export default function PremiumWeek() {
           <option value="EU">European Union</option>
           <option value="UK">United Kingdom</option>
           <option value="HU">Hungary</option>
-          <option value="OTHER">Other</option>
         </select>
       </div>
 
@@ -188,12 +194,19 @@ export default function PremiumWeek() {
             Income: <strong>${weeklyIncome.toFixed(0)}</strong>
           </div>
 
-          <div style={aiBox}>
-            <button onClick={runAI} style={aiButton}>
-              {loading ? "Analyzing…" : "Run Weekly AI Analysis"}
-            </button>
-            <pre style={aiTextStyle}>{aiText}</pre>
-          </div>
+          <button onClick={runAI} style={aiButton}>
+            {loading ? "Analyzing…" : "Run Weekly AI Analysis"}
+          </button>
+
+          {aiOpen && (
+            <div style={aiBox}>
+              <div style={aiHeader}>
+                <strong>Weekly AI Insight</strong>
+                <button onClick={() => setAiOpen(false)} style={closeBtn}>✕</button>
+              </div>
+              <pre style={aiTextStyle}>{aiText}</pre>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -304,6 +317,9 @@ const chartTitle = { fontSize: 12, color: "#7dd3fc", marginBottom: 6 };
 const summary = { gridColumn: "1 / -1", textAlign: "right", marginTop: 10 };
 
 const aiBox = { ...glass, padding: 16, gridColumn: "1 / -1" };
+const aiHeader = { display: "flex", justifyContent: "space-between", marginBottom: 10 };
+const closeBtn = { background: "transparent", border: "none", color: "#94a3b8", cursor: "pointer" };
+
 const aiButton = {
   width: "100%",
   padding: 14,
@@ -312,4 +328,5 @@ const aiButton = {
   borderRadius: 10,
   fontWeight: "bold",
 };
+
 const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap" };
