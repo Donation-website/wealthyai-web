@@ -33,16 +33,15 @@ export default function Home() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "#060b13",
+          position: "relative",
+          overflow: "hidden",
+          fontFamily: "Arial, sans-serif",
+          color: "white",
           backgroundImage:
-            "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/hat.png')",
+            "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
-          fontFamily: "Arial, sans-serif",
-          color: "white",
-          position: "relative",
-          overflow: "hidden",
         }}
       >
         {/* TOP NAV */}
@@ -62,7 +61,7 @@ export default function Home() {
           <a href="/terms" className="nav-link">Terms</a>
         </nav>
 
-        {/* HERO – EGYETLEN STABIL KÖZÉP */}
+        {/* HERO – EGYETLEN KÖZÉPSŐ BLOKK */}
         <section
           style={{
             display: "flex",
@@ -70,7 +69,6 @@ export default function Home() {
             alignItems: "center",
             justifyContent: "center",
             textAlign: "center",
-            maxWidth: "100%",
             zIndex: 5,
           }}
         >
@@ -87,7 +85,7 @@ export default function Home() {
             }}
           />
 
-          {/* FEHÉR SZÖVEG – LOGÓ ALATT */}
+          {/* FEHÉR SZÖVEG */}
           <div
             style={{
               fontSize: "1.1rem",
@@ -102,7 +100,7 @@ export default function Home() {
             Clear perspective.
           </div>
 
-          {/* PULZÁLÓ MICRO-CLAIM */}
+          {/* PULZÁLÓ SOR */}
           <div
             className="pulse-group"
             style={{
@@ -117,7 +115,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* START GOMB */}
+        {/* START */}
         <a
           href="/start"
           className="start-btn"
@@ -140,7 +138,7 @@ export default function Home() {
           Start
         </a>
 
-        {/* ALSÓ SÁV – TELJESEN ÁTLÁTSZÓ */}
+        {/* FOOTER – ÁTLÁTSZÓ */}
         <footer
           style={{
             position: "absolute",
@@ -160,15 +158,9 @@ export default function Home() {
           <span>© 2026 WealthyAI — All rights reserved.</span>
 
           <div style={{ display: "flex", gap: "18px" }}>
-            <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer">
-              <img src="/wealthyai/icons/fb.png" style={{ width: 34 }} />
-            </a>
-            <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer">
-              <img src="/wealthyai/icons/x.png" style={{ width: 34 }} />
-            </a>
-            <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer">
-              <img src="/wealthyai/icons/insta.png" style={{ width: 34 }} />
-            </a>
+            <img src="/wealthyai/icons/fb.png" style={{ width: 34 }} />
+            <img src="/wealthyai/icons/x.png" style={{ width: 34 }} />
+            <img src="/wealthyai/icons/insta.png" style={{ width: 34 }} />
           </div>
         </footer>
 
@@ -202,15 +194,9 @@ export default function Home() {
             100% { opacity: 0.6; }
           }
 
-          .start-btn,
-          .nav-link {
-            transition: box-shadow 0.35s ease, filter 0.35s ease;
-          }
-
           .start-btn:hover,
           .nav-link:hover {
-            box-shadow: 0 0 35px rgba(56,189,248,0.45);
-            filter: drop-shadow(0 0 18px rgba(56,189,248,0.45));
+            box-shadow: 0 0 30px rgba(56,189,248,0.5);
           }
 
           .nav-link {
