@@ -190,20 +190,8 @@ const page = {
   backgroundColor: "#020617",
   paddingBottom: "90px",
   backgroundImage: `
-    repeating-linear-gradient(
-      -25deg,
-      rgba(56,189,248,0.06) 0px,
-      rgba(56,189,248,0.06) 1px,
-      transparent 1px,
-      transparent 180px
-    ),
-    repeating-linear-gradient(
-      35deg,
-      rgba(167,139,250,0.05) 0px,
-      rgba(167,139,250,0.05) 1px,
-      transparent 1px,
-      transparent 260px
-    ),
+    repeating-linear-gradient(-25deg, rgba(56,189,248,0.06) 0px, rgba(56,189,248,0.06) 1px, transparent 1px, transparent 180px),
+    repeating-linear-gradient(35deg, rgba(167,139,250,0.05) 0px, rgba(167,139,250,0.05) 1px, transparent 1px, transparent 260px),
     radial-gradient(circle at 20% 30%, rgba(56,189,248,0.18), transparent 45%),
     radial-gradient(circle at 80% 60%, rgba(167,139,250,0.18), transparent 50%),
     radial-gradient(circle at 45% 85%, rgba(34,211,238,0.14), transparent 45%),
@@ -215,6 +203,22 @@ const page = {
 };
 
 const contentWrap = { padding: "40px" };
+
+/* 🔧 EZ A LÉNYEG */
+const header = {
+  marginBottom: "30px",
+  textAlign: "center",
+};
+
+const title = { fontSize: "2.6rem", margin: 0 };
+
+const subtitle = {
+  color: "#f8fafc",
+  marginTop: "10px",
+  maxWidth: "700px",
+  marginLeft: "auto",
+  marginRight: "auto",
+};
 
 const helpButton = {
   position: "absolute",
@@ -228,14 +232,6 @@ const helpButton = {
   border: "1px solid #1e293b",
   background: "rgba(2,6,23,0.6)",
   backdropFilter: "blur(6px)",
-};
-
-const header = { marginBottom: "30px" };
-const title = { fontSize: "2.6rem", margin: 0 };
-const subtitle = {
-  color: "#f8fafc",
-  marginTop: "10px",
-  maxWidth: "700px",
 };
 
 const layout = {
