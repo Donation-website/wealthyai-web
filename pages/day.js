@@ -17,8 +17,10 @@ export default function DayPremium() {
     fixed: 2000,
     variable: 1500,
   });
+
   const [aiText, setAiText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("userFinancials");
@@ -39,6 +41,7 @@ export default function DayPremium() {
 
   const askAI = async () => {
     setLoading(true);
+    setAiOpen(true);
     try {
       const res = await fetch("/api/get-ai-insight", {
         method: "POST",
@@ -76,12 +79,19 @@ export default function DayPremium() {
             value={`$${Math.round(fiveYearProjection).toLocaleString()}`}
           />
 
-          <div style={aiBox}>
-            <button onClick={askAI} style={aiButton}>
-              {loading ? "ANALYZING…" : "GENERATE AI STRATEGY"}
-            </button>
-            <pre style={aiTextStyle}>{aiText}</pre>
-          </div>
+          <button onClick={askAI} style={aiButton}>
+            {loading ? "ANALYZING…" : "GENERATE AI STRATEGY"}
+          </button>
+
+          {aiOpen && (
+            <div style={aiBox}>
+              <div style={aiHeader}>
+                <strong>AI Insight</strong>
+                <button onClick={() => setAiOpen(false)} style={closeBtn}>✕</button>
+              </div>
+              <pre style={aiTextStyle}>{aiText}</pre>
+            </div>
+          )}
         </div>
 
         <div>
@@ -208,11 +218,24 @@ const metricLabel = { color: "#7dd3fc", fontSize: "0.8rem" };
 const metricValue = { fontSize: "2.2rem", fontWeight: "bold" };
 
 const aiBox = {
-  marginTop: "30px",
+  marginTop: "20px",
   background: "#020617",
   border: "1px solid #1e293b",
   borderRadius: "12px",
-  padding: "20px",
+  padding: "16px",
+};
+
+const aiHeader = {
+  display: "flex",
+  justifyContent: "space-between",
+  marginBottom: 10,
+};
+
+const closeBtn = {
+  background: "transparent",
+  border: "none",
+  color: "#94a3b8",
+  cursor: "pointer",
 };
 
 const aiButton = {
@@ -226,7 +249,7 @@ const aiButton = {
 };
 
 const aiTextStyle = {
-  marginTop: "12px",
+  marginTop: "10px",
   whiteSpace: "pre-wrap",
   color: "#cbd5f5",
 };
