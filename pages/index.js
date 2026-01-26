@@ -12,7 +12,6 @@ export default function Home() {
           name="description"
           content="AI-powered financial planning with structured insights and clear perspective."
         />
-        {/* Modern szögletes betűtípus importálása */}
         <link href="https://fonts.googleapis.com" rel="stylesheet" />
       </Head>
 
@@ -55,7 +54,6 @@ export default function Home() {
           <a href="/terms" className="nav-link">Terms</a>
         </div>
 
-        {/* CENTER BRAND & TEXT CONTAINER (Az egész blokk együtt mozog felfelé) */}
         <div
           style={{
             textAlign: "center",
@@ -64,7 +62,6 @@ export default function Home() {
             flexDirection: "column",
             alignItems: "center",
             width: "100%",
-            // Az egész tartalom feljebb tolva a középpontból (~2 cm)
             transform: "translateY(-40px)", 
           }}
         >
@@ -79,25 +76,22 @@ export default function Home() {
             }}
           />
           
-          {/* SZÖVEGEK (Szorosan a logó alatt) */}
           <div style={{ 
             color: "#FFFFFF", 
             lineHeight: "1.4",
             textAlign: "center",
             textShadow: "0 2px 10px rgba(0,0,0,0.5)",
-            // Szorosan a logó alá pozícionálva
             marginTop: "-110px", 
             width: "100%",
             maxWidth: "800px",
             padding: "0 20px"
           }}>
             
-            {/* Felső, nagy méretű blokk */}
             <div style={{ 
               fontSize: "1.6rem", 
               fontWeight: "300", 
               opacity: 0.9,
-              marginBottom: "15px", // Még közelebb hozva az alsó blokkhoz
+              marginBottom: "15px", 
               lineHeight: "1.4"
             }}>
               AI-powered financial thinking.<br />
@@ -105,7 +99,6 @@ export default function Home() {
               Clear perspective.
             </div>
             
-            {/* Alsó, kisebb méretű, sorba rendezett blokk (mind pulzál, szűkebb sorköz) */}
             <div style={{ 
               display: "flex", 
               justifyContent: "center",
@@ -114,7 +107,7 @@ export default function Home() {
               textTransform: "uppercase",
               letterSpacing: "1.5px",
               opacity: 0.8,
-              gap: "15px" // Szűkebb rés az elemek között
+              gap: "15px"
             }}>
               <span className="discrete-pulse">Not advice.</span>
               <span className="discrete-pulse">Not predictions.</span>
@@ -123,7 +116,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* START */}
         <a
           href="/start"
           className="start-btn"
@@ -167,7 +159,6 @@ export default function Home() {
           </div>
 
           <div style={{ display: "flex", gap: "18px", alignItems: "center" }}>
-            {/* FACEBOOK */}
             <a
               href={`https://www.facebook.com{encodeURIComponent(SITE_URL)}`}
               target="_blank"
@@ -176,8 +167,6 @@ export default function Home() {
             >
               <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
             </a>
-
-            {/* X (TWITTER) */}
             <a
               href={`https://twitter.com{encodeURIComponent(SITE_URL)}`}
               target="_blank"
@@ -186,8 +175,6 @@ export default function Home() {
             >
               <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
             </a>
-
-            {/* INSTAGRAM */}
             <a
               href="https://www.instagram.com"
               target="_blank"
@@ -204,29 +191,24 @@ export default function Home() {
             animation: logoFloat 9s ease-in-out infinite;
             transition: filter 0.4s ease;
           }
-
           @keyframes logoFloat {
             0% { transform: scale(1) translateY(0); opacity: 0.92; }
             35% { transform: scale(1.035) translateY(-6px); opacity: 1; }
             70% { transform: scale(1.02) translateY(3px); opacity: 0.97; }
             100% { transform: scale(1) translateY(0); opacity: 0.92; }
           }
-
           .discrete-pulse {
             animation: discretePulse 3s ease-in-out infinite;
           }
-
           @keyframes discretePulse {
             0% { opacity: 0.4; }
             50% { opacity: 1; }
             100% { opacity: 0.4; }
           }
-
           .start-btn:hover, .nav-link:hover, .icon-link:hover {
             box-shadow: 0 0 35px rgba(56,189,248,0.45);
             filter: drop-shadow(0 0 18px rgba(56,189,248,0.45));
           }
-
           .nav-link {
             color: white;
             text-decoration: none;
