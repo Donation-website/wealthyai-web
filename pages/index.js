@@ -58,7 +58,7 @@ export default function Home() {
           style={{
             textAlign: "center",
             zIndex: 3,
-            transform: "translateY(40px)", // 🔥 LOGÓ LEJJEBB, DE NEM KÖZÉPRE
+            transform: "translateY(40px)",
           }}
         >
           <img
@@ -68,42 +68,8 @@ export default function Home() {
             style={{
               width: "860px",
               maxWidth: "95vw",
-              marginBottom: "36px",
             }}
           />
-
-          {/* FEHÉR SZÖVEGEK – VISSZA */}
-          <p
-            style={{
-              maxWidth: "600px",
-              margin: "0 auto",
-              opacity: 0.95,
-              lineHeight: "1.6",
-              fontSize: "1rem",
-            }}
-          >
-            AI-powered financial thinking.<br />
-            Structured insights.<br />
-            Clear perspective.<br />
-            <strong>You decide.</strong>
-          </p>
-
-          {/* PULZÁLÓ SOR */}
-          <div
-            className="pulse-group"
-            style={{
-              marginTop: "34px",
-              display: "flex",
-              justifyContent: "center",
-              gap: "36px",
-              fontSize: "1.05rem",
-              opacity: 0.9,
-            }}
-          >
-            <span>Not advice.</span>
-            <span>Not predictions.</span>
-            <span>Financial intelligence.</span>
-          </div>
         </div>
 
         {/* START */}
@@ -129,7 +95,7 @@ export default function Home() {
           Start
         </a>
 
-        {/* BOTTOM BAR – TELJESEN ÁTLÁTSZÓ */}
+        {/* BOTTOM BAR */}
         <div
           style={{
             position: "absolute",
@@ -181,34 +147,33 @@ export default function Home() {
 
         {/* ANIMATIONS & HOVERS */}
         <style>{`
-          /* LOGO */
+          /* LOGO – INTENZÍVEBB, DE FINOM */
           .brand-logo {
-            animation: logoBreathe 12s ease-in-out infinite;
+            animation: logoFloat 9s ease-in-out infinite;
             transition: filter 0.4s ease;
           }
 
           .brand-logo:hover {
-            filter: drop-shadow(0 0 30px rgba(56,189,248,0.6));
+            filter: drop-shadow(0 0 36px rgba(56,189,248,0.7));
           }
 
-          @keyframes logoBreathe {
-            0%   { transform: scale(1); opacity: 0.9; }
-            50%  { transform: scale(1.025); opacity: 1; }
-            100% { transform: scale(1); opacity: 0.9; }
-          }
-
-          /* PULSE TEXT */
-          .pulse-group span {
-            animation: pulseSoft 3s ease-in-out infinite;
-          }
-
-          .pulse-group span:nth-child(2) { animation-delay: 1s; }
-          .pulse-group span:nth-child(3) { animation-delay: 2s; }
-
-          @keyframes pulseSoft {
-            0%   { opacity: 0.6; }
-            50%  { opacity: 1; }
-            100% { opacity: 0.6; }
+          @keyframes logoFloat {
+            0% {
+              transform: scale(1) translateY(0);
+              opacity: 0.92;
+            }
+            35% {
+              transform: scale(1.035) translateY(-6px);
+              opacity: 1;
+            }
+            70% {
+              transform: scale(1.02) translateY(3px);
+              opacity: 0.97;
+            }
+            100% {
+              transform: scale(1) translateY(0);
+              opacity: 0.92;
+            }
           }
 
           /* START + NAV + ICON GLOW */
