@@ -2,38 +2,28 @@ import React, { useEffect } from "react";
 import Head from "next/head";
 
 export default function Home() {
-  const SITE_URL = "https://wealthyai-web.vercel.app";
-
   useEffect(() => {
     document.body.style.margin = "0";
-    document.body.style.overflow = "hidden";
-    document.body.style.boxSizing = "border-box";
+    document.body.style.overflowX = "hidden";
   }, []);
 
   return (
     <>
       <Head>
         <title>WealthyAI – AI-powered financial clarity</title>
-        <meta
-          name="description"
-          content="AI-powered financial thinking. Structured insights. Clear perspective."
-        />
       </Head>
 
       <main style={page}>
-        {/* BACKGROUND */}
         <div style={bgImage} />
         <div style={bgGlow} />
         <div style={bgGrid} />
 
-        {/* NAV */}
         <nav style={nav}>
           <a href="/how-it-works" style={navLink}>How it works</a>
           <a href="/how-to-use" style={navLink}>How to use</a>
           <a href="/terms" style={navLink}>Terms</a>
         </nav>
 
-        {/* CENTER */}
         <div style={center}>
           <div style={logoWrap}>
             <h1 style={logo}>WealthyAI</h1>
@@ -45,45 +35,29 @@ export default function Home() {
             <strong>You decide.</strong>
           </p>
 
-          <div style={microCopy} className="pulse-text">
+          <div style={microCopy}>
             <span>Not advice.</span>
             <span>Not predictions.</span>
             <span>Financial intelligence.</span>
           </div>
         </div>
 
-        {/* START */}
         <a href="/start" style={startButton} className="start-btn">
           Start
           <div style={startSub}>Begin with your current situation</div>
         </a>
 
-        {/* FOOTER */}
         <footer style={footer}>
           <span>© 2026 WealthyAI — All rights reserved.</span>
 
           <div style={socials}>
-            <a
-              href="https://www.facebook.com/sharer/sharer.php?u=https://wealthyai-web.vercel.app"
-              target="_blank"
-              rel="noreferrer"
-            >
+            <a href="https://www.facebook.com/sharer/sharer.php?u=https://wealthyai-web.vercel.app" target="_blank" rel="noreferrer">
               <img src="/wealthyai/icons/fb.png" style={icon} />
             </a>
-
-            <a
-              href="https://twitter.com/intent/tweet?url=https://wealthyai-web.vercel.app"
-              target="_blank"
-              rel="noreferrer"
-            >
+            <a href="https://twitter.com/intent/tweet?url=https://wealthyai-web.vercel.app" target="_blank" rel="noreferrer">
               <img src="/wealthyai/icons/x.png" style={icon} />
             </a>
-
-            <a
-              href="https://www.instagram.com/"
-              target="_blank"
-              rel="noreferrer"
-            >
+            <a href="https://www.instagram.com/" target="_blank" rel="noreferrer">
               <img src="/wealthyai/icons/insta.png" style={icon} />
             </a>
           </div>
@@ -98,13 +72,12 @@ export default function Home() {
 const page = {
   position: "relative",
   width: "100%",
+  maxWidth: "100vw",
   height: "100vh",
   overflow: "hidden",
   fontFamily: "Inter, system-ui, sans-serif",
   color: "white",
 };
-
-/* BACKGROUND */
 
 const bgImage = {
   position: "absolute",
@@ -135,8 +108,6 @@ const bgGrid = {
   zIndex: 3,
 };
 
-/* NAV */
-
 const nav = {
   position: "absolute",
   top: 30,
@@ -152,8 +123,6 @@ const navLink = {
   opacity: 0.75,
   fontSize: "0.95rem",
 };
-
-/* CENTER */
 
 const center = {
   position: "relative",
@@ -191,8 +160,6 @@ const microCopy = {
   opacity: 0.75,
 };
 
-/* START */
-
 const startButton = {
   position: "absolute",
   left: "8%",
@@ -214,8 +181,6 @@ const startSub = {
   marginTop: 6,
   opacity: 0.75,
 };
-
-/* FOOTER */
 
 const footer = {
   position: "absolute",
@@ -242,8 +207,6 @@ const icon = {
   cursor: "pointer",
 };
 
-/* ===== ANIMATIONS ===== */
-
 if (typeof document !== "undefined") {
   const style = document.createElement("style");
   style.innerHTML = `
@@ -254,24 +217,6 @@ if (typeof document !== "undefined") {
     }
 
     @keyframes pulse {
-      0% { opacity: 0.6; }
-      50% { opacity: 1; }
-      100% { opacity: 0.6; }
-    }
-
-    .pulse-text span {
-      animation: breathe 4.5s ease-in-out infinite;
-    }
-
-    .pulse-text span:nth-child(2) {
-      animation-delay: 1.5s;
-    }
-
-    .pulse-text span:nth-child(3) {
-      animation-delay: 3s;
-    }
-
-    @keyframes breathe {
       0% { opacity: 0.6; }
       50% { opacity: 1; }
       100% { opacity: 0.6; }
