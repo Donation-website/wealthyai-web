@@ -63,62 +63,72 @@ export default function DayPremium() {
 
   return (
     <div style={page}>
-      <div style={header}>
-        <h1 style={title}>WEALTHYAI · PRO INTELLIGENCE</h1>
-        <p style={subtitle}>
-          Thank you for choosing the <strong>1-Day Professional Access</strong>.
-        </p>
-      </div>
+      {/* HELP BUTTON */}
+      <a href="/day/help" style={helpButton}>Help</a>
 
-      <div style={layout}>
-        <div>
-          <Metric label="MONTHLY SURPLUS" value={`$${surplus.toLocaleString()}`} />
-          <Metric label="SAVINGS RATE" value={`${savingsRate.toFixed(1)}%`} />
-          <Metric
-            label="5Y PROJECTION"
-            value={`$${Math.round(fiveYearProjection).toLocaleString()}`}
-          />
+      <div style={contentWrap}>
+        <div style={header}>
+          <h1 style={title}>WEALTHYAI · PRO INTELLIGENCE</h1>
+          <p style={subtitle}>
+            Thank you for choosing the <strong>1-Day Professional Access</strong>.
+          </p>
+        </div>
 
-          <button onClick={askAI} style={aiButton}>
-            {loading ? "ANALYZING…" : "GENERATE AI STRATEGY"}
-          </button>
+        <div style={layout}>
+          <div>
+            <Metric label="MONTHLY SURPLUS" value={`$${surplus.toLocaleString()}`} />
+            <Metric label="SAVINGS RATE" value={`${savingsRate.toFixed(1)}%`} />
+            <Metric
+              label="5Y PROJECTION"
+              value={`$${Math.round(fiveYearProjection).toLocaleString()}`}
+            />
 
-          {aiOpen && (
-            <div style={aiBox}>
-              <div style={aiHeader}>
-                <strong>AI Insight</strong>
-                <button onClick={() => setAiOpen(false)} style={closeBtn}>✕</button>
+            <button onClick={askAI} style={aiButton}>
+              {loading ? "ANALYZING…" : "GENERATE AI STRATEGY"}
+            </button>
+
+            {aiOpen && (
+              <div style={aiBox}>
+                <div style={aiHeader}>
+                  <strong>AI Insight</strong>
+                  <button onClick={() => setAiOpen(false)} style={closeBtn}>✕</button>
+                </div>
+                <pre style={aiTextStyle}>{aiText}</pre>
               </div>
-              <pre style={aiTextStyle}>{aiText}</pre>
+            )}
+          </div>
+
+          <div>
+            <div style={inputPanel}>
+              {["income", "fixed", "variable"].map((k) => (
+                <div key={k} style={inputRow}>
+                  <span>{k.toUpperCase()}</span>
+                  <input
+                    type="number"
+                    value={data[k]}
+                    onChange={(e) =>
+                      setData({ ...data, [k]: Number(e.target.value) })
+                    }
+                    style={input}
+                  />
+                </div>
+              ))}
             </div>
-          )}
-        </div>
 
-        <div>
-          <div style={inputPanel}>
-            {["income", "fixed", "variable"].map((k) => (
-              <div key={k} style={inputRow}>
-                <span>{k.toUpperCase()}</span>
-                <input
-                  type="number"
-                  value={data[k]}
-                  onChange={(e) =>
-                    setData({ ...data, [k]: Number(e.target.value) })
-                  }
-                  style={input}
-                />
-              </div>
-            ))}
-          </div>
-
-          <div style={chartGrid}>
-            <MiniChart title="Cash Flow Projection" data={chartData} />
-            <MiniBar title="Expense Distribution" value={data.fixed + data.variable} />
+            <div style={chartGrid}>
+              <MiniChart title="Cash Flow Projection" data={chartData} />
+              <MiniBar title="Expense Distribution" value={data.fixed + data.variable} />
+            </div>
           </div>
         </div>
       </div>
 
-      <div style={upsell}>
+      {/* FIXED FOOTER ELEMENTS */}
+      <div style={footerLeft}>
+        © 2026 WealthyAI — All rights reserved.
+      </div>
+
+      <div style={upsellFixed}>
         Weekly and Monthly plans unlock country-specific tax optimization,
         stress testing and advanced projections.
       </div>
@@ -174,10 +184,11 @@ function MiniBar({ title, value }) {
 
 const page = {
   minHeight: "100vh",
+  position: "relative",
   color: "#e5e7eb",
-  padding: "40px",
   fontFamily: "Inter, system-ui, sans-serif",
   backgroundColor: "#020617",
+  paddingBottom: "90px",
   backgroundImage: `
     repeating-linear-gradient(
       -25deg,
@@ -203,9 +214,29 @@ const page = {
   backgroundPosition: "center",
 };
 
+const contentWrap = { padding: "40px" };
+
+const helpButton = {
+  position: "absolute",
+  top: 24,
+  right: 24,
+  padding: "8px 14px",
+  borderRadius: 10,
+  fontSize: 13,
+  textDecoration: "none",
+  color: "#7dd3fc",
+  border: "1px solid #1e293b",
+  background: "rgba(2,6,23,0.6)",
+  backdropFilter: "blur(6px)",
+};
+
 const header = { marginBottom: "30px" };
 const title = { fontSize: "2.6rem", margin: 0 };
-const subtitle = { color: "#94a3b8", marginTop: "10px", maxWidth: "700px" };
+const subtitle = {
+  color: "#f8fafc",
+  marginTop: "10px",
+  maxWidth: "700px",
+};
 
 const layout = {
   display: "grid",
@@ -294,9 +325,20 @@ const chartTitle = {
   marginBottom: "6px",
 };
 
-const upsell = {
-  marginTop: "20px",
+const upsellFixed = {
+  position: "fixed",
+  bottom: 16,
+  left: 0,
+  width: "100%",
   textAlign: "center",
   color: "#f8fafc",
-  fontWeight: 500,
+  fontSize: 14,
+};
+
+const footerLeft = {
+  position: "fixed",
+  bottom: 16,
+  left: 20,
+  fontSize: 12,
+  color: "#94a3b8",
 };
