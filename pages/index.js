@@ -56,9 +56,9 @@ export default function Home() {
         {/* CENTER BRAND */}
         <div
           style={{
-            position: "relative",
             textAlign: "center",
             zIndex: 3,
+            transform: "translateY(0px)",
           }}
         >
           <img
@@ -70,34 +70,18 @@ export default function Home() {
               maxWidth: "95vw",
             }}
           />
-
-          {/* OVERLAY TEXT – RÉTEGEZVE */}
-          <div
-            style={{
-              position: "absolute",
-              top: "100%",
-              left: "50%",
-              transform: "translateX(-50%)",
-              marginTop: "-12px",
-              lineHeight: 1.55,
-              fontSize: "1.05rem",
-              letterSpacing: "0.02em",
-              opacity: 0.95,
-              whiteSpace: "nowrap",
-            }}
-          >
-            <div>AI-powered financial thinking.</div>
-            <div>Structured insights.</div>
-
-            <div className="pulse-soft" style={{ marginTop: "6px" }}>
-              Clear perspective.
+          
+          {/* ADDED TEXT SECTION */}
+          <div style={{ marginTop: "20px", color: "white", lineHeight: "1.6" }}>
+            <div style={{ fontSize: "1.2rem", fontWeight: "300", letterSpacing: "1px" }}>
+              AI-powered financial thinking.<br />
+              Structured insights.
             </div>
-
-            <div className="pulse-soft">
+            <div className="discrete-pulse" style={{ fontSize: "1rem", marginTop: "10px", opacity: 0.8 }}>
+              Clear perspective.<br />
               Not advice. Not predictions.
             </div>
-
-            <div style={{ marginTop: "6px" }}>
+            <div style={{ fontSize: "1.1rem", marginTop: "10px", fontWeight: "bold", letterSpacing: "2px" }}>
               Financial intelligence.
             </div>
           </div>
@@ -137,6 +121,8 @@ export default function Home() {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
+            background: "transparent",
+            boxSizing: "border-box",
             zIndex: 5,
           }}
         >
@@ -144,23 +130,45 @@ export default function Home() {
             © 2026 WealthyAI — All rights reserved.
           </div>
 
-          <div style={{ display: "flex", gap: "18px" }}>
-            <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`} className="icon-link">
+          <div style={{ display: "flex", gap: "18px", alignItems: "center" }}>
+            <a
+              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="icon-link"
+            >
               <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
             </a>
-            <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}`} className="icon-link">
+
+            <a
+              href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="icon-link"
+            >
               <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
             </a>
-            <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`} className="icon-link">
+
+            <a
+              href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="icon-link"
+            >
               <img src="/wealthyai/icons/insta.png" alt="LinkedIn" style={{ width: 34 }} />
             </a>
           </div>
         </div>
 
-        {/* ANIMATIONS – LOGÓ ÉRINTETLEN */}
+        {/* ANIMATIONS & HOVERS */}
         <style>{`
           .brand-logo {
             animation: logoFloat 9s ease-in-out infinite;
+            transition: filter 0.4s ease;
+          }
+
+          .brand-logo:hover {
+            filter: drop-shadow(0 0 36px rgba(56,189,248,0.7));
           }
 
           @keyframes logoFloat {
@@ -170,14 +178,27 @@ export default function Home() {
             100% { transform: scale(1) translateY(0); opacity: 0.92; }
           }
 
-          .pulse-soft {
-            animation: pulseSoft 5.5s ease-in-out infinite;
+          .discrete-pulse {
+            animation: discretePulse 4s ease-in-out infinite;
           }
 
-          @keyframes pulseSoft {
-            0% { opacity: 0.7; }
-            50% { opacity: 1; }
-            100% { opacity: 0.7; }
+          @keyframes discretePulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 0.9; }
+            100% { opacity: 0.5; }
+          }
+
+          .start-btn,
+          .nav-link,
+          .icon-link {
+            transition: box-shadow 0.35s ease, filter 0.35s ease;
+          }
+
+          .start-btn:hover,
+          .nav-link:hover,
+          .icon-link:hover {
+            box-shadow: 0 0 35px rgba(56,189,248,0.45);
+            filter: drop-shadow(0 0 18px rgba(56,189,248,0.45));
           }
 
           .nav-link {
