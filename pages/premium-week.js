@@ -212,13 +212,15 @@ export default function PremiumWeek() {
         </div>
       </div>
 
-      {/* FOOTER */}
-      <div style={footerRow}>
-        <span>© 2026 WealthyAI — All rights reserved.</span>
-        <span style={upsell}>
-          Weekly and Monthly plans unlock country-specific tax optimization,
-          stress testing and advanced projections.
-        </span>
+      {/* UPSell – bottom center */}
+      <div style={upsellRow}>
+        Monthly plans unlock country-specific tax optimization,
+        stress testing and advanced projections.
+      </div>
+
+      {/* COPYRIGHT – bottom left */}
+      <div style={copyright}>
+        © 2026 WealthyAI — All rights reserved.
       </div>
     </div>
   );
@@ -241,8 +243,7 @@ function Chart({ title, children }) {
 
 const page = {
   minHeight: "100vh",
-  display: "flex",
-  flexDirection: "column",
+  position: "relative",
   padding: 40,
   fontFamily: "Inter, system-ui",
   backgroundColor: "#020617",
@@ -267,15 +268,23 @@ const header = {
 const title = { fontSize: "2.6rem", margin: 0 };
 const subtitle = { color: "#f8fafc", marginTop: 10 };
 
-const footerRow = {
-  marginTop: "auto",
-  display: "flex",
-  justifyContent: "space-between",
+const upsellRow = {
+  position: "absolute",
+  bottom: 20,
+  left: "50%",
+  transform: "translateX(-50%)",
   fontSize: 13,
   color: "#f8fafc",
+  fontWeight: 500,
 };
 
-const upsell = { fontWeight: 500 };
+const copyright = {
+  position: "absolute",
+  bottom: 20,
+  left: 40,
+  fontSize: 13,
+  color: "#cbd5f5",
+};
 
 const helpButton = {
   position: "absolute",
