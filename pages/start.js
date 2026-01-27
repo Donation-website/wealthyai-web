@@ -35,32 +35,32 @@ export default function UserDashboard() {
       ? "Medium Risk"
       : "Low Risk";
 
-  /* ===== INSIGHTS ===== */
+  /* ===== INSIGHTS (BASIC) ===== */
 
   const insights = [];
 
   if (balance < 0) {
     insights.push(
-      "🚨 Your expenses exceed your income. Immediate action is required."
+      "🚨 Your expenses exceed your income. This snapshot signals pressure, not stability."
     );
     insights.push(
-      "Premium AI provides crisis strategies and recovery roadmaps."
+      "Advanced AI plans help identify recovery paths and stress points."
     );
   }
 
   if (data.subscriptions > data.income * 0.08) {
     insights.push(
-      "Subscriptions appear high. Reviewing unused services may free up cash."
+      "Subscriptions are relatively high. This often hides unnoticed monthly leakage."
     );
   }
 
   if (savingsRate >= 20) {
     insights.push(
-      "✅ You are saving at a healthy rate. This supports long-term stability."
+      "You are saving at a healthy rate. This supports short-term stability."
     );
   } else if (balance >= 0) {
     insights.push(
-      "⚠️ Savings rate is below 20%. Minor adjustments could improve resilience."
+      "Savings are positive, but below the resilience threshold."
     );
   }
 
@@ -129,9 +129,12 @@ export default function UserDashboard() {
       }}
     >
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        <h1 style={{ marginBottom: "30px" }}>
+        <h1 style={{ marginBottom: "10px" }}>
           Your Financial Overview (Basic)
         </h1>
+        <p style={{ opacity: 0.75, marginBottom: "30px" }}>
+          This page shows a snapshot — not patterns, not direction.
+        </p>
 
         {/* GRID */}
         <div
@@ -210,17 +213,25 @@ export default function UserDashboard() {
               ))}
             </ul>
 
-            <p style={{ opacity: 0.65, marginTop: "18px" }}>
-              🔒 Advanced AI strategies are available in paid plans below.
-            </p>
+            <div style={{ marginTop: "20px", opacity: 0.75 }}>
+              <strong>What this view does not show:</strong>
+              <ul>
+                <li>Weekly behavioral patterns</li>
+                <li>Country-specific financial context</li>
+                <li>Short-term future pressure or momentum</li>
+              </ul>
+            </div>
           </div>
         </div>
 
         {/* PRICING */}
         <div style={{ marginTop: "60px" }}>
-          <h2 style={{ textAlign: "center", marginBottom: "30px" }}>
-            Unlock Advanced AI Optimization
+          <h2 style={{ textAlign: "center", marginBottom: "12px" }}>
+            Go deeper when you’re ready
           </h2>
+          <p style={{ textAlign: "center", opacity: 0.7, marginBottom: "30px" }}>
+            Most users start with one day. Longer access reveals behavior and direction.
+          </p>
 
           <div
             style={{
@@ -236,8 +247,8 @@ export default function UserDashboard() {
                 handleCheckout("price_1SscYJDyLtejYlZiyDvhdaIx")
               }
             >
-              <h3>1 Day Pass</h3>
-              <small>Professional AI strategy</small>
+              <h3>1 Day · $9</h3>
+              <small>Clarity snapshot + AI strategy</small>
             </div>
 
             <div
@@ -246,8 +257,8 @@ export default function UserDashboard() {
                 handleCheckout("price_1SscaYDyLtejYlZiDjSeF5Wm")
               }
             >
-              <h3>1 Week Pass</h3>
-              <small>Behavior & country analysis</small>
+              <h3>1 Week · $19</h3>
+              <small>Behavior & country-aware analysis</small>
             </div>
 
             <div
@@ -256,8 +267,8 @@ export default function UserDashboard() {
                 handleCheckout("price_1SscbeDyLtejYlZixJcT3B4o")
               }
             >
-              <h3>1 Month Pass</h3>
-              <small>Full AI wealth engine</small>
+              <h3>1 Month · $39</h3>
+              <small>Direction, projections & exportable insights</small>
             </div>
           </div>
         </div>
