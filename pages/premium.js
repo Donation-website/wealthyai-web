@@ -11,10 +11,10 @@ import {
 
 export default function PremiumRouter() {
   const router = useRouter();
-  const [verifying, setVerifying] = useState(true);
+  const [verifying, setVerifying] = useState(false);
 
-  // 🔹 demo / free snapshot data (B oldalhoz)
-  const snapshotData = [
+  // simple snapshot data (free B view)
+  const data = [
     { name: "Income", value: 5000 },
     { name: "Expenses", value: 3500 },
     { name: "Surplus", value: 1500 },
@@ -24,126 +24,90 @@ export default function PremiumRouter() {
     if (!router.isReady) return;
 
     const { session_id } = router.query;
-    if (!session_id) {
-      setVerifying(false);
-      return;
-    }
+    if (!session_id) return;
+
+    setVerifying(true);
 
     const verify = async () => {
       try {
-        const res = await fetch(
-          `/api/verify-session?session_id=${session_id}`
-        );
-        const data = await res.json();
+        const res = await fetch(`/api/verify-session?session_id=${session_id}`);
+        const d = await res.json();
 
-        if (!data.valid || !data.tier) {
-          setVerifying(false);
-          return;
-        }
+        if (!d.valid || !d.tier) return;
 
         localStorage.setItem(
           "premiumAccess",
           JSON.stringify({
-            tier: data.tier,
-            expiresAt: Date.now() + data.duration,
+            tier: d.tier,
+            expiresAt: Date.now() + d.duration,
           })
         );
 
-        if (data.tier === "day") router.replace("/day");
-        if (data.tier === "week") router.replace("/premium-week");
-        if (data.tier === "month") router.replace("/premium-month");
-      } catch {
-        setVerifying(false);
-      }
+        if (d.tier === "day") router.replace("/day");
+        if (d.tier === "week") router.replace("/premium-week");
+        if (d.tier === "month") router.replace("/premium-month");
+      } catch {}
     };
 
     verify();
   }, [router]);
 
-  // 🔹 AMÍG VERIFIKÁL → a régi viselkedés
   if (verifying) {
-    return (
-      <div style={verifyScreen}>
-        Verifying subscription…
-      </div>
-    );
+    return <div style={verify}>Verifying subscription…</div>;
   }
 
-  // 🔹 B OLDAL – FREE / ORIENTATION VIEW
   return (
     <div style={page}>
-      <div style={header}>
-        <h1 style={title}>WEALTHYAI · ORIENTATION</h1>
-        <p style={subtitle}>
-          This is not advice.  
-          This is a snapshot.
-        </p>
-      </div>
+      <h1 style={title}>Financial clarity starts with a snapshot</h1>
 
-      {/* SNAPSHOT VISUAL */}
-      <div style={chartBox}>
-        <div style={chartTitle}>Financial snapshot</div>
+      {/* GRAPH */}
+      <div style={card}>
+        <div style={cardTitle}>Your financial snapshot</div>
         <ResponsiveContainer width="100%" height={160}>
-          <LineChart data={snapshotData}>
+          <LineChart data={data}>
             <XAxis dataKey="name" />
             <YAxis />
             <Tooltip />
-            <Line
-              type="monotone"
-              dataKey="value"
-              stroke="#38bdf8"
-              strokeWidth={3}
-            />
+            <Line dataKey="value" stroke="#38bdf8" strokeWidth={3} />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
-      {/* INTERPRETATION LAYER */}
-      <div style={insightBox}>
+      {/* INTERPRETATION */}
+      <div style={text}>
+        <p>This shows where you are right now.</p>
         <p>
-          This snapshot shows where you are right now.  
-          It does not show where this leads.
+          You’re not overspending — but surplus alone doesn’t mean progress.
         </p>
-
         <p>
-          You’re not overspending —  
-          but surplus alone doesn’t mean progress.
-        </p>
-
-        <p>
-          Numbers explain <strong>what</strong>.  
-          Patterns explain <strong>why</strong>.
+          Numbers explain <strong>what</strong>. Patterns explain{" "}
+          <strong>why</strong>.
         </p>
       </div>
 
-      {/* ACCESS LEVEL EXPLANATION */}
-      <div style={accessBox}>
-        <h3>What you’re seeing now</h3>
-        <p>
-          Orientation access shows context — not analysis.  
-          Enough to understand what exists.  
-          Not enough to see direction.
-        </p>
-      </div>
-
-      {/* UPGRADE PATH */}
-      <div style={upgradeBox}>
-        <p>
-          One day adds clarity.  
-          One week reveals behavior.  
-        </p>
-        <p>
-          Longer access turns patterns into direction —  
-          inside your own financial system.
-        </p>
-
-        <a href="/start" style={cta}>
+      {/* PRIMARY CTA */}
+      <div style={primary}>
+        <a href="/start?plan=day" style={primaryBtn}>
           Start with 1-Day Clarity
         </a>
+        <div style={hint}>
+          Most users begin here to understand what’s really happening.
+        </div>
+      </div>
 
-        <div style={finePrint}>
-          Weekly and monthly access unlock deeper,
-          region-aware intelligence.
+      {/* SECONDARY OPTIONS */}
+      <div style={secondary}>
+        <div style={secondaryTitle}>
+          Already know what you’re looking for?
+        </div>
+
+        <div style={buttonRow}>
+          <a href="/start?plan=week" style={secondaryBtn}>
+            1-Week Behavior Analysis
+          </a>
+          <a href="/start?plan=month" style={secondaryBtn}>
+            Monthly Direction & Strategy
+          </a>
         </div>
       </div>
     </div>
@@ -152,87 +116,94 @@ export default function PremiumRouter() {
 
 /* ===== STYLES ===== */
 
-const verifyScreen = {
+const verify = {
   minHeight: "100vh",
   background: "#020617",
   color: "#94a3b8",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  fontFamily: "Inter, system-ui, sans-serif",
+  fontFamily: "Inter, system-ui",
 };
 
 const page = {
   minHeight: "100vh",
   background: "#020617",
   color: "#e5e7eb",
-  fontFamily: "Inter, system-ui, sans-serif",
+  fontFamily: "Inter, system-ui",
   padding: 40,
-};
-
-const header = {
-  textAlign: "center",
-  marginBottom: 30,
 };
 
 const title = {
   fontSize: "2.4rem",
-  margin: 0,
+  textAlign: "center",
+  marginBottom: 30,
 };
 
-const subtitle = {
-  marginTop: 10,
-  color: "#94a3b8",
-};
-
-const chartBox = {
-  background: "#020617",
+const card = {
   border: "1px solid #1e293b",
   borderRadius: 14,
   padding: 16,
   marginBottom: 30,
 };
 
-const chartTitle = {
+const cardTitle = {
   fontSize: 13,
   color: "#7dd3fc",
   marginBottom: 8,
 };
 
-const insightBox = {
+const text = {
   maxWidth: 600,
-  margin: "0 auto 30px",
-  color: "#cbd5f5",
+  margin: "0 auto 40px",
   lineHeight: 1.6,
+  color: "#cbd5f5",
 };
 
-const accessBox = {
-  maxWidth: 600,
-  margin: "0 auto 30px",
-  padding: 16,
-  border: "1px solid #1e293b",
-  borderRadius: 14,
-};
-
-const upgradeBox = {
-  maxWidth: 600,
-  margin: "0 auto",
+const primary = {
   textAlign: "center",
+  marginBottom: 50,
 };
 
-const cta = {
+const primaryBtn = {
   display: "inline-block",
-  marginTop: 16,
-  padding: "14px 26px",
+  padding: "14px 28px",
   background: "#38bdf8",
   color: "#020617",
-  fontWeight: "bold",
   borderRadius: 10,
+  fontWeight: "bold",
   textDecoration: "none",
 };
 
-const finePrint = {
-  marginTop: 12,
+const hint = {
+  marginTop: 10,
   fontSize: 13,
   color: "#94a3b8",
+};
+
+const secondary = {
+  borderTop: "1px solid #1e293b",
+  paddingTop: 30,
+  textAlign: "center",
+};
+
+const secondaryTitle = {
+  fontSize: 14,
+  color: "#94a3b8",
+  marginBottom: 16,
+};
+
+const buttonRow = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 16,
+  flexWrap: "wrap",
+};
+
+const secondaryBtn = {
+  padding: "12px 18px",
+  border: "1px solid #1e293b",
+  borderRadius: 10,
+  textDecoration: "none",
+  color: "#e5e7eb",
 };
