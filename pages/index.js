@@ -149,28 +149,48 @@ export default function Home() {
           </div>
         </div>
 
-        {/* START BUTTON */}
-        <a
-          href="/start"
-          className="start-btn"
+        {/* START */}
+        <div
           style={{
             position: "absolute",
             top: "45%",
             left: "10%",
             transform: "translateY(-50%)",
-            padding: "14px 40px",
-            backgroundColor: "#1a253a",
-            border: "1px solid rgba(255,255,255,0.4)",
-            borderRadius: "10px",
-            color: "white",
-            textDecoration: "none",
-            fontWeight: "bold",
-            fontSize: "1.2rem",
             zIndex: 4,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            gap: "10px",
           }}
         >
-          Start
-        </a>
+          <a
+            href="/start"
+            className="start-btn"
+            style={{
+              padding: "14px 40px",
+              backgroundColor: "#1a253a",
+              border: "1px solid rgba(255,255,255,0.4)",
+              borderRadius: "10px",
+              color: "white",
+              textDecoration: "none",
+              fontWeight: "bold",
+              fontSize: "1.2rem",
+            }}
+          >
+            Start
+          </a>
+
+          {/* 👇 EGYSOROS PSZICHOLÓGIAI SEGÍTSÉG */}
+          <div
+            style={{
+              fontSize: "0.85rem",
+              opacity: 0.75,
+              letterSpacing: "0.3px",
+            }}
+          >
+            Start with a simple financial snapshot. Takes less than a minute.
+          </div>
+        </div>
 
         {/* BOTTOM BAR */}
         <div
@@ -184,7 +204,7 @@ export default function Home() {
             justifyContent: "space-between",
             alignItems: "center",
             zIndex: 5,
-            boxSizing: "border-box",   // ✅ EZ A JAVÍTÁS
+            boxSizing: "border-box",
           }}
         >
           <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
@@ -221,7 +241,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* STYLES */}
         <style>{`
           .brand-logo {
             animation: logoFloat 9s ease-in-out infinite;
