@@ -35,7 +35,7 @@ export default function UserDashboard() {
       ? "Medium Risk"
       : "Low Risk";
 
-  /* ===== INSIGHTS (BASIC) ===== */
+  /* ===== INSIGHTS ===== */
 
   const insights = [];
 
@@ -129,21 +129,13 @@ export default function UserDashboard() {
       }}
     >
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        <h1 style={{ marginBottom: "10px" }}>
-          Your Financial Overview (Basic)
-        </h1>
-        <p style={{ opacity: 0.75, marginBottom: "30px" }}>
-          This page shows a snapshot — not patterns, not direction.
+        <h1>Your Financial Overview (Basic)</h1>
+        <p style={{ opacity: 0.75 }}>
+          This view shows a snapshot — not behavior, not direction.
         </p>
 
         {/* GRID */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "20px",
-          }}
-        >
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
           {/* INPUTS */}
           <div style={card}>
             <h3>Income & Expenses</h3>
@@ -165,109 +157,39 @@ export default function UserDashboard() {
                 />
               </div>
             ))}
-
-            <hr style={{ margin: "20px 0", opacity: 0.25 }} />
-
-            <h4>Utilities (optional)</h4>
-            {["electricity", "water", "gas", "internet"].map((key) => (
-              <input
-                key={key}
-                type="number"
-                placeholder={key}
-                value={data[key]}
-                style={input}
-                onChange={(e) =>
-                  setData({ ...data, [key]: Number(e.target.value) })
-                }
-              />
-            ))}
-
-            <label style={{ marginTop: "10px", display: "block" }}>
-              Subscriptions
-            </label>
-            <input
-              type="number"
-              value={data.subscriptions}
-              style={input}
-              onChange={(e) =>
-                setData({ ...data, subscriptions: Number(e.target.value) })
-              }
-            />
           </div>
 
           {/* INSIGHTS */}
           <div style={card}>
             <h3>Insights (Basic)</h3>
-            <p>
-              Risk Level: <strong>{riskLevel}</strong>
-            </p>
-            <p>
-              Savings Score: <strong>{savingsScore}/100</strong>
-            </p>
+            <p>Risk Level: <strong>{riskLevel}</strong></p>
+            <p>Savings Score: <strong>{savingsScore}/100</strong></p>
 
             <ul>
               {insights.map((i, idx) => (
-                <li key={idx} style={{ marginBottom: "12px" }}>
-                  {i}
-                </li>
+                <li key={idx}>{i}</li>
               ))}
             </ul>
-
-            <div style={{ marginTop: "20px", opacity: 0.75 }}>
-              <strong>What this view does not show:</strong>
-              <ul>
-                <li>Weekly behavioral patterns</li>
-                <li>Country-specific financial context</li>
-                <li>Short-term future pressure or momentum</li>
-              </ul>
-            </div>
           </div>
         </div>
 
         {/* PRICING */}
-        <div style={{ marginTop: "60px" }}>
-          <h2 style={{ textAlign: "center", marginBottom: "12px" }}>
-            Go deeper when you’re ready
-          </h2>
-          <p style={{ textAlign: "center", opacity: 0.7, marginBottom: "30px" }}>
-            Most users start with one day. Longer access reveals behavior and direction.
-          </p>
+        <div style={{ marginTop: 60, textAlign: "center" }}>
+          <h2>Go deeper when you’re ready</h2>
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: "20px",
-              flexWrap: "wrap",
-            }}
-          >
-            <div
-              style={priceCard}
-              onClick={() =>
-                handleCheckout("price_1SscYJDyLtejYlZiyDvhdaIx")
-              }
-            >
-              <h3>1 Day · $9</h3>
+          <div style={{ display: "flex", gap: 20, justifyContent: "center", flexWrap: "wrap" }}>
+            <div onClick={() => handleCheckout("price_1SscYJDyLtejYlZiyDvhdaIx")} style={priceCard}>
+              <h3>1 Day · $9.99</h3>
               <small>Clarity snapshot + AI strategy</small>
             </div>
 
-            <div
-              style={priceCard}
-              onClick={() =>
-                handleCheckout("price_1SscaYDyLtejYlZiDjSeF5Wm")
-              }
-            >
-              <h3>1 Week · $19</h3>
+            <div onClick={() => handleCheckout("price_1SscaYDyLtejYlZiDjSeF5Wm")} style={priceCard}>
+              <h3>1 Week · $14.99</h3>
               <small>Behavior & country-aware analysis</small>
             </div>
 
-            <div
-              style={priceCard}
-              onClick={() =>
-                handleCheckout("price_1SscbeDyLtejYlZixJcT3B4o")
-              }
-            >
-              <h3>1 Month · $39</h3>
+            <div onClick={() => handleCheckout("price_1SscbeDyLtejYlZixJcT3B4o")} style={priceCard}>
+              <h3>1 Month · $24.99</h3>
               <small>Direction, projections & exportable insights</small>
             </div>
           </div>
