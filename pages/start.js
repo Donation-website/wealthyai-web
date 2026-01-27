@@ -74,17 +74,14 @@ export default function UserDashboard() {
       });
 
       const session = await res.json();
-      if (session.url) {
-        window.location.href = session.url;
-      } else {
-        alert("Payment initialization failed.");
-      }
+      if (session.url) window.location.href = session.url;
+      else alert("Payment initialization failed.");
     } catch {
       alert("Payment initialization failed.");
     }
   };
 
-  /* ===== RADAR VALUES (0–100 NORMALIZED) ===== */
+  /* ===== RADAR DATA ===== */
 
   const radar = [
     { label: "Expense Load", value: usagePercent },
@@ -98,7 +95,7 @@ export default function UserDashboard() {
     },
   ];
 
-  /* ===== RADAR COMPONENT (CLASSIC SPIDER) ===== */
+  /* ===== RADAR COMPONENT ===== */
 
   const Radar = ({ data, size = 200 }) => {
     const c = size / 2;
@@ -106,17 +103,13 @@ export default function UserDashboard() {
     const step = (Math.PI * 2) / data.length;
 
     const point = (val, i) => {
-      const angle = i * step - Math.PI / 2;
+      const a = i * step - Math.PI / 2;
       const rr = (val / 100) * r;
-      return [
-        c + rr * Math.cos(angle),
-        c + rr * Math.sin(angle),
-      ];
+      return [c + rr * Math.cos(a), c + rr * Math.sin(a)];
     };
 
     return (
       <svg width={size} height={size} style={{ margin: "20px auto" }}>
-        {/* grid circles */}
         {[0.25, 0.5, 0.75, 1].map((lvl, i) => (
           <circle
             key={i}
@@ -128,38 +121,33 @@ export default function UserDashboard() {
           />
         ))}
 
-        {/* axes */}
         {data.map((_, i) => {
-          const angle = i * step - Math.PI / 2;
+          const a = i * step - Math.PI / 2;
           return (
             <line
               key={i}
               x1={c}
               y1={c}
-              x2={c + r * Math.cos(angle)}
-              y2={c + r * Math.sin(angle)}
+              x2={c + r * Math.cos(a)}
+              y2={c + r * Math.sin(a)}
               stroke="rgba(255,255,255,0.18)"
             />
           );
         })}
 
-        {/* data shape */}
         <polygon
-          points={data
-            .map((d, i) => point(d.value, i).join(","))
-            .join(" ")}
+          points={data.map((d, i) => point(d.value, i).join(",")).join(" ")}
           fill="rgba(99,102,241,0.35)"
           stroke="rgba(99,102,241,0.9)"
         />
 
-        {/* labels */}
         {data.map((d, i) => {
-          const angle = i * step - Math.PI / 2;
+          const a = i * step - Math.PI / 2;
           return (
             <text
               key={i}
-              x={c + (r + 14) * Math.cos(angle)}
-              y={c + (r + 14) * Math.sin(angle)}
+              x={c + (r + 14) * Math.cos(a)}
+              y={c + (r + 14) * Math.sin(a)}
               fontSize="11"
               fill="rgba(255,255,255,0.7)"
               textAnchor="middle"
@@ -217,14 +205,7 @@ export default function UserDashboard() {
           <h1>Your Financial Overview (Basic)</h1>
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "20px",
-          }}
-        >
-          {/* INPUT */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
           <div style={card}>
             <h3>Income & Expenses</h3>
 
@@ -247,10 +228,8 @@ export default function UserDashboard() {
             ))}
           </div>
 
-          {/* INSIGHTS + RADAR */}
           <div style={card}>
             <h3>Insights (Basic)</h3>
-
             <Radar data={radar} />
 
             <p>
@@ -262,32 +241,74 @@ export default function UserDashboard() {
 
             <ul>
               {insights.map((i, idx) => (
-                <li key={idx} style={{ marginBottom: "12px" }}>
+                <li key={idx} style={{ marginBottom: 12 }}>
                   {i}
                 </li>
               ))}
             </ul>
 
-            <p style={{ opacity: 0.65, marginTop: "18px" }}>
+            <p style={{ opacity: 0.65, marginTop: 18 }}>
               This view shows a snapshot — not behavior, not direction.
             </p>
           </div>
         </div>
 
-        {/* ORIENTATION */}
-        <div style={{ marginTop: "70px", textAlign: "center" }}>
+        {/* ===== ORIENTATION BLOCK (RESTORED) ===== */}
+        <div style={{ marginTop: 70, textAlign: "center" }}>
           <h2 className="pulse-title">
             Choose your depth of financial intelligence
           </h2>
+
+          <p style={{ maxWidth: 700, margin: "18px auto", opacity: 0.85 }}>
+            Different questions require different levels of context.
+            You can choose the depth that matches what you want to understand right now.
+          </p>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: 20,
+              marginTop: 30,
+            }}
+          >
+            <div style={card}>
+              <h4>Daily Intelligence</h4>
+              <p>
+                Short-term interpretation of your current financial state.
+                Best for immediate clarity.
+              </p>
+            </div>
+
+            <div style={card}>
+              <h4>Weekly Intelligence</h4>
+              <p>
+                Behavioral patterns across days and categories.
+                Best for understanding habits.
+              </p>
+            </div>
+
+            <div style={card}>
+              <h4>Monthly Intelligence</h4>
+              <p>
+                Multi-week context, regional insights, and forward-looking analysis.
+                Best when decisions require direction.
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* PRICING */}
-        <div style={{ marginTop: "60px" }}>
+        {/* ===== PRICING ===== */}
+        <div style={{ marginTop: 60 }}>
+          <h2 style={{ textAlign: "center", marginBottom: 30 }}>
+            Unlock Advanced AI Intelligence
+          </h2>
+
           <div
             style={{
               display: "flex",
               justifyContent: "center",
-              gap: "20px",
+              gap: 20,
               flexWrap: "wrap",
             }}
           >
@@ -298,6 +319,7 @@ export default function UserDashboard() {
               }
             >
               <h3>1 Day · $9.99</h3>
+              <small>Immediate clarity</small>
             </div>
 
             <div
@@ -307,6 +329,7 @@ export default function UserDashboard() {
               }
             >
               <h3>1 Week · $14.99</h3>
+              <small>Behavior & patterns</small>
             </div>
 
             <div
@@ -316,6 +339,7 @@ export default function UserDashboard() {
               }
             >
               <h3>1 Month · $24.99</h3>
+              <small>Full intelligence engine</small>
             </div>
           </div>
         </div>
