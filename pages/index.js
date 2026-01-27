@@ -5,6 +5,16 @@ export default function Home() {
   const SITE_URL = "https://wealthyai-web.vercel.app";
   const SHARE_TEXT = "AI-powered financial clarity with WealthyAI";
 
+  // 👇 KIJELÖLÉS TÖRLÉSE NEM FUNKCIONÁLIS KATTINTÁSNÁL
+  const clearSelectionIfNeeded = (e) => {
+    const tag = e.target.tagName.toLowerCase();
+    const interactive = ["a", "button", "input", "textarea", "select", "label"];
+    if (!interactive.includes(tag)) {
+      const sel = window.getSelection();
+      if (sel && sel.toString()) sel.removeAllRanges();
+    }
+  };
+
   return (
     <>
       <Head>
@@ -41,6 +51,7 @@ export default function Home() {
       </Head>
 
       <main
+        onMouseDown={clearSelectionIfNeeded}
         style={{
           height: "100vh",
           width: "100%",
@@ -225,6 +236,7 @@ export default function Home() {
                 fontSize: "0.82rem",
                 textAlign: "right",
                 lineHeight: "1.4",
+                cursor: "pointer", // 👈 MUTATÓUJJ
               }}
             >
               <div style={{ fontWeight: 500 }}>
