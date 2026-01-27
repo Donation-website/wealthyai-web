@@ -61,7 +61,7 @@ export default function UserDashboard() {
     );
   }
 
-  /* ===== STRIPE ===== */
+  /* ===== STRIPE (DO NOT TOUCH) ===== */
 
   const handleCheckout = async (priceId) => {
     localStorage.setItem("userFinancials", JSON.stringify(data));
@@ -83,6 +83,26 @@ export default function UserDashboard() {
       alert("Payment initialization failed.");
     }
   };
+
+  /* ===== RADAR DATA ===== */
+
+  const radarMetrics = [
+    {
+      label: "Expense Load",
+      value: usagePercent, // %
+    },
+    {
+      label: "Savings Strength",
+      value: Math.max(0, Math.min(100, savingsRate * 3)), // normalized
+    },
+    {
+      label: "Subscription Weight",
+      value:
+        data.income > 0
+          ? Math.min((data.subscriptions / data.income) * 200, 100)
+          : 0,
+    },
+  ];
 
   /* ===== STYLES ===== */
 
@@ -111,6 +131,88 @@ export default function UserDashboard() {
     transition: "transform .2s, box-shadow .2s",
   };
 
+  /* ===== RADAR COMPONENT ===== */
+
+  const RadarChart = ({ metrics, size = 260 }) => {
+    const center = size / 2;
+    const radius = size / 2 - 30;
+    const angleStep = (Math.PI * 2) / metrics.length;
+
+    const points = metrics.map((m, i) => {
+      const angle = i * angleStep - Math.PI / 2;
+      const r = (m.value / 100) * radius;
+      const x = center + r * Math.cos(angle);
+      const y = center + r * Math.sin(angle);
+      return `${x},${y}`;
+    });
+
+    return (
+      <svg width={size} height={size}>
+        {/* web */}
+        {[0.33, 0.66, 1].map((lvl, i) => (
+          <polygon
+            key={i}
+            points={metrics
+              .map((_, j) => {
+                const angle = j * angleStep - Math.PI / 2;
+                const r = radius * lvl;
+                const x = center + r * Math.cos(angle);
+                const y = center + r * Math.sin(angle);
+                return `${x},${y}`;
+              })
+              .join(" ")}
+            fill="none"
+            stroke="rgba(255,255,255,0.15)"
+          />
+        ))}
+
+        {/* axes */}
+        {metrics.map((_, i) => {
+          const angle = i * angleStep - Math.PI / 2;
+          const x = center + radius * Math.cos(angle);
+          const y = center + radius * Math.sin(angle);
+          return (
+            <line
+              key={i}
+              x1={center}
+              y1={center}
+              x2={x}
+              y2={y}
+              stroke="rgba(255,255,255,0.15)"
+            />
+          );
+        })}
+
+        {/* data shape */}
+        <polygon
+          points={points.join(" ")}
+          fill="rgba(99,102,241,0.35)"
+          stroke="rgba(99,102,241,0.8)"
+        />
+
+        {/* labels */}
+        {metrics.map((m, i) => {
+          const angle = i * angleStep - Math.PI / 2;
+          const x = center + (radius + 16) * Math.cos(angle);
+          const y = center + (radius + 16) * Math.sin(angle);
+          return (
+            <text
+              key={i}
+              x={x}
+              y={y}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fontSize="12"
+              fill="rgba(255,255,255,0.7)"
+            >
+              {m.label}
+            </text>
+          );
+        })}
+      </svg>
+    );
+  };
+
   return (
     <main
       style={{
@@ -125,9 +227,10 @@ export default function UserDashboard() {
       }}
     >
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        <h1 style={{ marginBottom: "30px" }}>
-          Your Financial Overview (Basic)
-        </h1>
+        {/* CENTERED TITLE */}
+        <div style={{ textAlign: "center", marginBottom: "30px" }}>
+          <h1>Your Financial Overview (Basic)</h1>
+        </div>
 
         {/* GRID */}
         <div
@@ -182,6 +285,11 @@ export default function UserDashboard() {
               This view shows a snapshot — not behavior, not direction.
             </p>
           </div>
+        </div>
+
+        {/* RADAR */}
+        <div style={{ marginTop: "50px", textAlign: "center" }}>
+          <RadarChart metrics={radarMetrics} />
         </div>
 
         {/* ===== ORIENTATION BLOCK ===== */}
