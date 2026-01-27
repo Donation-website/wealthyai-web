@@ -215,22 +215,32 @@ export default function Home() {
               display: "flex",
               flexDirection: "column",
               alignItems: "flex-end",
-              gap: "10px",
+              gap: "8px",
             }}
           >
             {/* CONTACT & PARTNERSHIPS */}
             <div
               className="nav-link"
               style={{
-                fontSize: "0.85rem",
+                fontSize: "0.82rem",
                 textAlign: "right",
-                lineHeight: "1.5",
+                lineHeight: "1.4",
               }}
             >
-              <div>Contact & Partnerships</div>
+              <div style={{ fontWeight: 500 }}>
+                Contact & Partnerships
+              </div>
+              <div style={{ opacity: 0.8 }}>
+                Media · Partnerships · Institutional use
+              </div>
               <div>
-                For media inquiries, partnerships, or institutional use:<br />
-                <strong>wealthyaiweb@gmail.com</strong>
+                <a
+                  href="mailto:wealthyaiweb@gmail.com"
+                  className="nav-link"
+                  style={{ fontWeight: 600 }}
+                >
+                  wealthyaiweb@gmail.com
+                </a>
               </div>
             </div>
 
