@@ -5,16 +5,12 @@ export default function UserDashboard() {
     income: 5000,
     fixed: 2000,
     variable: 1500,
-    electricity: 150,
-    water: 50,
-    gas: 100,
-    internet: 80,
     subscriptions: 120,
   });
 
   /* ===== CALCULATIONS ===== */
 
-  const totalExpenses = data.fixed + data.variable;
+  const totalExpenses = data.fixed + data.variable + data.subscriptions;
   const balance = data.income - totalExpenses;
 
   const usagePercent =
@@ -35,53 +31,19 @@ export default function UserDashboard() {
       ? "Medium Risk"
       : "Low Risk";
 
-  /* ===== INSIGHTS ===== */
-
-  const insights = [];
-
-  if (balance < 0) {
-    insights.push(
-      "Your expenses exceed your income. Immediate action may be required."
-    );
-  }
-
-  if (data.subscriptions > data.income * 0.08) {
-    insights.push(
-      "Subscriptions appear high. Reviewing unused services may free up cash."
-    );
-  }
-
-  if (savingsRate >= 20) {
-    insights.push(
-      "You are saving at a healthy rate, supporting long-term stability."
-    );
-  } else if (balance >= 0) {
-    insights.push(
-      "Your savings rate is modest. Small adjustments could improve resilience."
-    );
-  }
-
   /* ===== STRIPE ===== */
 
   const handleCheckout = async (priceId) => {
     localStorage.setItem("userFinancials", JSON.stringify(data));
 
-    try {
-      const res = await fetch("/api/create-stripe-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId }),
-      });
+    const res = await fetch("/api/create-stripe-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ priceId }),
+    });
 
-      const session = await res.json();
-      if (session.url) {
-        window.location.href = session.url;
-      } else {
-        alert("Payment initialization failed.");
-      }
-    } catch (err) {
-      alert("Payment initialization failed.");
-    }
+    const session = await res.json();
+    if (session.url) window.location.href = session.url;
   };
 
   /* ===== STYLES ===== */
@@ -104,13 +66,6 @@ export default function UserDashboard() {
     color: "white",
   };
 
-  const priceCard = {
-    ...card,
-    textAlign: "center",
-    cursor: "pointer",
-    transition: "transform .2s, box-shadow .2s",
-  };
-
   return (
     <main
       style={{
@@ -125,9 +80,11 @@ export default function UserDashboard() {
       }}
     >
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        <h1 style={{ marginBottom: "30px" }}>
-          Your Financial Overview (Basic)
-        </h1>
+
+        {/* CENTERED TITLE */}
+        <div style={{ textAlign: "center", marginBottom: "40px" }}>
+          <h1>Your Financial Overview (Basic)</h1>
+        </div>
 
         {/* GRID */}
         <div
@@ -145,6 +102,7 @@ export default function UserDashboard() {
               ["Monthly Income ($)", "income"],
               ["Fixed Expenses", "fixed"],
               ["Variable Expenses", "variable"],
+              ["Subscriptions", "subscriptions"],
             ].map(([label, key]) => (
               <div key={key}>
                 <label>{label}</label>
@@ -160,31 +118,29 @@ export default function UserDashboard() {
             ))}
           </div>
 
-          {/* INSIGHTS */}
+          {/* INSIGHTS + GRAPH */}
           <div style={card}>
             <h3>Insights (Basic)</h3>
-            <p>
-              Risk Level: <strong>{riskLevel}</strong>
-            </p>
-            <p>
-              Savings Score: <strong>{savingsScore}/100</strong>
-            </p>
 
-            <ul>
-              {insights.map((i, idx) => (
-                <li key={idx} style={{ marginBottom: "12px" }}>
-                  {i}
-                </li>
-              ))}
-            </ul>
+            <p>Risk Level: <strong>{riskLevel}</strong></p>
+            <p>Savings Score: <strong>{savingsScore}/100</strong></p>
 
-            <p style={{ opacity: 0.65, marginTop: "18px" }}>
+            {/* SIMPLE RADAR / WEB GRAPH */}
+            <svg width="100%" height="160" viewBox="0 0 200 160">
+              <line x1="100" y1="20" x2="100" y2="140" stroke="#38bdf8" />
+              <line x1="20" y1="80" x2="180" y2="80" stroke="#38bdf8" />
+              <circle cx="100" cy={80 - savingsRate} r="6" fill="#22d3ee" />
+              <text x="104" y="20" fill="#94a3b8" fontSize="10">Savings</text>
+              <text x="150" y="76" fill="#94a3b8" fontSize="10">Expenses</text>
+            </svg>
+
+            <p style={{ opacity: 0.65, marginTop: "12px" }}>
               This view shows a snapshot — not behavior, not direction.
             </p>
           </div>
         </div>
 
-        {/* ===== ORIENTATION BLOCK ===== */}
+        {/* ORIENTATION BLOCK */}
         <div style={{ marginTop: "70px", textAlign: "center" }}>
           <h2 className="pulse-title">
             Choose your depth of financial intelligence
@@ -192,48 +148,12 @@ export default function UserDashboard() {
 
           <p style={{ maxWidth: 700, margin: "18px auto", opacity: 0.85 }}>
             Different questions require different levels of context.
-            You can choose the depth that matches what you want to understand right now.
           </p>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-              gap: "20px",
-              marginTop: "30px",
-            }}
-          >
-            <div style={card}>
-              <h4>Daily Intelligence</h4>
-              <p>
-                Short-term interpretation of your current financial state.
-                Best for immediate clarity.
-              </p>
-            </div>
-
-            <div style={card}>
-              <h4>Weekly Intelligence</h4>
-              <p>
-                Behavioral patterns across days and categories.
-                Best for understanding habits.
-              </p>
-            </div>
-
-            <div style={card}>
-              <h4>Monthly Intelligence</h4>
-              <p>
-                Multi-week context, regional insights, and forward-looking analysis.
-                Best when decisions require direction.
-              </p>
-            </div>
-          </div>
         </div>
 
         {/* PRICING */}
-        <div style={{ marginTop: "60px" }}>
-          <h2 style={{ textAlign: "center", marginBottom: "30px" }}>
-            Unlock Advanced AI Intelligence
-          </h2>
+        <div style={{ marginTop: "50px", textAlign: "center" }}>
+          <h2>Unlock Advanced AI Intelligence</h2>
 
           <div
             style={{
@@ -241,47 +161,26 @@ export default function UserDashboard() {
               justifyContent: "center",
               gap: "20px",
               flexWrap: "wrap",
+              marginTop: "30px",
             }}
           >
-            <div
-              style={priceCard}
-              onClick={() =>
-                handleCheckout("price_1SscYJDyLtejYlZiyDvhdaIx")
-              }
-            >
+            <div style={card} onClick={() => handleCheckout("price_day")}>
               <h3>1 Day · $9.99</h3>
-              <small>Immediate clarity</small>
             </div>
-
-            <div
-              style={priceCard}
-              onClick={() =>
-                handleCheckout("price_1SscaYDyLtejYlZiDjSeF5Wm")
-              }
-            >
+            <div style={card} onClick={() => handleCheckout("price_week")}>
               <h3>1 Week · $14.99</h3>
-              <small>Behavior & patterns</small>
             </div>
-
-            <div
-              style={priceCard}
-              onClick={() =>
-                handleCheckout("price_1SscbeDyLtejYlZixJcT3B4o")
-              }
-            >
+            <div style={card} onClick={() => handleCheckout("price_month")}>
               <h3>1 Month · $24.99</h3>
-              <small>Full intelligence engine</small>
             </div>
           </div>
         </div>
       </div>
 
-      {/* PULSE STYLE */}
       <style>{`
         .pulse-title {
           animation: pulseSoft 3s ease-in-out infinite;
         }
-
         @keyframes pulseSoft {
           0% { opacity: 0.6; }
           50% { opacity: 1; }
