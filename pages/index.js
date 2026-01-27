@@ -180,7 +180,6 @@ export default function Home() {
             Start
           </a>
 
-          {/* 👇 EGYSOROS PSZICHOLÓGIAI SEGÍTSÉG */}
           <div
             style={{
               fontSize: "0.85rem",
@@ -190,6 +189,22 @@ export default function Home() {
           >
             Start with a simple financial snapshot. Takes less than a minute.
           </div>
+        </div>
+
+        {/* CONTACT & PARTNERSHIPS */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: "64px",
+            width: "100%",
+            textAlign: "center",
+            fontSize: "0.8rem",
+            opacity: 0.75,
+            letterSpacing: "0.3px",
+          }}
+        >
+          <div style={{ fontWeight: 500 }}>Contact & Partnerships</div>
+          <div>wealthyaiweb@gmail.com</div>
         </div>
 
         {/* BOTTOM BAR */}
