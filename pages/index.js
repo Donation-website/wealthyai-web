@@ -2,6 +2,9 @@ import React from "react";
 import Head from "next/head";
 
 export default function Home() {
+  const SITE_URL = "https://wealthyai-web.vercel.app";
+  const SHARE_TEXT = "AI-powered financial clarity with WealthyAI";
+
   return (
     <>
       <Head>
@@ -9,6 +12,31 @@ export default function Home() {
         <meta
           name="description"
           content="AI-powered financial planning with structured insights and clear perspective."
+        />
+
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={SITE_URL} />
+        <meta property="og:title" content="WealthyAI – AI-powered financial clarity" />
+        <meta
+          property="og:description"
+          content="Structured insights. Clear perspective. Financial intelligence."
+        />
+        <meta
+          property="og:image"
+          content="https://wealthyai-web.vercel.app/wealthyai/wealthyai.png"
+        />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="WealthyAI – AI-powered financial clarity" />
+        <meta
+          name="twitter:description"
+          content="Structured insights. Clear perspective. Financial intelligence."
+        />
+        <meta
+          name="twitter:image"
+          content="https://wealthyai-web.vercel.app/wealthyai/wealthyai.png"
         />
       </Head>
 
@@ -51,7 +79,7 @@ export default function Home() {
           <a href="/terms" className="nav-link">Terms</a>
         </div>
 
-        {/* CENTER BRAND & TEXT CONTAINER */}
+        {/* CENTER BRAND & TEXT */}
         <div
           style={{
             textAlign: "center",
@@ -63,7 +91,6 @@ export default function Home() {
             transform: "translateY(-40px)",
           }}
         >
-          {/* LOGO */}
           <img
             src="/wealthyai/icons/generated.png"
             alt="WealthyAI logo"
@@ -76,7 +103,6 @@ export default function Home() {
             }}
           />
 
-          {/* TEXT UNDER LOGO */}
           <div
             style={{
               color: "#FFFFFF",
@@ -87,7 +113,6 @@ export default function Home() {
               width: "100%",
               maxWidth: "800px",
               padding: "0 20px",
-              fontFamily: "'Inter', system-ui, Arial, sans-serif",
               letterSpacing: "0.2px",
             }}
           >
@@ -164,13 +189,50 @@ export default function Home() {
           <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
             © 2026 WealthyAI — All rights reserved.
           </div>
+
+          {/* SOCIAL SHARE ICONS */}
+          <div style={{ display: "flex", gap: "18px", alignItems: "center" }}>
+            {/* FACEBOOK */}
+            <a
+              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+                SITE_URL
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="icon-link"
+            >
+              <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
+            </a>
+
+            {/* X / TWITTER */}
+            <a
+              href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(
+                SITE_URL
+              )}&text=${encodeURIComponent(SHARE_TEXT)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="icon-link"
+            >
+              <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
+            </a>
+
+            {/* INSTAGRAM (profile link only) */}
+            <a
+              href="https://www.instagram.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="icon-link"
+            >
+              <img src="/wealthyai/icons/insta.png" alt="Instagram" style={{ width: 34 }} />
+            </a>
+          </div>
         </div>
 
         {/* STYLES */}
         <style>{`
           .brand-logo {
             animation: logoFloat 9s ease-in-out infinite;
-            transition: filter 0.4s ease, box-shadow 0.4s ease;
+            transition: filter 0.4s ease;
           }
 
           .brand-logo:hover {
@@ -195,7 +257,8 @@ export default function Home() {
           }
 
           .start-btn:hover,
-          .nav-link:hover {
+          .nav-link:hover,
+          .icon-link:hover {
             box-shadow: 0 0 35px rgba(56,189,248,0.45);
             filter: drop-shadow(0 0 18px rgba(56,189,248,0.45));
           }
@@ -204,7 +267,6 @@ export default function Home() {
             color: white;
             text-decoration: none;
             opacity: 0.85;
-            transition: filter 0.3s ease;
           }
         `}</style>
       </main>
