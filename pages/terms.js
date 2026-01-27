@@ -1,47 +1,156 @@
 export default function Terms() {
   return (
-    <main style={{
-      minHeight: "100vh",
-      width: "100vw",
-      backgroundImage: "linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('/wealthyai/icons/szgep.png')",
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      backgroundRepeat: "no-repeat",
-      color: "white",
-      fontFamily: "Arial, sans-serif",
-      display: "flex",
-      alignItems: "flex-start",
-      justifyContent: "center",
-      paddingTop: "80px",
-      boxSizing: "border-box"
-    }}>
-      <div style={{
-        maxWidth: "900px",
-        background: "rgba(0,0,0,0.35)",
-        padding: "40px",
-        borderRadius: "14px",
-        backdropFilter: "blur(8px)",
-        lineHeight: "1.7",
-        margin: "20px"
-      }}>
-        <h1>Terms & Conditions</h1>
-        <p>WealthyAI is an informational platform designed to support financial awareness and planning.</p>
-        
-        <h2>Payments & Security</h2>
-        <p>All payments are securely processed via Stripe. WealthyAI does not store credit card information or sensitive payment data.</p>
-        <p>Stripe complies with industry-leading security standards to ensure safe and encrypted transactions.</p>
-        
-        <h2>User Responsibility</h2>
-        <p>Users are fully responsible for how they interpret and apply the information provided by WealthyAI.</p>
-        <p>By using this platform, you agree to these terms.</p>
+    <div style={page}>
+      <div style={bgGrid} />
+      <div style={bgLines} />
+      <div style={bgGlow} />
 
-        {/* BACK TO HOME GOMB */}
-        <div style={{ marginTop: "30px", borderTop: "1px solid rgba(255,255,255,0.2)", paddingTop: "20px" }}>
-          <a href="/" style={{ color: "white", textDecoration: "underline", opacity: 0.8, fontSize: "0.9rem" }}>
-            ← Back to Home
-          </a>
+      <div style={content}>
+        <div style={container}>
+          <button onClick={() => window.history.back()} style={back}>
+            ← Back
+          </button>
+
+          <h1 style={title}>Terms & Principles</h1>
+
+          <p style={intro}>
+            WealthyAI is an informational platform focused on financial awareness and understanding.
+          </p>
+
+          <Section title="Use of information">
+            All insights are generated from user-provided inputs and contextual models.
+            <br /><br />
+            They do not constitute financial, legal, tax, or investment advice.
+          </Section>
+
+          <Section title="Payments & security">
+            All payments are securely processed via Stripe.
+            <br /><br />
+            WealthyAI does not store credit card information or sensitive payment data.
+          </Section>
+
+          <Section title="User responsibility">
+            Users remain fully responsible for how insights are interpreted and applied.
+            <br /><br />
+            WealthyAI supports clarity — not decision-making on your behalf.
+          </Section>
+
+          <p style={footer}>
+            Transparency over promises. Awareness over control.
+          </p>
         </div>
       </div>
-    </main>
+    </div>
   );
 }
+
+/* ===== SHARED COMPONENTS & STYLES ===== */
+
+function Section({ title, children }) {
+  return (
+    <div style={section}>
+      <h2 style={sectionTitle}>{title}</h2>
+      <div style={sectionText}>{children}</div>
+    </div>
+  );
+}
+
+const page = {
+  position: "relative",
+  minHeight: "100vh",
+  background: "#020617",
+  overflow: "hidden",
+  fontFamily: "Inter, system-ui",
+};
+
+const content = {
+  position: "relative",
+  zIndex: 10,
+  padding: 40,
+  display: "flex",
+  justifyContent: "center",
+};
+
+const container = {
+  width: "100%",
+  maxWidth: 900,
+};
+
+const bgGrid = {
+  position: "fixed",
+  inset: 0,
+  backgroundImage:
+    "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
+  backgroundSize: "80px 80px",
+  zIndex: 1,
+};
+
+const bgLines = {
+  position: "fixed",
+  inset: 0,
+  backgroundImage:
+    "linear-gradient(120deg, transparent 40%, rgba(56,189,248,0.08) 50%, transparent 60%)",
+  backgroundSize: "1200px 1200px",
+  zIndex: 2,
+};
+
+const bgGlow = {
+  position: "fixed",
+  inset: 0,
+  background:
+    "radial-gradient(circle at 30% 20%, rgba(56,189,248,0.12), transparent 40%), radial-gradient(circle at 70% 80%, rgba(167,139,250,0.12), transparent 45%)",
+  zIndex: 3,
+};
+
+const back = {
+  marginBottom: 24,
+  padding: "6px 12px",
+  fontSize: 13,
+  borderRadius: 8,
+  background: "rgba(148,163,184,0.18)",
+  border: "1px solid rgba(148,163,184,0.35)",
+  color: "#ffffff",
+  cursor: "pointer",
+};
+
+const title = {
+  fontSize: "2.2rem",
+  marginBottom: 12,
+  color: "#ffffff",
+};
+
+const intro = {
+  color: "#e5e7eb",
+  maxWidth: 720,
+  marginBottom: 32,
+  fontSize: 15,
+};
+
+const section = {
+  width: "100%",
+  marginBottom: 28,
+  padding: 24,
+  borderRadius: 16,
+  background: "rgba(56,189,248,0.14)",
+  border: "1px solid rgba(125,211,252,0.35)",
+  backdropFilter: "blur(12px)",
+};
+
+const sectionTitle = {
+  fontSize: "1.15rem",
+  color: "#f0f9ff",
+  marginBottom: 10,
+};
+
+const sectionText = {
+  fontSize: 15,
+  lineHeight: 1.65,
+  color: "#f8fafc",
+};
+
+const footer = {
+  marginTop: 48,
+  fontSize: 14,
+  color: "#e5e7eb",
+  maxWidth: 720,
+};
