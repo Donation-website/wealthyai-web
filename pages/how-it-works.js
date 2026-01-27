@@ -1,42 +1,169 @@
 export default function HowItWorks() {
   return (
-    <main style={{
-      minHeight: "100vh",
-      width: "100vw",
-      backgroundImage: "linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('/wealthyai/icons/dia.png')",
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      backgroundRepeat: "no-repeat",
-      color: "white",
-      fontFamily: "Arial, sans-serif",
-      display: "flex",
-      alignItems: "flex-start",
-      justifyContent: "center",
-      paddingTop: "80px",
-      boxSizing: "border-box"
-    }}>
-      <div style={{
-        maxWidth: "900px",
-        background: "rgba(0,0,0,0.35)",
-        padding: "40px",
-        borderRadius: "14px",
-        backdropFilter: "blur(8px)",
-        lineHeight: "1.7",
-        margin: "20px"
-      }}>
-        <h1>How WealthyAI Works</h1>
-        <p>WealthyAI is designed to help individuals understand their financial situation through structured insights and clear explanations.</p>
-        <p>The platform focuses on clarity, planning, and long-term thinking, helping users see their finances in context rather than isolated numbers.</p>
-        <p>Visual elements and structured outputs help users better grasp trends, proportions, and potential outcomes.</p>
-        <p>WealthyAI does not replace professional financial advisors and does not provide investment, tax, or legal advice.</p>
-        
-        {/* BACK TO HOME GOMB */}
-        <div style={{ marginTop: "30px", borderTop: "1px solid rgba(255,255,255,0.2)", paddingTop: "20px" }}>
-          <a href="/" style={{ color: "white", textDecoration: "underline", opacity: 0.8, fontSize: "0.9rem" }}>
-            ← Back to Home
-          </a>
+    <div style={page}>
+      {/* BACKGROUND */}
+      <div style={bgGrid} />
+      <div style={bgLines} />
+      <div style={bgGlow} />
+
+      <div style={content}>
+        <div style={container}>
+          <button onClick={() => window.history.back()} style={back}>
+            ← Back
+          </button>
+
+          <h1 style={title}>How WealthyAI Works</h1>
+
+          <p style={intro}>
+            WealthyAI is designed around a simple idea:
+            financial clarity improves when information is structured by time and context.
+          </p>
+
+          <Section title="The core concept">
+            Instead of presenting isolated numbers, WealthyAI organizes insight into layers.
+            <br /><br />
+            Each layer answers a different type of question — without replacing the previous one.
+          </Section>
+
+          <Section title="The intelligence layers">
+            <p><strong>Basic Overview (Snapshot)</strong><br />
+            A single-point view of income and expenses. Useful for orientation, not for decisions.</p>
+
+            <p><strong>Daily Intelligence</strong><br />
+            Short-term interpretation focused on immediate clarity.</p>
+
+            <p><strong>Weekly Intelligence</strong><br />
+            Pattern detection across days and categories, including regional context.</p>
+
+            <p><strong>Monthly Intelligence</strong><br />
+            Multi-week analysis with forward-looking context, regional interpretation,
+            and decision-support outputs.</p>
+          </Section>
+
+          <Section title="What WealthyAI is not">
+            <ul>
+              <li>It is not a budgeting enforcement tool</li>
+              <li>It does not replace professional financial advice</li>
+              <li>It does not optimize for maximum returns</li>
+            </ul>
+          </Section>
+
+          <p style={footer}>
+            WealthyAI supports understanding — not control.
+          </p>
         </div>
       </div>
-    </main>
+    </div>
   );
 }
+
+/* ===== SHARED COMPONENTS & STYLES ===== */
+
+function Section({ title, children }) {
+  return (
+    <div style={section}>
+      <h2 style={sectionTitle}>{title}</h2>
+      <div style={sectionText}>{children}</div>
+    </div>
+  );
+}
+
+const page = {
+  position: "relative",
+  minHeight: "100vh",
+  background: "#020617",
+  overflow: "hidden",
+  fontFamily: "Inter, system-ui",
+};
+
+const content = {
+  position: "relative",
+  zIndex: 10,
+  padding: 40,
+  display: "flex",
+  justifyContent: "center",
+};
+
+const container = {
+  width: "100%",
+  maxWidth: 900,
+};
+
+const bgGrid = {
+  position: "fixed",
+  inset: 0,
+  backgroundImage:
+    "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
+  backgroundSize: "80px 80px",
+  zIndex: 1,
+};
+
+const bgLines = {
+  position: "fixed",
+  inset: 0,
+  backgroundImage:
+    "linear-gradient(120deg, transparent 40%, rgba(56,189,248,0.08) 50%, transparent 60%)",
+  backgroundSize: "1200px 1200px",
+  zIndex: 2,
+};
+
+const bgGlow = {
+  position: "fixed",
+  inset: 0,
+  background:
+    "radial-gradient(circle at 30% 20%, rgba(56,189,248,0.12), transparent 40%), radial-gradient(circle at 70% 80%, rgba(167,139,250,0.12), transparent 45%)",
+  zIndex: 3,
+};
+
+const back = {
+  marginBottom: 24,
+  padding: "6px 12px",
+  fontSize: 13,
+  borderRadius: 8,
+  background: "rgba(148,163,184,0.18)",
+  border: "1px solid rgba(148,163,184,0.35)",
+  color: "#ffffff",
+  cursor: "pointer",
+};
+
+const title = {
+  fontSize: "2.2rem",
+  marginBottom: 12,
+  color: "#ffffff",
+};
+
+const intro = {
+  color: "#e5e7eb",
+  maxWidth: 720,
+  marginBottom: 32,
+  fontSize: 15,
+};
+
+const section = {
+  width: "100%",
+  marginBottom: 28,
+  padding: 24,
+  borderRadius: 16,
+  background: "rgba(56,189,248,0.14)",
+  border: "1px solid rgba(125,211,252,0.35)",
+  backdropFilter: "blur(12px)",
+};
+
+const sectionTitle = {
+  fontSize: "1.15rem",
+  color: "#f0f9ff",
+  marginBottom: 10,
+};
+
+const sectionText = {
+  fontSize: 15,
+  lineHeight: 1.65,
+  color: "#f8fafc",
+};
+
+const footer = {
+  marginTop: 48,
+  fontSize: 14,
+  color: "#e5e7eb",
+  maxWidth: 720,
+};
