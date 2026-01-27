@@ -33,11 +33,13 @@ export default function PremiumMonth() {
   const update = (k, v) =>
     setInputs({ ...inputs, [k]: Number(v) });
 
-  /* ===== PLACEHOLDER DAILY SIGNAL ===== */
   const dailySignal = "No structural change detected today.";
 
   return (
     <div style={page}>
+      {/* HELP BUTTON */}
+      <a href="/month/help" style={helpButton}>Help</a>
+
       {/* HEADER */}
       <div style={header}>
         <h1 style={title}>WEALTHYAI · MONTHLY BRIEFING</h1>
@@ -46,7 +48,7 @@ export default function PremiumMonth() {
         </p>
       </div>
 
-      {/* REGION SELECT */}
+      {/* REGION */}
       <div style={regionRow}>
         <span style={regionLabel}>Region</span>
         <select
@@ -159,7 +161,7 @@ export default function PremiumMonth() {
   );
 }
 
-/* ===== SMALL COMPONENTS ===== */
+/* ===== UI HELPERS ===== */
 
 const Section = ({ title, children }) => (
   <>
@@ -202,16 +204,17 @@ const Divider = () => (
 
 const page = {
   minHeight: "100vh",
+  position: "relative",
   padding: 40,
   color: "#e5e7eb",
   fontFamily: "Inter, system-ui",
   backgroundColor: "#020617",
   backgroundImage: `
-    repeating-linear-gradient(-25deg, rgba(56,189,248,0.06) 0px, rgba(56,189,248,0.06) 1px, transparent 1px, transparent 180px),
-    repeating-linear-gradient(35deg, rgba(167,139,250,0.05) 0px, rgba(167,139,250,0.05) 1px, transparent 1px, transparent 260px),
-    radial-gradient(circle at 20% 30%, rgba(56,189,248,0.18), transparent 45%),
-    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.18), transparent 50%),
-    radial-gradient(circle at 45% 85%, rgba(34,211,238,0.14), transparent 45%),
+    repeating-linear-gradient(-25deg, rgba(56,189,248,0.04) 0px, rgba(56,189,248,0.04) 1px, transparent 1px, transparent 180px),
+    repeating-linear-gradient(35deg, rgba(167,139,250,0.04) 0px, rgba(167,139,250,0.04) 1px, transparent 1px, transparent 260px),
+    radial-gradient(circle at 20% 30%, rgba(56,189,248,0.14), transparent 45%),
+    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.14), transparent 50%),
+    radial-gradient(circle at 45% 85%, rgba(34,211,238,0.10), transparent 45%),
     url("/wealthyai/icons/generated.png")
   `,
   backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
@@ -221,6 +224,20 @@ const page = {
 const header = { textAlign: "center", marginBottom: 20 };
 const title = { fontSize: "2.4rem", margin: 0 };
 const subtitle = { marginTop: 8, color: "#cbd5f5" };
+
+const helpButton = {
+  position: "absolute",
+  top: 24,
+  right: 24,
+  padding: "8px 14px",
+  borderRadius: 10,
+  fontSize: 13,
+  textDecoration: "none",
+  color: "#7dd3fc",
+  border: "1px solid #1e293b",
+  background: "rgba(2,6,23,0.7)",
+  backdropFilter: "blur(6px)",
+};
 
 const regionRow = {
   display: "flex",
@@ -244,7 +261,7 @@ const signalBox = {
   padding: 16,
   border: "1px solid #1e293b",
   borderRadius: 12,
-  background: "rgba(255,255,255,0.04)",
+  background: "rgba(2,6,23,0.75)",
 };
 
 const layout = {
@@ -259,7 +276,7 @@ const card = {
   padding: 22,
   borderRadius: 16,
   border: "1px solid #1e293b",
-  background: "rgba(255,255,255,0.05)",
+  background: "rgba(2,6,23,0.78)",
 };
 
 const input = {
