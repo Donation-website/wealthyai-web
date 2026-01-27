@@ -1,171 +1,261 @@
-export default function BasicHelpPage() {
+import React, { useState } from "react";
+import {
+  ResponsiveContainer,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+} from "recharts";
+
+export default function UserDashboard() {
+  const [data, setData] = useState({
+    income: 5000,
+    fixed: 2000,
+    variable: 1500,
+    electricity: 150,
+    water: 50,
+    gas: 100,
+    internet: 80,
+    subscriptions: 120,
+  });
+
+  /* ===== CALCULATIONS ===== */
+
+  const totalExpenses = data.fixed + data.variable;
+  const balance = data.income - totalExpenses;
+
+  const riskLevel =
+    totalExpenses / data.income > 0.9
+      ? "High Risk"
+      : totalExpenses / data.income > 0.7
+      ? "Medium Risk"
+      : "Low Risk";
+
+  /* ===== RADAR DATA ===== */
+
+  const radarData = [
+    { metric: "Income", value: data.income / 100 },
+    { metric: "Fixed Costs", value: data.fixed / 100 },
+    { metric: "Variable Costs", value: data.variable / 100 },
+    { metric: "Subscriptions", value: data.subscriptions / 100 },
+    {
+      metric: "Utilities",
+      value:
+        (data.electricity +
+          data.water +
+          data.gas +
+          data.internet) /
+        100,
+    },
+    { metric: "Remaining", value: Math.max(balance, 0) / 100 },
+  ];
+
+  /* ===== STRIPE ===== */
+
+  const handleCheckout = async (priceId) => {
+    localStorage.setItem("userFinancials", JSON.stringify(data));
+
+    const res = await fetch("/api/create-stripe-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ priceId }),
+    });
+
+    const session = await res.json();
+    if (session.url) window.location.href = session.url;
+  };
+
+  /* ===== STYLES ===== */
+
+  const card = {
+    background: "rgba(15,23,42,0.65)",
+    backdropFilter: "blur(14px)",
+    borderRadius: 22,
+    padding: 26,
+    border: "1px solid rgba(255,255,255,0.08)",
+  };
+
+  const input = {
+    width: "100%",
+    padding: 10,
+    marginTop: 6,
+    borderRadius: 8,
+    border: "none",
+    background: "rgba(255,255,255,0.08)",
+    color: "white",
+  };
+
   return (
-    <div style={page}>
-      {/* FUTURISTIC BACKGROUND */}
-      <div style={bgGrid} />
-      <div style={bgLines} />
-      <div style={bgGlow} />
+    <main
+      style={{
+        minHeight: "100vh",
+        padding: 40,
+        color: "white",
+        fontFamily: "Inter, system-ui",
+        backgroundImage:
+          "linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('/wealthyai/icons/hat.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        position: "relative",
+      }}
+    >
+      {/* LOGO */}
+      <img
+        src="/wealthyai/icons/generated.png"
+        alt="WealthyAI"
+        style={{
+          position: "absolute",
+          top: 24,
+          left: 24,
+          width: 120,
+          opacity: 0.75,
+        }}
+      />
 
-      <div style={content}>
-        <div style={container}>
-          <button onClick={() => window.history.back()} style={back}>
-            ← Back
-          </button>
+      {/* HELP BUTTON */}
+      <a
+        href="/help/basic"
+        style={{
+          position: "absolute",
+          top: 24,
+          right: 24,
+          padding: "8px 14px",
+          borderRadius: 10,
+          fontSize: 13,
+          textDecoration: "none",
+          color: "#7dd3fc",
+          border: "1px solid #1e293b",
+          background: "rgba(2,6,23,0.6)",
+          backdropFilter: "blur(6px)",
+        }}
+      >
+        Help
+      </a>
 
-          <h1 style={title}>How the Basic Financial Overview Works</h1>
+      {/* CENTER HEADER */}
+      <div style={{ textAlign: "center", marginBottom: 40 }}>
+        <h1>Your Financial Overview (Basic)</h1>
+        <p style={{ opacity: 0.75 }}>
+          This view shows a snapshot — not behavior, not direction.
+        </p>
+      </div>
 
-          <p style={intro}>
-            This page explains what the <strong>Basic overview</strong> in WealthyAI
-            shows — and what it intentionally does not.
+      {/* GRID */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 24,
+          maxWidth: 1200,
+          margin: "0 auto",
+        }}
+      >
+        {/* INPUTS */}
+        <div style={card}>
+          <h3>Income & Expenses</h3>
+
+          {[
+            ["Monthly Income ($)", "income"],
+            ["Fixed Expenses", "fixed"],
+            ["Variable Expenses", "variable"],
+          ].map(([label, key]) => (
+            <div key={key}>
+              <label>{label}</label>
+              <input
+                type="number"
+                value={data[key]}
+                style={input}
+                onChange={(e) =>
+                  setData({ ...data, [key]: Number(e.target.value) })
+                }
+              />
+            </div>
+          ))}
+
+          <p style={{ marginTop: 20, opacity: 0.75 }}>
+            Risk level: <strong>{riskLevel}</strong>
           </p>
+        </div>
 
-          <Section title="What this page is">
-            The Basic overview provides a <strong>financial snapshot</strong>.
-            <br /><br />
-            It shows how your income and expenses relate to each other at a single
-            point in time.
-          </Section>
-
-          <Section title="What this snapshot does">
-            <ul>
-              <li>Summarizes income versus spending</li>
-              <li>Shows relative weight of cost categories</li>
-              <li>Highlights immediate financial pressure</li>
-            </ul>
-          </Section>
-
-          <Section title="What this snapshot does NOT do">
-            <ul>
-              <li>It does not analyze behavior over time</li>
-              <li>It does not identify recurring patterns</li>
-              <li>It does not forecast future outcomes</li>
-              <li>It does not provide optimization strategies</li>
-            </ul>
-          </Section>
-
-          <Section title="Why this matters">
-            Snapshots are useful for orientation.
-            <br /><br />
-            Deeper clarity requires observing change, repetition, and context —
-            which is why extended access unlocks additional insight layers.
-          </Section>
-
-          <p style={footer}>
-            WealthyAI supports clarity — not pressure.
+        {/* RADAR */}
+        <div style={card}>
+          <h3>Financial Structure (Snapshot)</h3>
+          <ResponsiveContainer width="100%" height={260}>
+            <RadarChart data={radarData}>
+              <PolarGrid />
+              <PolarAngleAxis dataKey="metric" />
+              <PolarRadiusAxis />
+              <Radar
+                dataKey="value"
+                stroke="#38bdf8"
+                fill="#38bdf8"
+                fillOpacity={0.25}
+              />
+            </RadarChart>
+          </ResponsiveContainer>
+          <p style={{ fontSize: 13, opacity: 0.65 }}>
+            Relative distribution of financial components (scaled values).
           </p>
         </div>
       </div>
-    </div>
+
+      {/* PRICING */}
+      <div style={{ marginTop: 60, textAlign: "center" }}>
+        <h2>Continue when you’re ready</h2>
+
+        <div
+          style={{
+            display: "flex",
+            gap: 20,
+            justifyContent: "center",
+            flexWrap: "wrap",
+          }}
+        >
+          <div
+            style={card}
+            onClick={() =>
+              handleCheckout("price_1SscYJDyLtejYlZiyDvhdaIx")
+            }
+          >
+            <h3>1 Day · $9.99</h3>
+            <small>Clarity & AI strategy</small>
+          </div>
+
+          <div
+            style={card}
+            onClick={() =>
+              handleCheckout("price_1SscaYDyLtejYlZiDjSeF5Wm")
+            }
+          >
+            <h3>1 Week · $14.99</h3>
+            <small>Behavior & regional context</small>
+          </div>
+
+          <div
+            style={card}
+            onClick={() =>
+              handleCheckout("price_1SscbeDyLtejYlZixJcT3B4o")
+            }
+          >
+            <h3>1 Month · $24.99</h3>
+            <small>Direction, projections & exports</small>
+          </div>
+        </div>
+      </div>
+
+      {/* FOOTER */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 16,
+          left: 20,
+          fontSize: 12,
+          opacity: 0.6,
+        }}
+      >
+        © 2026 WealthyAI — All rights reserved.
+      </div>
+    </main>
   );
 }
-
-/* ===== SHARED STYLES (same as Day / Week help) ===== */
-
-const page = {
-  position: "relative",
-  minHeight: "100vh",
-  background: "#020617",
-  overflow: "hidden",
-  fontFamily: "Inter, system-ui",
-};
-
-const content = {
-  position: "relative",
-  zIndex: 10,
-  padding: 40,
-  display: "flex",
-  justifyContent: "center",
-};
-
-const container = {
-  width: "100%",
-  maxWidth: 900,
-};
-
-const bgGrid = {
-  position: "fixed",
-  inset: 0,
-  backgroundImage:
-    "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
-  backgroundSize: "80px 80px",
-  zIndex: 1,
-};
-
-const bgLines = {
-  position: "fixed",
-  inset: 0,
-  backgroundImage:
-    "linear-gradient(120deg, transparent 40%, rgba(56,189,248,0.08) 50%, transparent 60%)",
-  backgroundSize: "1200px 1200px",
-  zIndex: 2,
-};
-
-const bgGlow = {
-  position: "fixed",
-  inset: 0,
-  background:
-    "radial-gradient(circle at 30% 20%, rgba(56,189,248,0.12), transparent 40%), radial-gradient(circle at 70% 80%, rgba(167,139,250,0.12), transparent 45%)",
-  zIndex: 3,
-};
-
-const back = {
-  marginBottom: 24,
-  padding: "6px 12px",
-  fontSize: 13,
-  borderRadius: 8,
-  background: "rgba(148,163,184,0.18)",
-  border: "1px solid rgba(148,163,184,0.35)",
-  color: "#ffffff",
-  cursor: "pointer",
-};
-
-const title = {
-  fontSize: "2.2rem",
-  marginBottom: 12,
-  color: "#ffffff",
-};
-
-const intro = {
-  color: "#e5e7eb",
-  maxWidth: 720,
-  marginBottom: 32,
-  fontSize: 15,
-};
-
-function Section({ title, children }) {
-  return (
-    <div style={section}>
-      <h2 style={sectionTitle}>{title}</h2>
-      <div style={sectionText}>{children}</div>
-    </div>
-  );
-}
-
-const section = {
-  width: "100%",
-  marginBottom: 28,
-  padding: 24,
-  borderRadius: 16,
-  background: "rgba(56,189,248,0.14)",
-  border: "1px solid rgba(125,211,252,0.35)",
-  backdropFilter: "blur(12px)",
-};
-
-const sectionTitle = {
-  fontSize: "1.15rem",
-  color: "#f0f9ff",
-  marginBottom: 10,
-};
-
-const sectionText = {
-  fontSize: 15,
-  lineHeight: 1.65,
-  color: "#f8fafc",
-};
-
-const footer = {
-  marginTop: 48,
-  fontSize: 14,
-  color: "#e5e7eb",
-  maxWidth: 720,
-};
