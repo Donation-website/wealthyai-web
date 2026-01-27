@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 /* ===== REGIONS ===== */
 const REGIONS = [
@@ -8,23 +8,32 @@ const REGIONS = [
   { code: "HU", label: "Hungary" },
 ];
 
-/* ===== MAIN COMPONENT ===== */
-
 export default function PremiumMonth() {
   const [region, setRegion] = useState("EU");
 
   const [inputs, setInputs] = useState({
     income: 4000,
-    fixedRatio: 50,
-    variableRatio: 30,
-    optionalRatio: 20,
+
+    housing: 1200,
+
+    electricity: 120,
+    gas: 90,
+    water: 40,
+
+    internet: 60,
+    mobile: 40,
+    tv: 30,
+    insurance: 150,
+    banking: 20,
+
+    unexpected: 200,
+    other: 300,
   });
 
   const update = (k, v) =>
     setInputs({ ...inputs, [k]: Number(v) });
 
-  /* ===== MOCK SIGNALS (AI LATER) ===== */
-
+  /* ===== PLACEHOLDER DAILY SIGNAL ===== */
   const dailySignal = "No structural change detected today.";
 
   return (
@@ -59,103 +68,87 @@ export default function PremiumMonth() {
         <p>{dailySignal}</p>
       </div>
 
-      {/* LAYOUT */}
+      {/* MAIN LAYOUT */}
       <div style={layout}>
         {/* INPUT PANEL */}
         <div style={card}>
-          <h3>Financial Structure</h3>
+          <h3>Monthly Financial Structure</h3>
 
-          <label>Monthly Income</label>
-          <input
-            type="number"
+          <Label>Income</Label>
+          <Input
             value={inputs.income}
-            onChange={(e) => update("income", e.target.value)}
-            style={input}
+            onChange={e => update("income", e.target.value)}
           />
 
           <Divider />
 
-          <label>Fixed Commitments (%)</label>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={inputs.fixedRatio}
-            onChange={(e) => update("fixedRatio", e.target.value)}
-          />
-          <Value>{inputs.fixedRatio}%</Value>
+          <Section title="Living">
+            <Row label="Housing" value={inputs.housing} onChange={v => update("housing", v)} />
+          </Section>
 
-          <label>Variable Living Costs (%)</label>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={inputs.variableRatio}
-            onChange={(e) => update("variableRatio", e.target.value)}
-          />
-          <Value>{inputs.variableRatio}%</Value>
+          <Section title="Utilities">
+            <Row label="Electricity" value={inputs.electricity} onChange={v => update("electricity", v)} />
+            <Row label="Gas" value={inputs.gas} onChange={v => update("gas", v)} />
+            <Row label="Water" value={inputs.water} onChange={v => update("water", v)} />
+          </Section>
 
-          <label>Optional / Discretionary (%)</label>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={inputs.optionalRatio}
-            onChange={(e) => update("optionalRatio", e.target.value)}
-          />
-          <Value>{inputs.optionalRatio}%</Value>
+          <Section title="Recurring Services">
+            <Row label="Internet" value={inputs.internet} onChange={v => update("internet", v)} />
+            <Row label="Mobile phone" value={inputs.mobile} onChange={v => update("mobile", v)} />
+            <Row label="TV / Streaming" value={inputs.tv} onChange={v => update("tv", v)} />
+            <Row label="Insurance" value={inputs.insurance} onChange={v => update("insurance", v)} />
+            <Row label="Banking fees" value={inputs.banking} onChange={v => update("banking", v)} />
+          </Section>
+
+          <Section title="Irregular">
+            <Row label="Unexpected" value={inputs.unexpected} onChange={v => update("unexpected", v)} />
+            <Row label="Other" value={inputs.other} onChange={v => update("other", v)} />
+          </Section>
 
           <p style={note}>
-            Percentages don’t need to be exact.  
+            Values can be estimates.  
             This briefing focuses on structure, not precision.
           </p>
         </div>
 
-        {/* BRIEFING */}
+        {/* BRIEFING PANEL */}
         <div style={card}>
           <h3>90-Day Financial Briefing</h3>
 
           <p>
-            Based on your current income level and expense structure,
-            your financial position appears stable but moderately constrained.
+            Your financial structure shows a high concentration of fixed and
+            recurring costs relative to discretionary flexibility.
           </p>
 
           <p>
-            The dominant factor over the next 90 days is not income volatility,
-            but the proportion of pre-committed expenses limiting flexibility.
+            In the selected region, electricity and gas services are often
+            structurally adjustable, while water costs are typically regulated
+            and less flexible.
           </p>
 
           <p>
-            In the selected region, structural decisions tend to outweigh
-            short-term optimizations, especially when fixed ratios exceed
-            discretionary capacity.
+            Recurring services such as internet, mobile, and banking fees
+            represent potential leverage points that do not require lifestyle
+            changes.
           </p>
 
           <Divider />
 
           <strong>What You Can Ignore</strong>
           <p>
-            Small day-to-day fluctuations are unlikely to materially change
-            your medium-term outcome.
+            Short-term daily fluctuations and small discretionary optimizations
+            are unlikely to materially alter your 90-day outlook.
           </p>
 
           <Divider />
 
           <strong>Direction</strong>
           <p>
-            If no changes are made, the next three months are expected
-            to remain stable, with gradually decreasing optionality.
+            If no structural changes are made, the next three months are expected
+            to remain stable, with gradually decreasing optionality rather than
+            acute risk.
           </p>
         </div>
-      </div>
-
-      {/* SCENARIO MODE */}
-      <div style={scenarioBox}>
-        <h3>Scenario Mode (Sandbox)</h3>
-        <p>
-          Test “what if” changes without affecting your baseline outlook.
-        </p>
-        <button style={scenarioBtn}>Enable Scenario Mode</button>
       </div>
 
       {/* FOOTER */}
@@ -166,14 +159,43 @@ export default function PremiumMonth() {
   );
 }
 
-/* ===== UI HELPERS ===== */
+/* ===== SMALL COMPONENTS ===== */
 
-const Divider = () => (
-  <div style={{ height: 1, background: "#1e293b", margin: "18px 0" }} />
+const Section = ({ title, children }) => (
+  <>
+    <Divider />
+    <strong>{title}</strong>
+    {children}
+  </>
 );
 
-const Value = ({ children }) => (
-  <div style={{ color: "#7dd3fc", marginBottom: 12 }}>{children}</div>
+const Row = ({ label, value, onChange }) => (
+  <div style={row}>
+    <span>{label}</span>
+    <input
+      type="number"
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      style={rowInput}
+    />
+  </div>
+);
+
+const Label = ({ children }) => (
+  <label style={{ marginBottom: 6, display: "block" }}>{children}</label>
+);
+
+const Input = ({ value, onChange }) => (
+  <input
+    type="number"
+    value={value}
+    onChange={onChange}
+    style={input}
+  />
+);
+
+const Divider = () => (
+  <div style={{ height: 1, background: "#1e293b", margin: "16px 0" }} />
 );
 
 /* ===== STYLES ===== */
@@ -181,9 +203,19 @@ const Value = ({ children }) => (
 const page = {
   minHeight: "100vh",
   padding: 40,
-  backgroundColor: "#020617",
   color: "#e5e7eb",
   fontFamily: "Inter, system-ui",
+  backgroundColor: "#020617",
+  backgroundImage: `
+    repeating-linear-gradient(-25deg, rgba(56,189,248,0.06) 0px, rgba(56,189,248,0.06) 1px, transparent 1px, transparent 180px),
+    repeating-linear-gradient(35deg, rgba(167,139,250,0.05) 0px, rgba(167,139,250,0.05) 1px, transparent 1px, transparent 260px),
+    radial-gradient(circle at 20% 30%, rgba(56,189,248,0.18), transparent 45%),
+    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.18), transparent 50%),
+    radial-gradient(circle at 45% 85%, rgba(34,211,238,0.14), transparent 45%),
+    url("/wealthyai/icons/generated.png")
+  `,
+  backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
+  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
 };
 
 const header = { textAlign: "center", marginBottom: 20 };
@@ -193,7 +225,6 @@ const subtitle = { marginTop: 8, color: "#cbd5f5" };
 const regionRow = {
   display: "flex",
   justifyContent: "center",
-  alignItems: "center",
   gap: 10,
   marginBottom: 20,
 };
@@ -235,36 +266,31 @@ const input = {
   width: "100%",
   padding: 10,
   marginTop: 6,
-  marginBottom: 14,
   background: "rgba(255,255,255,0.08)",
   border: "none",
   borderRadius: 8,
   color: "white",
 };
 
+const row = {
+  display: "flex",
+  justifyContent: "space-between",
+  marginTop: 8,
+};
+
+const rowInput = {
+  width: 100,
+  background: "transparent",
+  border: "none",
+  borderBottom: "1px solid #38bdf8",
+  color: "#38bdf8",
+  textAlign: "right",
+};
+
 const note = {
   marginTop: 16,
   fontSize: 13,
   color: "#94a3b8",
-};
-
-const scenarioBox = {
-  maxWidth: 800,
-  margin: "50px auto 0",
-  padding: 24,
-  textAlign: "center",
-  borderRadius: 18,
-  border: "1px dashed #334155",
-};
-
-const scenarioBtn = {
-  marginTop: 16,
-  padding: "10px 18px",
-  borderRadius: 10,
-  border: "none",
-  background: "#38bdf8",
-  fontWeight: "bold",
-  cursor: "pointer",
 };
 
 const footer = {
