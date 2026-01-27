@@ -1,4 +1,4 @@
-azert talan 1 egyszeru grafikon beleferhet, mert az emberek szeretik a vizualis elmenyt. ami fontos es meg nem irtam. a stripe mar mukodik, most teszt modban van, de mukodik elesben is ha atteszem a kulcsot. tehat a tovabblepesekhez mondom, hogy barhogyan is talaljuk b oldalon a csomagot, mar be van allitva a stripe, es mivel majd 1 hetig szivtam vele azt ne rontsuk el. zek alapjan beteszem ujra Neked a jelenleg futo B oldalt, es kerlek a teljes uj B oldal kodot kuld at nekem. en torlom az elozot githubon es beillesztem az ujat. import { useEffect } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/router";
 
 export default function PremiumRouter() {
