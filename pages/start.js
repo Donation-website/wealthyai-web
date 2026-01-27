@@ -1,4 +1,12 @@
 import React, { useState } from "react";
+import {
+  ResponsiveContainer,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+} from "recharts";
 
 export default function UserDashboard() {
   const [data, setData] = useState({
@@ -17,75 +25,40 @@ export default function UserDashboard() {
   const totalExpenses = data.fixed + data.variable;
   const balance = data.income - totalExpenses;
 
-  const usagePercent =
-    data.income > 0 ? Math.min((totalExpenses / data.income) * 100, 100) : 0;
-
   const savingsRate =
     data.income > 0 ? (balance / data.income) * 100 : 0;
 
-  const savingsScore = Math.max(
-    0,
-    Math.min(100, Math.round((savingsRate / 30) * 100))
-  );
-
   const riskLevel =
-    usagePercent > 90
+    totalExpenses / data.income > 0.9
       ? "High Risk"
-      : usagePercent > 70
+      : totalExpenses / data.income > 0.7
       ? "Medium Risk"
       : "Low Risk";
 
-  /* ===== INSIGHTS ===== */
+  /* ===== RADAR DATA (REAL INPUT) ===== */
 
-  const insights = [];
-
-  if (balance < 0) {
-    insights.push(
-      "🚨 Your expenses exceed your income. This snapshot signals pressure, not stability."
-    );
-    insights.push(
-      "Advanced AI plans help identify recovery paths and stress points."
-    );
-  }
-
-  if (data.subscriptions > data.income * 0.08) {
-    insights.push(
-      "Subscriptions are relatively high. This often hides unnoticed monthly leakage."
-    );
-  }
-
-  if (savingsRate >= 20) {
-    insights.push(
-      "You are saving at a healthy rate. This supports short-term stability."
-    );
-  } else if (balance >= 0) {
-    insights.push(
-      "Savings are positive, but below the resilience threshold."
-    );
-  }
+  const radarData = [
+    { metric: "Income", value: data.income / 100 },
+    { metric: "Fixed", value: data.fixed / 100 },
+    { metric: "Variable", value: data.variable / 100 },
+    { metric: "Subscriptions", value: data.subscriptions / 100 },
+    { metric: "Utilities", value: (data.electricity + data.water + data.gas + data.internet) / 100 },
+    { metric: "Savings", value: Math.max(balance, 0) / 100 },
+  ];
 
   /* ===== STRIPE ===== */
 
   const handleCheckout = async (priceId) => {
     localStorage.setItem("userFinancials", JSON.stringify(data));
 
-    try {
-      const res = await fetch("/api/create-stripe-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId }),
-      });
+    const res = await fetch("/api/create-stripe-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ priceId }),
+    });
 
-      const session = await res.json();
-      if (session.url) {
-        window.location.href = session.url;
-      } else {
-        alert("Payment initialization failed.");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Payment initialization failed.");
-    }
+    const session = await res.json();
+    if (session.url) window.location.href = session.url;
   };
 
   /* ===== STYLES ===== */
@@ -93,107 +66,140 @@ export default function UserDashboard() {
   const card = {
     background: "rgba(15,23,42,0.65)",
     backdropFilter: "blur(14px)",
-    borderRadius: "22px",
-    padding: "26px",
+    borderRadius: 22,
+    padding: 26,
     border: "1px solid rgba(255,255,255,0.08)",
   };
 
   const input = {
     width: "100%",
-    padding: "10px",
-    marginTop: "6px",
-    borderRadius: "8px",
+    padding: 10,
+    marginTop: 6,
+    borderRadius: 8,
     border: "none",
     background: "rgba(255,255,255,0.08)",
     color: "white",
-  };
-
-  const priceCard = {
-    ...card,
-    textAlign: "center",
-    cursor: "pointer",
-    transition: "transform .2s, box-shadow .2s",
   };
 
   return (
     <main
       style={{
         minHeight: "100vh",
-        padding: "40px",
+        padding: 40,
         color: "white",
-        fontFamily: "Inter, system-ui, sans-serif",
+        fontFamily: "Inter, system-ui",
         backgroundImage:
-          "linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('/wealthyai/icons/hat.png')",
+          "linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('/wealthyai/icons/hat.png')",
         backgroundSize: "cover",
         backgroundPosition: "center",
+        position: "relative",
       }}
     >
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+      {/* LOGO */}
+      <img
+        src="/wealthyai/icons/generated.png"
+        alt="WealthyAI"
+        style={{
+          position: "absolute",
+          top: 24,
+          left: 24,
+          width: 120,
+          opacity: 0.75,
+        }}
+      />
+
+      {/* HEADER CENTER */}
+      <div style={{ textAlign: "center", marginBottom: 40 }}>
         <h1>Your Financial Overview (Basic)</h1>
         <p style={{ opacity: 0.75 }}>
           This view shows a snapshot — not behavior, not direction.
         </p>
+      </div>
 
-        {/* GRID */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-          {/* INPUTS */}
-          <div style={card}>
-            <h3>Income & Expenses</h3>
-
-            {[
-              ["Monthly Income ($)", "income"],
-              ["Fixed Expenses", "fixed"],
-              ["Variable Expenses", "variable"],
-            ].map(([label, key]) => (
-              <div key={key}>
-                <label>{label}</label>
-                <input
-                  type="number"
-                  value={data[key]}
-                  style={input}
-                  onChange={(e) =>
-                    setData({ ...data, [key]: Number(e.target.value) })
-                  }
-                />
-              </div>
-            ))}
-          </div>
-
-          {/* INSIGHTS */}
-          <div style={card}>
-            <h3>Insights (Basic)</h3>
-            <p>Risk Level: <strong>{riskLevel}</strong></p>
-            <p>Savings Score: <strong>{savingsScore}/100</strong></p>
-
-            <ul>
-              {insights.map((i, idx) => (
-                <li key={idx}>{i}</li>
-              ))}
-            </ul>
-          </div>
+      {/* GRID */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 24,
+          maxWidth: 1200,
+          margin: "0 auto",
+        }}
+      >
+        {/* INPUTS */}
+        <div style={card}>
+          <h3>Income & Expenses</h3>
+          {[
+            ["Monthly Income ($)", "income"],
+            ["Fixed Expenses", "fixed"],
+            ["Variable Expenses", "variable"],
+          ].map(([label, key]) => (
+            <div key={key}>
+              <label>{label}</label>
+              <input
+                type="number"
+                value={data[key]}
+                style={input}
+                onChange={(e) =>
+                  setData({ ...data, [key]: Number(e.target.value) })
+                }
+              />
+            </div>
+          ))}
         </div>
 
-        {/* PRICING */}
-        <div style={{ marginTop: 60, textAlign: "center" }}>
-          <h2>Go deeper when you’re ready</h2>
+        {/* RADAR */}
+        <div style={card}>
+          <h3>Financial Structure (Snapshot)</h3>
+          <ResponsiveContainer width="100%" height={260}>
+            <RadarChart data={radarData}>
+              <PolarGrid />
+              <PolarAngleAxis dataKey="metric" />
+              <PolarRadiusAxis />
+              <Radar
+                dataKey="value"
+                stroke="#38bdf8"
+                fill="#38bdf8"
+                fillOpacity={0.25}
+              />
+            </RadarChart>
+          </ResponsiveContainer>
+          <p style={{ opacity: 0.65, fontSize: 13 }}>
+            Relative distribution of financial components (scaled).
+          </p>
+        </div>
+      </div>
 
-          <div style={{ display: "flex", gap: 20, justifyContent: "center", flexWrap: "wrap" }}>
-            <div onClick={() => handleCheckout("price_1SscYJDyLtejYlZiyDvhdaIx")} style={priceCard}>
-              <h3>1 Day · $9.99</h3>
-              <small>Clarity snapshot + AI strategy</small>
-            </div>
-
-            <div onClick={() => handleCheckout("price_1SscaYDyLtejYlZiDjSeF5Wm")} style={priceCard}>
-              <h3>1 Week · $14.99</h3>
-              <small>Behavior & country-aware analysis</small>
-            </div>
-
-            <div onClick={() => handleCheckout("price_1SscbeDyLtejYlZixJcT3B4o")} style={priceCard}>
-              <h3>1 Month · $24.99</h3>
-              <small>Direction, projections & exportable insights</small>
-            </div>
+      {/* PRICING */}
+      <div style={{ marginTop: 60, textAlign: "center" }}>
+        <h2>Continue when you’re ready</h2>
+        <div style={{ display: "flex", gap: 20, justifyContent: "center", flexWrap: "wrap" }}>
+          <div onClick={() => handleCheckout("price_1SscYJDyLtejYlZiyDvhdaIx")} style={card}>
+            <h3>1 Day · $9.99</h3>
+            <small>Clarity & AI strategy</small>
+          </div>
+          <div onClick={() => handleCheckout("price_1SscaYDyLtejYlZiDjSeF5Wm")} style={card}>
+            <h3>1 Week · $14.99</h3>
+            <small>Behavior & regional context</small>
+          </div>
+          <div onClick={() => handleCheckout("price_1SscbeDyLtejYlZixJcT3B4o")} style={card}>
+            <h3>1 Month · $24.99</h3>
+            <small>Direction, projections, exports</small>
           </div>
         </div>
+      </div>
+
+      {/* FOOTER */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 16,
+          left: 20,
+          fontSize: 12,
+          opacity: 0.6,
+        }}
+      >
+        © 2026 WealthyAI — All rights reserved.
       </div>
     </main>
   );
