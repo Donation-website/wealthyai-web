@@ -2,9 +2,6 @@ import React from "react";
 import Head from "next/head";
 
 export default function Home() {
-  const SITE_URL = "https://wealthyai-web.vercel.app";
-  const SHARE_TEXT = "AI-powered financial clarity with WealthyAI";
-
   return (
     <>
       <Head>
@@ -13,33 +10,6 @@ export default function Home() {
           name="description"
           content="AI-powered financial planning with structured insights and clear perspective."
         />
-
-        {/* Open Graph */}
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={SITE_URL} />
-        <meta property="og:title" content="WealthyAI – AI-powered financial clarity" />
-        <meta
-          property="og:description"
-          content="Structured insights. Clear perspective. Financial intelligence."
-        />
-        <meta
-          property="og:image"
-          content="https://wealthyai-web.vercel.app/wealthyai/wealthyai.png"
-        />
-
-        {/* Twitter */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="WealthyAI – AI-powered financial clarity" />
-        <meta
-          name="twitter:description"
-          content="Structured insights. Clear perspective. Financial intelligence."
-        />
-        <meta
-          name="twitter:image"
-          content="https://wealthyai-web.vercel.app/wealthyai/wealthyai.png"
-        />
-
-        <link href="https://fonts.googleapis.com" rel="stylesheet" />
       </Head>
 
       <main
@@ -57,7 +27,7 @@ export default function Home() {
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
           color: "white",
-          fontFamily: "'Inter', 'Arial', sans-serif",
+          fontFamily: "'Inter', system-ui, Arial, sans-serif",
           position: "relative",
           overflow: "hidden",
           margin: 0,
@@ -90,9 +60,10 @@ export default function Home() {
             flexDirection: "column",
             alignItems: "center",
             width: "100%",
-            transform: "translateY(-40px)", 
+            transform: "translateY(-40px)",
           }}
         >
+          {/* LOGO */}
           <img
             src="/wealthyai/icons/generated.png"
             alt="WealthyAI logo"
@@ -100,27 +71,52 @@ export default function Home() {
             style={{
               width: "860px",
               maxWidth: "95vw",
-              display: "block"
+              display: "block",
+              cursor: "pointer",
             }}
           />
-          
-          <div style={{ 
-            color: "#FFFFFF", 
-            lineHeight: "1.4",
-            textAlign: "center",
-            textShadow: "0 2px 10px rgba(0,0,0,0.5)",
-            marginTop: "-110px", 
-            width: "100%",
-            maxWidth: "800px",
-            padding: "0 20px"
-          }}>
-            <div style={{ fontSize: "1.6rem", fontWeight: "300", opacity: 0.9, marginBottom: "15px", lineHeight: "1.4" }}>
+
+          {/* TEXT UNDER LOGO */}
+          <div
+            style={{
+              color: "#FFFFFF",
+              lineHeight: "1.45",
+              textAlign: "center",
+              textShadow: "0 2px 10px rgba(0,0,0,0.5)",
+              marginTop: "-110px",
+              width: "100%",
+              maxWidth: "800px",
+              padding: "0 20px",
+              fontFamily: "'Inter', system-ui, Arial, sans-serif",
+              letterSpacing: "0.2px",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "1.55rem",
+                fontWeight: "300",
+                opacity: 0.9,
+                marginBottom: "15px",
+              }}
+            >
               AI-powered financial thinking.<br />
               Structured insights.<br />
               Clear perspective.
             </div>
-            
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", fontSize: "0.95rem", textTransform: "uppercase", letterSpacing: "1.5px", opacity: 0.8, gap: "15px" }}>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                fontSize: "0.85rem",
+                textTransform: "uppercase",
+                letterSpacing: "1.4px",
+                opacity: 0.8,
+                gap: "15px",
+                fontWeight: "500",
+              }}
+            >
               <span className="discrete-pulse">Not advice.</span>
               <span className="discrete-pulse">Not predictions.</span>
               <span className="discrete-pulse">Financial intelligence.</span>
@@ -128,7 +124,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* START */}
+        {/* START BUTTON */}
         <a
           href="/start"
           className="start-btn"
@@ -151,7 +147,7 @@ export default function Home() {
           Start
         </a>
 
-        {/* BOTTOM BAR - FIXED SOCIAL LINKS */}
+        {/* BOTTOM BAR */}
         <div
           style={{
             position: "absolute",
@@ -162,63 +158,54 @@ export default function Home() {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            background: "transparent",
-            boxSizing: "border-box",
             zIndex: 5,
           }}
         >
           <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
             © 2026 WealthyAI — All rights reserved.
           </div>
-
-          <div style={{ display: "flex", gap: "18px", alignItems: "center" }}>
-            {/* FACEBOOK SHARE */}
-            <a
-              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="icon-link"
-            >
-              <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
-            </a>
-
-            {/* X (TWITTER) SHARE */}
-            <a
-              href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="icon-link"
-            >
-              <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
-            </a>
-
-            {/* INSTAGRAM */}
-            <a
-              href="https://www.instagram.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="icon-link"
-            >
-              <img src="/wealthyai/icons/insta.png" alt="Instagram" style={{ width: 34 }} />
-            </a>
-          </div>
         </div>
 
+        {/* STYLES */}
         <style>{`
-          .brand-logo { animation: logoFloat 9s ease-in-out infinite; transition: filter 0.4s ease; }
+          .brand-logo {
+            animation: logoFloat 9s ease-in-out infinite;
+            transition: filter 0.4s ease, box-shadow 0.4s ease;
+          }
+
+          .brand-logo:hover {
+            filter: drop-shadow(0 0 18px rgba(56,189,248,0.55));
+          }
+
           @keyframes logoFloat {
             0% { transform: scale(1) translateY(0); opacity: 0.92; }
             35% { transform: scale(1.035) translateY(-6px); opacity: 1; }
             70% { transform: scale(1.02) translateY(3px); opacity: 0.97; }
             100% { transform: scale(1) translateY(0); opacity: 0.92; }
           }
-          .discrete-pulse { animation: discretePulse 3s ease-in-out infinite; }
-          @keyframes discretePulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
-          .start-btn:hover, .nav-link:hover, .icon-link:hover {
+
+          .discrete-pulse {
+            animation: discretePulse 3s ease-in-out infinite;
+          }
+
+          @keyframes discretePulse {
+            0% { opacity: 0.4; }
+            50% { opacity: 1; }
+            100% { opacity: 0.4; }
+          }
+
+          .start-btn:hover,
+          .nav-link:hover {
             box-shadow: 0 0 35px rgba(56,189,248,0.45);
             filter: drop-shadow(0 0 18px rgba(56,189,248,0.45));
           }
-          .nav-link { color: white; text-decoration: none; opacity: 0.85; }
+
+          .nav-link {
+            color: white;
+            text-decoration: none;
+            opacity: 0.85;
+            transition: filter 0.3s ease;
+          }
         `}</style>
       </main>
     </>
