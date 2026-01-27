@@ -184,19 +184,16 @@ export default function Home() {
             justifyContent: "space-between",
             alignItems: "center",
             zIndex: 5,
+            boxSizing: "border-box",   // ✅ EZ A JAVÍTÁS
           }}
         >
           <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
             © 2026 WealthyAI — All rights reserved.
           </div>
 
-          {/* SOCIAL SHARE ICONS */}
           <div style={{ display: "flex", gap: "18px", alignItems: "center" }}>
-            {/* FACEBOOK */}
             <a
-              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-                SITE_URL
-              )}`}
+              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="icon-link"
@@ -204,11 +201,8 @@ export default function Home() {
               <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
             </a>
 
-            {/* X / TWITTER */}
             <a
-              href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(
-                SITE_URL
-              )}&text=${encodeURIComponent(SHARE_TEXT)}`}
+              href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="icon-link"
@@ -216,7 +210,6 @@ export default function Home() {
               <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
             </a>
 
-            {/* INSTAGRAM (profile link only) */}
             <a
               href="https://www.instagram.com"
               target="_blank"
