@@ -191,22 +191,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* CONTACT & PARTNERSHIPS */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: "64px",
-            width: "100%",
-            textAlign: "center",
-            fontSize: "0.8rem",
-            opacity: 0.75,
-            letterSpacing: "0.3px",
-          }}
-        >
-          <div style={{ fontWeight: 500 }}>Contact & Partnerships</div>
-          <div>wealthyaiweb@gmail.com</div>
-        </div>
-
         {/* BOTTOM BAR */}
         <div
           style={{
@@ -217,7 +201,7 @@ export default function Home() {
             padding: "18px 24px",
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "center",
+            alignItems: "flex-end",
             zIndex: 5,
             boxSizing: "border-box",
           }}
@@ -226,6 +210,20 @@ export default function Home() {
             © 2026 WealthyAI — All rights reserved.
           </div>
 
+          {/* CENTER CONTACT */}
+          <div
+            style={{
+              textAlign: "center",
+              fontSize: "0.8rem",
+              opacity: 0.75,
+              lineHeight: 1.4,
+            }}
+          >
+            <div style={{ fontWeight: 500 }}>Contact & Partnerships</div>
+            <div>wealthyaiweb@gmail.com</div>
+          </div>
+
+          {/* SOCIAL ICONS */}
           <div style={{ display: "flex", gap: "18px", alignItems: "center" }}>
             <a
               href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`}
