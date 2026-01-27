@@ -201,7 +201,7 @@ export default function Home() {
             padding: "18px 24px",
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "flex-end",
+            alignItems: "center",
             zIndex: 5,
             boxSizing: "border-box",
           }}
@@ -210,47 +210,59 @@ export default function Home() {
             © 2026 WealthyAI — All rights reserved.
           </div>
 
-          {/* CENTER CONTACT */}
           <div
             style={{
-              textAlign: "center",
-              fontSize: "0.8rem",
-              opacity: 0.75,
-              lineHeight: 1.4,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-end",
+              gap: "10px",
             }}
           >
-            <div style={{ fontWeight: 500 }}>Contact & Partnerships</div>
-            <div>wealthyaiweb@gmail.com</div>
-          </div>
-
-          {/* SOCIAL ICONS */}
-          <div style={{ display: "flex", gap: "18px", alignItems: "center" }}>
-            <a
-              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="icon-link"
+            {/* CONTACT & PARTNERSHIPS */}
+            <div
+              className="nav-link"
+              style={{
+                fontSize: "0.85rem",
+                textAlign: "right",
+                lineHeight: "1.5",
+              }}
             >
-              <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
-            </a>
+              <div>Contact & Partnerships</div>
+              <div>
+                For media inquiries, partnerships, or institutional use:<br />
+                <strong>wealthyaiweb@gmail.com</strong>
+              </div>
+            </div>
 
-            <a
-              href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="icon-link"
-            >
-              <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
-            </a>
+            {/* SOCIAL ICONS */}
+            <div style={{ display: "flex", gap: "18px", alignItems: "center" }}>
+              <a
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="icon-link"
+              >
+                <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
+              </a>
 
-            <a
-              href="https://www.instagram.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="icon-link"
-            >
-              <img src="/wealthyai/icons/insta.png" alt="Instagram" style={{ width: 34 }} />
-            </a>
+              <a
+                href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="icon-link"
+              >
+                <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
+              </a>
+
+              <a
+                href="https://www.instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="icon-link"
+              >
+                <img src="/wealthyai/icons/insta.png" alt="Instagram" style={{ width: 34 }} />
+              </a>
+            </div>
           </div>
         </div>
 
