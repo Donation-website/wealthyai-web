@@ -30,6 +30,9 @@ export default function PremiumMonth() {
   const [loading, setLoading] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
 
+  /* ===== ADDED: ANALYSIS MODE STATE ===== */
+  const [analysisMode, setAnalysisMode] = useState("default");
+
   const update = (k, v) =>
     setInputs({ ...inputs, [k]: Number(v) });
 
@@ -65,6 +68,7 @@ export default function PremiumMonth() {
         body: JSON.stringify({
           region,
           cycleDay,
+          analysisMode, // ===== ADDED =====
           previousSignals,
           ...inputs,
         }),
@@ -133,6 +137,24 @@ export default function PremiumMonth() {
         </select>
       </div>
 
+      {/* ===== ADDED: ANALYSIS MODE TOGGLE ===== */}
+      <div style={signalBox}>
+        <strong>Analysis Mode</strong>
+        <p style={{ marginTop: 6, opacity: 0.8 }}>
+          Default provides EU-based strategic interpretation.
+        </p>
+        <label style={{ display: "flex", gap: 10, marginTop: 8 }}>
+          <input
+            type="checkbox"
+            checked={analysisMode === "direct"}
+            onChange={(e) =>
+              setAnalysisMode(e.target.checked ? "direct" : "default")
+            }
+          />
+          <span>Direct, pressure-point focused analysis</span>
+        </label>
+      </div>
+
       {/* DAILY SIGNAL */}
       <div style={signalBox}>
         <strong>Cycle Status</strong>
@@ -180,7 +202,25 @@ export default function PremiumMonth() {
 
         {/* AI OUTPUT */}
         <div style={card}>
-          <h3>AI Strategic Briefing</h3>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <h3>AI Strategic Briefing</h3>
+
+            {/* ===== ADDED: CLOSE BUTTON ===== */}
+            {aiOpen && (
+              <button
+                onClick={() => setAiOpen(false)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "#7dd3fc",
+                  fontSize: 18,
+                  cursor: "pointer",
+                }}
+              >
+                ✕
+              </button>
+            )}
+          </div>
 
           {!aiOpen && (
             <p style={{ opacity: 0.7 }}>
