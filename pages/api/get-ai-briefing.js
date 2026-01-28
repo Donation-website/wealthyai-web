@@ -18,12 +18,12 @@ export default async function handler(req, res) {
       banking,
       unexpected,
       other,
-      cycleDay, // hányadik napja fut a 30 napos ciklus
-      previousSignals // opcionális: korábbi AI állítások
+      cycleDay,
+      previousSignals,
     } = req.body;
 
     /* ================================
-       SYSTEM PROMPT — E ROLE
+       SYSTEM PROMPT — E (MONTHLY)
     ================================= */
 
     const systemPrompt = `
@@ -33,82 +33,82 @@ ROLE:
 MONTHLY STRATEGIC FINANCIAL BRIEFING AUTHOR
 
 CORE IDENTITY:
-- You do NOT react. You INITIATE.
-- You do NOT summarize raw data. You WEIGH relevance.
-- You do NOT optimize everything. You DEFINE focus.
-- You speak as a calm, senior financial observer.
+- You INITIATE insight instead of reacting.
+- You WEIGH relevance instead of listing everything.
+- You SPEAK as a calm, senior financial observer.
+
+CRITICAL BEHAVIOR RULES:
+- Subtly reference the user's financial structure without quoting numbers.
+- Make it clear that this briefing is based on THEIR setup, not a generic example.
+- Use regional market knowledge (competition, regulation, flexibility),
+  NOT company names, prices, or specific offers.
+- Avoid generic macro commentary unless it directly affects decisions.
 
 ABSOLUTE RULES:
-- NEVER output raw numbers, tables, lists, or calculations.
+- NEVER output raw numbers, tables, or calculations.
 - NEVER repeat user input verbatim.
+- NEVER recommend specific companies or products.
 - NEVER ask questions.
-- NEVER include disclaimers, legal language, or advice framing.
-- NEVER mention AI, models, or system mechanics.
+- NEVER mention AI, models, training data, or system updates.
+- NEVER include legal disclaimers or advice framing.
 
 SCOPE:
 - Time horizon: NEXT 90 DAYS
-- Perspective: STRUCTURAL, not tactical
+- Focus: STRUCTURE and LEVERAGE, not tactics
+- This is NOT budgeting.
 - This is NOT coaching.
 - This is NOT a forecast promise.
 
 STYLE:
 - Calm
-- Decisive
-- Non-alarmist
-- Adult, executive tone
+- Direct
+- Adult
+- Slightly opinionated, but not alarmist
 
 OUTPUT STRUCTURE (MANDATORY):
-
 1. Executive Overview
 2. What Actually Matters
-3. What Does Not Matter
-4. Regional Reality
+3. What You Can Safely Ignore
+4. Regional Perspective
 5. 90-Day Direction
 6. Closing Signal
 
-Each section must be short and dense.
+Each section must feel personal, grounded, and specific
+— without using numbers.
 `;
 
     /* ================================
-       USER PROMPT — STRUCTURAL INPUT
+       USER PROMPT — STRUCTURAL CONTEXT
     ================================= */
 
     const userPrompt = `
-Region: ${region}
+Region selected: ${region}
 
-Income level provided internally.
+The user provided a real monthly financial structure that includes:
+- Housing and core living costs
+- Energy usage split across electricity, gas, and water
+- Recurring services such as telecom, insurance, and banking
+- Irregular and unexpected expenses
 
-Living structure:
-- Housing present
-- Utilities include electricity, gas, water
-
-Recurring services include:
-- Internet
-- Mobile
-- TV / streaming
-- Insurance
-- Banking fees
-
-Irregular costs exist.
+This reflects actual commitments, not hypothetical data.
 
 Cycle context:
-- This is day ${cycleDay || "unknown"} of the current monthly cycle.
+This briefing is generated on day ${cycleDay || "unknown"} of the current monthly cycle.
 
 Previous system signals:
 ${previousSignals || "None"}
 
 Task:
-Produce a MONTHLY FINANCIAL BRIEFING.
+Produce a MONTHLY FINANCIAL BRIEFING that:
+- Clearly reacts to this specific financial structure
+- Highlights where flexibility realistically exists and where it does not
+- Uses regional market characteristics to add perspective
+- Helps the user understand what deserves attention over the next 90 days
 
-Focus on:
-- Structural leverage
-- Relevance filtering
-- Time-based direction
-
-Avoid:
-- Tactical tips
-- Budgeting language
-- Optimization checklists
+Constraints:
+- Do NOT generalize unnecessarily
+- Do NOT provide tactical tips or checklists
+- Do NOT restate inputs
 `;
 
     /* ================================
@@ -130,7 +130,7 @@ Avoid:
             { role: "user", content: userPrompt },
           ],
           temperature: 0.18,
-          max_tokens: 850,
+          max_tokens: 900,
         }),
       }
     );
