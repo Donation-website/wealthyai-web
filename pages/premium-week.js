@@ -25,41 +25,11 @@ const COLORS = {
 export default function PremiumWeek() {
   const router = useRouter();
 
-  /* ===== STRIPE ACCESS CONTROL (ADDED) ===== */
+  /* ===== STRIPE ACCESS CONTROL ===== */
   const [authorized, setAuthorized] = useState(false);
   const [checking, setChecking] = useState(true);
 
-  useEffect(() => {
-    if (!router.isReady) return;
-
-    const sessionId = router.query.session_id;
-    if (!sessionId) {
-      router.replace("/start");
-      return;
-    }
-
-    fetch(`/api/verify-session?session_id=${sessionId}`)
-      .then(res => res.json())
-      .then(data => {
-        if (!data.valid || data.tier !== "week") {
-          router.replace("/start");
-        } else {
-          setAuthorized(true);
-        }
-      })
-      .catch(() => {
-        router.replace("/start");
-      })
-      .finally(() => {
-        setChecking(false);
-      });
-  }, [router.isReady]);
-
-  if (checking) {
-    return <div style={{ color: "white", padding: 40 }}>Verifying access…</div>;
-  }
-
-  if (!authorized) return null;
+  /* ===== ORIGINAL STATES ===== */
   const [incomeType, setIncomeType] = useState("monthly");
   const [incomeValue, setIncomeValue] = useState(3000);
   const [country, setCountry] = useState("US");
@@ -67,6 +37,7 @@ export default function PremiumWeek() {
   const [aiOpen, setAiOpen] = useState(false);
   const [aiText, setAiText] = useState("");
   const [loading, setLoading] = useState(false);
+
 
   useEffect(() => {
     const lang = navigator.language || "";
