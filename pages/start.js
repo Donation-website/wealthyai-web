@@ -81,27 +81,25 @@ export default function UserDashboard() {
     }
   };
 
-  /* ===== RADAR DATA (Javítva az értékekkel) ===== */
+  /* ===== RADAR DATA ===== */
 
   const radar = [
-    { label: "Expense Load", value: usagePercent, displayValue: usagePercent.toFixed(1) + "%" },
-    { label: "Savings Strength", value: Math.min(100, savingsRate * 3), displayValue: Math.max(0, Math.round(savingsRate)) + "%" },
+    { label: "Expense Load", value: usagePercent },
+    { label: "Savings Strength", value: Math.min(100, savingsRate * 3) },
     {
       label: "Subscription Weight",
       value:
         data.income > 0
           ? Math.min((data.subscriptions / data.income) * 200, 100)
           : 0,
-      displayValue: "$" + data.subscriptions
     },
   ];
 
-  /* ===== RADAR COMPONENT (Javítva a láthatóság és eltolás) ===== */
+  /* ===== RADAR COMPONENT ===== */
 
-  const Radar = ({ data, size = 260 }) => {
-    const padding = 55; 
+  const Radar = ({ data, size = 200 }) => {
     const c = size / 2;
-    const r = size / 2 - padding;
+    const r = size / 2 - 24;
     const step = (Math.PI * 2) / data.length;
 
     const point = (val, i) => {
@@ -111,7 +109,7 @@ export default function UserDashboard() {
     };
 
     return (
-      <svg width={size} height={size} style={{ margin: "20px auto", display: "block", overflow: "visible" }}>
+      <svg width={size} height={size} style={{ margin: "20px auto" }}>
         {[0.25, 0.5, 0.75, 1].map((lvl, i) => (
           <circle
             key={i}
@@ -145,20 +143,17 @@ export default function UserDashboard() {
 
         {data.map((d, i) => {
           const a = i * step - Math.PI / 2;
-          const x = c + (r + 22) * Math.cos(a);
-          const y = c + (r + 22) * Math.sin(a);
           return (
             <text
               key={i}
-              x={x}
-              y={y}
+              x={c + (r + 14) * Math.cos(a)}
+              y={c + (r + 14) * Math.sin(a)}
               fontSize="11"
               fill="rgba(255,255,255,0.7)"
               textAnchor="middle"
               dominantBaseline="middle"
             >
-              <tspan x={x} dy="-0.5em">{d.label}</tspan>
-              <tspan x={x} dy="1.2em" fill="#818cf8" fontWeight="bold">{d.displayValue}</tspan>
+              {d.label}
             </text>
           );
         })}
@@ -219,7 +214,7 @@ export default function UserDashboard() {
               ["Fixed Expenses", "fixed"],
               ["Variable Expenses", "variable"],
             ].map(([label, key]) => (
-              <div key={key} style={{ marginBottom: 15 }}>
+              <div key={key}>
                 <label>{label}</label>
                 <input
                   type="number"
@@ -258,7 +253,7 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        {/* ===== ORIENTATION BLOCK ===== */}
+        {/* ===== ORIENTATION BLOCK (RESTORED) ===== */}
         <div style={{ marginTop: 70, textAlign: "center" }}>
           <h2 className="pulse-title">
             Choose your depth of financial intelligence
@@ -277,35 +272,89 @@ export default function UserDashboard() {
               marginTop: 30,
             }}
           >
-            <div style={priceCard} onClick={() => handleCheckout("price_1")}>
+            <div style={card}>
               <h4>Daily Intelligence</h4>
-              <p style={{ fontSize: "14px", opacity: 0.8, margin: "10px 0" }}>
+              <p>
                 Short-term interpretation of your current financial state.
                 Best for immediate clarity.
               </p>
-              <div style={{ fontSize: "22px", fontWeight: "bold" }}>$9</div>
             </div>
 
-            <div style={priceCard} onClick={() => handleCheckout("price_2")}>
+            <div style={card}>
               <h4>Weekly Intelligence</h4>
-              <p style={{ fontSize: "14px", opacity: 0.8, margin: "10px 0" }}>
+              <p>
                 Behavioral patterns across days and categories.
                 Best for understanding habits.
               </p>
-              <div style={{ fontSize: "22px", fontWeight: "bold" }}>$29</div>
             </div>
 
-            <div style={priceCard} onClick={() => handleCheckout("price_3")}>
+            <div style={card}>
               <h4>Monthly Intelligence</h4>
-              <p style={{ fontSize: "14px", opacity: 0.8, margin: "10px 0" }}>
+              <p>
                 Multi-week context, regional insights, and forward-looking analysis.
-                Best when strategy matters.
+                Best when decisions require direction.
               </p>
-              <div style={{ fontSize: "22px", fontWeight: "bold" }}>$79</div>
+            </div>
+          </div>
+        </div>
+
+        {/* ===== PRICING ===== */}
+        <div style={{ marginTop: 60 }}>
+          <h2 style={{ textAlign: "center", marginBottom: 30 }}>
+            Unlock Advanced AI Intelligence
+          </h2>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: 20,
+              flexWrap: "wrap",
+            }}
+          >
+            <div
+              style={priceCard}
+              onClick={() =>
+                handleCheckout("price_1SscYJDyLtejYlZiyDvhdaIx")
+              }
+            >
+              <h3>1 Day · $9.99</h3>
+              <small>Immediate clarity</small>
+            </div>
+
+            <div
+              style={priceCard}
+              onClick={() =>
+                handleCheckout("price_1SscaYDyLtejYlZiDjSeF5Wm")
+              }
+            >
+              <h3>1 Week · $14.99</h3>
+              <small>Behavior & patterns</small>
+            </div>
+
+            <div
+              style={priceCard}
+              onClick={() =>
+                handleCheckout("price_1SscbeDyLtejYlZixJcT3B4o")
+              }
+            >
+              <h3>1 Month · $24.99</h3>
+              <small>Full intelligence engine</small>
             </div>
           </div>
         </div>
       </div>
+
+      <style>{`
+        .pulse-title {
+          animation: pulseSoft 3s ease-in-out infinite;
+        }
+        @keyframes pulseSoft {
+          0% { opacity: 0.6; }
+          50% { opacity: 1; }
+          100% { opacity: 0.6; }
+        }
+      `}</style>
     </main>
   );
 }
