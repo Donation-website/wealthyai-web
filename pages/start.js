@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from "react"; 
 
 export default function UserDashboard() {
   const [data, setData] = useState({
@@ -14,7 +14,6 @@ export default function UserDashboard() {
 
   /* ===== CALCULATIONS ===== */
 
-  // FIX #2: subscriptions beleszámolva
   const totalExpenses = data.fixed + data.variable + data.subscriptions;
   const balance = data.income - totalExpenses;
 
@@ -239,7 +238,6 @@ export default function UserDashboard() {
           <div style={card}>
             <h3>Insights (Basic)</h3>
 
-            {/* FIX #1: grafikon jobbra tolva */}
             <div style={{ paddingLeft: 28 }}>
               <Radar data={radar} />
             </div>
