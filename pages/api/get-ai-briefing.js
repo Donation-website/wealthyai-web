@@ -9,23 +9,11 @@ export default async function handler(req, res) {
       cycleDay,
       analysisMode,
       previousSignals,
-      income,
-      housing,
-      electricity,
-      gas,
-      water,
-      internet,
-      mobile,
-      tv,
-      insurance,
-      banking,
-      unexpected,
-      other,
     } = req.body;
 
     /* ================================
        SYSTEM PROMPT — MONTHLY
-       DUAL MODE · FINAL
+       DUAL MODE · FINAL · SALE SAFE
     ================================= */
 
     let systemPrompt = `
@@ -45,14 +33,13 @@ WHAT THIS IS:
 - Hierarchy, not completeness.
 
 PERSONALIZATION (CRITICAL):
-- Write so the reader feels this briefing was written specifically for their setup.
-- Subtly reflect how fixed costs, variable pressure, and limited flexibility interact.
-- Use natural phrasing such as:
+- Write so the reader feels this was written specifically for THEIR structure.
+- Reflect how fixed costs, variable pressure, and limited flexibility interact.
+- Use natural phrases like:
   "in this structure",
-  "given how your costs are arranged",
-  "this setup concentrates pressure in one place",
-  "flexibility here is limited by structure, not intent".
-- NEVER repeat numbers.
+  "given how costs are arranged",
+  "pressure concentrates in one place",
+  "flexibility is limited by structure, not intent".
 - NEVER restate inputs.
 - NEVER promise outcomes.
 
@@ -77,7 +64,7 @@ STYLE:
 - Adult
 - Grounded
 - Precise
-- Human, not generic
+- Personal, not generic
 
 OUTPUT STRUCTURE (MANDATORY):
 1. Executive Overview
@@ -88,7 +75,7 @@ OUTPUT STRUCTURE (MANDATORY):
 6. Closing Signal
 
 CLOSING SIGNAL RULE:
-- Exactly ONE sentence.
+- EXACTLY ONE sentence.
 - Normal prose.
 - No labels.
 - No formatting.
@@ -98,12 +85,13 @@ INTERNAL SIGNALS RULE:
 - Appear ONLY after:
   --- INTERNAL SIGNALS ---
 - Max 3 short lines.
-- No repetition of previous signals.
+- Plain language only.
+- Do NOT repeat previous signals.
 `;
 
     /* ================================
        MODE A — EXECUTIVE (DEFAULT)
-       HUHA1 DOMINANT
+       HUHA1 · INTERPRETIVE
     ================================= */
 
     if (!analysisMode || analysisMode === "executive") {
@@ -111,22 +99,28 @@ INTERNAL SIGNALS RULE:
 MODE:
 EXECUTIVE ANALYSIS
 
-MODE BEHAVIOR:
-- Interpret structure calmly.
-- Explain pressure without urgency.
-- Establish hierarchy softly.
-- Never instruct.
-- Never command.
-- Never push.
+BEHAVIOR:
+- Interpret structure.
+- Describe pressure calmly.
+- Establish hierarchy without urgency.
+- NEVER instruct.
+- NEVER suggest actions.
+- NEVER imply what the user should do.
+
+STRICT PROHIBITIONS:
+- No percentages.
+- No steps.
+- No "consider", "review", "develop".
+- No advice shadows.
 
 Tone:
-Analytical, measured, adult.
+Analytical, composed, adult.
 `;
     }
 
     /* ================================
        MODE B — DIRECTIVE (OPTIONAL)
-       HUHA2 DOMINANT
+       HUHA2 · DECISIVE
     ================================= */
 
     if (analysisMode === "directive") {
@@ -134,26 +128,26 @@ Analytical, measured, adult.
 MODE:
 DIRECTIVE ANALYSIS
 
-MODE BEHAVIOR:
+BEHAVIOR:
 - Identify ONE dominant pressure point.
 - Explicitly deprioritize everything else.
-- Use firmer language.
-- Shorter sentences.
-- Clear prioritization.
-- Structural realism over nuance.
+- Use firm, direct language.
+- Short sentences.
+- Clear exclusion logic.
 
-RULES FOR DIRECTIVE MODE:
-- You MAY use approximate percentages.
-- You MAY use decisive phrasing.
-- Do NOT soften conclusions.
-- Do NOT hedge.
-- Do NOT list multiple priorities.
+ALLOWED IN THIS MODE:
+- Approximate percentages.
+- Decisive statements.
+
+RULES:
+- No hedging.
+- No balance language.
+- No multiple priorities.
 `;
     }
 
     /* ================================
        REGIONAL TUNING
-       APPLIES TO BOTH MODES
     ================================= */
 
     if (region === "US") {
@@ -162,7 +156,6 @@ US CONTEXT:
 - Volatility is structural.
 - Individual exposure is high.
 - Pressure concentrates aggressively.
-- In DIRECTIVE mode, be unapologetically firm.
 `;
     }
 
@@ -171,8 +164,7 @@ US CONTEXT:
 EU CONTEXT:
 - Stability is the baseline, not a promise.
 - Regulation creates sensitivity.
-- Structure is not fragile, but reactive.
-- In DIRECTIVE mode, remain controlled, not aggressive.
+- Structure is reactive, not fragile.
 `;
     }
 
@@ -182,7 +174,6 @@ UK CONTEXT:
 - External shocks dominate planning.
 - Instability is localized.
 - Pressure is uneven.
-- In DIRECTIVE mode, isolate pressure without dramatizing.
 `;
     }
 
@@ -193,12 +184,11 @@ HU CONTEXT:
 - High price sensitivity.
 - Limited flexibility.
 - Household-level realism only.
-- No macro or geopolitical framing.
+- No macro framing.
 
 HU DIRECTIVE ADJUSTMENT:
-- Be firm, but not aggressive.
+- Firm, not aggressive.
 - Emphasize constraint, not blame.
-- Prioritization without confrontation.
 `;
     }
 
@@ -216,8 +206,6 @@ The user has a real monthly financial structure with:
 - Recurring services
 - Irregular pressure points
 
-These are lived constraints.
-
 Previously established system signals:
 ${previousSignals || "None"}
 
@@ -225,7 +213,7 @@ Task:
 Write a MONTHLY FINANCIAL BRIEFING that:
 - Feels written for THIS user
 - Identifies where pressure concentrates
-- Builds on prior signals instead of repeating them
+- Builds on prior signals
 - Establishes clear hierarchy
 
 Do NOT generalize.
@@ -250,7 +238,7 @@ Do NOT restate inputs.
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt },
           ],
-          temperature: analysisMode === "directive" ? 0.10 : 0.14,
+          temperature: analysisMode === "directive" ? 0.10 : 0.15,
           max_tokens: 1000,
         }),
       }
