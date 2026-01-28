@@ -12,6 +12,31 @@ import {
 } from "recharts";
 
 export default function DayPremium() {
+
+  /* ===== SUBSCRIPTION CHECK ===== */
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get("session_id");
+
+    if (!sessionId) {
+      window.location.href = "/start";
+      return;
+    }
+
+    fetch("/api/verify-active-subscription", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId }),
+    })
+      .then(res => res.json())
+      .then(d => {
+        if (!d.valid) window.location.href = "/start";
+      })
+      .catch(() => {
+        window.location.href = "/start";
+      });
+  }, []);
+
   const [data, setData] = useState({
     income: 5000,
     fixed: 2000,
@@ -63,7 +88,6 @@ export default function DayPremium() {
 
   return (
     <div style={page}>
-      {/* HELP BUTTON */}
       <a href="/day/help" style={helpButton}>Help</a>
 
       <div style={contentWrap}>
@@ -123,7 +147,6 @@ export default function DayPremium() {
         </div>
       </div>
 
-      {/* FIXED FOOTER ELEMENTS */}
       <div style={footerLeft}>
         © 2026 WealthyAI — All rights reserved.
       </div>
@@ -135,7 +158,6 @@ export default function DayPremium() {
     </div>
   );
 }
-
 /* ===== COMPONENTS ===== */
 
 function Metric({ label, value }) {
@@ -203,22 +225,9 @@ const page = {
 };
 
 const contentWrap = { padding: "40px" };
-
-/* 🔧 EZ A LÉNYEG */
-const header = {
-  marginBottom: "30px",
-  textAlign: "center",
-};
-
+const header = { marginBottom: "30px", textAlign: "center" };
 const title = { fontSize: "2.6rem", margin: 0 };
-
-const subtitle = {
-  color: "#f8fafc",
-  marginTop: "10px",
-  maxWidth: "700px",
-  marginLeft: "auto",
-  marginRight: "auto",
-};
+const subtitle = { color: "#f8fafc", marginTop: "10px" };
 
 const helpButton = {
   position: "absolute",
