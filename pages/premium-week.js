@@ -25,11 +25,32 @@ const COLORS = {
 export default function PremiumWeek() {
   const router = useRouter();
 
-  /* ===== STRIPE ACCESS CONTROL ===== */
+  /* ===== STRIPE ACCESS CONTROL (ADDED – DO NOT TOUCH) ===== */
   const [authorized, setAuthorized] = useState(false);
   const [checking, setChecking] = useState(true);
 
+  useEffect(() => {
+    const tier = localStorage.getItem("tier");
+    const expiresAt = Number(localStorage.getItem("expiresAt"));
+
+    if (!tier || !expiresAt || Date.now() > expiresAt) {
+      router.replace("/start");
+      return;
+    }
+
+    if (tier !== "week") {
+      router.replace("/start");
+      return;
+    }
+
+    setAuthorized(true);
+    setChecking(false);
+  }, []);
+
+  if (checking) return null;
+
   /* ===== ORIGINAL STATES ===== */
+
   const [incomeType, setIncomeType] = useState("monthly");
   const [incomeValue, setIncomeValue] = useState(3000);
   const [country, setCountry] = useState("US");
@@ -37,7 +58,6 @@ export default function PremiumWeek() {
   const [aiOpen, setAiOpen] = useState(false);
   const [aiText, setAiText] = useState("");
   const [loading, setLoading] = useState(false);
-
 
   useEffect(() => {
     const lang = navigator.language || "";
@@ -48,7 +68,6 @@ export default function PremiumWeek() {
     else if (lang.startsWith("en")) setCountry("US");
     else setCountry("EU");
   }, []);
-
   const [week, setWeek] = useState(
     DAYS.reduce((acc, d) => {
       acc[d] = CATEGORIES.reduce((o, c) => ({ ...o, [c]: 0 }), {});
@@ -87,6 +106,7 @@ export default function PremiumWeek() {
     y: dailyTotals[i],
     day: d,
   }));
+
   const runAI = async () => {
     setLoading(true);
     setAiOpen(true);
@@ -110,21 +130,128 @@ export default function PremiumWeek() {
     }
     setLoading(false);
   };
-
   return (
     <div style={page}>
       <a href="/help" style={helpButton}>Help</a>
 
+      {/* HEADER */}
       <div style={header}>
         <h1 style={title}>WEALTHYAI · WEEKLY INTELLIGENCE</h1>
         <p style={subtitle}>
           Weekly behavioral analysis with country-aware intelligence.
         </p>
       </div>
+
+      <div style={regionRow}>
+        <span style={regionLabel}>Region</span>
+        <select
+          value={country}
+          onChange={(e) => setCountry(e.target.value)}
+          style={regionSelect}
+        >
+          <option value="US">United States</option>
+          <option value="EU">European Union</option>
+          <option value="UK">United Kingdom</option>
+          <option value="HU">Hungary</option>
+        </select>
+      </div>
+
+      <div style={layout}>
+        <div style={left}>
+          {DAYS.map((d, i) => (
+            <details key={d} open={i === 0} style={dayBox}>
+              <summary style={dayTitle}>{d}</summary>
+              {CATEGORIES.map(c => (
+                <div key={c} style={row}>
+                  <span>{c.toUpperCase()}</span>
+                  <input
+                    type="number"
+                    value={week[d][c]}
+                    onChange={e => update(d, c, e.target.value)}
+                    style={input}
+                  />
+                </div>
+              ))}
+            </details>
+          ))}
+        </div>
+
+        <div style={right}>
+          <Chart title="Daily total spending">
+            <LineChart data={chartData}>
+              <XAxis dataKey="day" />
+              <YAxis />
+              <Tooltip />
+              <Line dataKey="total" stroke="#38bdf8" strokeWidth={3} />
+            </LineChart>
+          </Chart>
+
+          <Chart title="Category trends">
+            <LineChart data={chartData}>
+              <XAxis dataKey="day" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              {CATEGORIES.map(c => (
+                <Line key={c} dataKey={c} stroke={COLORS[c]} />
+              ))}
+            </LineChart>
+          </Chart>
+
+          <Chart title="Weekly distribution">
+            <PieChart>
+              <Pie data={pieData} dataKey="value" outerRadius={80}>
+                {pieData.map((p, i) => (
+                  <Cell key={i} fill={COLORS[p.name]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </Chart>
+
+          <Chart title="Daily dispersion">
+            <ScatterChart>
+              <XAxis dataKey="x" />
+              <YAxis dataKey="y" />
+              <Tooltip />
+              <Scatter data={scatterData} fill="#a78bfa" />
+            </ScatterChart>
+          </Chart>
+
+          <div style={summary}>
+            Weekly spend: <strong>${weeklySpend}</strong> ·
+            Income: <strong>${weeklyIncome.toFixed(0)}</strong>
+          </div>
+
+          <button onClick={runAI} style={aiButton}>
+            {loading ? "Analyzing…" : "Run Weekly AI Analysis"}
+          </button>
+
+          {aiOpen && (
+            <div style={aiBox}>
+              <div style={aiHeader}>
+                <strong>Weekly AI Insight</strong>
+                <button onClick={() => setAiOpen(false)} style={closeBtn}>✕</button>
+              </div>
+              <pre style={aiTextStyle}>{aiText}</pre>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* UPSell – bottom center */}
+      <div style={upsellRow}>
+        Monthly plans unlock country-specific tax optimization,
+        stress testing and advanced projections.
+      </div>
+
+      {/* COPYRIGHT – bottom left */}
+      <div style={copyright}>
+        © 2026 WealthyAI — All rights reserved.
+      </div>
     </div>
   );
 }
-
 /* ===== COMPONENTS ===== */
 
 function Chart({ title, children }) {
