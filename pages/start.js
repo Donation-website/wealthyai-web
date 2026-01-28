@@ -194,10 +194,19 @@ export default function UserDashboard() {
         padding: "40px",
         color: "white",
         fontFamily: "Inter, system-ui, sans-serif",
-        backgroundImage:
-          "linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('/wealthyai/icons/hat.png')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
+
+        /* ===== BACKGROUND FROM C PAGE ===== */
+        backgroundColor: "#020617",
+        backgroundImage: `
+          repeating-linear-gradient(-25deg, rgba(56,189,248,0.07) 0px, rgba(56,189,248,0.07) 1px, transparent 1px, transparent 160px),
+          repeating-linear-gradient(35deg, rgba(167,139,250,0.06) 0px, rgba(167,139,250,0.06) 1px, transparent 1px, transparent 220px),
+          radial-gradient(circle at 20% 30%, rgba(56,189,248,0.22), transparent 40%),
+          radial-gradient(circle at 80% 60%, rgba(167,139,250,0.22), transparent 45%),
+          radial-gradient(circle at 45% 85%, rgba(34,211,238,0.18), transparent 40%),
+          url("/wealthyai/icons/generated.png")
+        `,
+        backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
+        backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
       }}
     >
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
@@ -230,7 +239,11 @@ export default function UserDashboard() {
 
           <div style={card}>
             <h3>Insights (Basic)</h3>
-            <Radar data={radar} />
+
+            {/* ===== LABEL FIX: padding wrapper ===== */}
+            <div style={{ paddingRight: 28 }}>
+              <Radar data={radar} />
+            </div>
 
             <p>
               Risk Level: <strong>{riskLevel}</strong>
@@ -253,7 +266,7 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        {/* ===== ORIENTATION BLOCK (RESTORED) ===== */}
+        {/* ===== ORIENTATION BLOCK ===== */}
         <div style={{ marginTop: 70, textAlign: "center" }}>
           <h2 className="pulse-title">
             Choose your depth of financial intelligence
