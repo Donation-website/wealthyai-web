@@ -186,11 +186,14 @@ export default function PremiumMonth() {
             {aiOpen && (
               <div style={{ display: "flex", gap: 12 }}>
                 <button
-                  onClick={() =>
-                    setAnalysisMode(
-                      analysisMode === "executive" ? "directive" : "executive"
-                    )
-                  }
+                  onClick={() => {
+                    const nextMode =
+                      analysisMode === "executive" ? "directive" : "executive";
+                    setAnalysisMode(nextMode);
+                    setTimeout(() => {
+                      runAI();
+                    }, 0);
+                  }}
                   style={{
                     background: "transparent",
                     border: "1px solid #1e293b",
