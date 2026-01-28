@@ -158,6 +158,7 @@ export default function DayPremium() {
     </div>
   );
 }
+
 /* ===== COMPONENTS ===== */
 
 function Metric({ label, value }) {
@@ -201,7 +202,6 @@ function MiniBar({ title, value }) {
     </div>
   );
 }
-
 /* ===== STYLES ===== */
 
 const page = {
@@ -225,9 +225,18 @@ const page = {
 };
 
 const contentWrap = { padding: "40px" };
-const header = { marginBottom: "30px", textAlign: "center" };
+
+const header = {
+  marginBottom: "30px",
+  textAlign: "center",
+};
+
 const title = { fontSize: "2.6rem", margin: 0 };
-const subtitle = { color: "#f8fafc", marginTop: "10px" };
+
+const subtitle = {
+  color: "#f8fafc",
+  marginTop: "10px",
+};
 
 const helpButton = {
   position: "absolute",
