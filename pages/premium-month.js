@@ -39,13 +39,18 @@ export default function PremiumMonth() {
   const update = (k, v) =>
     setInputs({ ...inputs, [k]: Number(v) });
 
-  /* ===== CYCLE DAY (RETENTION BASE) ===== */
+  /* ===== CYCLE DAY (RETENTION BASE + STRIPE READY) ===== */
   const [cycleDay, setCycleDay] = useState(1);
 
   useEffect(() => {
-    const start = localStorage.getItem("monthCycleStart");
+    // később Stripe subscription.current_period_start ide köthető
+    const stripeStart = localStorage.getItem("subscriptionPeriodStart");
+    const localStart = localStorage.getItem("monthCycleStart");
+    const start = stripeStart || localStart;
+
     if (!start) {
-      localStorage.setItem("monthCycleStart", Date.now().toString());
+      const now = Date.now();
+      localStorage.setItem("monthCycleStart", now.toString());
       setCycleDay(1);
     } else {
       const diffDays = Math.floor(
@@ -55,7 +60,7 @@ export default function PremiumMonth() {
     }
   }, []);
 
-  /* ===== RUN AI (WITH MEMORY v1) ===== */
+  /* ===== RUN AI (WITH MULTI-MONTH MEMORY) ===== */
   const runAI = async () => {
     setLoading(true);
     setAiOpen(true);
@@ -98,6 +103,46 @@ export default function PremiumMonth() {
             "monthlySignals",
             JSON.stringify(signalLines)
           );
+        }
+
+        /* ===== STRUCTURED SIGNAL PARSING ===== */
+        let dominantLens = "";
+        let pressureTrend = "";
+        let ignoredArea = "";
+
+        signalLines.forEach(line => {
+          if (line.startsWith("dominant_lens")) {
+            dominantLens = line.split(":")[1]?.trim();
+          }
+          if (line.startsWith("pressure_trend")) {
+            pressureTrend = line.split(":")[1]?.trim();
+          }
+          if (line.startsWith("ignored")) {
+            ignoredArea = line.split(":")[1]?.trim();
+          }
+        });
+
+        /* ===== MULTI-MONTH PRESSURE MEMORY → STRIPE ===== */
+        const subscriptionId =
+          localStorage.getItem("subscriptionId");
+
+        if (subscriptionId && dominantLens) {
+          const now = new Date();
+          const period =
+            now.getFullYear() + "-" +
+            String(now.getMonth() + 1).padStart(2, "0");
+
+          fetch("/api/update-pressure-memory", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              subscriptionId,
+              period,
+              dominantLens,
+              pressureTrend,
+              ignoredArea
+            }),
+          }).catch(() => {});
         }
 
         setAiText(visibleText);
