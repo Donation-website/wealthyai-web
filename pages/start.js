@@ -109,7 +109,15 @@ export default function UserDashboard() {
     };
 
     return (
-      <svg width={size} height={size} style={{ margin: "20px auto" }}>
+      <svg
+        width={size}
+        height={size}
+        style={{
+          display: "block",
+          margin: "20px auto",
+          overflow: "visible",
+        }}
+      >
         {[0.25, 0.5, 0.75, 1].map((lvl, i) => (
           <circle
             key={i}
