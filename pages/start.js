@@ -81,19 +81,11 @@ export default function UserDashboard() {
     }
   };
 
-  /* ===== RADAR DATA (1. JAVÍTÁS: Értékek hozzáadása) ===== */
+  /* ===== RADAR DATA (Javítva az értékekkel) ===== */
 
   const radar = [
-    { 
-      label: "Expense Load", 
-      value: usagePercent, 
-      displayValue: usagePercent.toFixed(1) + "%" 
-    },
-    { 
-      label: "Savings Strength", 
-      value: Math.min(100, savingsRate * 3), 
-      displayValue: Math.max(0, Math.round(savingsRate)) + "%" 
-    },
+    { label: "Expense Load", value: usagePercent, displayValue: usagePercent.toFixed(1) + "%" },
+    { label: "Savings Strength", value: Math.min(100, savingsRate * 3), displayValue: Math.max(0, Math.round(savingsRate)) + "%" },
     {
       label: "Subscription Weight",
       value:
@@ -104,12 +96,12 @@ export default function UserDashboard() {
     },
   ];
 
-  /* ===== RADAR COMPONENT (2. JAVÍTÁS: Margó + láthatóság) ===== */
+  /* ===== RADAR COMPONENT (Javítva a láthatóság és eltolás) ===== */
 
-  const Radar = ({ data, size = 240 }) => {
-    const padding = 50; // Ez tolja beljebb a grafikont, hogy a felirat ne lógjon ki
+  const Radar = ({ data, size = 260 }) => {
+    const padding = 55; 
     const c = size / 2;
-    const r = (size / 2) - padding;
+    const r = size / 2 - padding;
     const step = (Math.PI * 2) / data.length;
 
     const point = (val, i) => {
@@ -153,9 +145,8 @@ export default function UserDashboard() {
 
         {data.map((d, i) => {
           const a = i * step - Math.PI / 2;
-          // A feliratok pozíciója (kicsit kijebb a körnél)
-          const x = c + (r + 18) * Math.cos(a);
-          const y = c + (r + 18) * Math.sin(a);
+          const x = c + (r + 22) * Math.cos(a);
+          const y = c + (r + 22) * Math.sin(a);
           return (
             <text
               key={i}
@@ -166,7 +157,7 @@ export default function UserDashboard() {
               textAnchor="middle"
               dominantBaseline="middle"
             >
-              <tspan x={x} dy="-0.4em">{d.label}</tspan>
+              <tspan x={x} dy="-0.5em">{d.label}</tspan>
               <tspan x={x} dy="1.2em" fill="#818cf8" fontWeight="bold">{d.displayValue}</tspan>
             </text>
           );
@@ -193,6 +184,12 @@ export default function UserDashboard() {
     border: "none",
     background: "rgba(255,255,255,0.08)",
     color: "white",
+  };
+
+  const priceCard = {
+    ...card,
+    textAlign: "center",
+    cursor: "pointer",
   };
 
   return (
@@ -222,7 +219,7 @@ export default function UserDashboard() {
               ["Fixed Expenses", "fixed"],
               ["Variable Expenses", "variable"],
             ].map(([label, key]) => (
-              <div key={key} style={{ marginBottom: "15px" }}>
+              <div key={key} style={{ marginBottom: 15 }}>
                 <label>{label}</label>
                 <input
                   type="number"
@@ -280,28 +277,31 @@ export default function UserDashboard() {
               marginTop: 30,
             }}
           >
-            <div style={card}>
+            <div style={priceCard} onClick={() => handleCheckout("price_1")}>
               <h4>Daily Intelligence</h4>
-              <p>
+              <p style={{ fontSize: "14px", opacity: 0.8, margin: "10px 0" }}>
                 Short-term interpretation of your current financial state.
                 Best for immediate clarity.
               </p>
+              <div style={{ fontSize: "22px", fontWeight: "bold" }}>$9</div>
             </div>
 
-            <div style={card}>
+            <div style={priceCard} onClick={() => handleCheckout("price_2")}>
               <h4>Weekly Intelligence</h4>
-              <p>
+              <p style={{ fontSize: "14px", opacity: 0.8, margin: "10px 0" }}>
                 Behavioral patterns across days and categories.
                 Best for understanding habits.
               </p>
+              <div style={{ fontSize: "22px", fontWeight: "bold" }}>$29</div>
             </div>
 
-            <div style={card}>
+            <div style={priceCard} onClick={() => handleCheckout("price_3")}>
               <h4>Monthly Intelligence</h4>
-              <p>
+              <p style={{ fontSize: "14px", opacity: 0.8, margin: "10px 0" }}>
                 Multi-week context, regional insights, and forward-looking analysis.
-                Best for long-term strategy.
+                Best when strategy matters.
               </p>
+              <div style={{ fontSize: "22px", fontWeight: "bold" }}>$79</div>
             </div>
           </div>
         </div>
