@@ -102,9 +102,12 @@ export default function UserDashboard() {
     const r = size / 2 - 24;
     const step = (Math.PI * 2) / data.length;
 
+    // ⬇️ CSAK MEGJELENÍTÉSI VÉDELEM
+    const clamp = (v) => Math.max(0, Math.min(100, v));
+
     const point = (val, i) => {
       const a = i * step - Math.PI / 2;
-      const rr = (val / 100) * r;
+      const rr = (clamp(val) / 100) * r;
       return [c + rr * Math.cos(a), c + rr * Math.sin(a)];
     };
 
@@ -194,7 +197,6 @@ export default function UserDashboard() {
     textAlign: "center",
     cursor: "pointer",
   };
-
   return (
     <main
       style={{
