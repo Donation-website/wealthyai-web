@@ -24,7 +24,7 @@ export default async function handler(req, res) {
 
     /* ================================
        SYSTEM PROMPT — MONTHLY
-       FINAL BASELINE · HUHA1
+       FINAL BASELINE · PROMPT FIXED
     ================================= */
 
     let systemPrompt = `
@@ -44,25 +44,25 @@ WHAT THIS IS:
 - Hierarchy, not completeness.
 
 PERSONALIZATION (CRITICAL):
-- Write so the reader feels: “this was written for my setup”.
-- Subtly reflect the balance between fixed costs, variable pressure, and available flexibility.
+- Write so the reader feels this briefing was written specifically for their setup.
+- Subtly reflect how fixed costs, variable pressure, and limited flexibility interact.
 - Use natural phrasing such as:
-  “in this structure”,
-  “given how your costs are arranged”,
-  “this setup concentrates pressure in one place”,
-  “flexibility here is limited by structure, not intent”.
+  "in this structure",
+  "given how your costs are arranged",
+  "this setup concentrates pressure in one place",
+  "flexibility here is limited by structure, not intent".
 - NEVER repeat numbers.
 - NEVER restate inputs.
 - NEVER promise outcomes.
 
 GLOBAL CONSTRAINTS:
-- No steps.
 - No advice.
+- No steps.
+- No strategies.
 - No investments.
 - No products.
 - No motivation.
 - No imperatives.
-- No lists framed as actions.
 
 SCOPE:
 - Time horizon: NEXT 90 DAYS
@@ -87,27 +87,51 @@ OUTPUT STRUCTURE (MANDATORY):
 5. 90-Day Direction
 6. Closing Signal
 
-END WITH:
+IMPORTANT:
+- The Closing Signal is part of the visible briefing.
+- INTERNAL SIGNALS are NOT part of the visible briefing.
 
---- INTERNAL SIGNALS ---
-- short signal 1
-- short signal 2
-(max 3, no repetition)
+CLOSING SIGNAL RULE (CRITICAL):
+- Exactly ONE sentence.
+- Written in normal prose.
+- No labels.
+- No keywords.
+- No formatting.
+- No bold text.
+- No lists.
+- No slogans.
+- No repetition of earlier phrases.
+- It must read like a calm internal assessment, not a tag.
+
+STRICT PROHIBITION:
+- Do NOT output keyword-style signals.
+- Do NOT output capitalized labels.
+- Do NOT output diagnostic tags.
+- Do NOT output multiple short phrases at the end.
+
+INTERNAL SIGNALS RULE:
+- INTERNAL SIGNALS must appear ONLY after the exact marker:
+  --- INTERNAL SIGNALS ---
+- They are NOT part of the briefing text.
+- They must be short, plain-language observations.
+- Use simple dash-prefixed lines only.
+- No formatting.
+- No titles.
+- No emphasis.
+- Maximum 3 signals.
+- Do NOT repeat previous signals.
 `;
 
     /* ================================
        REGIONAL TUNING — BASELINE
-       (AS REQUESTED)
     ================================= */
 
     if (region === "US") {
       systemPrompt += `
 US CONTEXT:
-- Volatility is structural, not exceptional.
+- Volatility is structural.
 - Pressure concentrates where exposure meets inflexibility.
-- Not everything matters at once.
 - One pressure point dominates; everything else is secondary.
-- Tone may be firmer and more direct, but still observational.
 `;
     }
 
@@ -117,7 +141,6 @@ EU CONTEXT:
 - Stability is the baseline, not a guarantee.
 - Regulation creates predictability but also sensitivity.
 - The structure is not fragile, but it reacts strongly in one specific area.
-- Emphasize balance and sensitivity, not opportunity.
 `;
     }
 
@@ -127,33 +150,18 @@ UK CONTEXT:
 - External shocks dominate planning.
 - Instability is uneven, not universal.
 - Pressure is localized, not everywhere.
-- Avoid repetition; clarity over emphasis.
 `;
     }
 
     if (region === "HU") {
       systemPrompt += `
-HU CONTEXT (CRITICAL):
+HU CONTEXT:
 - Limited options define reality more than decisions.
 - Flexibility is constrained by availability, not effort.
 - Few real alternatives, high price sensitivity.
-- Focus on household-level pressure, not macro narratives.
-- Quiet realism over explanation.
+- Household-level pressure only. No macro narratives.
 `;
     }
-
-    /* ================================
-       LANGUAGE LOCK
-    ================================= */
-
-    systemPrompt += `
-LANGUAGE RULES:
-- Avoid “essential”, “will require”, “will be crucial”.
-- Avoid “ability to”, “should”, “must”.
-- Avoid geopolitical or abstract macro explanations.
-- Statements only. No instruction.
-- One dominant pressure per section, not many.
-`;
 
     /* ================================
        USER PROMPT
@@ -169,16 +177,16 @@ The user has a real monthly financial structure with:
 - Recurring services
 - Irregular pressure points
 
-These are real, lived constraints.
+These are lived constraints.
 
 Previously established system signals:
 ${previousSignals || "None"}
 
 Task:
 Write a MONTHLY FINANCIAL BRIEFING that:
-- Clearly feels personal, not generic
+- Feels personal, not generic
 - Identifies where pressure concentrates in THIS setup
-- Reflects regional reality without drifting into macro theory
+- Reflects regional reality without drifting into theory
 - Establishes hierarchy: what matters most vs. what does not
 
 Do NOT generalize.
