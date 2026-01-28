@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
+import { useEffect, useState } from "react";  
 import {
   LineChart, Line,
   PieChart, Pie, Cell,
@@ -23,33 +22,30 @@ const COLORS = {
 };
 
 export default function PremiumWeek() {
-  const router = useRouter();
 
-  /* ===== STRIPE ACCESS CONTROL (ADDED – DO NOT TOUCH) ===== */
-  const [authorized, setAuthorized] = useState(false);
-  const [checking, setChecking] = useState(true);
-
+  /* ===== SUBSCRIPTION CHECK ===== */
   useEffect(() => {
-    const tier = localStorage.getItem("tier");
-    const expiresAt = Number(localStorage.getItem("expiresAt"));
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get("session_id");
 
-    if (!tier || !expiresAt || Date.now() > expiresAt) {
-      router.replace("/start");
+    if (!sessionId) {
+      window.location.href = "/start";
       return;
     }
 
-    if (tier !== "week") {
-      router.replace("/start");
-      return;
-    }
-
-    setAuthorized(true);
-    setChecking(false);
+    fetch("/api/verify-active-subscription", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId }),
+    })
+      .then(res => res.json())
+      .then(d => {
+        if (!d.valid) window.location.href = "/start";
+      })
+      .catch(() => {
+        window.location.href = "/start";
+      });
   }, []);
-
-  if (checking) return null;
-
-  /* ===== ORIGINAL STATES ===== */
 
   const [incomeType, setIncomeType] = useState("monthly");
   const [incomeValue, setIncomeValue] = useState(3000);
@@ -68,13 +64,13 @@ export default function PremiumWeek() {
     else if (lang.startsWith("en")) setCountry("US");
     else setCountry("EU");
   }, []);
+
   const [week, setWeek] = useState(
     DAYS.reduce((acc, d) => {
       acc[d] = CATEGORIES.reduce((o, c) => ({ ...o, [c]: 0 }), {});
       return acc;
     }, {})
   );
-
   const weeklyIncome =
     incomeType === "daily" ? incomeValue * 7 :
     incomeType === "weekly" ? incomeValue :
@@ -130,18 +126,17 @@ export default function PremiumWeek() {
     }
     setLoading(false);
   };
+
   return (
     <div style={page}>
       <a href="/help" style={helpButton}>Help</a>
 
-      {/* HEADER */}
       <div style={header}>
         <h1 style={title}>WEALTHYAI · WEEKLY INTELLIGENCE</h1>
         <p style={subtitle}>
           Weekly behavioral analysis with country-aware intelligence.
         </p>
       </div>
-
       <div style={regionRow}>
         <span style={regionLabel}>Region</span>
         <select
@@ -197,7 +192,6 @@ export default function PremiumWeek() {
               ))}
             </LineChart>
           </Chart>
-
           <Chart title="Weekly distribution">
             <PieChart>
               <Pie data={pieData} dataKey="value" outerRadius={80}>
@@ -239,19 +233,18 @@ export default function PremiumWeek() {
         </div>
       </div>
 
-      {/* UPSell – bottom center */}
       <div style={upsellRow}>
         Monthly plans unlock country-specific tax optimization,
         stress testing and advanced projections.
       </div>
 
-      {/* COPYRIGHT – bottom left */}
       <div style={copyright}>
         © 2026 WealthyAI — All rights reserved.
       </div>
     </div>
   );
 }
+
 /* ===== COMPONENTS ===== */
 
 function Chart({ title, children }) {
@@ -286,11 +279,7 @@ const page = {
   backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
 };
 
-const header = {
-  textAlign: "center",
-  marginBottom: 20,
-};
-
+const header = { textAlign: "center", marginBottom: 20 };
 const title = { fontSize: "2.6rem", margin: 0 };
 const subtitle = { color: "#f8fafc", marginTop: 10 };
 
