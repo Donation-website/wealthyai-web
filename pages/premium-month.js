@@ -49,10 +49,15 @@ export default function PremiumMonth() {
     }
   }, []);
 
-  /* ===== RUN AI ===== */
+  /* ===== RUN AI (WITH MEMORY v1) ===== */
   const runAI = async () => {
     setLoading(true);
     setAiOpen(true);
+
+    const previousSignals = JSON.parse(
+      localStorage.getItem("monthlySignals") || "[]"
+    ).join("\n");
+
     try {
       const res = await fetch("/api/get-ai-briefing", {
         method: "POST",
@@ -60,14 +65,42 @@ export default function PremiumMonth() {
         body: JSON.stringify({
           region,
           cycleDay,
+          previousSignals,
           ...inputs,
         }),
       });
+
       const data = await res.json();
-      setAiText(data.briefing || "AI briefing unavailable.");
+      const fullText = data.briefing || "AI briefing unavailable.";
+
+      /* ===== MEMORY EXTRACTION ===== */
+      const marker = "--- INTERNAL SIGNALS ---";
+      if (fullText.includes(marker)) {
+        const parts = fullText.split(marker);
+
+        const visibleText = parts[0].trim();
+        const signalLines = parts[1]
+          .split("\n")
+          .map(l => l.replace("-", "").trim())
+          .filter(Boolean)
+          .slice(0, 3);
+
+        if (signalLines.length) {
+          localStorage.setItem(
+            "monthlySignals",
+            JSON.stringify(signalLines)
+          );
+        }
+
+        setAiText(visibleText);
+      } else {
+        setAiText(fullText);
+      }
+
     } catch {
       setAiText("AI system temporarily unavailable.");
     }
+
     setLoading(false);
   };
 
