@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 /* ===== REGIONS ===== */
 const REGIONS = [
@@ -13,27 +13,63 @@ export default function PremiumMonth() {
 
   const [inputs, setInputs] = useState({
     income: 4000,
-
     housing: 1200,
-
     electricity: 120,
     gas: 90,
     water: 40,
-
     internet: 60,
     mobile: 40,
     tv: 30,
     insurance: 150,
     banking: 20,
-
     unexpected: 200,
     other: 300,
   });
 
+  const [aiText, setAiText] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+
   const update = (k, v) =>
     setInputs({ ...inputs, [k]: Number(v) });
 
-  const dailySignal = "No structural change detected today.";
+  /* ===== CYCLE DAY (RETENTION BASE) ===== */
+  const [cycleDay, setCycleDay] = useState(1);
+
+  useEffect(() => {
+    const start = localStorage.getItem("monthCycleStart");
+    if (!start) {
+      localStorage.setItem("monthCycleStart", Date.now().toString());
+      setCycleDay(1);
+    } else {
+      const diffDays = Math.floor(
+        (Date.now() - Number(start)) / (1000 * 60 * 60 * 24)
+      );
+      setCycleDay(Math.min(diffDays + 1, 30));
+    }
+  }, []);
+
+  /* ===== RUN AI ===== */
+  const runAI = async () => {
+    setLoading(true);
+    setAiOpen(true);
+    try {
+      const res = await fetch("/api/get-ai-briefing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          region,
+          cycleDay,
+          ...inputs,
+        }),
+      });
+      const data = await res.json();
+      setAiText(data.briefing || "AI briefing unavailable.");
+    } catch {
+      setAiText("AI system temporarily unavailable.");
+    }
+    setLoading(false);
+  };
 
   return (
     <div style={page}>
@@ -66,8 +102,8 @@ export default function PremiumMonth() {
 
       {/* DAILY SIGNAL */}
       <div style={signalBox}>
-        <strong>Daily Signal</strong>
-        <p>{dailySignal}</p>
+        <strong>Cycle Status</strong>
+        <p>Day {cycleDay} of your current monthly cycle.</p>
       </div>
 
       {/* MAIN LAYOUT */}
@@ -77,10 +113,7 @@ export default function PremiumMonth() {
           <h3>Monthly Financial Structure</h3>
 
           <Label>Income</Label>
-          <Input
-            value={inputs.income}
-            onChange={e => update("income", e.target.value)}
-          />
+          <Input value={inputs.income} onChange={e => update("income", e.target.value)} />
 
           <Divider />
 
@@ -107,49 +140,27 @@ export default function PremiumMonth() {
             <Row label="Other" value={inputs.other} onChange={v => update("other", v)} />
           </Section>
 
-          <p style={note}>
-            Values can be estimates.  
-            This briefing focuses on structure, not precision.
-          </p>
+          <button onClick={runAI} style={aiButton}>
+            {loading ? "Generating briefing…" : "Generate Monthly Briefing"}
+          </button>
         </div>
 
-        {/* BRIEFING PANEL */}
+        {/* AI OUTPUT */}
         <div style={card}>
-          <h3>90-Day Financial Briefing</h3>
+          <h3>AI Strategic Briefing</h3>
 
-          <p>
-            Your financial structure shows a high concentration of fixed and
-            recurring costs relative to discretionary flexibility.
-          </p>
+          {!aiOpen && (
+            <p style={{ opacity: 0.7 }}>
+              Generate a briefing to receive a strategic interpretation
+              of your next 90 days.
+            </p>
+          )}
 
-          <p>
-            In the selected region, electricity and gas services are often
-            structurally adjustable, while water costs are typically regulated
-            and less flexible.
-          </p>
-
-          <p>
-            Recurring services such as internet, mobile, and banking fees
-            represent potential leverage points that do not require lifestyle
-            changes.
-          </p>
-
-          <Divider />
-
-          <strong>What You Can Ignore</strong>
-          <p>
-            Short-term daily fluctuations and small discretionary optimizations
-            are unlikely to materially alter your 90-day outlook.
-          </p>
-
-          <Divider />
-
-          <strong>Direction</strong>
-          <p>
-            If no structural changes are made, the next three months are expected
-            to remain stable, with gradually decreasing optionality rather than
-            acute risk.
-          </p>
+          {aiOpen && (
+            <pre style={aiTextStyle}>
+              {aiText}
+            </pre>
+          )}
         </div>
       </div>
 
@@ -304,10 +315,21 @@ const rowInput = {
   textAlign: "right",
 };
 
-const note = {
-  marginTop: 16,
-  fontSize: 13,
-  color: "#94a3b8",
+const aiButton = {
+  marginTop: 20,
+  width: "100%",
+  padding: 14,
+  background: "#38bdf8",
+  border: "none",
+  borderRadius: 10,
+  fontWeight: "bold",
+  cursor: "pointer",
+};
+
+const aiTextStyle = {
+  marginTop: 10,
+  whiteSpace: "pre-wrap",
+  color: "#cbd5f5",
 };
 
 const footer = {
