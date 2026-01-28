@@ -102,7 +102,6 @@ export default function UserDashboard() {
     const r = size / 2 - 24;
     const step = (Math.PI * 2) / data.length;
 
-    // ⬇️ CSAK MEGJELENÍTÉSI VÉDELEM
     const clamp = (v) => Math.max(0, Math.min(100, v));
 
     const point = (val, i) => {
@@ -115,11 +114,7 @@ export default function UserDashboard() {
       <svg
         width={size}
         height={size}
-        style={{
-          display: "block",
-          margin: "20px auto",
-          overflow: "visible",
-        }}
+        style={{ display: "block", margin: "20px auto", overflow: "visible" }}
       >
         {[0.25, 0.5, 0.75, 1].map((lvl, i) => (
           <circle
@@ -197,6 +192,7 @@ export default function UserDashboard() {
     textAlign: "center",
     cursor: "pointer",
   };
+
   return (
     <main
       style={{
@@ -204,10 +200,19 @@ export default function UserDashboard() {
         padding: "40px",
         color: "white",
         fontFamily: "Inter, system-ui, sans-serif",
-        backgroundImage:
-          "linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('/wealthyai/icons/hat.png')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
+        backgroundColor: "#020617",
+        backgroundImage: `
+          repeating-linear-gradient(-25deg, rgba(56,189,248,0.07) 0px, rgba(56,189,248,0.07) 1px, transparent 1px, transparent 160px),
+          repeating-linear-gradient(35deg, rgba(167,139,250,0.06) 0px, rgba(167,139,250,0.06) 1px, transparent 1px, transparent 220px),
+          radial-gradient(circle at 20% 30%, rgba(56,189,248,0.22), transparent 40%),
+          radial-gradient(circle at 80% 60%, rgba(167,139,250,0.22), transparent 45%),
+          radial-gradient(circle at 45% 85%, rgba(34,211,238,0.18), transparent 40%),
+          url("/wealthyai/icons/generated.png")
+        `,
+        backgroundRepeat:
+          "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
+        backgroundSize:
+          "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
       }}
     >
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
