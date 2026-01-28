@@ -85,12 +85,12 @@ export default function UserDashboard() {
 
   const radar = [
     { label: "Expense Load", value: usagePercent },
-    { label: "Savings Strength", value: Math.min(100, savingsRate) },
+    { label: "Savings Strength", value: Math.min(100, savingsRate * 3) },
     {
       label: "Subscription Weight",
       value:
         data.income > 0
-          ? Math.min((data.subscriptions / data.income) * 100, 100)
+          ? Math.min((data.subscriptions / data.income) * 200, 100)
           : 0,
     },
   ];
@@ -99,7 +99,7 @@ export default function UserDashboard() {
 
   const Radar = ({ data, size = 200 }) => {
     const c = size / 2;
-    const r = size / 2 - 36;
+    const r = size / 2 - 24;
     const step = (Math.PI * 2) / data.length;
 
     const point = (val, i) => {
@@ -146,8 +146,8 @@ export default function UserDashboard() {
           return (
             <text
               key={i}
-              x={c + (r + 26) * Math.cos(a)}
-              y={c + (r + 26) * Math.sin(a)}
+              x={c + (r + 14) * Math.cos(a)}
+              y={c + (r + 14) * Math.sin(a)}
               fontSize="11"
               fill="rgba(255,255,255,0.7)"
               textAnchor="middle"
