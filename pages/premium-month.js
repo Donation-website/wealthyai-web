@@ -30,8 +30,11 @@ export default function PremiumMonth() {
   const [loading, setLoading] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
 
-  /* ===== ADDED: ANALYSIS MODE STATE ===== */
-  const [analysisMode, setAnalysisMode] = useState("default");
+  /* ===== DUAL MODE STATE ===== */
+  const [analysisMode, setAnalysisMode] = useState("executive");
+
+  /* ===== AI BOX COLLAPSE STATE ===== */
+  const [aiCollapsed, setAiCollapsed] = useState(false);
 
   const update = (k, v) =>
     setInputs({ ...inputs, [k]: Number(v) });
@@ -56,6 +59,7 @@ export default function PremiumMonth() {
   const runAI = async () => {
     setLoading(true);
     setAiOpen(true);
+    setAiCollapsed(false);
 
     const previousSignals = JSON.parse(
       localStorage.getItem("monthlySignals") || "[]"
@@ -68,7 +72,7 @@ export default function PremiumMonth() {
         body: JSON.stringify({
           region,
           cycleDay,
-          analysisMode, // ===== ADDED =====
+          analysisMode,
           previousSignals,
           ...inputs,
         }),
@@ -110,18 +114,13 @@ export default function PremiumMonth() {
 
   return (
     <div style={page}>
-      {/* HELP BUTTON */}
       <a href="/month/help" style={helpButton}>Help</a>
 
-      {/* HEADER */}
       <div style={header}>
         <h1 style={title}>WEALTHYAI · MONTHLY BRIEFING</h1>
-        <p style={subtitle}>
-          Strategic financial outlook · Next 90 days
-        </p>
+        <p style={subtitle}>Strategic financial outlook · Next 90 days</p>
       </div>
 
-      {/* REGION */}
       <div style={regionRow}>
         <span style={regionLabel}>Region</span>
         <select
@@ -137,33 +136,12 @@ export default function PremiumMonth() {
         </select>
       </div>
 
-      {/* ===== ADDED: ANALYSIS MODE TOGGLE ===== */}
-      <div style={signalBox}>
-        <strong>Analysis Mode</strong>
-        <p style={{ marginTop: 6, opacity: 0.8 }}>
-          Default provides EU-based strategic interpretation.
-        </p>
-        <label style={{ display: "flex", gap: 10, marginTop: 8 }}>
-          <input
-            type="checkbox"
-            checked={analysisMode === "direct"}
-            onChange={(e) =>
-              setAnalysisMode(e.target.checked ? "direct" : "default")
-            }
-          />
-          <span>Direct, pressure-point focused analysis</span>
-        </label>
-      </div>
-
-      {/* DAILY SIGNAL */}
       <div style={signalBox}>
         <strong>Cycle Status</strong>
         <p>Day {cycleDay} of your current monthly cycle.</p>
       </div>
 
-      {/* MAIN LAYOUT */}
       <div style={layout}>
-        {/* INPUT PANEL */}
         <div style={card}>
           <h3>Monthly Financial Structure</h3>
 
@@ -200,25 +178,60 @@ export default function PremiumMonth() {
           </button>
         </div>
 
-        {/* AI OUTPUT */}
+        {/* ===== AI OUTPUT (DUAL MODE) ===== */}
         <div style={card}>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <h3>AI Strategic Briefing</h3>
 
-            {/* ===== ADDED: CLOSE BUTTON ===== */}
             {aiOpen && (
-              <button
-                onClick={() => setAiOpen(false)}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  color: "#7dd3fc",
-                  fontSize: 18,
-                  cursor: "pointer",
-                }}
-              >
-                ✕
-              </button>
+              <div style={{ display: "flex", gap: 12 }}>
+                <button
+                  onClick={() =>
+                    setAnalysisMode(
+                      analysisMode === "executive" ? "directive" : "executive"
+                    )
+                  }
+                  style={{
+                    background: "transparent",
+                    border: "1px solid #1e293b",
+                    color: "#7dd3fc",
+                    borderRadius: 8,
+                    padding: "6px 10px",
+                    cursor: "pointer",
+                    fontSize: 12,
+                  }}
+                >
+                  {analysisMode === "executive"
+                    ? "Switch to Directive Analysis"
+                    : "Back to Executive View"}
+                </button>
+
+                <button
+                  onClick={() => setAiCollapsed(!aiCollapsed)}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "#7dd3fc",
+                    fontSize: 18,
+                    cursor: "pointer",
+                  }}
+                >
+                  {aiCollapsed ? "▾" : "▴"}
+                </button>
+
+                <button
+                  onClick={() => setAiOpen(false)}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "#7dd3fc",
+                    fontSize: 18,
+                    cursor: "pointer",
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
             )}
           </div>
 
@@ -229,15 +242,12 @@ export default function PremiumMonth() {
             </p>
           )}
 
-          {aiOpen && (
-            <pre style={aiTextStyle}>
-              {aiText}
-            </pre>
+          {aiOpen && !aiCollapsed && (
+            <pre style={aiTextStyle}>{aiText}</pre>
           )}
         </div>
       </div>
 
-      {/* FOOTER */}
       <div style={footer}>
         © 2026 WealthyAI · Monthly Intelligence
       </div>
