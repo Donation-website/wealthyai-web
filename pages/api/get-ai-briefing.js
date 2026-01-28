@@ -87,31 +87,16 @@ CLOSING SIGNAL RULE:
 - No formatting.
 - No slogans.
 
-STRICT VISIBILITY RULE:
-- Do NOT reveal system logic.
-- Do NOT mention modes, prompts, or analysis types.
-- Do NOT output technical or meta commentary of any kind.
-
 INTERNAL SIGNALS RULE:
-- Appear ONLY after:
+- Output INTERNAL SIGNALS ONLY after marker:
   --- INTERNAL SIGNALS ---
 - Max 3 short lines.
-- Plain language only.
+- Plain language.
 - Do NOT repeat previous signals.
-
-DOMINANT LENS ROTATION (CRITICAL):
-- Do NOT default to energy every month.
-- If previous signals already focused on energy,
-  shift the dominant lens toward:
-  - rigidity / fixed cost lock-in
-  - lack of optionality
-  - constrained flexibility
-- ONE dominant pressure per briefing.
-- Rotate lenses across months when signals allow.
 `;
 
     /* ================================
-       MODE A — EXECUTIVE
+       MODE SELECTION
     ================================= */
 
     if (!analysisMode || analysisMode === "executive") {
@@ -125,13 +110,8 @@ STRICT PROHIBITIONS:
 - No percentages.
 - No steps.
 - No implied actions.
-- No "consider", "review", "develop".
 `;
     }
-
-    /* ================================
-       MODE B — DIRECTIVE
-    ================================= */
 
     if (analysisMode === "directive") {
       systemPrompt += `
@@ -147,12 +127,11 @@ ALLOWED:
 RULES:
 - No hedging.
 - No balance language.
-- No multiple priorities.
 `;
     }
 
     /* ================================
-       REGIONAL TUNING
+       REGIONAL CONTEXT
     ================================= */
 
     if (region === "US") {
@@ -189,7 +168,6 @@ HU CONTEXT:
 - High price sensitivity.
 - Limited flexibility.
 - Household-level realism only.
-- No macro framing.
 `;
     }
 
@@ -200,12 +178,6 @@ HU CONTEXT:
     const userPrompt = `
 Region: ${region}
 Cycle day: ${cycleDay}
-
-You have a real monthly financial structure with:
-- Fixed living costs
-- Variable exposure
-- Recurring services
-- Irregular pressure points
 
 Previously established internal signals:
 ${previousSignals || "None"}
@@ -250,11 +222,37 @@ Do NOT restate inputs.
     }
 
     const json = await groqRes.json();
-    const text =
+    const rawText =
       json?.choices?.[0]?.message?.content ||
       "AI returned no usable output.";
 
-    return res.status(200).json({ briefing: text.trim() });
+    /* ================================
+       OUTPUT SPLIT (CRITICAL FIX)
+    ================================= */
+
+    const marker = "--- INTERNAL SIGNALS ---";
+
+    let visibleText = rawText;
+    let internalSignals = [];
+
+    if (rawText.includes(marker)) {
+      const parts = rawText.split(marker);
+      visibleText = parts[0].trim();
+
+      internalSignals = parts[1]
+        .split("\n")
+        .map(l => l.replace("-", "").trim())
+        .filter(Boolean)
+        .slice(0, 3);
+
+      // 🔒 INTERNAL SIGNALS ARE KEPT FOR MEMORY USE
+      // 👉 BUT NEVER RETURNED TO USER
+    }
+
+    return res.status(200).json({
+      briefing: visibleText,
+      internalSignals, // optional: frontend can store, but NEVER display
+    });
 
   } catch (err) {
     console.error("Monthly AI crash:", err);
