@@ -9,6 +9,31 @@ const REGIONS = [
 ];
 
 export default function PremiumMonth() {
+
+  /* ===== SUBSCRIPTION CHECK ===== */
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get("session_id");
+
+    if (!sessionId) {
+      window.location.href = "/start";
+      return;
+    }
+
+    fetch("/api/verify-active-subscription", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId }),
+    })
+      .then(res => res.json())
+      .then(d => {
+        if (!d.valid) window.location.href = "/start";
+      })
+      .catch(() => {
+        window.location.href = "/start";
+      });
+  }, []);
+
   const [region, setRegion] = useState("EU");
 
   const [inputs, setInputs] = useState({
@@ -59,7 +84,6 @@ export default function PremiumMonth() {
       setCycleDay(Math.min(diffDays + 1, 30));
     }
   }, []);
-
   /* ===== RUN AI (WITH MULTI-MONTH MEMORY) ===== */
   const runAI = async () => {
     setLoading(true);
@@ -156,7 +180,6 @@ export default function PremiumMonth() {
 
     setLoading(false);
   };
-
   return (
     <div style={page}>
       <a href="/month/help" style={helpButton}>Help</a>
@@ -194,7 +217,6 @@ export default function PremiumMonth() {
           <Input value={inputs.income} onChange={e => update("income", e.target.value)} />
 
           <Divider />
-
           <Section title="Living">
             <Row label="Housing" value={inputs.housing} onChange={v => update("housing", v)} />
           </Section>
@@ -222,7 +244,6 @@ export default function PremiumMonth() {
             {loading ? "Generating briefing…" : "Generate Monthly Briefing"}
           </button>
         </div>
-
         {/* ===== AI OUTPUT (DUAL MODE) ===== */}
         <div style={card}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -230,6 +251,7 @@ export default function PremiumMonth() {
 
             {aiOpen && (
               <div style={{ display: "flex", gap: 12 }}>
+
                 <button
                   onClick={() => {
                     const nextMode =
@@ -279,6 +301,7 @@ export default function PremiumMonth() {
                 >
                   ✕
                 </button>
+
               </div>
             )}
           </div>
