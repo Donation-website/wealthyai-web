@@ -1,4 +1,4 @@
-import React, { useState } from "react"; 
+import React, { useState } from "react";
 
 export default function UserDashboard() {
   const [data, setData] = useState({
@@ -14,7 +14,7 @@ export default function UserDashboard() {
 
   /* ===== CALCULATIONS ===== */
 
-  const totalExpenses = data.fixed + data.variable + data.subscriptions;
+  const totalExpenses = data.fixed + data.variable;
   const balance = data.income - totalExpenses;
 
   const usagePercent =
@@ -81,25 +81,35 @@ export default function UserDashboard() {
     }
   };
 
-  /* ===== RADAR DATA ===== */
+  /* ===== RADAR DATA (1. JAVÍTÁS: Értékek hozzáadása) ===== */
 
   const radar = [
-    { label: "Expense Load", value: usagePercent },
-    { label: "Savings Strength", value: Math.min(100, savingsRate * 3) },
+    { 
+      label: "Expense Load", 
+      value: usagePercent, 
+      displayValue: usagePercent.toFixed(1) + "%" 
+    },
+    { 
+      label: "Savings Strength", 
+      value: Math.min(100, savingsRate * 3), 
+      displayValue: Math.max(0, Math.round(savingsRate)) + "%" 
+    },
     {
       label: "Subscription Weight",
       value:
         data.income > 0
           ? Math.min((data.subscriptions / data.income) * 200, 100)
           : 0,
+      displayValue: "$" + data.subscriptions
     },
   ];
 
-  /* ===== RADAR COMPONENT ===== */
+  /* ===== RADAR COMPONENT (2. JAVÍTÁS: Margó + láthatóság) ===== */
 
-  const Radar = ({ data, size = 200 }) => {
+  const Radar = ({ data, size = 240 }) => {
+    const padding = 50; // Ez tolja beljebb a grafikont, hogy a felirat ne lógjon ki
     const c = size / 2;
-    const r = size / 2 - 24;
+    const r = (size / 2) - padding;
     const step = (Math.PI * 2) / data.length;
 
     const point = (val, i) => {
@@ -109,7 +119,7 @@ export default function UserDashboard() {
     };
 
     return (
-      <svg width={size} height={size} style={{ margin: "20px auto" }}>
+      <svg width={size} height={size} style={{ margin: "20px auto", display: "block", overflow: "visible" }}>
         {[0.25, 0.5, 0.75, 1].map((lvl, i) => (
           <circle
             key={i}
@@ -143,17 +153,21 @@ export default function UserDashboard() {
 
         {data.map((d, i) => {
           const a = i * step - Math.PI / 2;
+          // A feliratok pozíciója (kicsit kijebb a körnél)
+          const x = c + (r + 18) * Math.cos(a);
+          const y = c + (r + 18) * Math.sin(a);
           return (
             <text
               key={i}
-              x={c + (r + 14) * Math.cos(a)}
-              y={c + (r + 14) * Math.sin(a)}
+              x={x}
+              y={y}
               fontSize="11"
               fill="rgba(255,255,255,0.7)"
               textAnchor="middle"
               dominantBaseline="middle"
             >
-              {d.label}
+              <tspan x={x} dy="-0.4em">{d.label}</tspan>
+              <tspan x={x} dy="1.2em" fill="#818cf8" fontWeight="bold">{d.displayValue}</tspan>
             </text>
           );
         })}
@@ -181,12 +195,6 @@ export default function UserDashboard() {
     color: "white",
   };
 
-  const priceCard = {
-    ...card,
-    textAlign: "center",
-    cursor: "pointer",
-  };
-
   return (
     <main
       style={{
@@ -194,17 +202,10 @@ export default function UserDashboard() {
         padding: "40px",
         color: "white",
         fontFamily: "Inter, system-ui, sans-serif",
-        backgroundColor: "#020617",
-        backgroundImage: `
-          repeating-linear-gradient(-25deg, rgba(56,189,248,0.07) 0px, rgba(56,189,248,0.07) 1px, transparent 1px, transparent 160px),
-          repeating-linear-gradient(35deg, rgba(167,139,250,0.06) 0px, rgba(167,139,250,0.06) 1px, transparent 1px, transparent 220px),
-          radial-gradient(circle at 20% 30%, rgba(56,189,248,0.22), transparent 40%),
-          radial-gradient(circle at 80% 60%, rgba(167,139,250,0.22), transparent 45%),
-          radial-gradient(circle at 45% 85%, rgba(34,211,238,0.18), transparent 40%),
-          url("/wealthyai/icons/generated.png")
-        `,
-        backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
-        backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
+        backgroundImage:
+          "linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('/wealthyai/icons/hat.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
       }}
     >
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
@@ -221,7 +222,7 @@ export default function UserDashboard() {
               ["Fixed Expenses", "fixed"],
               ["Variable Expenses", "variable"],
             ].map(([label, key]) => (
-              <div key={key}>
+              <div key={key} style={{ marginBottom: "15px" }}>
                 <label>{label}</label>
                 <input
                   type="number"
@@ -237,10 +238,7 @@ export default function UserDashboard() {
 
           <div style={card}>
             <h3>Insights (Basic)</h3>
-
-            <div style={{ paddingLeft: 28 }}>
-              <Radar data={radar} />
-            </div>
+            <Radar data={radar} />
 
             <p>
               Risk Level: <strong>{riskLevel}</strong>
@@ -260,6 +258,51 @@ export default function UserDashboard() {
             <p style={{ opacity: 0.65, marginTop: 18 }}>
               This view shows a snapshot — not behavior, not direction.
             </p>
+          </div>
+        </div>
+
+        {/* ===== ORIENTATION BLOCK ===== */}
+        <div style={{ marginTop: 70, textAlign: "center" }}>
+          <h2 className="pulse-title">
+            Choose your depth of financial intelligence
+          </h2>
+
+          <p style={{ maxWidth: 700, margin: "18px auto", opacity: 0.85 }}>
+            Different questions require different levels of context.
+            You can choose the depth that matches what you want to understand right now.
+          </p>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: 20,
+              marginTop: 30,
+            }}
+          >
+            <div style={card}>
+              <h4>Daily Intelligence</h4>
+              <p>
+                Short-term interpretation of your current financial state.
+                Best for immediate clarity.
+              </p>
+            </div>
+
+            <div style={card}>
+              <h4>Weekly Intelligence</h4>
+              <p>
+                Behavioral patterns across days and categories.
+                Best for understanding habits.
+              </p>
+            </div>
+
+            <div style={card}>
+              <h4>Monthly Intelligence</h4>
+              <p>
+                Multi-week context, regional insights, and forward-looking analysis.
+                Best for long-term strategy.
+              </p>
+            </div>
           </div>
         </div>
       </div>
