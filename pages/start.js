@@ -14,7 +14,8 @@ export default function UserDashboard() {
 
   /* ===== CALCULATIONS ===== */
 
-  const totalExpenses = data.fixed + data.variable;
+  // FIX #2: subscriptions beleszámolva
+  const totalExpenses = data.fixed + data.variable + data.subscriptions;
   const balance = data.income - totalExpenses;
 
   const usagePercent =
@@ -194,8 +195,6 @@ export default function UserDashboard() {
         padding: "40px",
         color: "white",
         fontFamily: "Inter, system-ui, sans-serif",
-
-        /* ===== BACKGROUND FROM C PAGE ===== */
         backgroundColor: "#020617",
         backgroundImage: `
           repeating-linear-gradient(-25deg, rgba(56,189,248,0.07) 0px, rgba(56,189,248,0.07) 1px, transparent 1px, transparent 160px),
@@ -240,8 +239,8 @@ export default function UserDashboard() {
           <div style={card}>
             <h3>Insights (Basic)</h3>
 
-            {/* ===== LABEL FIX: padding wrapper ===== */}
-            <div style={{ paddingRight: 28 }}>
+            {/* FIX #1: grafikon jobbra tolva */}
+            <div style={{ paddingLeft: 28 }}>
               <Radar data={radar} />
             </div>
 
@@ -265,109 +264,7 @@ export default function UserDashboard() {
             </p>
           </div>
         </div>
-
-        {/* ===== ORIENTATION BLOCK ===== */}
-        <div style={{ marginTop: 70, textAlign: "center" }}>
-          <h2 className="pulse-title">
-            Choose your depth of financial intelligence
-          </h2>
-
-          <p style={{ maxWidth: 700, margin: "18px auto", opacity: 0.85 }}>
-            Different questions require different levels of context.
-            You can choose the depth that matches what you want to understand right now.
-          </p>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-              gap: 20,
-              marginTop: 30,
-            }}
-          >
-            <div style={card}>
-              <h4>Daily Intelligence</h4>
-              <p>
-                Short-term interpretation of your current financial state.
-                Best for immediate clarity.
-              </p>
-            </div>
-
-            <div style={card}>
-              <h4>Weekly Intelligence</h4>
-              <p>
-                Behavioral patterns across days and categories.
-                Best for understanding habits.
-              </p>
-            </div>
-
-            <div style={card}>
-              <h4>Monthly Intelligence</h4>
-              <p>
-                Multi-week context, regional insights, and forward-looking analysis.
-                Best when decisions require direction.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* ===== PRICING ===== */}
-        <div style={{ marginTop: 60 }}>
-          <h2 style={{ textAlign: "center", marginBottom: 30 }}>
-            Unlock Advanced AI Intelligence
-          </h2>
-
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: 20,
-              flexWrap: "wrap",
-            }}
-          >
-            <div
-              style={priceCard}
-              onClick={() =>
-                handleCheckout("price_1SscYJDyLtejYlZiyDvhdaIx")
-              }
-            >
-              <h3>1 Day · $9.99</h3>
-              <small>Immediate clarity</small>
-            </div>
-
-            <div
-              style={priceCard}
-              onClick={() =>
-                handleCheckout("price_1SscaYDyLtejYlZiDjSeF5Wm")
-              }
-            >
-              <h3>1 Week · $14.99</h3>
-              <small>Behavior & patterns</small>
-            </div>
-
-            <div
-              style={priceCard}
-              onClick={() =>
-                handleCheckout("price_1SscbeDyLtejYlZixJcT3B4o")
-              }
-            >
-              <h3>1 Month · $24.99</h3>
-              <small>Full intelligence engine</small>
-            </div>
-          </div>
-        </div>
       </div>
-
-      <style>{`
-        .pulse-title {
-          animation: pulseSoft 3s ease-in-out infinite;
-        }
-        @keyframes pulseSoft {
-          0% { opacity: 0.6; }
-          50% { opacity: 1; }
-          100% { opacity: 0.6; }
-        }
-      `}</style>
     </main>
   );
 }
