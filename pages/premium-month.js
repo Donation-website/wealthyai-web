@@ -1,4 +1,36 @@
 import { useState, useEffect } from "react";
+import jsPDF from "jspdf";
+
+/* ===== REGION DETECTION (AUTHORITATIVE) ===== */
+const detectRegion = () => {
+  const saved = localStorage.getItem("detectedRegion");
+  if (saved) return saved;
+
+  const lang = navigator.language || "";
+  const tz =
+    Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+
+  let region = "EU";
+
+  if (lang.startsWith("hu") || tz.includes("Budapest")) {
+    region = "HU";
+  } else if (lang.startsWith("en-GB") || tz.includes("London")) {
+    region = "UK";
+  } else if (
+    lang.startsWith("de") ||
+    lang.startsWith("fr") ||
+    lang.startsWith("es") ||
+    lang.startsWith("it") ||
+    lang.startsWith("nl")
+  ) {
+    region = "EU";
+  } else {
+    region = "OTHER";
+  }
+
+  localStorage.setItem("detectedRegion", region);
+  return region;
+};
 
 /* ===== REGIONS ===== */
 const REGIONS = [
@@ -6,10 +38,10 @@ const REGIONS = [
   { code: "EU", label: "European Union" },
   { code: "UK", label: "United Kingdom" },
   { code: "HU", label: "Hungary" },
+  { code: "OTHER", label: "Other / Global" },
 ];
 
 export default function PremiumMonth() {
-
   /* ===== SUBSCRIPTION CHECK ===== */
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -34,7 +66,7 @@ export default function PremiumMonth() {
       });
   }, []);
 
-  const [region, setRegion] = useState("EU");
+  const [region, setRegion] = useState(() => detectRegion());
 
   const [inputs, setInputs] = useState({
     income: 4000,
@@ -63,7 +95,6 @@ export default function PremiumMonth() {
 
   const update = (k, v) =>
     setInputs({ ...inputs, [k]: Number(v) });
-
   /* ===== CYCLE DAY (RETENTION BASE + STRIPE READY) ===== */
   const [cycleDay, setCycleDay] = useState(1);
 
@@ -175,7 +206,6 @@ export default function PremiumMonth() {
 
     setLoading(false);
   };
-
   /* ===== EXPORT RANGE (F) ===== */
   const [exportRange, setExportRange] = useState("day");
 
@@ -196,6 +226,56 @@ export default function PremiumMonth() {
     a.click();
 
     URL.revokeObjectURL(url);
+  }
+
+  /* ===== PDF EXPORT (NEW) ===== */
+  function handleDownloadPDF() {
+    const data = getBriefings(exportRange);
+    if (!data.length) return alert("No data available.");
+
+    const doc = new jsPDF();
+    let y = 20;
+
+    doc.addImage(
+      "/wealthyai/icons/generated.png",
+      "PNG",
+      15,
+      10,
+      40,
+      15
+    );
+
+    y += 30;
+
+    data.forEach(b => {
+      doc.text(`Day ${b.cycleDay} · ${b.date}`, 15, y);
+      y += 8;
+
+      const lines = doc.splitTextToSize(b.text, 180);
+      doc.text(lines, 15, y);
+      y += lines.length * 6 + 10;
+
+      if (y > 260) {
+        doc.addPage();
+        y = 20;
+      }
+    });
+
+    doc.save(`WealthyAI_${exportRange}.pdf`);
+  }
+
+  /* ===== EMAIL EXPORT (NEW) ===== */
+  async function handleSendEmail() {
+    const data = getBriefings(exportRange);
+    if (!data.length) return alert("No data available.");
+
+    await fetch("/api/send-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ range: exportRange, data }),
+    });
+
+    alert("Email sent.");
   }
   return (
     <div style={page}>
@@ -267,58 +347,6 @@ export default function PremiumMonth() {
         <div style={card}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <h3>AI Strategic Briefing</h3>
-
-            {aiOpen && (
-              <div style={{ display: "flex", gap: 12 }}>
-                <button
-                  onClick={() => {
-                    const nextMode =
-                      analysisMode === "executive" ? "directive" : "executive";
-                    setAnalysisMode(nextMode);
-                    setTimeout(() => runAI(), 0);
-                  }}
-                  style={{
-                    background: "transparent",
-                    border: "1px solid #1e293b",
-                    color: "#7dd3fc",
-                    borderRadius: 8,
-                    padding: "6px 10px",
-                    cursor: "pointer",
-                    fontSize: 12,
-                  }}
-                >
-                  {analysisMode === "executive"
-                    ? "Switch to Directive Analysis"
-                    : "Back to Executive View"}
-                </button>
-
-                <button
-                  onClick={() => setAiCollapsed(!aiCollapsed)}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    color: "#7dd3fc",
-                    fontSize: 18,
-                    cursor: "pointer",
-                  }}
-                >
-                  {aiCollapsed ? "▾" : "▴"}
-                </button>
-
-                <button
-                  onClick={() => setAiOpen(false)}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    color: "#7dd3fc",
-                    fontSize: 18,
-                    cursor: "pointer",
-                  }}
-                >
-                  ✕
-                </button>
-              </div>
-            )}
           </div>
 
           {!aiOpen && (
@@ -332,7 +360,6 @@ export default function PremiumMonth() {
             <>
               <pre style={aiTextStyle}>{aiText}</pre>
 
-              {/* ===== EXPORT CONTROLS ===== */}
               <div style={{ marginTop: 16, display: "flex", gap: 12 }}>
                 <select
                   value={exportRange}
@@ -351,20 +378,9 @@ export default function PremiumMonth() {
                   <option value="month">This month</option>
                 </select>
 
-                <button
-                  onClick={handleDownload}
-                  style={{
-                    flex: 1,
-                    padding: "10px",
-                    borderRadius: 8,
-                    border: "1px solid #1e293b",
-                    background: "transparent",
-                    color: "#7dd3fc",
-                    cursor: "pointer",
-                  }}
-                >
-                  Download
-                </button>
+                <button onClick={handleDownload}>TXT</button>
+                <button onClick={handleDownloadPDF}>PDF</button>
+                <button onClick={handleSendEmail}>Email</button>
               </div>
             </>
           )}
