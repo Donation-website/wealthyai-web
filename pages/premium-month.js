@@ -1,3 +1,6 @@
+export async function getServerSideProps() {
+  return { props: {} };
+}
 import { useState, useEffect } from "react";
 
 /* ===== REGION DETECTION (AUTHORITATIVE) ===== */
