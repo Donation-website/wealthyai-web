@@ -233,7 +233,7 @@ export default function PremiumMonth() {
     setEmailSending(true);
 
     try {
-      await fetch("/api/email-month-pdf", {
+      await fetch("/api/send-month-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
