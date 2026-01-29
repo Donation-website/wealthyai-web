@@ -10,47 +10,62 @@ export default async function handler(req, res) {
     return res.status(405).end();
   }
 
+  const timeout = setTimeout(() => {
+    console.error("EMAIL TIMEOUT");
+    return res.status(500).json({ error: "Email timeout" });
+  }, 10000);
+
   try {
     const { text, cycleDay, region } = req.body;
 
     if (!text) {
-      return res.status(400).json({ error: "No content provided" });
+      clearTimeout(timeout);
+      return res.status(400).json({ error: "No content" });
     }
 
-    /* ===== PDF GENERATION (IN MEMORY) ===== */
+    /* ===== CREATE PDF BUFFER ===== */
     const doc = new PDFDocument({ margin: 50 });
     const chunks = [];
 
-    doc.on("data", chunk => chunks.push(chunk));
+    doc.on("data", c => chunks.push(c));
     doc.on("end", async () => {
-      const pdfBuffer = Buffer.concat(chunks);
+      try {
+        const pdfBuffer = Buffer.concat(chunks);
 
-      /* ===== SMTP TRANSPORT ===== */
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT),
-        secure: Number(process.env.SMTP_PORT) === 465,
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      });
-
-      /* ===== SEND EMAIL ===== */
-      await transporter.sendMail({
-        from: process.env.MAIL_FROM,
-        to: process.env.MAIL_TO || process.env.SMTP_USER,
-        subject: "Your WealthyAI Monthly Briefing",
-        text: "Attached is your monthly WealthyAI briefing.",
-        attachments: [
-          {
-            filename: "wealthyai-monthly-briefing.pdf",
-            content: pdfBuffer,
+        /* ===== SMTP TRANSPORT ===== */
+        const transporter = nodemailer.createTransport({
+          host: process.env.SMTP_HOST,
+          port: Number(process.env.SMTP_PORT),
+          secure: false,
+          auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
           },
-        ],
-      });
+          connectionTimeout: 5000,
+          greetingTimeout: 5000,
+          socketTimeout: 5000,
+        });
 
-      return res.status(200).json({ ok: true });
+        await transporter.sendMail({
+          from: process.env.MAIL_FROM,
+          to: process.env.MAIL_TO,
+          subject: "Your WealthyAI Monthly Briefing",
+          text: "Attached is your monthly WealthyAI briefing.",
+          attachments: [
+            {
+              filename: "wealthyai-monthly-briefing.pdf",
+              content: pdfBuffer,
+            },
+          ],
+        });
+
+        clearTimeout(timeout);
+        return res.status(200).json({ ok: true });
+      } catch (mailErr) {
+        console.error("SENDMAIL ERROR:", mailErr);
+        clearTimeout(timeout);
+        return res.status(500).json({ error: "Send failed" });
+      }
     });
 
     /* ===== PDF CONTENT ===== */
@@ -69,29 +84,16 @@ export default async function handler(req, res) {
     }
 
     doc.moveDown(3);
-
-    doc
-      .fontSize(18)
-      .text("WealthyAI · Monthly Briefing", { align: "left" });
-
-    doc
-      .fontSize(10)
-      .fillColor("gray")
+    doc.fontSize(18).text("WealthyAI · Monthly Briefing");
+    doc.fontSize(10).fillColor("gray")
       .text(`Region: ${region} · Cycle day: ${cycleDay}`);
-
     doc.moveDown();
-
-    doc
-      .fontSize(12)
-      .fillColor("black")
-      .text(text, {
-        align: "left",
-        lineGap: 4,
-      });
+    doc.fontSize(12).fillColor("black").text(text);
 
     doc.end();
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Email sending failed" });
+    console.error("GENERAL ERROR:", err);
+    clearTimeout(timeout);
+    return res.status(500).json({ error: "Internal error" });
   }
 }
