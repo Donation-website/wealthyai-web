@@ -1,4 +1,4 @@
-561 sor!!!   import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import jsPDF from "jspdf";
 
 /* ===== REGION DETECTION (AUTHORITATIVE) ===== */
