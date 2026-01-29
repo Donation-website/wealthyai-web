@@ -257,8 +257,6 @@ export default function PremiumMonth() {
   );
 }
 
-/* === UI HELPERS + STYLES (VÁLTOZATLAN) === */
-// (szándékosan nem módosítva)
 /* UI HELPERS */
 
 const Section = ({ title, children }) => (
