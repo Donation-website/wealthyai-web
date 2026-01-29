@@ -68,7 +68,6 @@ export default function PremiumMonth() {
   const [cycleDay, setCycleDay] = useState(1);
 
   useEffect(() => {
-    // később Stripe subscription.current_period_start ide köthető
     const stripeStart = localStorage.getItem("subscriptionPeriodStart");
     const localStart = localStorage.getItem("monthCycleStart");
     const start = stripeStart || localStart;
@@ -84,6 +83,58 @@ export default function PremiumMonth() {
       setCycleDay(Math.min(diffDays + 1, 30));
     }
   }, []);
+
+  /* ======================================================
+     A + G — MONTHLY BRIEFING MEMORY (AI OUTPUT ONLY)
+  ====================================================== */
+
+  function saveBriefing(text) {
+    const today = new Date().toISOString().slice(0, 10);
+
+    const entry = {
+      id: Date.now(),
+      date: today,
+      cycleDay,
+      analysisMode,
+      text,
+    };
+
+    const stored =
+      JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
+
+    const exists = stored.find(
+      b => b.date === today && b.analysisMode === analysisMode
+    );
+
+    if (!exists) {
+      stored.push(entry);
+      localStorage.setItem(
+        "monthlyBriefings",
+        JSON.stringify(stored.slice(-30))
+      );
+    }
+  }
+
+  function getBriefings(range) {
+    const stored =
+      JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
+
+    if (range === "day") {
+      const today = new Date().toISOString().slice(0, 10);
+      return stored.filter(b => b.date === today);
+    }
+
+    if (range === "week") {
+      return stored.slice(-7);
+    }
+
+    if (range === "month") {
+      return stored;
+    }
+
+    return [];
+  }
+
   /* ===== RUN AI (WITH MULTI-MONTH MEMORY) ===== */
   const runAI = async () => {
     setLoading(true);
@@ -110,69 +161,13 @@ export default function PremiumMonth() {
       const data = await res.json();
       const fullText = data.briefing || "AI briefing unavailable.";
 
-      /* ===== MEMORY EXTRACTION ===== */
       const marker = "--- INTERNAL SIGNALS ---";
-      if (fullText.includes(marker)) {
-        const parts = fullText.split(marker);
+      const visibleText = fullText.includes(marker)
+        ? fullText.split(marker)[0].trim()
+        : fullText;
 
-        const visibleText = parts[0].trim();
-        const signalLines = parts[1]
-          .split("\n")
-          .map(l => l.replace("-", "").trim())
-          .filter(Boolean)
-          .slice(0, 3);
-
-        if (signalLines.length) {
-          localStorage.setItem(
-            "monthlySignals",
-            JSON.stringify(signalLines)
-          );
-        }
-
-        /* ===== STRUCTURED SIGNAL PARSING ===== */
-        let dominantLens = "";
-        let pressureTrend = "";
-        let ignoredArea = "";
-
-        signalLines.forEach(line => {
-          if (line.startsWith("dominant_lens")) {
-            dominantLens = line.split(":")[1]?.trim();
-          }
-          if (line.startsWith("pressure_trend")) {
-            pressureTrend = line.split(":")[1]?.trim();
-          }
-          if (line.startsWith("ignored")) {
-            ignoredArea = line.split(":")[1]?.trim();
-          }
-        });
-
-        /* ===== MULTI-MONTH PRESSURE MEMORY → STRIPE ===== */
-        const subscriptionId =
-          localStorage.getItem("subscriptionId");
-
-        if (subscriptionId && dominantLens) {
-          const now = new Date();
-          const period =
-            now.getFullYear() + "-" +
-            String(now.getMonth() + 1).padStart(2, "0");
-
-          fetch("/api/update-pressure-memory", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              subscriptionId,
-              period,
-              dominantLens,
-              pressureTrend,
-              ignoredArea
-            }),
-          }).catch(() => {});
-        }
-
-        setAiText(visibleText);
-      } else {
-        setAiText(fullText);
-      }
+      setAiText(visibleText);
+      saveBriefing(visibleText);
 
     } catch {
       setAiText("AI system temporarily unavailable.");
@@ -180,6 +175,28 @@ export default function PremiumMonth() {
 
     setLoading(false);
   };
+
+  /* ===== EXPORT RANGE (F) ===== */
+  const [exportRange, setExportRange] = useState("day");
+
+  function handleDownload() {
+    const data = getBriefings(exportRange);
+    if (!data.length) return alert("No data available.");
+
+    const text = data
+      .map(b => `Day ${b.cycleDay} · ${b.date}\n\n${b.text}`)
+      .join("\n\n---------------------\n\n");
+
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `WealthyAI_${exportRange}.txt`;
+    a.click();
+
+    URL.revokeObjectURL(url);
+  }
   return (
     <div style={page}>
       <a href="/month/help" style={helpButton}>Help</a>
@@ -217,6 +234,7 @@ export default function PremiumMonth() {
           <Input value={inputs.income} onChange={e => update("income", e.target.value)} />
 
           <Divider />
+
           <Section title="Living">
             <Row label="Housing" value={inputs.housing} onChange={v => update("housing", v)} />
           </Section>
@@ -244,22 +262,20 @@ export default function PremiumMonth() {
             {loading ? "Generating briefing…" : "Generate Monthly Briefing"}
           </button>
         </div>
-        {/* ===== AI OUTPUT (DUAL MODE) ===== */}
+
+        {/* ===== AI OUTPUT + EXPORT (F) ===== */}
         <div style={card}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <h3>AI Strategic Briefing</h3>
 
             {aiOpen && (
               <div style={{ display: "flex", gap: 12 }}>
-
                 <button
                   onClick={() => {
                     const nextMode =
                       analysisMode === "executive" ? "directive" : "executive";
                     setAnalysisMode(nextMode);
-                    setTimeout(() => {
-                      runAI();
-                    }, 0);
+                    setTimeout(() => runAI(), 0);
                   }}
                   style={{
                     background: "transparent",
@@ -301,7 +317,6 @@ export default function PremiumMonth() {
                 >
                   ✕
                 </button>
-
               </div>
             )}
           </div>
@@ -314,7 +329,44 @@ export default function PremiumMonth() {
           )}
 
           {aiOpen && !aiCollapsed && (
-            <pre style={aiTextStyle}>{aiText}</pre>
+            <>
+              <pre style={aiTextStyle}>{aiText}</pre>
+
+              {/* ===== EXPORT CONTROLS ===== */}
+              <div style={{ marginTop: 16, display: "flex", gap: 12 }}>
+                <select
+                  value={exportRange}
+                  onChange={e => setExportRange(e.target.value)}
+                  style={{
+                    flex: 1,
+                    background: "transparent",
+                    color: "#e5e7eb",
+                    border: "1px solid #1e293b",
+                    padding: "8px",
+                    borderRadius: 8,
+                  }}
+                >
+                  <option value="day">Today</option>
+                  <option value="week">Last 7 days</option>
+                  <option value="month">This month</option>
+                </select>
+
+                <button
+                  onClick={handleDownload}
+                  style={{
+                    flex: 1,
+                    padding: "10px",
+                    borderRadius: 8,
+                    border: "1px solid #1e293b",
+                    background: "transparent",
+                    color: "#7dd3fc",
+                    cursor: "pointer",
+                  }}
+                >
+                  Download
+                </button>
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -325,7 +377,6 @@ export default function PremiumMonth() {
     </div>
   );
 }
-
 /* ===== UI HELPERS ===== */
 
 const Section = ({ title, children }) => (
