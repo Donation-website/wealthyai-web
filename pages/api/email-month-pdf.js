@@ -27,7 +27,7 @@ export default async function handler(req, res) {
   );
 
   if (fs.existsSync(logoPath)) {
-    doc.image(logoPath, 50, 40, { width: 120 });
+    doc.image(logoPath, doc.page.width - 170, 40, { width: 120 });
   }
 
   doc.moveDown(3);
