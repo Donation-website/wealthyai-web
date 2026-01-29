@@ -9,7 +9,6 @@ const REGIONS = [
 ];
 
 export default function PremiumMonth() {
-
   /* ===== SUBSCRIPTION CHECK ===== */
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -168,7 +167,6 @@ export default function PremiumMonth() {
 
       setAiText(visibleText);
       saveBriefing(visibleText);
-
     } catch {
       setAiText("AI system temporarily unavailable.");
     }
@@ -197,6 +195,31 @@ export default function PremiumMonth() {
 
     URL.revokeObjectURL(url);
   }
+
+  const downloadPDF = async () => {
+    if (!aiText) {
+      alert("No AI briefing available.");
+      return;
+    }
+
+    const res = await fetch("/api/export-month-pdf", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text: aiText,
+        cycleDay,
+        region,
+      }),
+    });
+
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "wealthyai-monthly-briefing.pdf";
+    a.click();
+  };
+
   return (
     <div style={page}>
       <a href="/month/help" style={helpButton}>Help</a>
@@ -365,6 +388,21 @@ export default function PremiumMonth() {
                 >
                   Download
                 </button>
+
+                <button
+                  onClick={downloadPDF}
+                  style={{
+                    flex: 1,
+                    padding: "10px",
+                    borderRadius: 8,
+                    border: "1px solid #1e293b",
+                    background: "transparent",
+                    color: "#38bdf8",
+                    cursor: "pointer",
+                  }}
+                >
+                  Download PDF
+                </button>
               </div>
             </>
           )}
@@ -377,6 +415,7 @@ export default function PremiumMonth() {
     </div>
   );
 }
+
 /* ===== UI HELPERS ===== */
 
 const Section = ({ title, children }) => (
