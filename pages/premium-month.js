@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 
-/* ===== REGIONS ===== */
 const REGIONS = [
   { code: "US", label: "United States" },
   { code: "EU", label: "European Union" },
@@ -9,31 +8,30 @@ const REGIONS = [
 ];
 
 export default function PremiumMonth() {
-  /* ===== SUBSCRIPTION CHECK ===== */
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get("session_id");
-
-    if (!sessionId) {
-      window.location.href = "/start";
-      return;
-    }
+    if (!sessionId) return (window.location.href = "/start");
 
     fetch("/api/verify-active-subscription", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ sessionId }),
     })
-      .then(res => res.json())
-      .then(d => {
-        if (!d.valid) window.location.href = "/start";
-      })
-      .catch(() => {
-        window.location.href = "/start";
-      });
+      .then(r => r.json())
+      .then(d => !d.valid && (window.location.href = "/start"))
+      .catch(() => (window.location.href = "/start"));
   }, []);
 
   const [region, setRegion] = useState("EU");
+  const [analysisMode, setAnalysisMode] = useState("executive");
+  const [aiText, setAiText] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiCollapsed, setAiCollapsed] = useState(false);
+  const [emailSending, setEmailSending] = useState(false);
+  const [exportRange, setExportRange] = useState("day");
+  const [cycleDay, setCycleDay] = useState(1);
 
   const [inputs, setInputs] = useState({
     income: 4000,
@@ -50,102 +48,46 @@ export default function PremiumMonth() {
     other: 300,
   });
 
-  const [aiText, setAiText] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [aiOpen, setAiOpen] = useState(false);
-
-  /* ===== DUAL MODE STATE ===== */
-  const [analysisMode, setAnalysisMode] = useState("executive");
-
-  /* ===== AI BOX COLLAPSE STATE ===== */
-  const [aiCollapsed, setAiCollapsed] = useState(false);
-
-  /* ===== EMAIL STATE (NEW) ===== */
-  const [emailSending, setEmailSending] = useState(false);
-
-  const update = (k, v) =>
-    setInputs({ ...inputs, [k]: Number(v) });
-
-  /* ===== CYCLE DAY (RETENTION BASE + STRIPE READY) ===== */
-  const [cycleDay, setCycleDay] = useState(1);
+  const update = (k, v) => setInputs({ ...inputs, [k]: Number(v) });
 
   useEffect(() => {
-    const stripeStart = localStorage.getItem("subscriptionPeriodStart");
-    const localStart = localStorage.getItem("monthCycleStart");
-    const start = stripeStart || localStart;
+    const start =
+      localStorage.getItem("subscriptionPeriodStart") ||
+      localStorage.getItem("monthCycleStart");
 
     if (!start) {
-      const now = Date.now();
-      localStorage.setItem("monthCycleStart", now.toString());
+      localStorage.setItem("monthCycleStart", Date.now().toString());
       setCycleDay(1);
     } else {
-      const diffDays = Math.floor(
-        (Date.now() - Number(start)) / (1000 * 60 * 60 * 24)
-      );
-      setCycleDay(Math.min(diffDays + 1, 30));
+      const diff = Math.floor((Date.now() - Number(start)) / 86400000);
+      setCycleDay(Math.min(diff + 1, 30));
     }
   }, []);
 
-  /* ======================================================
-     A + G — MONTHLY BRIEFING MEMORY (AI OUTPUT ONLY)
-  ====================================================== */
-
-  function saveBriefing(text) {
+  const saveBriefing = text => {
     const today = new Date().toISOString().slice(0, 10);
-
-    const entry = {
-      id: Date.now(),
-      date: today,
-      cycleDay,
-      analysisMode,
-      text,
-    };
-
-    const stored =
-      JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
-
-    const exists = stored.find(
-      b => b.date === today && b.analysisMode === analysisMode
-    );
-
-    if (!exists) {
-      stored.push(entry);
-      localStorage.setItem(
-        "monthlyBriefings",
-        JSON.stringify(stored.slice(-30))
-      );
+    const stored = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
+    if (!stored.find(b => b.date === today && b.analysisMode === analysisMode)) {
+      stored.push({ id: Date.now(), date: today, cycleDay, analysisMode, text });
+      localStorage.setItem("monthlyBriefings", JSON.stringify(stored.slice(-30)));
     }
-  }
+  };
 
-  function getBriefings(range) {
-    const stored =
-      JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
-
+  const getBriefings = range => {
+    const stored = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
     if (range === "day") {
       const today = new Date().toISOString().slice(0, 10);
       return stored.filter(b => b.date === today);
     }
-
-    if (range === "week") {
-      return stored.slice(-7);
-    }
-
-    if (range === "month") {
-      return stored;
-    }
-
+    if (range === "week") return stored.slice(-7);
+    if (range === "month") return stored;
     return [];
-  }
+  };
 
-  /* ===== RUN AI (WITH MULTI-MONTH MEMORY) ===== */
   const runAI = async () => {
     setLoading(true);
     setAiOpen(true);
     setAiCollapsed(false);
-
-    const previousSignals = JSON.parse(
-      localStorage.getItem("monthlySignals") || "[]"
-    ).join("\n");
 
     try {
       const res = await fetch("/api/get-ai-briefing", {
@@ -155,99 +97,70 @@ export default function PremiumMonth() {
           region,
           cycleDay,
           analysisMode,
-          previousSignals,
+          previousSignals: JSON.parse(
+            localStorage.getItem("monthlySignals") || "[]"
+          ).join("\n"),
           ...inputs,
         }),
       });
 
-      const data = await res.json();
-      const fullText = data.briefing || "AI briefing unavailable.";
+      const json = await res.json();
+      let text = json.briefing || "";
+      if (text.includes("--- INTERNAL SIGNALS ---"))
+        text = text.split("--- INTERNAL SIGNALS ---")[0].trim();
 
-      const marker = "--- INTERNAL SIGNALS ---";
-      const visibleText = fullText.includes(marker)
-        ? fullText.split(marker)[0].trim()
-        : fullText;
-
-      setAiText(visibleText);
-      saveBriefing(visibleText);
+      setAiText(text || "AI briefing unavailable.");
+      saveBriefing(text);
     } catch {
       setAiText("AI system temporarily unavailable.");
     }
-
     setLoading(false);
   };
 
-  /* ===== EXPORT RANGE (F) ===== */
-  const [exportRange, setExportRange] = useState("day");
-
-  function handleDownload() {
+  const handleDownload = () => {
     const data = getBriefings(exportRange);
     if (!data.length) return alert("No data available.");
-
     const text = data
       .map(b => `Day ${b.cycleDay} · ${b.date}\n\n${b.text}`)
       .join("\n\n---------------------\n\n");
 
-    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-
+    const url = URL.createObjectURL(
+      new Blob([text], { type: "text/plain;charset=utf-8" })
+    );
     const a = document.createElement("a");
     a.href = url;
     a.download = `WealthyAI_${exportRange}.txt`;
     a.click();
-
     URL.revokeObjectURL(url);
-  }
+  };
 
   const downloadPDF = async () => {
-    if (!aiText) {
-      alert("No AI briefing available.");
-      return;
-    }
-
+    if (!aiText) return alert("No AI briefing available.");
     const res = await fetch("/api/export-month-pdf", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        text: aiText,
-        cycleDay,
-        region,
-      }),
+      body: JSON.stringify({ text: aiText, cycleDay, region }),
     });
-
-    const blob = await res.blob();
-    const url = window.URL.createObjectURL(blob);
+    const url = URL.createObjectURL(await res.blob());
     const a = document.createElement("a");
     a.href = url;
     a.download = "wealthyai-monthly-briefing.pdf";
     a.click();
   };
 
-  /* ===== EMAIL SEND (NEW) ===== */
   const sendEmailPDF = async () => {
-    if (!aiText) {
-      alert("No AI briefing available.");
-      return;
-    }
-
+    if (!aiText) return alert("No AI briefing available.");
     setEmailSending(true);
-
     try {
       await fetch("/api/send-month-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          text: aiText,
-          cycleDay,
-          region,
-        }),
+        body: JSON.stringify({ text: aiText, cycleDay, region }),
       });
-
       alert("Email sent successfully.");
     } catch {
       alert("Email sending failed.");
     }
-
     setEmailSending(false);
   };
 
@@ -262,15 +175,9 @@ export default function PremiumMonth() {
 
       <div style={regionRow}>
         <span style={regionLabel}>Region</span>
-        <select
-          value={region}
-          onChange={(e) => setRegion(e.target.value)}
-          style={regionSelect}
-        >
+        <select value={region} onChange={e => setRegion(e.target.value)} style={regionSelect}>
           {REGIONS.map(r => (
-            <option key={r.code} value={r.code}>
-              {r.label}
-            </option>
+            <option key={r.code} value={r.code}>{r.label}</option>
           ))}
         </select>
       </div>
@@ -283,10 +190,8 @@ export default function PremiumMonth() {
       <div style={layout}>
         <div style={card}>
           <h3>Monthly Financial Structure</h3>
-
           <Label>Income</Label>
           <Input value={inputs.income} onChange={e => update("income", e.target.value)} />
-
           <Divider />
 
           <Section title="Living">
@@ -317,12 +222,7 @@ export default function PremiumMonth() {
           </button>
         </div>
 
-        {/* ===== AI OUTPUT + EXPORT (F) ===== */}
         <div style={card}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <h3>AI Strategic Briefing</h3>
-          </div>
-
           {aiOpen && !aiCollapsed && (
             <>
               <pre style={aiTextStyle}>{aiText}</pre>
@@ -331,28 +231,15 @@ export default function PremiumMonth() {
                 <select
                   value={exportRange}
                   onChange={e => setExportRange(e.target.value)}
-                  style={{
-                    flex: 1,
-                    background: "transparent",
-                    color: "#e5e7eb",
-                    border: "1px solid #1e293b",
-                    padding: "8px",
-                    borderRadius: 8,
-                  }}
+                  style={exportSelect}
                 >
                   <option value="day">Today</option>
                   <option value="week">Last 7 days</option>
                   <option value="month">This month</option>
                 </select>
 
-                <button onClick={handleDownload} style={exportBtn}>
-                  Download
-                </button>
-
-                <button onClick={downloadPDF} style={exportBtn}>
-                  Download PDF
-                </button>
-
+                <button onClick={handleDownload} style={exportBtn}>Download</button>
+                <button onClick={downloadPDF} style={exportBtn}>Download PDF</button>
                 <button onClick={sendEmailPDF} style={exportBtn}>
                   {emailSending ? "Sending…" : "Send by Email"}
                 </button>
@@ -362,14 +249,12 @@ export default function PremiumMonth() {
         </div>
       </div>
 
-      <div style={footer}>
-        © 2026 WealthyAI · Monthly Intelligence
-      </div>
+      <div style={footer}>© 2026 WealthyAI · Monthly Intelligence</div>
     </div>
   );
 }
 
-/* ===== UI HELPERS ===== */
+/* UI HELPERS */
 
 const Section = ({ title, children }) => (
   <>
@@ -408,7 +293,7 @@ const Divider = () => (
   <div style={{ height: 1, background: "#1e293b", margin: "16px 0" }} />
 );
 
-/* ===== STYLES ===== */
+/* STYLES */
 
 const page = {
   minHeight: "100vh",
@@ -544,4 +429,13 @@ const exportBtn = {
   background: "transparent",
   color: "#38bdf8",
   cursor: "pointer",
+};
+
+const exportSelect = {
+  flex: 1,
+  background: "transparent",
+  color: "#e5e7eb",
+  border: "1px solid #1e293b",
+  padding: "8px",
+  borderRadius: 8,
 };
