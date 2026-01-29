@@ -26,8 +26,14 @@ export default async function handler(req, res) {
     "public/wealthyai/icons/generated.png"
   );
 
+  // ✅ PROFI: jobb felső sarok, marginon belül
   if (fs.existsSync(logoPath)) {
-    doc.image(logoPath, doc.page.width - 170, 40, { width: 120 });
+    doc.image(
+      logoPath,
+      doc.page.width - doc.page.margins.right - 120,
+      doc.page.margins.top,
+      { width: 120 }
+    );
   }
 
   doc.moveDown(3);
