@@ -33,6 +33,12 @@ export default function PremiumMonth() {
   const [exportRange, setExportRange] = useState("day");
   const [cycleDay, setCycleDay] = useState(1);
 
+  /* === ARCHIVE STATE === */
+  const [archiveOpen, setArchiveOpen] = useState(false);
+  const [selectedDay, setSelectedDay] = useState(null);
+
+  const isToday = selectedDay === null;
+
   const [inputs, setInputs] = useState({
     income: 4000,
     housing: 1200,
@@ -73,21 +79,25 @@ export default function PremiumMonth() {
     }
   };
 
-  const getBriefings = range => {
-    const stored = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
-    if (range === "day") {
-      const today = new Date().toISOString().slice(0, 10);
-      return stored.filter(b => b.date === today);
+  const getAllBriefings = () =>
+    JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
+
+  const loadArchivedDay = day => {
+    const stored = getAllBriefings();
+    const found = stored.find(b => b.cycleDay === day);
+    if (found) {
+      setAiText(found.text);
+      setSelectedDay(day);
+      setAiOpen(true);
+      setAiCollapsed(false);
     }
-    if (range === "week") return stored.slice(-7);
-    if (range === "month") return stored;
-    return [];
   };
 
   const runAI = async () => {
     setLoading(true);
     setAiOpen(true);
     setAiCollapsed(false);
+    setSelectedDay(null);
 
     try {
       const res = await fetch("/api/get-ai-briefing", {
@@ -118,7 +128,7 @@ export default function PremiumMonth() {
   };
 
   const handleDownload = () => {
-    const data = getBriefings(exportRange);
+    const data = getAllBriefings();
     if (!data.length) return alert("No data available.");
     const text = data
       .map(b => `Day ${b.cycleDay} · ${b.date}\n\n${b.text}`)
@@ -129,7 +139,7 @@ export default function PremiumMonth() {
     );
     const a = document.createElement("a");
     a.href = url;
-    a.download = `WealthyAI_${exportRange}.txt`;
+    a.download = `WealthyAI_month.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -193,33 +203,9 @@ export default function PremiumMonth() {
           <Label>Income</Label>
           <Input value={inputs.income} onChange={e => update("income", e.target.value)} />
           <Divider />
-
           <Section title="Living">
             <Row label="Housing" value={inputs.housing} onChange={v => update("housing", v)} />
           </Section>
-
-          <Section title="Utilities">
-            <Row label="Electricity" value={inputs.electricity} onChange={v => update("electricity", v)} />
-            <Row label="Gas" value={inputs.gas} onChange={v => update("gas", v)} />
-            <Row label="Water" value={inputs.water} onChange={v => update("water", v)} />
-          </Section>
-
-          <Section title="Recurring Services">
-            <Row label="Internet" value={inputs.internet} onChange={v => update("internet", v)} />
-            <Row label="Mobile phone" value={inputs.mobile} onChange={v => update("mobile", v)} />
-            <Row label="TV / Streaming" value={inputs.tv} onChange={v => update("tv", v)} />
-            <Row label="Insurance" value={inputs.insurance} onChange={v => update("insurance", v)} />
-            <Row label="Banking fees" value={inputs.banking} onChange={v => update("banking", v)} />
-          </Section>
-
-          <Section title="Irregular">
-            <Row label="Unexpected" value={inputs.unexpected} onChange={v => update("unexpected", v)} />
-            <Row label="Other" value={inputs.other} onChange={v => update("other", v)} />
-          </Section>
-
-          <button onClick={runAI} style={aiButton}>
-            {loading ? "Generating briefing…" : "Generate Monthly Briefing"}
-          </button>
         </div>
 
         <div style={card}>
@@ -227,23 +213,40 @@ export default function PremiumMonth() {
             <>
               <pre style={aiTextStyle}>{aiText}</pre>
 
-              <div style={{ marginTop: 16, display: "flex", gap: 12 }}>
-                <select
-                  value={exportRange}
-                  onChange={e => setExportRange(e.target.value)}
-                  style={exportSelect}
-                >
-                  <option value="day">Today</option>
-                  <option value="week">Last 7 days</option>
-                  <option value="month">This month</option>
-                </select>
+              <button
+                onClick={() => setArchiveOpen(!archiveOpen)}
+                style={{ marginTop: 12, ...exportBtn }}
+              >
+                {archiveOpen ? "Hide previous days" : "View previous days"}
+              </button>
 
-                <button onClick={handleDownload} style={exportBtn}>Download</button>
-                <button onClick={downloadPDF} style={exportBtn}>Download PDF</button>
-                <button onClick={sendEmailPDF} style={exportBtn}>
-                  {emailSending ? "Sending…" : "Send by Email"}
-                </button>
-              </div>
+              {archiveOpen && (
+                <div style={{ marginTop: 12, maxHeight: 180, overflowY: "auto" }}>
+                  {[...Array(30)].map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => loadArchivedDay(i + 1)}
+                      style={{
+                        ...exportBtn,
+                        marginBottom: 6,
+                        opacity: i + 1 === selectedDay ? 1 : 0.7,
+                      }}
+                    >
+                      Day {i + 1}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {isToday && (
+                <div style={{ marginTop: 16, display: "flex", gap: 12 }}>
+                  <button onClick={handleDownload} style={exportBtn}>Download</button>
+                  <button onClick={downloadPDF} style={exportBtn}>Download PDF</button>
+                  <button onClick={sendEmailPDF} style={exportBtn}>
+                    {emailSending ? "Sending…" : "Send by Email"}
+                  </button>
+                </div>
+              )}
             </>
           )}
         </div>
@@ -254,6 +257,8 @@ export default function PremiumMonth() {
   );
 }
 
+/* === UI HELPERS + STYLES (VÁLTOZATLAN) === */
+// (szándékosan nem módosítva)
 /* UI HELPERS */
 
 const Section = ({ title, children }) => (
