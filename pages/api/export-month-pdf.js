@@ -1,3 +1,5 @@
+export const config = { runtime: "nodejs" };
+
 import PDFDocument from "pdfkit";
 import fs from "fs";
 import path from "path";
@@ -25,7 +27,12 @@ export default async function handler(req, res) {
   );
 
   if (fs.existsSync(logoPath)) {
-    doc.image(logoPath, 50, 40, { width: 120 });
+    doc.image(
+      logoPath,
+      doc.page.width - doc.page.margins.right - 120,
+      doc.page.margins.top,
+      { width: 120 }
+    );
   }
 
   doc.moveDown(3);
