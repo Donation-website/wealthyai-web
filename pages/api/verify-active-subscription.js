@@ -1,8 +1,13 @@
-import Stripe from "stripe";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+let stripe;
 
 export default async function handler(req, res) {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    console.error("Missing STRIPE_SECRET_KEY");
+    return res.status(200).json({ valid: false });
+  }
+
+  stripe = stripe || new (require("stripe"))(process.env.STRIPE_SECRET_KEY);
+
   if (req.method !== "POST") {
     return res.status(405).json({ valid: false });
   }
@@ -20,10 +25,7 @@ export default async function handler(req, res) {
 
     const subscription = session.subscription;
 
-    if (
-      subscription &&
-      subscription.status === "active"
-    ) {
+    if (subscription && subscription.status === "active") {
       return res.status(200).json({
         valid: true,
         subscriptionId: subscription.id,
