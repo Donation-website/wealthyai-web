@@ -95,6 +95,7 @@ export default function PremiumMonth() {
 
   const update = (k, v) =>
     setInputs({ ...inputs, [k]: Number(v) });
+
   /* ===== CYCLE DAY (RETENTION BASE + STRIPE READY) ===== */
   const [cycleDay, setCycleDay] = useState(1);
 
@@ -206,8 +207,35 @@ export default function PremiumMonth() {
 
     setLoading(false);
   };
+
   /* ===== EXPORT RANGE (F) ===== */
   const [exportRange, setExportRange] = useState("day");
+
+  // ===== SERVER-SIDE PDF DOWNLOAD =====
+  async function handleDownloadPDFServer() {
+    const res = await fetch("/api/export-month-pdf", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: "WealthyAI · Monthly Briefing",
+        meta: `Region: ${region} · Day ${cycleDay}`,
+        text: aiText,
+      }),
+    });
+
+    if (!res.ok) {
+      alert("PDF generation failed.");
+      return;
+    }
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "wealthyai-monthly-briefing.pdf";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   function handleDownload() {
     const data = getBriefings(exportRange);
@@ -277,6 +305,7 @@ export default function PremiumMonth() {
 
     alert("Email sent.");
   }
+
   return (
     <div style={page}>
       <a href="/month/help" style={helpButton}>Help</a>
@@ -343,11 +372,8 @@ export default function PremiumMonth() {
           </button>
         </div>
 
-        {/* ===== AI OUTPUT + EXPORT (F) ===== */}
         <div style={card}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <h3>AI Strategic Briefing</h3>
-          </div>
+          <h3>AI Strategic Briefing</h3>
 
           {!aiOpen && (
             <p style={{ opacity: 0.7 }}>
@@ -379,7 +405,7 @@ export default function PremiumMonth() {
                 </select>
 
                 <button onClick={handleDownload}>TXT</button>
-                <button onClick={handleDownloadPDF}>PDF</button>
+                <button onClick={handleDownloadPDFServer}>PDF</button>
                 <button onClick={handleSendEmail}>Email</button>
               </div>
             </>
@@ -393,6 +419,7 @@ export default function PremiumMonth() {
     </div>
   );
 }
+
 /* ===== UI HELPERS ===== */
 
 const Section = ({ title, children }) => (
