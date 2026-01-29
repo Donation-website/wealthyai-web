@@ -60,6 +60,9 @@ export default function PremiumMonth() {
   /* ===== AI BOX COLLAPSE STATE ===== */
   const [aiCollapsed, setAiCollapsed] = useState(false);
 
+  /* ===== EMAIL STATE (NEW) ===== */
+  const [emailSending, setEmailSending] = useState(false);
+
   const update = (k, v) =>
     setInputs({ ...inputs, [k]: Number(v) });
 
@@ -220,6 +223,34 @@ export default function PremiumMonth() {
     a.click();
   };
 
+  /* ===== EMAIL SEND (NEW) ===== */
+  const sendEmailPDF = async () => {
+    if (!aiText) {
+      alert("No AI briefing available.");
+      return;
+    }
+
+    setEmailSending(true);
+
+    try {
+      await fetch("/api/email-month-pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: aiText,
+          cycleDay,
+          region,
+        }),
+      });
+
+      alert("Email sent successfully.");
+    } catch {
+      alert("Email sending failed.");
+    }
+
+    setEmailSending(false);
+  };
+
   return (
     <div style={page}>
       <a href="/month/help" style={helpButton}>Help</a>
@@ -290,72 +321,12 @@ export default function PremiumMonth() {
         <div style={card}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <h3>AI Strategic Briefing</h3>
-
-            {aiOpen && (
-              <div style={{ display: "flex", gap: 12 }}>
-                <button
-                  onClick={() => {
-                    const nextMode =
-                      analysisMode === "executive" ? "directive" : "executive";
-                    setAnalysisMode(nextMode);
-                    setTimeout(() => runAI(), 0);
-                  }}
-                  style={{
-                    background: "transparent",
-                    border: "1px solid #1e293b",
-                    color: "#7dd3fc",
-                    borderRadius: 8,
-                    padding: "6px 10px",
-                    cursor: "pointer",
-                    fontSize: 12,
-                  }}
-                >
-                  {analysisMode === "executive"
-                    ? "Switch to Directive Analysis"
-                    : "Back to Executive View"}
-                </button>
-
-                <button
-                  onClick={() => setAiCollapsed(!aiCollapsed)}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    color: "#7dd3fc",
-                    fontSize: 18,
-                    cursor: "pointer",
-                  }}
-                >
-                  {aiCollapsed ? "▾" : "▴"}
-                </button>
-
-                <button
-                  onClick={() => setAiOpen(false)}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    color: "#7dd3fc",
-                    fontSize: 18,
-                    cursor: "pointer",
-                  }}
-                >
-                  ✕
-                </button>
-              </div>
-            )}
           </div>
-
-          {!aiOpen && (
-            <p style={{ opacity: 0.7 }}>
-              Generate a briefing to receive a strategic interpretation
-              of your next 90 days.
-            </p>
-          )}
 
           {aiOpen && !aiCollapsed && (
             <>
               <pre style={aiTextStyle}>{aiText}</pre>
 
-              {/* ===== EXPORT CONTROLS ===== */}
               <div style={{ marginTop: 16, display: "flex", gap: 12 }}>
                 <select
                   value={exportRange}
@@ -374,34 +345,16 @@ export default function PremiumMonth() {
                   <option value="month">This month</option>
                 </select>
 
-                <button
-                  onClick={handleDownload}
-                  style={{
-                    flex: 1,
-                    padding: "10px",
-                    borderRadius: 8,
-                    border: "1px solid #1e293b",
-                    background: "transparent",
-                    color: "#7dd3fc",
-                    cursor: "pointer",
-                  }}
-                >
+                <button onClick={handleDownload} style={exportBtn}>
                   Download
                 </button>
 
-                <button
-                  onClick={downloadPDF}
-                  style={{
-                    flex: 1,
-                    padding: "10px",
-                    borderRadius: 8,
-                    border: "1px solid #1e293b",
-                    background: "transparent",
-                    color: "#38bdf8",
-                    cursor: "pointer",
-                  }}
-                >
+                <button onClick={downloadPDF} style={exportBtn}>
                   Download PDF
+                </button>
+
+                <button onClick={sendEmailPDF} style={exportBtn}>
+                  {emailSending ? "Sending…" : "Send by Email"}
                 </button>
               </div>
             </>
@@ -581,4 +534,14 @@ const footer = {
   textAlign: "center",
   fontSize: 13,
   color: "#64748b",
+};
+
+const exportBtn = {
+  flex: 1,
+  padding: "10px",
+  borderRadius: 8,
+  border: "1px solid #1e293b",
+  background: "transparent",
+  color: "#38bdf8",
+  cursor: "pointer",
 };
