@@ -50,7 +50,7 @@ export default function HowToUse() {
   );
 }
 
-/* ===== SHARED COMPONENTS & STYLES ===== */
+/* ===== SHARED COMPONENT ===== */
 
 function Section({ title, children }) {
   return (
@@ -60,6 +60,8 @@ function Section({ title, children }) {
     </div>
   );
 }
+
+/* ===== STYLES ===== */
 
 const page = {
   position: "relative",
