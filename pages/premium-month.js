@@ -19,7 +19,7 @@ function getDailyUnlockTime() {
 
   if (stored.date === today) return stored.unlockAt;
 
-  const hour = Math.floor(Math.random() * 10) + 7; // 07–16
+  const hour = Math.floor(Math.random() * 10) + 7;
   const minute = Math.floor(Math.random() * 60);
 
   const unlockAt = new Date();
@@ -40,6 +40,7 @@ const REGIONS = [
   { code: "EU", label: "European Union" },
   { code: "UK", label: "United Kingdom" },
   { code: "HU", label: "Hungary" },
+  { code: "OTHER", label: "Other regions" },
 ];
 
 export default function PremiumMonth() {
@@ -60,11 +61,36 @@ export default function PremiumMonth() {
       .catch(() => (window.location.href = "/start"));
   }, []);
 
-  /* ================= CORE STATE ================= */
+  /* ================= REGION AUTO-DETECT (SAFE FALLBACK) ================= */
 
   const [region, setRegion] = useState("EU");
-  const [viewMode, setViewMode] = useState("executive");
+  const [country, setCountry] = useState(null);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const detect = async () => {
+      try {
+        const r = await fetch("/api/detect-region");
+        if (!r.ok) return;
+        const j = await r.json();
+        if (cancelled) return;
+        if (j?.region) setRegion(j.region);
+        if (j?.country) setCountry(j.country);
+      } catch {
+        /* silent fallback */
+      }
+    };
+
+    detect();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  /* ================= CORE STATE ================= */
+
+  const [viewMode, setViewMode] = useState("executive");
   const [cycleDay, setCycleDay] = useState(1);
   const [loading, setLoading] = useState(false);
   const [emailSending, setEmailSending] = useState(false);
@@ -83,6 +109,10 @@ export default function PremiumMonth() {
   const [selectedDay, setSelectedDay] = useState(null);
 
   const [exportRange, setExportRange] = useState("day");
+
+  /* ================= AI PANEL VISIBILITY ================= */
+
+  const [aiOpen, setAiOpen] = useState(false);
 
   /* ================= AVAILABILITY ================= */
 
@@ -105,8 +135,13 @@ export default function PremiumMonth() {
     other: 300,
   });
 
-  const update = (k, v) => setInputs({ ...inputs, [k]: Number(v) });
-
+  const update = (k, v) => {
+    setInputs({ ...inputs, [k]: Number(v) });
+    setAiOpen(false);
+    setDailyDual(null);
+    setDailySnapshot(null);
+    setSelectedDay(null);
+  };
   /* ================= CYCLE LOGIC ================= */
 
   useEffect(() => {
@@ -126,7 +161,7 @@ export default function PremiumMonth() {
   /* ================= SNAPSHOT AVAILABILITY ================= */
 
   useEffect(() => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getTodayKey();
     const key = `dailyAvailableAt_${today}`;
 
     let availableAt = localStorage.getItem(key);
@@ -141,7 +176,9 @@ export default function PremiumMonth() {
     }
 
     const check = () => {
-      if (Date.now() >= Number(availableAt)) setIsTodayAvailable(true);
+      if (Date.now() >= Number(availableAt)) {
+        setIsTodayAvailable(true);
+      }
     };
 
     check();
@@ -169,7 +206,11 @@ export default function PremiumMonth() {
       const r = await fetch("/api/get-daily-signal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ region, cycleDay }),
+        body: JSON.stringify({
+          region,
+          country,
+          cycleDay,
+        }),
       });
 
       const j = await r.json();
@@ -185,7 +226,7 @@ export default function PremiumMonth() {
     check();
 
     return () => clearInterval(t);
-  }, [region, cycleDay]);
+  }, [region, country, cycleDay]);
 
   /* ================= LEGACY DAILY STORAGE ================= */
 
@@ -224,6 +265,7 @@ export default function PremiumMonth() {
   const runAI = async () => {
     setLoading(true);
     setSelectedDay(null);
+    setAiOpen(true);
 
     try {
       const res = await fetch("/api/get-ai-briefing", {
@@ -231,6 +273,7 @@ export default function PremiumMonth() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           region,
+          country,
           cycleDay,
           previousSignals: "",
           ...inputs,
@@ -258,6 +301,7 @@ export default function PremiumMonth() {
 
     setLoading(true);
     setSelectedDay(null);
+    setAiOpen(true);
 
     try {
       const res = await fetch("/api/get-ai-briefing", {
@@ -265,6 +309,7 @@ export default function PremiumMonth() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           region,
+          country,
           cycleDay,
           previousSignals: "",
           ...inputs,
@@ -347,7 +392,6 @@ export default function PremiumMonth() {
     } catch {}
     setEmailSending(false);
   };
-
   /* ================= RENDER ================= */
 
   return (
@@ -387,7 +431,7 @@ export default function PremiumMonth() {
       </div>
 
       <div style={layout}>
-        {/* BAL OLDAL */}
+        {/* LEFT */}
         <div style={card}>
           <h3>Monthly Financial Structure</h3>
 
@@ -427,7 +471,7 @@ export default function PremiumMonth() {
           </button>
         </div>
 
-        {/* JOBB OLDAL */}
+        {/* RIGHT */}
         <div style={card}>
           <button
             onClick={() => setArchiveOpen(!archiveOpen)}
@@ -438,63 +482,77 @@ export default function PremiumMonth() {
 
           {archiveOpen && (
             <div style={{ marginBottom: 16 }}>
-              {getMonthlySnapshots().map(s => (
+              {getMonthlySnapshots().length === 0 ? (
+                <p style={{ opacity: 0.6, fontSize: 14 }}>
+                  No snapshots saved yet.
+                </p>
+              ) : (
+                getMonthlySnapshots().map(s => (
+                  <button
+                    key={s.date}
+                    onClick={() => setSelectedDay(s.cycleDay)}
+                    style={exportBtn}
+                  >
+                    Day {s.cycleDay}
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+
+          {aiOpen && activeDual && (
+            <>
+              <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
                 <button
-                  key={s.date}
-                  onClick={() => setSelectedDay(s.cycleDay)}
-                  style={exportBtn}
+                  onClick={() => setViewMode("executive")}
+                  style={{
+                    ...exportBtn,
+                    background: viewMode === "executive" ? "#38bdf8" : "transparent",
+                    color: viewMode === "executive" ? "#020617" : "#38bdf8",
+                  }}
                 >
-                  Day {s.cycleDay}
+                  Executive
                 </button>
-              ))}
-            </div>
-          )}
+                <button
+                  onClick={() => setViewMode("directive")}
+                  style={{
+                    ...exportBtn,
+                    background: viewMode === "directive" ? "#38bdf8" : "transparent",
+                    color: viewMode === "directive" ? "#020617" : "#38bdf8",
+                  }}
+                >
+                  Directive
+                </button>
+                <button
+                  onClick={() => setAiOpen(false)}
+                  style={{ ...exportBtn, maxWidth: 40 }}
+                >
+                  ✕
+                </button>
+              </div>
 
-          {activeDual && (
-            <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
-              <button
-                onClick={() => setViewMode("executive")}
-                style={{
-                  ...exportBtn,
-                  background: viewMode === "executive" ? "#38bdf8" : "transparent",
-                  color: viewMode === "executive" ? "#020617" : "#38bdf8",
-                }}
-              >
-                Executive
-              </button>
-              <button
-                onClick={() => setViewMode("directive")}
-                style={{
-                  ...exportBtn,
-                  background: viewMode === "directive" ? "#38bdf8" : "transparent",
-                  color: viewMode === "directive" ? "#020617" : "#38bdf8",
-                }}
-              >
-                Directive
-              </button>
-            </div>
-          )}
+              <pre style={aiTextStyle}>{activeText}</pre>
 
-          {activeText && <pre style={aiTextStyle}>{activeText}</pre>}
+              {!selectedDay && (
+                <div style={{ marginTop: 16, display: "flex", gap: 12 }}>
+                  <select
+                    value={exportRange}
+                    onChange={e => setExportRange(e.target.value)}
+                    style={exportSelect}
+                  >
+                    <option value="day">Today</option>
+                    <option value="week">Last 7 days</option>
+                    <option value="month">This month</option>
+                  </select>
 
-          {activeText && !selectedDay && (
-            <div style={{ marginTop: 16, display: "flex", gap: 12 }}>
-              <select
-                value={exportRange}
-                onChange={e => setExportRange(e.target.value)}
-                style={exportSelect}
-              >
-                <option value="day">Today</option>
-                <option value="week">Last 7 days</option>
-                <option value="month">This month</option>
-              </select>
-
-              <button onClick={handleDownload} style={exportBtn}>Download</button>
-              <button onClick={downloadPDF} style={exportBtn}>Download PDF</button>
-              <button onClick={sendEmailPDF} style={exportBtn}>
-                {emailSending ? "Sending…" : "Send by Email"}
-              </button>
-            </div>
+                  <button onClick={handleDownload} style={exportBtn}>Download</button>
+                  <button onClick={downloadPDF} style={exportBtn}>Download PDF</button>
+                  <button onClick={sendEmailPDF} style={exportBtn}>
+                    {emailSending ? "Sending…" : "Send by Email"}
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
