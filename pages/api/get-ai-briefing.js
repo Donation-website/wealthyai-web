@@ -1,4 +1,3 @@
-
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ briefing: "Method not allowed." });
@@ -8,7 +7,7 @@ export default async function handler(req, res) {
     const {
       region,
       cycleDay,
-      analysisMode,
+      analysisMode, // opcionális, backward compatibility
       previousSignals,
       income,
       housing,
@@ -49,7 +48,6 @@ export default async function handler(req, res) {
        STRUCTURAL DERIVATION (CRITICAL)
     ================================= */
 
-    // ⚠️ ENERGY = ONLY electricity + gas
     const totalEnergy = S.electricity + S.gas;
     const hasEnergyExposure = totalEnergy > 0;
 
@@ -68,7 +66,7 @@ export default async function handler(req, res) {
       S.other;
 
     /* ================================
-       SYSTEM PROMPT — HARDENED
+       SYSTEM PROMPT — BASE (COMMON)
     ================================= */
 
     let systemPrompt = `
@@ -133,7 +131,7 @@ INTERNAL SIGNALS:
 `;
 
     /* ================================
-       STRUCTURAL FACTS (HARD GATE)
+       STRUCTURAL FACTS
     ================================= */
 
     systemPrompt += `
@@ -148,32 +146,6 @@ CRITICAL LENS RULE:
 - If Energy exposure = NO → ENERGY MUST NOT APPEAR.
 `;
 
-    /* ================================
-       MODE LOGIC
-    ================================= */
-
-    if (!analysisMode || analysisMode === "executive") {
-      systemPrompt += `
-MODE: EXECUTIVE
-- Calm
-- No action verbs
-- No percentages
-`;
-    }
-
-    if (analysisMode === "directive") {
-      systemPrompt += `
-MODE: DIRECTIVE
-- Firm
-- Decisive
-- No hedging
-`;
-    }
-
-    /* ================================
-       REGION CONTEXT
-    ================================= */
-
     if (region === "HU") {
       systemPrompt += `
 REGION: Hungary
@@ -183,10 +155,10 @@ REGION: Hungary
     }
 
     /* ================================
-       USER PROMPT
+       USER CONTEXT
     ================================= */
 
-    const userPrompt = `
+    const baseUserPrompt = `
 Region: ${region}
 Cycle day: ${cycleDay}
 
@@ -199,43 +171,88 @@ Do not infer missing sectors.
 `;
 
     /* ================================
-       GROQ CALL
+       MODE PROMPTS
     ================================= */
 
-    const groqRes = await fetch(
-      "https://api.groq.com/openai/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "llama-3.1-8b-instant",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt },
-          ],
-          temperature: analysisMode === "directive" ? 0.1 : 0.15,
-          max_tokens: 1000,
-        }),
+    const executivePrompt = `
+MODE: EXECUTIVE
+- Calm
+- Observational
+- No action verbs
+- No percentages
+
+${baseUserPrompt}
+`;
+
+    const directivePrompt = `
+MODE: DIRECTIVE
+- Firm
+- Decisive
+- No hedging
+
+${baseUserPrompt}
+`;
+
+    /* ================================
+       GROQ CALL HELPER
+    ================================= */
+
+    const callGroq = async (prompt, temperature) => {
+      const r = await fetch(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "llama-3.1-8b-instant",
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: prompt },
+            ],
+            temperature,
+            max_tokens: 1000,
+          }),
+        }
+      );
+
+      if (!r.ok) throw new Error("Groq unavailable");
+
+      const j = await r.json();
+      let text = j?.choices?.[0]?.message?.content || "";
+
+      const marker = "--- INTERNAL SIGNALS ---";
+      if (text.includes(marker)) {
+        text = text.split(marker)[0].trim();
       }
-    );
 
-    if (!groqRes.ok) {
-      return res.status(500).json({ briefing: "AI backend unavailable." });
-    }
+      return text;
+    };
 
-    const json = await groqRes.json();
-    let text = json?.choices?.[0]?.message?.content || "";
+    /* ================================
+       DUAL EXECUTION
+    ================================= */
 
-    // 🔒 FINAL HARD STRIP — GUARANTEED
-    const marker = "--- INTERNAL SIGNALS ---";
-    if (text.includes(marker)) {
-      text = text.split(marker)[0].trim();
-    }
+    const [executive, directive] = await Promise.all([
+      callGroq(executivePrompt, 0.15),
+      callGroq(directivePrompt, 0.1),
+    ]);
 
-    return res.status(200).json({ briefing: text });
+    /* ================================
+       RESPONSE (SNAPSHOT)
+    ================================= */
+
+    return res.status(200).json({
+      snapshot: {
+        date: new Date().toISOString().slice(0, 10),
+        cycleDay,
+        region,
+        executive,
+        directive,
+      },
+    });
 
   } catch (err) {
     console.error("Monthly AI crash:", err);
