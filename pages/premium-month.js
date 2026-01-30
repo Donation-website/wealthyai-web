@@ -5,6 +5,36 @@ import {
   getSnapshotByDay,
 } from "../lib/monthlyArchive";
 
+/* ================= DAILY SIGNAL UNLOCK ================= */
+
+const DAILY_SIGNAL_KEY = "dailySignalUnlock";
+
+function getTodayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function getDailyUnlockTime() {
+  const stored = JSON.parse(localStorage.getItem(DAILY_SIGNAL_KEY) || "{}");
+  const today = getTodayKey();
+
+  if (stored.date === today) return stored.unlockAt;
+
+  const hour = Math.floor(Math.random() * 10) + 7; // 07–16
+  const minute = Math.floor(Math.random() * 60);
+
+  const unlockAt = new Date();
+  unlockAt.setHours(hour, minute, 0, 0);
+
+  localStorage.setItem(
+    DAILY_SIGNAL_KEY,
+    JSON.stringify({ date: today, unlockAt: unlockAt.getTime() })
+  );
+
+  return unlockAt.getTime();
+}
+
+/* ================= REGIONS ================= */
+
 const REGIONS = [
   { code: "US", label: "United States" },
   { code: "EU", label: "European Union" },
@@ -13,6 +43,8 @@ const REGIONS = [
 ];
 
 export default function PremiumMonth() {
+  /* ================= ACCESS CHECK ================= */
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get("session_id");
@@ -28,27 +60,35 @@ export default function PremiumMonth() {
       .catch(() => (window.location.href = "/start"));
   }, []);
 
-  const [region, setRegion] = useState("EU");
+  /* ================= CORE STATE ================= */
 
-  /* ===== VIEW MODE (UNIFIED) ===== */
+  const [region, setRegion] = useState("EU");
   const [viewMode, setViewMode] = useState("executive");
 
-  /* ===== DAILY (STATELESS) DUAL ===== */
-  const [dailyDual, setDailyDual] = useState(null);
-
-  const [aiText, setAiText] = useState("");
+  const [cycleDay, setCycleDay] = useState(1);
   const [loading, setLoading] = useState(false);
   const [emailSending, setEmailSending] = useState(false);
-  const [exportRange, setExportRange] = useState("day");
-  const [cycleDay, setCycleDay] = useState(1);
 
-  /* ===== SNAPSHOT / ARCHIVE ===== */
+  /* ================= DAILY SIGNAL ================= */
+
+  const [dailySignal, setDailySignal] = useState(null);
+  const [dailyPending, setDailyPending] = useState(true);
+
+  /* ================= DAILY / SNAPSHOT AI ================= */
+
+  const [dailyDual, setDailyDual] = useState(null);
   const [dailySnapshot, setDailySnapshot] = useState(null);
+
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState(null);
 
-  /* ===== DAILY AVAILABILITY ===== */
+  const [exportRange, setExportRange] = useState("day");
+
+  /* ================= AVAILABILITY ================= */
+
   const [isTodayAvailable, setIsTodayAvailable] = useState(false);
+
+  /* ================= INPUTS ================= */
 
   const [inputs, setInputs] = useState({
     income: 4000,
@@ -67,7 +107,8 @@ export default function PremiumMonth() {
 
   const update = (k, v) => setInputs({ ...inputs, [k]: Number(v) });
 
-  /* ===== CYCLE ===== */
+  /* ================= CYCLE LOGIC ================= */
+
   useEffect(() => {
     const start =
       localStorage.getItem("subscriptionPeriodStart") ||
@@ -82,7 +123,8 @@ export default function PremiumMonth() {
     }
   }, []);
 
-  /* ===== AVAILABILITY ===== */
+  /* ================= SNAPSHOT AVAILABILITY ================= */
+
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10);
     const key = `dailyAvailableAt_${today}`;
@@ -107,9 +149,48 @@ export default function PremiumMonth() {
     return () => clearInterval(i);
   }, [cycleDay]);
 
-  /* ===== LEGACY STORAGE (DUAL) ===== */
+  /* ================= DAILY SIGNAL EFFECT ================= */
+
+  useEffect(() => {
+    const unlockAt = getDailyUnlockTime();
+
+    const check = async () => {
+      if (Date.now() < unlockAt) return;
+
+      const seenKey = "dailySignalSeen_" + getTodayKey();
+      const cached = localStorage.getItem(seenKey);
+
+      if (cached) {
+        setDailySignal(cached);
+        setDailyPending(false);
+        return;
+      }
+
+      const r = await fetch("/api/get-daily-signal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ region, cycleDay }),
+      });
+
+      const j = await r.json();
+      if (j.signal) {
+        localStorage.setItem(seenKey, j.signal);
+        setDailySignal(j.signal);
+      }
+
+      setDailyPending(false);
+    };
+
+    const t = setInterval(check, 30000);
+    check();
+
+    return () => clearInterval(t);
+  }, [region, cycleDay]);
+
+  /* ================= LEGACY DAILY STORAGE ================= */
+
   const saveBriefing = dual => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getTodayKey();
     const stored = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
 
     if (!stored.find(b => b.date === today)) {
@@ -130,7 +211,7 @@ export default function PremiumMonth() {
   const getBriefings = range => {
     const stored = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
     if (range === "day") {
-      const today = new Date().toISOString().slice(0, 10);
+      const today = getTodayKey();
       return stored.filter(b => b.date === today);
     }
     if (range === "week") return stored.slice(-7);
@@ -138,7 +219,8 @@ export default function PremiumMonth() {
     return [];
   };
 
-  /* ===== DAILY AI (DUAL, NO MEMORY) ===== */
+  /* ================= DAILY AI ================= */
+
   const runAI = async () => {
     setLoading(true);
     setSelectedDay(null);
@@ -150,30 +232,24 @@ export default function PremiumMonth() {
         body: JSON.stringify({
           region,
           cycleDay,
-          previousSignals: JSON.parse(
-            localStorage.getItem("monthlySignals") || "[]"
-          ).join("\n"),
+          previousSignals: "",
           ...inputs,
         }),
       });
 
       const json = await res.json();
-
       if (json.snapshot) {
         setDailyDual(json.snapshot);
         setViewMode("executive");
         saveBriefing(json.snapshot);
-      } else if (json.briefing) {
-        setAiText(json.briefing);
       }
-    } catch {
-      setAiText("AI system temporarily unavailable.");
-    }
+    } catch {}
 
     setLoading(false);
   };
 
-  /* ===== SNAPSHOT AI (DUAL + MEMORY) ===== */
+  /* ================= SNAPSHOT AI ================= */
+
   const runAIDual = async () => {
     if (!isTodayAvailable) {
       alert("Today's snapshot is not available yet.");
@@ -201,12 +277,12 @@ export default function PremiumMonth() {
         setDailySnapshot(data.snapshot);
         setViewMode("executive");
       }
-    } catch {
-      setAiText("AI system temporarily unavailable.");
-    }
+    } catch {}
 
     setLoading(false);
   };
+
+  /* ================= ACTIVE CONTENT ================= */
 
   const activeSnapshot = selectedDay
     ? getSnapshotByDay(selectedDay)
@@ -220,7 +296,8 @@ export default function PremiumMonth() {
       ? activeDual.executive
       : activeDual.directive);
 
-  /* ===== EXPORT ===== */
+  /* ================= EXPORT ================= */
+
   const handleDownload = () => {
     const data = getBriefings(exportRange);
     if (!data.length) return alert("No data available.");
@@ -245,7 +322,7 @@ export default function PremiumMonth() {
   };
 
   const downloadPDF = async () => {
-    if (!activeText) return alert("No AI briefing available.");
+    if (!activeText) return;
     const res = await fetch("/api/export-month-pdf", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -259,7 +336,7 @@ export default function PremiumMonth() {
   };
 
   const sendEmailPDF = async () => {
-    if (!activeText) return alert("No AI briefing available.");
+    if (!activeText) return;
     setEmailSending(true);
     try {
       await fetch("/api/send-month-email", {
@@ -267,12 +344,11 @@ export default function PremiumMonth() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: activeText, cycleDay, region }),
       });
-      alert("Email sent successfully.");
-    } catch {
-      alert("Email sending failed.");
-    }
+    } catch {}
     setEmailSending(false);
   };
+
+  /* ================= RENDER ================= */
 
   return (
     <div style={page}>
@@ -301,7 +377,17 @@ export default function PremiumMonth() {
         <p>Day {cycleDay} of your current monthly cycle.</p>
       </div>
 
+      <div style={signalBox}>
+        <strong>Today’s Signal</strong>
+        {dailyPending ? (
+          <p style={{ opacity: 0.7 }}>Today’s signal is still forming.</p>
+        ) : (
+          <p>{dailySignal}</p>
+        )}
+      </div>
+
       <div style={layout}>
+        {/* BAL OLDAL */}
         <div style={card}>
           <h3>Monthly Financial Structure</h3>
 
@@ -336,14 +422,12 @@ export default function PremiumMonth() {
             {loading ? "Generating briefing…" : "Generate Monthly Briefing"}
           </button>
 
-          <button
-            onClick={runAIDual}
-            style={{ ...exportBtn, marginTop: 12 }}
-          >
+          <button onClick={runAIDual} style={{ ...exportBtn, marginTop: 12 }}>
             Save Today’s Snapshot
           </button>
         </div>
 
+        {/* JOBB OLDAL */}
         <div style={card}>
           <button
             onClick={() => setArchiveOpen(!archiveOpen)}
@@ -511,7 +595,7 @@ const regionSelect = {
 
 const signalBox = {
   maxWidth: 800,
-  margin: "0 auto 30px",
+  margin: "0 auto 20px",
   padding: 16,
   border: "1px solid #1e293b",
   borderRadius: 12,
