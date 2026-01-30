@@ -29,11 +29,15 @@ export default function PremiumMonth() {
   }, []);
 
   const [region, setRegion] = useState("EU");
-  const [analysisMode, setAnalysisMode] = useState("executive");
+
+  /* ===== VIEW MODE (UNIFIED) ===== */
+  const [viewMode, setViewMode] = useState("executive");
+
+  /* ===== DAILY (STATELESS) DUAL ===== */
+  const [dailyDual, setDailyDual] = useState(null);
+
   const [aiText, setAiText] = useState("");
   const [loading, setLoading] = useState(false);
-  const [aiOpen, setAiOpen] = useState(false);
-  const [aiCollapsed, setAiCollapsed] = useState(false);
   const [emailSending, setEmailSending] = useState(false);
   const [exportRange, setExportRange] = useState("day");
   const [cycleDay, setCycleDay] = useState(1);
@@ -42,7 +46,6 @@ export default function PremiumMonth() {
   const [dailySnapshot, setDailySnapshot] = useState(null);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState(null);
-  const [viewMode, setViewMode] = useState("executive");
 
   /* ===== DAILY AVAILABILITY ===== */
   const [isTodayAvailable, setIsTodayAvailable] = useState(false);
@@ -64,6 +67,7 @@ export default function PremiumMonth() {
 
   const update = (k, v) => setInputs({ ...inputs, [k]: Number(v) });
 
+  /* ===== CYCLE ===== */
   useEffect(() => {
     const start =
       localStorage.getItem("subscriptionPeriodStart") ||
@@ -78,6 +82,7 @@ export default function PremiumMonth() {
     }
   }, []);
 
+  /* ===== AVAILABILITY ===== */
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10);
     const key = `dailyAvailableAt_${today}`;
@@ -93,24 +98,32 @@ export default function PremiumMonth() {
       localStorage.setItem(key, availableAt.toString());
     }
 
-    const checkAvailability = () => {
-      if (Date.now() >= Number(availableAt)) {
-        setIsTodayAvailable(true);
-      }
+    const check = () => {
+      if (Date.now() >= Number(availableAt)) setIsTodayAvailable(true);
     };
 
-    checkAvailability();
-    const interval = setInterval(checkAvailability, 60 * 1000);
-    return () => clearInterval(interval);
+    check();
+    const i = setInterval(check, 60000);
+    return () => clearInterval(i);
   }, [cycleDay]);
 
-  /* ===== LEGACY STORAGE ===== */
-  const saveBriefing = text => {
+  /* ===== LEGACY STORAGE (DUAL) ===== */
+  const saveBriefing = dual => {
     const today = new Date().toISOString().slice(0, 10);
     const stored = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
-    if (!stored.find(b => b.date === today && b.analysisMode === analysisMode)) {
-      stored.push({ id: Date.now(), date: today, cycleDay, analysisMode, text });
-      localStorage.setItem("monthlyBriefings", JSON.stringify(stored.slice(-30)));
+
+    if (!stored.find(b => b.date === today)) {
+      stored.push({
+        id: Date.now(),
+        date: today,
+        cycleDay,
+        executive: dual.executive,
+        directive: dual.directive,
+      });
+      localStorage.setItem(
+        "monthlyBriefings",
+        JSON.stringify(stored.slice(-30))
+      );
     }
   };
 
@@ -125,11 +138,10 @@ export default function PremiumMonth() {
     return [];
   };
 
-  /* ===== DAILY (STATELESS) AI ===== */
+  /* ===== DAILY AI (DUAL, NO MEMORY) ===== */
   const runAI = async () => {
     setLoading(true);
-    setAiOpen(true);
-    setAiCollapsed(false);
+    setSelectedDay(null);
 
     try {
       const res = await fetch("/api/get-ai-briefing", {
@@ -138,7 +150,6 @@ export default function PremiumMonth() {
         body: JSON.stringify({
           region,
           cycleDay,
-          analysisMode,
           previousSignals: JSON.parse(
             localStorage.getItem("monthlySignals") || "[]"
           ).join("\n"),
@@ -148,13 +159,12 @@ export default function PremiumMonth() {
 
       const json = await res.json();
 
-      if (json.briefing) {
+      if (json.snapshot) {
+        setDailyDual(json.snapshot);
+        setViewMode("executive");
+        saveBriefing(json.snapshot);
+      } else if (json.briefing) {
         setAiText(json.briefing);
-        saveBriefing(json.briefing);
-      } else if (json.snapshot?.executive) {
-        setAiText(json.snapshot.executive);
-      } else {
-        setAiText("AI briefing unavailable.");
       }
     } catch {
       setAiText("AI system temporarily unavailable.");
@@ -163,7 +173,7 @@ export default function PremiumMonth() {
     setLoading(false);
   };
 
-  /* ===== SNAPSHOT (MEMORY) AI ===== */
+  /* ===== SNAPSHOT AI (DUAL + MEMORY) ===== */
   const runAIDual = async () => {
     if (!isTodayAvailable) {
       alert("Today's snapshot is not available yet.");
@@ -171,8 +181,6 @@ export default function PremiumMonth() {
     }
 
     setLoading(true);
-    setAiOpen(true);
-    setAiCollapsed(false);
     setSelectedDay(null);
 
     try {
@@ -191,6 +199,7 @@ export default function PremiumMonth() {
       if (data?.snapshot) {
         saveMonthlySnapshot(data.snapshot);
         setDailySnapshot(data.snapshot);
+        setViewMode("executive");
       }
     } catch {
       setAiText("AI system temporarily unavailable.");
@@ -203,17 +212,26 @@ export default function PremiumMonth() {
     ? getSnapshotByDay(selectedDay)
     : dailySnapshot;
 
-  const activeText =
-    activeSnapshot &&
-    (viewMode === "executive"
-      ? activeSnapshot.executive
-      : activeSnapshot.directive);
+  const activeDual = activeSnapshot || dailyDual;
 
+  const activeText =
+    activeDual &&
+    (viewMode === "executive"
+      ? activeDual.executive
+      : activeDual.directive);
+
+  /* ===== EXPORT ===== */
   const handleDownload = () => {
     const data = getBriefings(exportRange);
     if (!data.length) return alert("No data available.");
+
     const text = data
-      .map(b => `Day ${b.cycleDay} · ${b.date}\n\n${b.text}`)
+      .map(
+        b =>
+          `Day ${b.cycleDay} · ${b.date}\n\n${
+            viewMode === "executive" ? b.executive : b.directive
+          }`
+      )
       .join("\n\n---------------------\n\n");
 
     const url = URL.createObjectURL(
@@ -227,11 +245,11 @@ export default function PremiumMonth() {
   };
 
   const downloadPDF = async () => {
-    if (!aiText) return alert("No AI briefing available.");
+    if (!activeText) return alert("No AI briefing available.");
     const res = await fetch("/api/export-month-pdf", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: aiText, cycleDay, region }),
+      body: JSON.stringify({ text: activeText, cycleDay, region }),
     });
     const url = URL.createObjectURL(await res.blob());
     const a = document.createElement("a");
@@ -241,13 +259,13 @@ export default function PremiumMonth() {
   };
 
   const sendEmailPDF = async () => {
-    if (!aiText) return alert("No AI briefing available.");
+    if (!activeText) return alert("No AI briefing available.");
     setEmailSending(true);
     try {
       await fetch("/api/send-month-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: aiText, cycleDay, region }),
+        body: JSON.stringify({ text: activeText, cycleDay, region }),
       });
       alert("Email sent successfully.");
     } catch {
@@ -267,7 +285,11 @@ export default function PremiumMonth() {
 
       <div style={regionRow}>
         <span style={regionLabel}>Region</span>
-        <select value={region} onChange={e => setRegion(e.target.value)} style={regionSelect}>
+        <select
+          value={region}
+          onChange={e => setRegion(e.target.value)}
+          style={regionSelect}
+        >
           {REGIONS.map(r => (
             <option key={r.code} value={r.code}>{r.label}</option>
           ))}
@@ -316,12 +338,7 @@ export default function PremiumMonth() {
 
           <button
             onClick={runAIDual}
-            style={{
-              ...exportBtn,
-              marginTop: 12,
-              background: "rgba(2,6,23,0.9)",
-              color: "#e5e7eb",
-            }}
+            style={{ ...exportBtn, marginTop: 12 }}
           >
             Save Today’s Snapshot
           </button>
@@ -330,12 +347,7 @@ export default function PremiumMonth() {
         <div style={card}>
           <button
             onClick={() => setArchiveOpen(!archiveOpen)}
-            style={{
-              ...exportBtn,
-              marginBottom: 10,
-              background: "rgba(2,6,23,0.9)",
-              color: "#e5e7eb",
-            }}
+            style={{ ...exportBtn, marginBottom: 10 }}
           >
             {archiveOpen ? "Hide past days" : "View past days"}
           </button>
@@ -354,13 +366,34 @@ export default function PremiumMonth() {
             </div>
           )}
 
-          {activeText ? (
-            <pre style={aiTextStyle}>{activeText}</pre>
-          ) : aiText ? (
-            <pre style={aiTextStyle}>{aiText}</pre>
-          ) : null}
+          {activeDual && (
+            <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
+              <button
+                onClick={() => setViewMode("executive")}
+                style={{
+                  ...exportBtn,
+                  background: viewMode === "executive" ? "#38bdf8" : "transparent",
+                  color: viewMode === "executive" ? "#020617" : "#38bdf8",
+                }}
+              >
+                Executive
+              </button>
+              <button
+                onClick={() => setViewMode("directive")}
+                style={{
+                  ...exportBtn,
+                  background: viewMode === "directive" ? "#38bdf8" : "transparent",
+                  color: viewMode === "directive" ? "#020617" : "#38bdf8",
+                }}
+              >
+                Directive
+              </button>
+            </div>
+          )}
 
-          {!selectedDay && aiText && (
+          {activeText && <pre style={aiTextStyle}>{activeText}</pre>}
+
+          {activeText && !selectedDay && (
             <div style={{ marginTop: 16, display: "flex", gap: 12 }}>
               <select
                 value={exportRange}
@@ -387,7 +420,7 @@ export default function PremiumMonth() {
   );
 }
 
-/* UI HELPERS */
+/* ================= UI HELPERS ================= */
 
 const Section = ({ title, children }) => (
   <>
@@ -414,19 +447,14 @@ const Label = ({ children }) => (
 );
 
 const Input = ({ value, onChange }) => (
-  <input
-    type="number"
-    value={value}
-    onChange={onChange}
-    style={input}
-  />
+  <input type="number" value={value} onChange={onChange} style={input} />
 );
 
 const Divider = () => (
   <div style={{ height: 1, background: "#1e293b", margin: "16px 0" }} />
 );
 
-/* STYLES */
+/* ================= STYLES ================= */
 
 const page = {
   minHeight: "100vh",
