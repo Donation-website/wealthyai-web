@@ -1,6 +1,7 @@
 export default function HowItWorks() {
   return (
     <div style={page}>
+      {/* BACKGROUND */}
       <div style={bgGrid} />
       <div style={bgLines} />
       <div style={bgGlow} />
@@ -14,60 +15,168 @@ export default function HowItWorks() {
           <h1 style={title}>How WealthyAI Works</h1>
 
           <p style={intro}>
-            WealthyAI is a financial intelligence system designed to reduce uncertainty,
-            not to automate decisions.
-            <br /><br />
-            It works by structuring information across time — allowing meaning to emerge
-            gradually instead of forcing conclusions from isolated numbers.
+            WealthyAI is built around a single principle:
+            financial clarity improves when information is structured by time,
+            context, and decision horizon.
           </p>
 
           <Section title="The core idea">
-            Most financial tools focus on control, optimization, or prediction.
+            WealthyAI does not try to optimize or control your finances.
             <br /><br />
-            WealthyAI focuses on <strong>interpretation</strong>.
-            It helps you understand pressure, direction, and structural limits
-            before decisions are made.
+            Instead, it organizes financial information into clearly separated
+            intelligence layers, each answering a different type of question.
           </Section>
 
-          <Section title="Time-based intelligence layers">
+          <Section title="The intelligence layers">
             <p>
-              <strong>Basic Overview</strong><br />
-              A single-point snapshot of income and expenses.
-              Useful for orientation, not for decisions.
+              <strong>Basic Overview (Snapshot)</strong><br />
+              A fast, single-point view of income and expenses.
+              Designed for orientation only.
             </p>
 
             <p>
               <strong>Daily Intelligence</strong><br />
-              A short daily signal that reflects your current position
-              within an ongoing financial cycle.
+              Short-form interpretation focused on immediate financial state.
+              Useful when clarity is needed today.
             </p>
 
             <p>
               <strong>Weekly Intelligence</strong><br />
-              Behavioral interpretation across days and categories,
+              Behavioral pattern detection across days and categories,
               including regional context.
             </p>
 
             <p>
               <strong>Monthly Intelligence</strong><br />
-              Multi-week analysis with forward-looking context,
-              regional interpretation, and decision-support framing.
+              Multi-week analysis that connects structure, pressure,
+              and forward-looking signals to support better decisions.
             </p>
           </Section>
 
-          <Section title="What WealthyAI deliberately avoids">
+          <Section title="What WealthyAI is not">
             <ul>
-              <li>Rigid budgeting rules</li>
-              <li>Behavior enforcement or scoring</li>
-              <li>Financial promises or return projections</li>
+              <li>It is not a budgeting enforcement system</li>
+              <li>It is not an automated decision-maker</li>
+              <li>It does not promise optimization or guaranteed outcomes</li>
             </ul>
           </Section>
 
           <p style={footer}>
-            WealthyAI provides perspective — not instructions.
+            WealthyAI provides structured awareness — not control.
           </p>
         </div>
       </div>
     </div>
   );
 }
+
+/* ===== SHARED COMPONENTS & STYLES ===== */
+
+function Section({ title, children }) {
+  return (
+    <div style={section}>
+      <h2 style={sectionTitle}>{title}</h2>
+      <div style={sectionText}>{children}</div>
+    </div>
+  );
+}
+
+const page = {
+  position: "relative",
+  minHeight: "100vh",
+  background: "#020617",
+  overflow: "hidden",
+  fontFamily: "Inter, system-ui",
+};
+
+const content = {
+  position: "relative",
+  zIndex: 10,
+  padding: 40,
+  display: "flex",
+  justifyContent: "center",
+};
+
+const container = {
+  width: "100%",
+  maxWidth: 900,
+};
+
+const bgGrid = {
+  position: "fixed",
+  inset: 0,
+  backgroundImage:
+    "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
+  backgroundSize: "80px 80px",
+  zIndex: 1,
+};
+
+const bgLines = {
+  position: "fixed",
+  inset: 0,
+  backgroundImage:
+    "linear-gradient(120deg, transparent 40%, rgba(56,189,248,0.08) 50%, transparent 60%)",
+  backgroundSize: "1200px 1200px",
+  zIndex: 2,
+};
+
+const bgGlow = {
+  position: "fixed",
+  inset: 0,
+  background:
+    "radial-gradient(circle at 30% 20%, rgba(56,189,248,0.12), transparent 40%), radial-gradient(circle at 70% 80%, rgba(167,139,250,0.12), transparent 45%)",
+  zIndex: 3,
+};
+
+const back = {
+  marginBottom: 24,
+  padding: "6px 12px",
+  fontSize: 13,
+  borderRadius: 8,
+  background: "rgba(148,163,184,0.18)",
+  border: "1px solid rgba(148,163,184,0.35)",
+  color: "#ffffff",
+  cursor: "pointer",
+};
+
+const title = {
+  fontSize: "2.2rem",
+  marginBottom: 12,
+  color: "#ffffff",
+};
+
+const intro = {
+  color: "#e5e7eb",
+  maxWidth: 720,
+  marginBottom: 32,
+  fontSize: 15,
+};
+
+const section = {
+  width: "100%",
+  marginBottom: 28,
+  padding: 24,
+  borderRadius: 16,
+  background: "rgba(56,189,248,0.14)",
+  border: "1px solid rgba(125,211,252,0.35)",
+  backdropFilter: "blur(12px)",
+};
+
+const sectionTitle = {
+  fontSize: "1.15rem",
+  color: "#f0f9ff",
+  marginBottom: 10,
+};
+
+const sectionText = {
+  fontSize: 15,
+  lineHeight: 1.65,
+  color: "#f8fafc",
+};
+
+const footer = {
+  marginTop: 48,
+  fontSize: 14,
+  color: "#e5e7eb",
+  maxWidth: 720,
+};
