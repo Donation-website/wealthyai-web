@@ -14,52 +14,57 @@ export default function HowItWorks() {
           <h1 style={title}>How WealthyAI Works</h1>
 
           <p style={intro}>
-            WealthyAI is built on a simple principle:
-            financial clarity improves when information is structured by time and context.
+            WealthyAI is a financial intelligence system designed to reduce uncertainty,
+            not to automate decisions.
+            <br /><br />
+            It works by structuring information across time — allowing meaning to emerge
+            gradually instead of forcing conclusions from isolated numbers.
           </p>
 
-          <Section title="The core concept">
-            Instead of presenting isolated numbers or constant alerts,
-            WealthyAI organizes financial understanding into distinct layers.
+          <Section title="The core idea">
+            Most financial tools focus on control, optimization, or prediction.
             <br /><br />
-            Each layer answers a different type of question — without replacing or overriding the others.
+            WealthyAI focuses on <strong>interpretation</strong>.
+            It helps you understand pressure, direction, and structural limits
+            before decisions are made.
           </Section>
 
-          <Section title="The intelligence layers">
+          <Section title="Time-based intelligence layers">
             <p>
-              <strong>Basic Overview (Snapshot)</strong><br />
-              A single-point view of income and expenses.
-              Designed for orientation — not conclusions.
+              <strong>Basic Overview</strong><br />
+              A single-point snapshot of income and expenses.
+              Useful for orientation, not for decisions.
             </p>
 
             <p>
               <strong>Daily Intelligence</strong><br />
-              A short, focused signal highlighting what matters today within the current cycle.
+              A short daily signal that reflects your current position
+              within an ongoing financial cycle.
             </p>
 
             <p>
               <strong>Weekly Intelligence</strong><br />
-              Pattern recognition across days and categories,
-              helping behavioral signals emerge gradually.
+              Behavioral interpretation across days and categories,
+              including regional context.
             </p>
 
             <p>
               <strong>Monthly Intelligence</strong><br />
-              Multi-week context with regional interpretation
-              and forward-looking structural perspective.
+              Multi-week analysis with forward-looking context,
+              regional interpretation, and decision-support framing.
             </p>
           </Section>
 
-          <Section title="What WealthyAI is not">
+          <Section title="What WealthyAI deliberately avoids">
             <ul>
-              <li>It is not a budgeting enforcement tool</li>
-              <li>It does not provide financial, tax, or investment advice</li>
-              <li>It does not optimize for returns or automate decisions</li>
+              <li>Rigid budgeting rules</li>
+              <li>Behavior enforcement or scoring</li>
+              <li>Financial promises or return projections</li>
             </ul>
           </Section>
 
           <p style={footer}>
-            WealthyAI supports understanding — not control.
+            WealthyAI provides perspective — not instructions.
           </p>
         </div>
       </div>
