@@ -1,4 +1,4 @@
-export default function HowItWorks() {
+  export default function HowItWorks() {
   return (
     <div style={page}>
       {/* BACKGROUND */}
@@ -70,7 +70,7 @@ export default function HowItWorks() {
   );
 }
 
-/* ===== SHARED COMPONENTS & STYLES ===== */
+/* ===== SHARED COMPONENT ===== */
 
 function Section({ title, children }) {
   return (
@@ -80,6 +80,8 @@ function Section({ title, children }) {
     </div>
   );
 }
+
+/* ===== STYLES ===== */
 
 const page = {
   position: "relative",
