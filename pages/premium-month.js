@@ -1,4 +1,9 @@
 import { useState, useEffect } from "react";
+import {
+  saveMonthlySnapshot,
+  getMonthlySnapshots,
+  getSnapshotByDay,
+} from "../lib/monthlyArchive";
 
 const REGIONS = [
   { code: "US", label: "United States" },
@@ -33,6 +38,15 @@ export default function PremiumMonth() {
   const [exportRange, setExportRange] = useState("day");
   const [cycleDay, setCycleDay] = useState(1);
 
+  /* ===== SNAPSHOT / ARCHIVE ADDITIONS ===== */
+  const [dailySnapshot, setDailySnapshot] = useState(null);
+  const [archiveOpen, setArchiveOpen] = useState(false);
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [viewMode, setViewMode] = useState("executive");
+
+  /* ===== DAILY AVAILABILITY ===== */
+  const [isTodayAvailable, setIsTodayAvailable] = useState(false);
+
   const [inputs, setInputs] = useState({
     income: 4000,
     housing: 1200,
@@ -64,6 +78,36 @@ export default function PremiumMonth() {
     }
   }, []);
 
+  /* ===== DAILY RANDOM AVAILABILITY ===== */
+  useEffect(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    const key = `dailyAvailableAt_${today}`;
+
+    let availableAt = localStorage.getItem(key);
+
+    if (!availableAt) {
+      const randomOffsetMs =
+        Math.floor(Math.random() * 6 * 60 * 60 * 1000);
+
+      const base = new Date();
+      base.setHours(7, 0, 0, 0);
+
+      availableAt = base.getTime() + randomOffsetMs;
+      localStorage.setItem(key, availableAt.toString());
+    }
+
+    const checkAvailability = () => {
+      if (Date.now() >= Number(availableAt)) {
+        setIsTodayAvailable(true);
+      }
+    };
+
+    checkAvailability();
+    const interval = setInterval(checkAvailability, 60 * 1000);
+    return () => clearInterval(interval);
+  }, [cycleDay]);
+
+  /* ===== LEGACY BRIEFING STORAGE (UNCHANGED) ===== */
   const saveBriefing = text => {
     const today = new Date().toISOString().slice(0, 10);
     const stored = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
@@ -84,6 +128,7 @@ export default function PremiumMonth() {
     return [];
   };
 
+  /* ===== ORIGINAL runAI (UNCHANGED) ===== */
   const runAI = async () => {
     setLoading(true);
     setAiOpen(true);
@@ -117,6 +162,53 @@ export default function PremiumMonth() {
     setLoading(false);
   };
 
+  /* ===== NEW SNAPSHOT AI (ADDITIVE) ===== */
+  const runAIDual = async () => {
+    if (!isTodayAvailable) {
+      alert("Today's briefing is not available yet.");
+      return;
+    }
+
+    setLoading(true);
+    setAiOpen(true);
+    setAiCollapsed(false);
+    setSelectedDay(null);
+
+    try {
+      const res = await fetch("/api/get-ai-briefing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          region,
+          cycleDay,
+          previousSignals: "",
+          ...inputs,
+        }),
+      });
+
+      const data = await res.json();
+      if (data?.snapshot) {
+        saveMonthlySnapshot(data.snapshot);
+        setDailySnapshot(data.snapshot);
+      }
+    } catch {
+      setAiText("AI system temporarily unavailable.");
+    }
+
+    setLoading(false);
+  };
+
+  const activeSnapshot = selectedDay
+    ? getSnapshotByDay(selectedDay)
+    : dailySnapshot;
+
+  const activeText =
+    activeSnapshot &&
+    (viewMode === "executive"
+      ? activeSnapshot.executive
+      : activeSnapshot.directive);
+
+  /* ===== EXPORT HELPERS (UNCHANGED) ===== */
   const handleDownload = () => {
     const data = getBriefings(exportRange);
     if (!data.length) return alert("No data available.");
@@ -190,6 +282,7 @@ export default function PremiumMonth() {
       <div style={layout}>
         <div style={card}>
           <h3>Monthly Financial Structure</h3>
+
           <Label>Income</Label>
           <Input value={inputs.income} onChange={e => update("income", e.target.value)} />
           <Divider />
@@ -217,34 +310,61 @@ export default function PremiumMonth() {
             <Row label="Other" value={inputs.other} onChange={v => update("other", v)} />
           </Section>
 
-          <button onClick={runAI} style={aiButton}>
+          <button onClick={runAIDual} style={aiButton}>
             {loading ? "Generating briefing…" : "Generate Monthly Briefing"}
           </button>
         </div>
 
         <div style={card}>
-          {aiOpen && !aiCollapsed && (
-            <>
-              <pre style={aiTextStyle}>{aiText}</pre>
+          <button onClick={() => setArchiveOpen(!archiveOpen)} style={{ marginBottom: 10 }}>
+            {archiveOpen ? "Hide archive" : "View past days"}
+          </button>
 
-              <div style={{ marginTop: 16, display: "flex", gap: 12 }}>
-                <select
-                  value={exportRange}
-                  onChange={e => setExportRange(e.target.value)}
-                  style={exportSelect}
+          {archiveOpen && (
+            <div style={{ marginBottom: 16 }}>
+              {getMonthlySnapshots().map(s => (
+                <button
+                  key={s.date}
+                  onClick={() => setSelectedDay(s.cycleDay)}
+                  style={{ marginRight: 6 }}
                 >
-                  <option value="day">Today</option>
-                  <option value="week">Last 7 days</option>
-                  <option value="month">This month</option>
-                </select>
-
-                <button onClick={handleDownload} style={exportBtn}>Download</button>
-                <button onClick={downloadPDF} style={exportBtn}>Download PDF</button>
-                <button onClick={sendEmailPDF} style={exportBtn}>
-                  {emailSending ? "Sending…" : "Send by Email"}
+                  Day {s.cycleDay}
                 </button>
-              </div>
-            </>
+              ))}
+            </div>
+          )}
+
+          {activeSnapshot && (
+            <div style={{ marginBottom: 10 }}>
+              <button onClick={() => setViewMode("executive")}>Executive</button>
+              <button onClick={() => setViewMode("directive")}>Directive</button>
+            </div>
+          )}
+
+          {!isTodayAvailable && !selectedDay && (
+            <p style={{ opacity: 0.7 }}>Today’s briefing is not available yet.</p>
+          )}
+
+          {activeText && <pre style={aiTextStyle}>{activeText}</pre>}
+
+          {!selectedDay && aiText && (
+            <div style={{ marginTop: 16, display: "flex", gap: 12 }}>
+              <select
+                value={exportRange}
+                onChange={e => setExportRange(e.target.value)}
+                style={exportSelect}
+              >
+                <option value="day">Today</option>
+                <option value="week">Last 7 days</option>
+                <option value="month">This month</option>
+              </select>
+
+              <button onClick={handleDownload} style={exportBtn}>Download</button>
+              <button onClick={downloadPDF} style={exportBtn}>Download PDF</button>
+              <button onClick={sendEmailPDF} style={exportBtn}>
+                {emailSending ? "Sending…" : "Send by Email"}
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -293,7 +413,7 @@ const Divider = () => (
   <div style={{ height: 1, background: "#1e293b", margin: "16px 0" }} />
 );
 
-/* STYLES */
+/* STYLES — UNCHANGED */
 
 const page = {
   minHeight: "100vh",
@@ -414,13 +534,6 @@ const aiTextStyle = {
   color: "#cbd5f5",
 };
 
-const footer = {
-  marginTop: 60,
-  textAlign: "center",
-  fontSize: 13,
-  color: "#64748b",
-};
-
 const exportBtn = {
   flex: 1,
   padding: "10px",
@@ -438,4 +551,11 @@ const exportSelect = {
   border: "1px solid #1e293b",
   padding: "8px",
   borderRadius: 8,
+};
+
+const footer = {
+  marginTop: 60,
+  textAlign: "center",
+  fontSize: 13,
+  color: "#64748b",
 };
