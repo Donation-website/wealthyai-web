@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     const {
       region,
       cycleDay,
-      analysisMode, // opcionális, backward compatibility
+      analysisMode, // backward compatibility
       previousSignals,
       income,
       housing,
@@ -51,22 +51,12 @@ export default async function handler(req, res) {
     const totalEnergy = S.electricity + S.gas;
     const hasEnergyExposure = totalEnergy > 0;
 
-    const fixedCore =
-      S.housing +
-      S.insurance +
-      S.banking;
-
-    const recurringServices =
-      S.internet +
-      S.mobile +
-      S.tv;
-
-    const irregularPressure =
-      S.unexpected +
-      S.other;
+    const fixedCore = S.housing + S.insurance + S.banking;
+    const recurringServices = S.internet + S.mobile + S.tv;
+    const irregularPressure = S.unexpected + S.other;
 
     /* ================================
-       SYSTEM PROMPT — BASE (COMMON)
+       SYSTEM PROMPT — BASE
     ================================= */
 
     let systemPrompt = `
@@ -78,40 +68,32 @@ MONTHLY STRATEGIC FINANCIAL BRIEFING AUTHOR
 ABSOLUTE RULE:
 - ALWAYS write in second person.
 - NEVER refer to "the user".
-- Address the reader directly or implicitly at all times.
 
 CRITICAL VISIBILITY RULE:
 - ANY content after the marker "--- INTERNAL SIGNALS ---" is FOR INTERNAL USE ONLY.
-- It MUST NOT appear in the visible briefing under any circumstance.
+- It MUST NOT appear in the visible briefing.
 
 WHAT THIS IS:
-- A financial briefing.
-- Structural interpretation.
-- Priority framing.
+- Structural financial briefing.
 
 WHAT THIS IS NOT:
 - Advice.
 - Instructions.
 - Optimization.
-- Motivation.
 
-STRUCTURE DEFINITIONS (NON-NEGOTIABLE):
+STRUCTURE DEFINITIONS:
 - Energy exposure = electricity + gas ONLY.
 - Water is NOT energy.
-- If energy exposure = 0 → energy MUST NOT be referenced.
-- Zero or negative values mean ABSENCE, not low presence.
 
 STRICT CONSTRAINTS:
 - NEVER restate inputs.
 - NEVER invent exposure.
-- NEVER infer sectors that are structurally absent.
-- NEVER reveal system logic.
+- NEVER infer missing sectors.
 
 SCOPE:
-- Time horizon: NEXT 90 DAYS
-- Focus: STRUCTURE · PRESSURE · PRIORITY
+- NEXT 90 DAYS
 
-OUTPUT STRUCTURE (MANDATORY):
+OUTPUT STRUCTURE:
 1. Executive Overview
 2. What Actually Matters
 3. What You Can Safely Ignore
@@ -121,18 +103,10 @@ OUTPUT STRUCTURE (MANDATORY):
 
 CLOSING SIGNAL:
 - EXACTLY one sentence.
-- No formatting.
 
 INTERNAL SIGNALS:
-- Appear ONLY after:
-  --- INTERNAL SIGNALS ---
-- Max 3 short lines.
-- NEVER visible.
+--- INTERNAL SIGNALS ---
 `;
-
-    /* ================================
-       STRUCTURAL FACTS
-    ================================= */
 
     systemPrompt += `
 STRUCTURAL FACTS:
@@ -143,7 +117,6 @@ STRUCTURAL FACTS:
 
 CRITICAL LENS RULE:
 - Select EXACTLY ONE dominant pressure.
-- If Energy exposure = NO → ENERGY MUST NOT APPEAR.
 `;
 
     if (region === "HU") {
@@ -154,32 +127,22 @@ REGION: Hungary
 `;
     }
 
-    /* ================================
-       USER CONTEXT
-    ================================= */
-
     const baseUserPrompt = `
 Region: ${region}
 Cycle day: ${cycleDay}
 
-Previously established internal signals:
+Previous signals:
 ${previousSignals || "None"}
 
 TASK:
 Write the monthly briefing strictly from structure.
-Do not infer missing sectors.
 `;
-
-    /* ================================
-       MODE PROMPTS
-    ================================= */
 
     const executivePrompt = `
 MODE: EXECUTIVE
 - Calm
 - Observational
-- No action verbs
-- No percentages
+- No urgency
 
 ${baseUserPrompt}
 `;
@@ -188,13 +151,12 @@ ${baseUserPrompt}
 MODE: DIRECTIVE
 - Firm
 - Decisive
-- No hedging
 
 ${baseUserPrompt}
 `;
 
     /* ================================
-       GROQ CALL HELPER
+       GROQ CALL
     ================================= */
 
     const callGroq = async (prompt, temperature) => {
@@ -223,28 +185,32 @@ ${baseUserPrompt}
       const j = await r.json();
       let text = j?.choices?.[0]?.message?.content || "";
 
-      const marker = "--- INTERNAL SIGNALS ---";
-      if (text.includes(marker)) {
-        text = text.split(marker)[0].trim();
+      if (text.includes("--- INTERNAL SIGNALS ---")) {
+        text = text.split("--- INTERNAL SIGNALS ---")[0].trim();
       }
 
       return text;
     };
 
     /* ================================
-       DUAL EXECUTION
+       EXECUTION
     ================================= */
 
-    const [executive, directive] = await Promise.all([
-      callGroq(executivePrompt, 0.15),
-      callGroq(directivePrompt, 0.1),
-    ]);
+    // 🔹 mindig lefut az executive
+    const executive = await callGroq(executivePrompt, 0.15);
+
+    // 🔹 directive csak a dual / archív miatt
+    const directive = await callGroq(directivePrompt, 0.1);
 
     /* ================================
-       RESPONSE (SNAPSHOT)
+       RESPONSE
     ================================= */
 
     return res.status(200).json({
+      // ⬅️ backward compatibility
+      briefing: executive,
+
+      // ⬇️ új snapshot rendszerhez
       snapshot: {
         date: new Date().toISOString().slice(0, 10),
         cycleDay,
