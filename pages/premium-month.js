@@ -354,22 +354,11 @@ export default function PremiumMonth() {
             </div>
           )}
 
-          {activeSnapshot && (
-            <div style={{ marginBottom: 10 }}>
-              <button onClick={() => setViewMode("executive")} style={exportBtn}>
-                Executive
-              </button>
-              <button onClick={() => setViewMode("directive")} style={exportBtn}>
-                Directive
-              </button>
-            </div>
-          )}
-
-          {!isTodayAvailable && !selectedDay && (
-            <p style={{ opacity: 0.7 }}>Today’s snapshot is not available yet.</p>
-          )}
-
-          {activeText && <pre style={aiTextStyle}>{activeText}</pre>}
+          {activeText ? (
+            <pre style={aiTextStyle}>{activeText}</pre>
+          ) : aiText ? (
+            <pre style={aiTextStyle}>{aiText}</pre>
+          ) : null}
 
           {!selectedDay && aiText && (
             <div style={{ marginTop: 16, display: "flex", gap: 12 }}>
