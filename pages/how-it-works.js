@@ -1,7 +1,6 @@
 export default function HowItWorks() {
   return (
     <div style={page}>
-      {/* BACKGROUND */}
       <div style={bgGrid} />
       <div style={bgLines} />
       <div style={bgGlow} />
@@ -15,36 +14,47 @@ export default function HowItWorks() {
           <h1 style={title}>How WealthyAI Works</h1>
 
           <p style={intro}>
-            WealthyAI is designed around a simple idea:
+            WealthyAI is built on a simple principle:
             financial clarity improves when information is structured by time and context.
           </p>
 
           <Section title="The core concept">
-            Instead of presenting isolated numbers, WealthyAI organizes insight into layers.
+            Instead of presenting isolated numbers or constant alerts,
+            WealthyAI organizes financial understanding into distinct layers.
             <br /><br />
-            Each layer answers a different type of question — without replacing the previous one.
+            Each layer answers a different type of question — without replacing or overriding the others.
           </Section>
 
           <Section title="The intelligence layers">
-            <p><strong>Basic Overview (Snapshot)</strong><br />
-            A single-point view of income and expenses. Useful for orientation, not for decisions.</p>
+            <p>
+              <strong>Basic Overview (Snapshot)</strong><br />
+              A single-point view of income and expenses.
+              Designed for orientation — not conclusions.
+            </p>
 
-            <p><strong>Daily Intelligence</strong><br />
-            Short-term interpretation focused on immediate clarity.</p>
+            <p>
+              <strong>Daily Intelligence</strong><br />
+              A short, focused signal highlighting what matters today within the current cycle.
+            </p>
 
-            <p><strong>Weekly Intelligence</strong><br />
-            Pattern detection across days and categories, including regional context.</p>
+            <p>
+              <strong>Weekly Intelligence</strong><br />
+              Pattern recognition across days and categories,
+              helping behavioral signals emerge gradually.
+            </p>
 
-            <p><strong>Monthly Intelligence</strong><br />
-            Multi-week analysis with forward-looking context, regional interpretation,
-            and decision-support outputs.</p>
+            <p>
+              <strong>Monthly Intelligence</strong><br />
+              Multi-week context with regional interpretation
+              and forward-looking structural perspective.
+            </p>
           </Section>
 
           <Section title="What WealthyAI is not">
             <ul>
               <li>It is not a budgeting enforcement tool</li>
-              <li>It does not replace professional financial advice</li>
-              <li>It does not optimize for maximum returns</li>
+              <li>It does not provide financial, tax, or investment advice</li>
+              <li>It does not optimize for returns or automate decisions</li>
             </ul>
           </Section>
 
@@ -56,114 +66,3 @@ export default function HowItWorks() {
     </div>
   );
 }
-
-/* ===== SHARED COMPONENTS & STYLES ===== */
-
-function Section({ title, children }) {
-  return (
-    <div style={section}>
-      <h2 style={sectionTitle}>{title}</h2>
-      <div style={sectionText}>{children}</div>
-    </div>
-  );
-}
-
-const page = {
-  position: "relative",
-  minHeight: "100vh",
-  background: "#020617",
-  overflow: "hidden",
-  fontFamily: "Inter, system-ui",
-};
-
-const content = {
-  position: "relative",
-  zIndex: 10,
-  padding: 40,
-  display: "flex",
-  justifyContent: "center",
-};
-
-const container = {
-  width: "100%",
-  maxWidth: 900,
-};
-
-const bgGrid = {
-  position: "fixed",
-  inset: 0,
-  backgroundImage:
-    "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
-  backgroundSize: "80px 80px",
-  zIndex: 1,
-};
-
-const bgLines = {
-  position: "fixed",
-  inset: 0,
-  backgroundImage:
-    "linear-gradient(120deg, transparent 40%, rgba(56,189,248,0.08) 50%, transparent 60%)",
-  backgroundSize: "1200px 1200px",
-  zIndex: 2,
-};
-
-const bgGlow = {
-  position: "fixed",
-  inset: 0,
-  background:
-    "radial-gradient(circle at 30% 20%, rgba(56,189,248,0.12), transparent 40%), radial-gradient(circle at 70% 80%, rgba(167,139,250,0.12), transparent 45%)",
-  zIndex: 3,
-};
-
-const back = {
-  marginBottom: 24,
-  padding: "6px 12px",
-  fontSize: 13,
-  borderRadius: 8,
-  background: "rgba(148,163,184,0.18)",
-  border: "1px solid rgba(148,163,184,0.35)",
-  color: "#ffffff",
-  cursor: "pointer",
-};
-
-const title = {
-  fontSize: "2.2rem",
-  marginBottom: 12,
-  color: "#ffffff",
-};
-
-const intro = {
-  color: "#e5e7eb",
-  maxWidth: 720,
-  marginBottom: 32,
-  fontSize: 15,
-};
-
-const section = {
-  width: "100%",
-  marginBottom: 28,
-  padding: 24,
-  borderRadius: 16,
-  background: "rgba(56,189,248,0.14)",
-  border: "1px solid rgba(125,211,252,0.35)",
-  backdropFilter: "blur(12px)",
-};
-
-const sectionTitle = {
-  fontSize: "1.15rem",
-  color: "#f0f9ff",
-  marginBottom: 10,
-};
-
-const sectionText = {
-  fontSize: 15,
-  lineHeight: 1.65,
-  color: "#f8fafc",
-};
-
-const footer = {
-  marginTop: 48,
-  fontSize: 14,
-  color: "#e5e7eb",
-  maxWidth: 720,
-};
