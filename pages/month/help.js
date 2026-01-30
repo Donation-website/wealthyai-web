@@ -22,50 +22,80 @@ export default function HelpPage() {
           <Section title="What this page is">
             The monthly view provides <strong>strategic financial intelligence</strong>.
             <br /><br />
-            It is designed to help you understand pressure, structure, and direction
+            It is designed to surface pressure, structure, and direction
             across a longer time horizon — not daily noise.
-          </Section>
-
-          <Section title="What the monthly analysis focuses on">
-            Each monthly briefing looks at:
-            <ul>
-              <li>structural cost pressure</li>
-              <li>recurring rigidity vs flexibility</li>
-              <li>signals that persist across weeks</li>
-              <li>regional constraints and context</li>
-            </ul>
-            The goal is to surface what truly matters over the next 90 days.
-          </Section>
-
-          <Section title="Daily signals within a monthly cycle">
-            Although the plan is monthly, the system generates
-            <strong> one signal per day</strong>.
             <br /><br />
-            Each daily signal reflects your position within the current monthly cycle
-            and builds on previous signals to form a continuous narrative.
+            Nothing here updates automatically unless you ask for it.
           </Section>
 
-          <Section title="What this analysis does NOT do">
+          <Section title="Daily signal vs monthly briefing">
+            These are <strong>not the same thing</strong>.
+            <br /><br />
+            <strong>Daily Signal</strong>
             <ul>
-              <li>It does not provide budgeting rules</li>
-              <li>It does not give financial advice</li>
-              <li>It does not judge individual decisions</li>
-              <li>It does not require perfect data</li>
+              <li>One short sentence</li>
+              <li>Appears once per day, at a random time</li>
+              <li>Designed to create rhythm and awareness</li>
+              <li>Cannot be exported, emailed, or edited</li>
+              <li>Disappears with time</li>
+            </ul>
+            <br />
+            <strong>Monthly Briefing</strong>
+            <ul>
+              <li>Full strategic analysis</li>
+              <li>Generated only when you click “Generate Monthly Briefing”</li>
+              <li>Always dual-lens (Executive / Directive)</li>
+              <li>Exists only in the current session unless saved</li>
             </ul>
           </Section>
 
-          <Section title="Why returning daily matters">
-            Financial pressure is rarely visible all at once.
+          <Section title="Snapshots (important)">
+            Monthly briefings are <strong>temporary by default</strong>.
             <br /><br />
-            Daily signals allow patterns to emerge gradually,
-            making direction clearer before decisions become urgent.
+            If you close the page or generate a new briefing without saving,
+            the previous analysis is lost.
+            <br /><br />
+            To preserve a briefing:
+            <ul>
+              <li>Click <strong>Save Today’s Snapshot</strong></li>
+              <li>Saved snapshots appear under <strong>View past days</strong></li>
+              <li>Each snapshot represents one specific day in your monthly cycle</li>
+            </ul>
+            <br />
+            Saved snapshots can be revisited later and shared or exported if needed.
+            <br /><br />
+            This behavior is intentional.
           </Section>
 
-          <Section title="Monthly vs Weekly intelligence">
-            Weekly intelligence focuses on short-term behavior.
+          <Section title="Why nothing is saved automatically">
+            Financial intelligence loses value when it becomes something you stop noticing.
             <br /><br />
-            Monthly intelligence focuses on structure, persistence,
-            and forward direction.
+            By requiring intentional saving:
+            <ul>
+              <li>you decide what matters</li>
+              <li>patterns emerge over time</li>
+              <li>important signals remain clear</li>
+            </ul>
+            <strong>If everything were saved, nothing would stand out.</strong>
+          </Section>
+
+          <Section title="Returning daily">
+            You are not expected to act every day.
+            <br /><br />
+            Returning daily allows subtle shifts to become visible,
+            pressure to surface before urgency,
+            and direction to clarify gradually.
+            <br /><br />
+            The system is quiet by design.
+          </Section>
+
+          <Section title="What this system does NOT do">
+            <ul>
+              <li>It does not provide financial advice</li>
+              <li>It does not optimize budgets</li>
+              <li>It does not track behavior</li>
+              <li>It does not notify or interrupt you</li>
+            </ul>
           </Section>
 
           <p style={footer}>
