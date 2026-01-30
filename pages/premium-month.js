@@ -19,7 +19,7 @@ function getDailyUnlockTime() {
 
   if (stored.date === today) return stored.unlockAt;
 
-  const hour = Math.floor(Math.random() * 10) + 7;
+  const hour = Math.floor(Math.random() * 10) + 7; // 07–16
   const minute = Math.floor(Math.random() * 60);
 
   const unlockAt = new Date();
@@ -49,7 +49,10 @@ export default function PremiumMonth() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get("session_id");
-    if (!sessionId) return (window.location.href = "/start");
+    if (!sessionId) {
+      window.location.href = "/start";
+      return;
+    }
 
     fetch("/api/verify-active-subscription", {
       method: "POST",
@@ -57,11 +60,15 @@ export default function PremiumMonth() {
       body: JSON.stringify({ sessionId }),
     })
       .then(r => r.json())
-      .then(d => !d.valid && (window.location.href = "/start"))
-      .catch(() => (window.location.href = "/start"));
+      .then(d => {
+        if (!d.valid) window.location.href = "/start";
+      })
+      .catch(() => {
+        window.location.href = "/start";
+      });
   }, []);
 
-  /* ================= REGION AUTO-DETECT (SAFE FALLBACK) ================= */
+  /* ================= REGION AUTO-DETECT ================= */
 
   const [region, setRegion] = useState("EU");
   const [country, setCountry] = useState(null);
@@ -92,8 +99,16 @@ export default function PremiumMonth() {
 
   const [viewMode, setViewMode] = useState("executive");
   const [cycleDay, setCycleDay] = useState(1);
+
   const [loading, setLoading] = useState(false);
   const [emailSending, setEmailSending] = useState(false);
+
+  /* ================= AI PANEL STATE ================= */
+
+  // panel csak akkor létezik, ha már volt AI futtatás
+  const [aiVisible, setAiVisible] = useState(false);
+  // panel tartalom collapse / expand
+  const [aiCollapsed, setAiCollapsed] = useState(true);
 
   /* ================= DAILY SIGNAL ================= */
 
@@ -110,11 +125,7 @@ export default function PremiumMonth() {
 
   const [exportRange, setExportRange] = useState("day");
 
-  /* ================= AI PANEL VISIBILITY ================= */
-
-  const [aiOpen, setAiOpen] = useState(false);
-
-  /* ================= AVAILABILITY ================= */
+  /* ================= SNAPSHOT AVAILABILITY ================= */
 
   const [isTodayAvailable, setIsTodayAvailable] = useState(false);
 
@@ -135,9 +146,12 @@ export default function PremiumMonth() {
     other: 300,
   });
 
-  const update = (k, v) => {
-    setInputs({ ...inputs, [k]: Number(v) });
-    setAiOpen(false);
+  const update = (key, value) => {
+    setInputs({ ...inputs, [key]: Number(value) });
+
+    // input változás → minden AI reset
+    setAiVisible(false);
+    setAiCollapsed(true);
     setDailyDual(null);
     setDailySnapshot(null);
     setSelectedDay(null);
@@ -214,7 +228,7 @@ export default function PremiumMonth() {
       });
 
       const j = await r.json();
-      if (j.signal) {
+      if (j?.signal) {
         localStorage.setItem(seenKey, j.signal);
         setDailySignal(j.signal);
       }
@@ -249,23 +263,11 @@ export default function PremiumMonth() {
     }
   };
 
-  const getBriefings = range => {
-    const stored = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
-    if (range === "day") {
-      const today = getTodayKey();
-      return stored.filter(b => b.date === today);
-    }
-    if (range === "week") return stored.slice(-7);
-    if (range === "month") return stored;
-    return [];
-  };
-
   /* ================= DAILY AI ================= */
 
   const runAI = async () => {
     setLoading(true);
     setSelectedDay(null);
-    setAiOpen(true);
 
     try {
       const res = await fetch("/api/get-ai-briefing", {
@@ -281,9 +283,11 @@ export default function PremiumMonth() {
       });
 
       const json = await res.json();
-      if (json.snapshot) {
+      if (json?.snapshot) {
         setDailyDual(json.snapshot);
         setViewMode("executive");
+        setAiVisible(true);
+        setAiCollapsed(false);
         saveBriefing(json.snapshot);
       }
     } catch {}
@@ -301,7 +305,6 @@ export default function PremiumMonth() {
 
     setLoading(true);
     setSelectedDay(null);
-    setAiOpen(true);
 
     try {
       const res = await fetch("/api/get-ai-briefing", {
@@ -321,6 +324,8 @@ export default function PremiumMonth() {
         saveMonthlySnapshot(data.snapshot);
         setDailySnapshot(data.snapshot);
         setViewMode("executive");
+        setAiVisible(true);
+        setAiCollapsed(false);
       }
     } catch {}
 
@@ -340,8 +345,18 @@ export default function PremiumMonth() {
     (viewMode === "executive"
       ? activeDual.executive
       : activeDual.directive);
-
   /* ================= EXPORT ================= */
+
+  const getBriefings = range => {
+    const stored = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
+    if (range === "day") {
+      const today = getTodayKey();
+      return stored.filter(b => b.date === today);
+    }
+    if (range === "week") return stored.slice(-7);
+    if (range === "month") return stored;
+    return [];
+  };
 
   const handleDownload = () => {
     const data = getBriefings(exportRange);
@@ -392,6 +407,7 @@ export default function PremiumMonth() {
     } catch {}
     setEmailSending(false);
   };
+
   /* ================= RENDER ================= */
 
   return (
@@ -431,47 +447,96 @@ export default function PremiumMonth() {
       </div>
 
       <div style={layout}>
-        {/* LEFT */}
+        {/* LEFT COLUMN */}
         <div style={card}>
           <h3>Monthly Financial Structure</h3>
 
           <Label>Income</Label>
-          <Input value={inputs.income} onChange={e => update("income", e.target.value)} />
+          <Input
+            value={inputs.income}
+            onChange={e => update("income", e.target.value)}
+          />
           <Divider />
 
           <Section title="Living">
-            <Row label="Housing" value={inputs.housing} onChange={v => update("housing", v)} />
+            <Row
+              label="Housing"
+              value={inputs.housing}
+              onChange={v => update("housing", v)}
+            />
           </Section>
 
           <Section title="Utilities">
-            <Row label="Electricity" value={inputs.electricity} onChange={v => update("electricity", v)} />
-            <Row label="Gas" value={inputs.gas} onChange={v => update("gas", v)} />
-            <Row label="Water" value={inputs.water} onChange={v => update("water", v)} />
+            <Row
+              label="Electricity"
+              value={inputs.electricity}
+              onChange={v => update("electricity", v)}
+            />
+            <Row
+              label="Gas"
+              value={inputs.gas}
+              onChange={v => update("gas", v)}
+            />
+            <Row
+              label="Water"
+              value={inputs.water}
+              onChange={v => update("water", v)}
+            />
           </Section>
 
           <Section title="Recurring Services">
-            <Row label="Internet" value={inputs.internet} onChange={v => update("internet", v)} />
-            <Row label="Mobile phone" value={inputs.mobile} onChange={v => update("mobile", v)} />
-            <Row label="TV / Streaming" value={inputs.tv} onChange={v => update("tv", v)} />
-            <Row label="Insurance" value={inputs.insurance} onChange={v => update("insurance", v)} />
-            <Row label="Banking fees" value={inputs.banking} onChange={v => update("banking", v)} />
+            <Row
+              label="Internet"
+              value={inputs.internet}
+              onChange={v => update("internet", v)}
+            />
+            <Row
+              label="Mobile phone"
+              value={inputs.mobile}
+              onChange={v => update("mobile", v)}
+            />
+            <Row
+              label="TV / Streaming"
+              value={inputs.tv}
+              onChange={v => update("tv", v)}
+            />
+            <Row
+              label="Insurance"
+              value={inputs.insurance}
+              onChange={v => update("insurance", v)}
+            />
+            <Row
+              label="Banking fees"
+              value={inputs.banking}
+              onChange={v => update("banking", v)}
+            />
           </Section>
 
           <Section title="Irregular">
-            <Row label="Unexpected" value={inputs.unexpected} onChange={v => update("unexpected", v)} />
-            <Row label="Other" value={inputs.other} onChange={v => update("other", v)} />
+            <Row
+              label="Unexpected"
+              value={inputs.unexpected}
+              onChange={v => update("unexpected", v)}
+            />
+            <Row
+              label="Other"
+              value={inputs.other}
+              onChange={v => update("other", v)}
+            />
           </Section>
 
           <button onClick={runAI} style={aiButton}>
             {loading ? "Generating briefing…" : "Generate Monthly Briefing"}
           </button>
 
-          <button onClick={runAIDual} style={{ ...exportBtn, marginTop: 12 }}>
+          <button
+            onClick={runAIDual}
+            style={{ ...exportBtn, marginTop: 12 }}
+          >
             Save Today’s Snapshot
           </button>
         </div>
-
-        {/* RIGHT */}
+        {/* RIGHT COLUMN */}
         <div style={card}>
           <button
             onClick={() => setArchiveOpen(!archiveOpen)}
@@ -500,59 +565,93 @@ export default function PremiumMonth() {
             </div>
           )}
 
-          {aiOpen && activeDual && (
-            <>
+          {/* AI PANEL */}
+          {aiVisible && (
+            <div>
               <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
                 <button
-                  onClick={() => setViewMode("executive")}
-                  style={{
-                    ...exportBtn,
-                    background: viewMode === "executive" ? "#38bdf8" : "transparent",
-                    color: viewMode === "executive" ? "#020617" : "#38bdf8",
-                  }}
+                  onClick={() => setAiCollapsed(!aiCollapsed)}
+                  style={exportBtn}
                 >
-                  Executive
+                  {aiCollapsed ? "Show briefing" : "Hide briefing"}
                 </button>
+
                 <button
-                  onClick={() => setViewMode("directive")}
-                  style={{
-                    ...exportBtn,
-                    background: viewMode === "directive" ? "#38bdf8" : "transparent",
-                    color: viewMode === "directive" ? "#020617" : "#38bdf8",
-                  }}
-                >
-                  Directive
-                </button>
-                <button
-                  onClick={() => setAiOpen(false)}
-                  style={{ ...exportBtn, maxWidth: 40 }}
+                  onClick={() => setAiCollapsed(true)}
+                  style={{ ...exportBtn, maxWidth: 44 }}
                 >
                   ✕
                 </button>
               </div>
 
-              <pre style={aiTextStyle}>{activeText}</pre>
+              {!aiCollapsed && activeDual && (
+                <>
+                  <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
+                    <button
+                      onClick={() => setViewMode("executive")}
+                      style={{
+                        ...exportBtn,
+                        background:
+                          viewMode === "executive" ? "#38bdf8" : "transparent",
+                        color:
+                          viewMode === "executive"
+                            ? "#020617"
+                            : "#38bdf8",
+                      }}
+                    >
+                      Executive
+                    </button>
 
-              {!selectedDay && (
-                <div style={{ marginTop: 16, display: "flex", gap: 12 }}>
-                  <select
-                    value={exportRange}
-                    onChange={e => setExportRange(e.target.value)}
-                    style={exportSelect}
-                  >
-                    <option value="day">Today</option>
-                    <option value="week">Last 7 days</option>
-                    <option value="month">This month</option>
-                  </select>
+                    <button
+                      onClick={() => setViewMode("directive")}
+                      style={{
+                        ...exportBtn,
+                        background:
+                          viewMode === "directive" ? "#38bdf8" : "transparent",
+                        color:
+                          viewMode === "directive"
+                            ? "#020617"
+                            : "#38bdf8",
+                      }}
+                    >
+                      Directive
+                    </button>
+                  </div>
 
-                  <button onClick={handleDownload} style={exportBtn}>Download</button>
-                  <button onClick={downloadPDF} style={exportBtn}>Download PDF</button>
-                  <button onClick={sendEmailPDF} style={exportBtn}>
-                    {emailSending ? "Sending…" : "Send by Email"}
-                  </button>
-                </div>
+                  <pre style={aiTextStyle}>{activeText}</pre>
+
+                  {!selectedDay && (
+                    <div
+                      style={{
+                        marginTop: 16,
+                        display: "flex",
+                        gap: 12,
+                      }}
+                    >
+                      <select
+                        value={exportRange}
+                        onChange={e => setExportRange(e.target.value)}
+                        style={exportSelect}
+                      >
+                        <option value="day">Today</option>
+                        <option value="week">Last 7 days</option>
+                        <option value="month">This month</option>
+                      </select>
+
+                      <button onClick={handleDownload} style={exportBtn}>
+                        Download
+                      </button>
+                      <button onClick={downloadPDF} style={exportBtn}>
+                        Download PDF
+                      </button>
+                      <button onClick={sendEmailPDF} style={exportBtn}>
+                        {emailSending ? "Sending…" : "Send by Email"}
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
-            </>
+            </div>
           )}
         </div>
       </div>
@@ -613,8 +712,10 @@ const page = {
     radial-gradient(circle at 45% 85%, rgba(34,211,238,0.10), transparent 45%),
     url("/wealthyai/icons/generated.png")
   `,
-  backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
-  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
+  backgroundRepeat:
+    "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
+  backgroundSize:
+    "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
 };
 
 const header = { textAlign: "center", marginBottom: 20 };
@@ -643,6 +744,7 @@ const regionRow = {
 };
 
 const regionLabel = { color: "#7dd3fc" };
+
 const regionSelect = {
   background: "#020617",
   color: "#e5e7eb",
