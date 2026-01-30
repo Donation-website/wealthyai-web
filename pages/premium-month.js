@@ -38,7 +38,7 @@ export default function PremiumMonth() {
   const [exportRange, setExportRange] = useState("day");
   const [cycleDay, setCycleDay] = useState(1);
 
-  /* ===== SNAPSHOT / ARCHIVE ADDITIONS ===== */
+  /* ===== SNAPSHOT / ARCHIVE ===== */
   const [dailySnapshot, setDailySnapshot] = useState(null);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState(null);
@@ -78,7 +78,6 @@ export default function PremiumMonth() {
     }
   }, []);
 
-  /* ===== DAILY RANDOM AVAILABILITY ===== */
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10);
     const key = `dailyAvailableAt_${today}`;
@@ -88,10 +87,8 @@ export default function PremiumMonth() {
     if (!availableAt) {
       const randomOffsetMs =
         Math.floor(Math.random() * 6 * 60 * 60 * 1000);
-
       const base = new Date();
       base.setHours(7, 0, 0, 0);
-
       availableAt = base.getTime() + randomOffsetMs;
       localStorage.setItem(key, availableAt.toString());
     }
@@ -107,7 +104,7 @@ export default function PremiumMonth() {
     return () => clearInterval(interval);
   }, [cycleDay]);
 
-  /* ===== LEGACY BRIEFING STORAGE (UNCHANGED) ===== */
+  /* ===== LEGACY STORAGE ===== */
   const saveBriefing = text => {
     const today = new Date().toISOString().slice(0, 10);
     const stored = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
@@ -128,7 +125,7 @@ export default function PremiumMonth() {
     return [];
   };
 
-  /* ===== ORIGINAL runAI (UNCHANGED) ===== */
+  /* ===== ORIGINAL DAILY AI (FIXED RESPONSE HANDLING) ===== */
   const runAI = async () => {
     setLoading(true);
     setAiOpen(true);
@@ -150,19 +147,23 @@ export default function PremiumMonth() {
       });
 
       const json = await res.json();
-      let text = json.briefing || "";
-      if (text.includes("--- INTERNAL SIGNALS ---"))
-        text = text.split("--- INTERNAL SIGNALS ---")[0].trim();
 
-      setAiText(text || "AI briefing unavailable.");
-      saveBriefing(text);
+      if (json.briefing) {
+        setAiText(json.briefing);
+        saveBriefing(json.briefing);
+      } else if (json.snapshot?.executive) {
+        setAiText(json.snapshot.executive);
+      } else {
+        setAiText("AI briefing unavailable.");
+      }
     } catch {
       setAiText("AI system temporarily unavailable.");
     }
+
     setLoading(false);
   };
 
-  /* ===== NEW SNAPSHOT AI (ADDITIVE) ===== */
+  /* ===== SNAPSHOT AI ===== */
   const runAIDual = async () => {
     if (!isTodayAvailable) {
       alert("Today's briefing is not available yet.");
@@ -208,7 +209,6 @@ export default function PremiumMonth() {
       ? activeSnapshot.executive
       : activeSnapshot.directive);
 
-  /* ===== EXPORT HELPERS (UNCHANGED) ===== */
   const handleDownload = () => {
     const data = getBriefings(exportRange);
     if (!data.length) return alert("No data available.");
@@ -413,7 +413,7 @@ const Divider = () => (
   <div style={{ height: 1, background: "#1e293b", margin: "16px 0" }} />
 );
 
-/* STYLES — UNCHANGED */
+/* STYLES */
 
 const page = {
   minHeight: "100vh",
