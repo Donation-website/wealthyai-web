@@ -125,7 +125,7 @@ export default function PremiumMonth() {
     return [];
   };
 
-  /* ===== ORIGINAL DAILY AI (FIXED RESPONSE HANDLING) ===== */
+  /* ===== DAILY (STATELESS) AI ===== */
   const runAI = async () => {
     setLoading(true);
     setAiOpen(true);
@@ -163,10 +163,10 @@ export default function PremiumMonth() {
     setLoading(false);
   };
 
-  /* ===== SNAPSHOT AI ===== */
+  /* ===== SNAPSHOT (MEMORY) AI ===== */
   const runAIDual = async () => {
     if (!isTodayAvailable) {
-      alert("Today's briefing is not available yet.");
+      alert("Today's snapshot is not available yet.");
       return;
     }
 
@@ -310,14 +310,34 @@ export default function PremiumMonth() {
             <Row label="Other" value={inputs.other} onChange={v => update("other", v)} />
           </Section>
 
-          <button onClick={runAIDual} style={aiButton}>
+          <button onClick={runAI} style={aiButton}>
             {loading ? "Generating briefing…" : "Generate Monthly Briefing"}
+          </button>
+
+          <button
+            onClick={runAIDual}
+            style={{
+              ...exportBtn,
+              marginTop: 12,
+              background: "rgba(2,6,23,0.9)",
+              color: "#e5e7eb",
+            }}
+          >
+            Save Today’s Snapshot
           </button>
         </div>
 
         <div style={card}>
-          <button onClick={() => setArchiveOpen(!archiveOpen)} style={{ marginBottom: 10 }}>
-            {archiveOpen ? "Hide archive" : "View past days"}
+          <button
+            onClick={() => setArchiveOpen(!archiveOpen)}
+            style={{
+              ...exportBtn,
+              marginBottom: 10,
+              background: "rgba(2,6,23,0.9)",
+              color: "#e5e7eb",
+            }}
+          >
+            {archiveOpen ? "Hide past days" : "View past days"}
           </button>
 
           {archiveOpen && (
@@ -326,7 +346,7 @@ export default function PremiumMonth() {
                 <button
                   key={s.date}
                   onClick={() => setSelectedDay(s.cycleDay)}
-                  style={{ marginRight: 6 }}
+                  style={exportBtn}
                 >
                   Day {s.cycleDay}
                 </button>
@@ -336,13 +356,17 @@ export default function PremiumMonth() {
 
           {activeSnapshot && (
             <div style={{ marginBottom: 10 }}>
-              <button onClick={() => setViewMode("executive")}>Executive</button>
-              <button onClick={() => setViewMode("directive")}>Directive</button>
+              <button onClick={() => setViewMode("executive")} style={exportBtn}>
+                Executive
+              </button>
+              <button onClick={() => setViewMode("directive")} style={exportBtn}>
+                Directive
+              </button>
             </div>
           )}
 
           {!isTodayAvailable && !selectedDay && (
-            <p style={{ opacity: 0.7 }}>Today’s briefing is not available yet.</p>
+            <p style={{ opacity: 0.7 }}>Today’s snapshot is not available yet.</p>
           )}
 
           {activeText && <pre style={aiTextStyle}>{activeText}</pre>}
