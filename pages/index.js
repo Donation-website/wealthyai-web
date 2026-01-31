@@ -332,3 +332,80 @@ export default function Home() {
     </>
   );
 }
+/* =========================
+   MOBILE FIX – NON-INTRUSIVE
+   ========================= */
+@media (max-width: 768px) {
+
+  /* 전체 layout */
+  main {
+    height: auto !important;
+    min-height: 100vh;
+  }
+
+  /* LOGO */
+  .brand-logo {
+    width: 92vw !important;
+    max-width: 420px !important;
+    margin-top: 40px;
+  }
+
+  /* CENTER TEXT BLOCK */
+  main > div:nth-of-type(2) {
+    transform: none !important;
+    padding-top: 40px;
+  }
+
+  /* TAGLINE TEXT */
+  main > div:nth-of-type(2) div div:first-child {
+    font-size: 1.1rem !important;
+    line-height: 1.5;
+  }
+
+  /* PULSE ROW */
+  main > div:nth-of-type(2) div div:last-child {
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.7rem;
+  }
+
+  /* START BUTTON */
+  main > div:nth-of-type(3) {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    align-items: center !important;
+    margin-top: 40px;
+  }
+
+  .start-btn {
+    width: 80vw;
+    text-align: center;
+    font-size: 1.05rem;
+  }
+
+  /* TOP NAV */
+  main > div:first-of-type {
+    position: fixed !important;
+    top: 12px !important;
+    right: 12px !important;
+    gap: 16px;
+    font-size: 0.8rem;
+  }
+
+  /* BOTTOM BAR */
+  main > div:last-of-type {
+    position: relative !important;
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+    padding: 24px 16px;
+  }
+
+  main > div:last-of-type > div:last-child {
+    align-items: center !important;
+  }
+}
+
+
