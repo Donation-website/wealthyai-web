@@ -1,10 +1,11 @@
-import React from "react";
+szia. kuldok egy kodot egyetlen dolog kell vele csinalni. mobilon is mukodjon. fontos pcn szep es fut, abba nem nyulunk bele! mobilon figyelj, hogy felso sorban a funkciogombok latszodjanak. alul social gombok legyenek meg. logo legyen meg villogjon aminek kell, start gomb bal oldalon.(szoval rendezd at mobilra is. figyelj ra mert ezen elhasaltam a felso sor hova kerul, hogy beferjen az okostelefonra. semmi mashoz NE nyulj. kerlek a teljes fajlt egyben kuld vissza. NE rovidits, ne vagj le belole. epitunk igy a fajl hosszabb lesz nem rovidebb. koszonom. import React from "react"; 
 import Head from "next/head";
 
 export default function Home() {
   const SITE_URL = "https://wealthyai-web.vercel.app";
   const SHARE_TEXT = "AI-powered financial clarity with WealthyAI";
 
+  // 👇 KIJELÖLÉS TÖRLÉSE NEM FUNKCIONÁLIS KATTINTÁSNÁL
   const clearSelectionIfNeeded = (e) => {
     const tag = e.target.tagName.toLowerCase();
     const interactive = ["a", "button", "input", "textarea", "select", "label"];
@@ -21,6 +22,31 @@ export default function Home() {
         <meta
           name="description"
           content="AI-powered financial planning with structured insights and clear perspective."
+        />
+
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={SITE_URL} />
+        <meta property="og:title" content="WealthyAI – AI-powered financial clarity" />
+        <meta
+          property="og:description"
+          content="Structured insights. Clear perspective. Financial intelligence."
+        />
+        <meta
+          property="og:image"
+          content="https://wealthyai-web.vercel.app/wealthyai/wealthyai.png"
+        />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="WealthyAI – AI-powered financial clarity" />
+        <meta
+          name="twitter:description"
+          content="Structured insights. Clear perspective. Financial intelligence."
+        />
+        <meta
+          name="twitter:image"
+          content="https://wealthyai-web.vercel.app/wealthyai/wealthyai.png"
         />
       </Head>
 
@@ -49,7 +75,6 @@ export default function Home() {
       >
         {/* TOP NAV */}
         <div
-          className="top-nav"
           style={{
             position: "absolute",
             top: "30px",
@@ -137,7 +162,6 @@ export default function Home() {
 
         {/* START */}
         <div
-          className="start-wrap"
           style={{
             position: "absolute",
             top: "45%",
@@ -171,6 +195,7 @@ export default function Home() {
             style={{
               fontSize: "0.85rem",
               opacity: 0.75,
+              letterSpacing: "0.3px",
             }}
           >
             Start with a simple financial snapshot. Takes less than a minute.
@@ -179,7 +204,6 @@ export default function Home() {
 
         {/* BOTTOM BAR */}
         <div
-          className="bottom-bar"
           style={{
             position: "absolute",
             bottom: 0,
@@ -193,12 +217,11 @@ export default function Home() {
             boxSizing: "border-box",
           }}
         >
-          <div className="copyright" style={{ fontSize: "0.85rem", opacity: 0.85 }}>
+          <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
             © 2026 WealthyAI — All rights reserved.
           </div>
 
           <div
-            className="bottom-right"
             style={{
               display: "flex",
               flexDirection: "column",
@@ -206,8 +229,19 @@ export default function Home() {
               gap: "8px",
             }}
           >
-            <div className="nav-link" style={{ fontSize: "0.82rem" }}>
-              <div style={{ fontWeight: 500 }}>Contact & Partnerships</div>
+            {/* CONTACT & PARTNERSHIPS */}
+            <div
+              className="nav-link"
+              style={{
+                fontSize: "0.82rem",
+                textAlign: "right",
+                lineHeight: "1.4",
+                cursor: "pointer", // 👈 MUTATÓUJJ
+              }}
+            >
+              <div style={{ fontWeight: 500 }}>
+                Contact & Partnerships
+              </div>
               <div style={{ opacity: 0.8 }}>
                 Media · Partnerships · Institutional use
               </div>
@@ -222,10 +256,34 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="socials" style={{ display: "flex", gap: "18px" }}>
-              <img src="/wealthyai/icons/fb.png" style={{ width: 34 }} />
-              <img src="/wealthyai/icons/x.png" style={{ width: 34 }} />
-              <img src="/wealthyai/icons/insta.png" style={{ width: 34 }} />
+            {/* SOCIAL ICONS */}
+            <div style={{ display: "flex", gap: "18px", alignItems: "center" }}>
+              <a
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="icon-link"
+              >
+                <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
+              </a>
+
+              <a
+                href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="icon-link"
+              >
+                <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
+              </a>
+
+              <a
+                href="https://www.instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="icon-link"
+              >
+                <img src="/wealthyai/icons/insta.png" alt="Instagram" style={{ width: 34 }} />
+              </a>
             </div>
           </div>
         </div>
@@ -233,12 +291,18 @@ export default function Home() {
         <style>{`
           .brand-logo {
             animation: logoFloat 9s ease-in-out infinite;
+            transition: filter 0.4s ease;
+          }
+
+          .brand-logo:hover {
+            filter: drop-shadow(0 0 18px rgba(56,189,248,0.55));
           }
 
           @keyframes logoFloat {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.035); }
-            100% { transform: scale(1); }
+            0% { transform: scale(1) translateY(0); opacity: 0.92; }
+            35% { transform: scale(1.035) translateY(-6px); opacity: 1; }
+            70% { transform: scale(1.02) translateY(3px); opacity: 0.97; }
+            100% { transform: scale(1) translateY(0); opacity: 0.92; }
           }
 
           .discrete-pulse {
@@ -251,43 +315,17 @@ export default function Home() {
             100% { opacity: 0.4; }
           }
 
+          .start-btn:hover,
+          .nav-link:hover,
+          .icon-link:hover {
+            box-shadow: 0 0 35px rgba(56,189,248,0.45);
+            filter: drop-shadow(0 0 18px rgba(56,189,248,0.45));
+          }
+
           .nav-link {
             color: white;
             text-decoration: none;
             opacity: 0.85;
-          }
-
-          /* 📱 CSAK MOBIL – RÁÉPÍTÉS, PC ÉRINTETLEN */
-          @media (max-width: 768px) {
-
-            .top-nav {
-              top: 10px !important;
-              right: 50% !important;
-              transform: translateX(50%);
-              gap: 16px;
-              font-size: 0.75rem;
-            }
-
-            .start-wrap {
-              top: auto !important;
-              bottom: 160px !important;
-              left: 20px !important;
-              transform: none !important;
-            }
-
-            .bottom-bar {
-              flex-direction: column-reverse !important;
-              gap: 14px;
-              text-align: center;
-            }
-
-            .bottom-right {
-              align-items: center !important;
-            }
-
-            .socials {
-              justify-content: center;
-            }
           }
         `}</style>
       </main>
