@@ -12,13 +12,40 @@ import {
 } from "recharts";
 
 export default function DayPremium() {
+
+  /* ===== SUBSCRIPTION CHECK ===== */
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get("session_id");
+
+    if (!sessionId) {
+      window.location.href = "/start";
+      return;
+    }
+
+    fetch("/api/verify-active-subscription", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId }),
+    })
+      .then(res => res.json())
+      .then(d => {
+        if (!d.valid) window.location.href = "/start";
+      })
+      .catch(() => {
+        window.location.href = "/start";
+      });
+  }, []);
+
   const [data, setData] = useState({
     income: 5000,
     fixed: 2000,
     variable: 1500,
   });
+
   const [aiText, setAiText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("userFinancials");
@@ -39,11 +66,17 @@ export default function DayPremium() {
 
   const askAI = async () => {
     setLoading(true);
+    setAiOpen(true);
     try {
       const res = await fetch("/api/get-ai-insight", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          mode: "day",
+          income: data.income,
+          fixed: data.fixed,
+          variable: data.variable,
+        }),
       });
       const d = await res.json();
       setAiText(d.insight);
@@ -55,68 +88,70 @@ export default function DayPremium() {
 
   return (
     <div style={page}>
-      <div style={header}>
-        <h1 style={title}>WEALTHYAI · PRO INTELLIGENCE</h1>
-        <p style={subtitle}>
-          Thank you for choosing the <strong>1-Day Professional Access</strong>.
-          You now have access to advanced analytics and AI-driven insights.
-        </p>
-      </div>
+      <a href="/day/help" style={helpButton}>Help</a>
 
-      <div style={layout}>
-        <div>
-          <Metric label="MONTHLY SURPLUS" value={`$${surplus.toLocaleString()}`} />
-          <Metric label="SAVINGS RATE" value={`${savingsRate.toFixed(1)}%`} />
-          <Metric
-            label="5Y PROJECTION"
-            value={`$${Math.round(fiveYearProjection).toLocaleString()}`}
-          />
+      <div style={contentWrap}>
+        <div style={header}>
+          <h1 style={title}>WEALTHYAI · PRO INTELLIGENCE</h1>
+          <p style={subtitle}>
+            Thank you for choosing the <strong>1-Day Professional Access</strong>.
+          </p>
+        </div>
 
-          <div style={aiBox}>
+        <div style={layout}>
+          <div>
+            <Metric label="MONTHLY SURPLUS" value={`$${surplus.toLocaleString()}`} />
+            <Metric label="SAVINGS RATE" value={`${savingsRate.toFixed(1)}%`} />
+            <Metric
+              label="5Y PROJECTION"
+              value={`$${Math.round(fiveYearProjection).toLocaleString()}`}
+            />
+
             <button onClick={askAI} style={aiButton}>
               {loading ? "ANALYZING…" : "GENERATE AI STRATEGY"}
             </button>
-            <pre style={aiTextStyle}>
-              {aiText || "Run AI analysis to generate your professional strategy."}
-            </pre>
-          </div>
-        </div>
 
-        <div>
-          <div style={inputPanel}>
-            {["income", "fixed", "variable"].map((k) => (
-              <div key={k} style={inputRow}>
-                <span>{k.toUpperCase()}</span>
-                <input
-                  type="number"
-                  value={data[k]}
-                  onChange={(e) =>
-                    setData({ ...data, [k]: Number(e.target.value) })
-                  }
-                  style={input}
-                />
+            {aiOpen && (
+              <div style={aiBox}>
+                <div style={aiHeader}>
+                  <strong>AI Insight</strong>
+                  <button onClick={() => setAiOpen(false)} style={closeBtn}>✕</button>
+                </div>
+                <pre style={aiTextStyle}>{aiText}</pre>
               </div>
-            ))}
+            )}
           </div>
 
-          <div style={chartGrid}>
-            <MiniChart title="Cash Flow Projection" data={chartData} />
-            <MiniBar title="Expense Distribution" value={data.fixed + data.variable} />
-            <MiniChart title="Savings Growth" data={chartData} />
-            <MiniBar title="Risk Exposure Index" value={savingsRate} />
+          <div>
+            <div style={inputPanel}>
+              {["income", "fixed", "variable"].map((k) => (
+                <div key={k} style={inputRow}>
+                  <span>{k.toUpperCase()}</span>
+                  <input
+                    type="number"
+                    value={data[k]}
+                    onChange={(e) =>
+                      setData({ ...data, [k]: Number(e.target.value) })
+                    }
+                    style={input}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div style={chartGrid}>
+              <MiniChart title="Cash Flow Projection" data={chartData} />
+              <MiniBar title="Expense Distribution" value={data.fixed + data.variable} />
+            </div>
           </div>
         </div>
       </div>
 
-      <div style={navActions}>
-        <a href="/" style={outlineBtn}>← Back to WealthyAI Home</a>
-        <a href="/how-to-use" style={outlineBtnAlt}>
-          Learn more about Weekly & Monthly →
-        </a>
+      <div style={footerLeft}>
+        © 2026 WealthyAI — All rights reserved.
       </div>
 
-      {/* ⬇️ CSAK EZ LETT ERŐSEBB FEHÉR */}
-      <div style={upsell}>
+      <div style={upsellFixed}>
         Weekly and Monthly plans unlock country-specific tax optimization,
         stress testing and advanced projections.
       </div>
@@ -145,12 +180,7 @@ function MiniChart({ title, data }) {
           <XAxis dataKey="name" stroke="#64748b" />
           <YAxis stroke="#64748b" />
           <Tooltip />
-          <Line
-            type="monotone"
-            dataKey="value"
-            stroke="#38bdf8"
-            strokeWidth={2}
-          />
+          <Line type="monotone" dataKey="value" stroke="#38bdf8" strokeWidth={2} />
         </LineChart>
       </ResponsiveContainer>
     </div>
@@ -172,44 +202,55 @@ function MiniBar({ title, value }) {
     </div>
   );
 }
-
 /* ===== STYLES ===== */
 
 const page = {
   minHeight: "100vh",
+  position: "relative",
   color: "#e5e7eb",
-  padding: "40px",
   fontFamily: "Inter, system-ui, sans-serif",
   backgroundColor: "#020617",
-
+  paddingBottom: "90px",
   backgroundImage: `
-    repeating-linear-gradient(
-      -25deg,
-      rgba(56,189,248,0.06) 0px,
-      rgba(56,189,248,0.06) 1px,
-      transparent 1px,
-      transparent 180px
-    ),
-    repeating-linear-gradient(
-      35deg,
-      rgba(167,139,250,0.05) 0px,
-      rgba(167,139,250,0.05) 1px,
-      transparent 1px,
-      transparent 260px
-    ),
+    repeating-linear-gradient(-25deg, rgba(56,189,248,0.06) 0px, rgba(56,189,248,0.06) 1px, transparent 1px, transparent 180px),
+    repeating-linear-gradient(35deg, rgba(167,139,250,0.05) 0px, rgba(167,139,250,0.05) 1px, transparent 1px, transparent 260px),
     radial-gradient(circle at 20% 30%, rgba(56,189,248,0.18), transparent 45%),
     radial-gradient(circle at 80% 60%, rgba(167,139,250,0.18), transparent 50%),
     radial-gradient(circle at 45% 85%, rgba(34,211,238,0.14), transparent 45%),
     url("/wealthyai/icons/generated.png")
   `,
   backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
-  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 560px auto",
+  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 280px auto",
   backgroundPosition: "center",
 };
 
-const header = { marginBottom: "30px" };
+const contentWrap = { padding: "40px" };
+
+const header = {
+  marginBottom: "30px",
+  textAlign: "center",
+};
+
 const title = { fontSize: "2.6rem", margin: 0 };
-const subtitle = { color: "#94a3b8", marginTop: "10px", maxWidth: "700px" };
+
+const subtitle = {
+  color: "#f8fafc",
+  marginTop: "10px",
+};
+
+const helpButton = {
+  position: "absolute",
+  top: 24,
+  right: 24,
+  padding: "8px 14px",
+  borderRadius: 10,
+  fontSize: 13,
+  textDecoration: "none",
+  color: "#7dd3fc",
+  border: "1px solid #1e293b",
+  background: "rgba(2,6,23,0.6)",
+  backdropFilter: "blur(6px)",
+};
 
 const layout = {
   display: "grid",
@@ -222,11 +263,24 @@ const metricLabel = { color: "#7dd3fc", fontSize: "0.8rem" };
 const metricValue = { fontSize: "2.2rem", fontWeight: "bold" };
 
 const aiBox = {
-  marginTop: "30px",
+  marginTop: "20px",
   background: "#020617",
   border: "1px solid #1e293b",
   borderRadius: "12px",
-  padding: "20px",
+  padding: "16px",
+};
+
+const aiHeader = {
+  display: "flex",
+  justifyContent: "space-between",
+  marginBottom: 10,
+};
+
+const closeBtn = {
+  background: "transparent",
+  border: "none",
+  color: "#94a3b8",
+  cursor: "pointer",
 };
 
 const aiButton = {
@@ -240,7 +294,7 @@ const aiButton = {
 };
 
 const aiTextStyle = {
-  marginTop: "12px",
+  marginTop: "10px",
   whiteSpace: "pre-wrap",
   color: "#cbd5f5",
 };
@@ -285,32 +339,21 @@ const chartTitle = {
   marginBottom: "6px",
 };
 
-const navActions = {
-  marginTop: "30px",
-  display: "flex",
-  justifyContent: "center",
-  gap: "18px",
-};
-
-const outlineBtn = {
-  border: "1px solid #38bdf8",
-  color: "#38bdf8",
-  padding: "10px 18px",
-  borderRadius: "10px",
-  textDecoration: "none",
-  fontSize: "0.9rem",
-};
-
-const outlineBtnAlt = {
-  ...outlineBtn,
-  borderColor: "#a78bfa",
-  color: "#a78bfa",
-};
-
-/* ⬇️ CSAK EZ VÁLTOZOTT */
-const upsell = {
-  marginTop: "20px",
+const upsellFixed = {
+  position: "fixed",
+  bottom: 16,
+  left: 0,
+  width: "100%",
   textAlign: "center",
-  color: "#f8fafc",        // erősebb fehér
-  fontWeight: 500,
+  color: "#f8fafc",
+  fontSize: 14,
 };
+
+const footerLeft = {
+  position: "fixed",
+  bottom: 16,
+  left: 20,
+  fontSize: 12,
+  color: "#94a3b8",
+};
+
