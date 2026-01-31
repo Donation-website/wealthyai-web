@@ -35,7 +35,6 @@ export default function Home() {
           content="AI-powered financial planning with structured insights and clear perspective."
         />
 
-        {/* Open Graph */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={SITE_URL} />
         <meta property="og:title" content="WealthyAI – AI-powered financial clarity" />
@@ -48,7 +47,6 @@ export default function Home() {
           content="https://wealthyai-web.vercel.app/wealthyai/wealthyai.png"
         />
 
-        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="WealthyAI – AI-powered financial clarity" />
         <meta
@@ -303,47 +301,59 @@ export default function Home() {
           </>
         )}
 
-        {/* ================= MOBILE LAYOUT (ADD-ONLY) ================= */}
+        {/* ================= MOBILE LAYOUT (FULL FEATURE) ================= */}
         {isMobile && (
           <div
             style={{
               width: "100%",
-              padding: "24px",
+              minHeight: "100vh",
+              padding: "20px",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               textAlign: "center",
-              gap: "24px",
+              gap: "20px",
               zIndex: 10,
             }}
           >
+            {/* MOBILE NAV */}
+            <div style={{ display: "flex", gap: "16px", fontSize: "0.9rem" }}>
+              <a href="/how-it-works" className="nav-link">How it works</a>
+              <a href="/how-to-use" className="nav-link">How to use</a>
+              <a href="/terms" className="nav-link">Terms</a>
+            </div>
+
+            {/* LOGO */}
             <img
               src="/wealthyai/icons/generated.png"
               alt="WealthyAI logo"
               className="brand-logo"
               style={{
-                width: "320px",
+                width: "300px",
                 maxWidth: "90%",
+                marginTop: "10px",
               }}
             />
 
+            {/* TEXT */}
             <div style={{ fontSize: "1.15rem", opacity: 0.9 }}>
               AI-powered financial thinking.<br />
               Structured insights.<br />
               Clear perspective.
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <span className="discrete-pulse">Not advice.</span>
               <span className="discrete-pulse">Not predictions.</span>
               <span className="discrete-pulse">Financial intelligence.</span>
             </div>
 
+            {/* CTA */}
             <a
               href="/start"
               className="start-btn"
               style={{
-                marginTop: "10px",
+                marginTop: "12px",
                 padding: "14px 40px",
                 backgroundColor: "#1a253a",
                 border: "1px solid rgba(255,255,255,0.4)",
@@ -361,6 +371,49 @@ export default function Home() {
               Start with a simple financial snapshot. Takes less than a minute.
             </div>
 
+            {/* CONTACT */}
+            <div style={{ marginTop: "20px", fontSize: "0.8rem", opacity: 0.85 }}>
+              <div style={{ fontWeight: 500 }}>Contact & Partnerships</div>
+              <div style={{ opacity: 0.8 }}>
+                Media · Partnerships · Institutional use
+              </div>
+              <a
+                href="mailto:wealthyaiweb@gmail.com"
+                className="nav-link"
+                style={{ fontWeight: 600 }}
+              >
+                wealthyaiweb@gmail.com
+              </a>
+            </div>
+
+            {/* SOCIAL */}
+            <div style={{ display: "flex", gap: "18px", marginTop: "10px" }}>
+              <a
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
+              </a>
+
+              <a
+                href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
+              </a>
+
+              <a
+                href="https://www.instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img src="/wealthyai/icons/insta.png" alt="Instagram" style={{ width: 34 }} />
+              </a>
+            </div>
+
+            {/* FOOTER */}
             <div style={{ marginTop: "30px", fontSize: "0.75rem", opacity: 0.7 }}>
               © 2026 WealthyAI — All rights reserved.
             </div>
