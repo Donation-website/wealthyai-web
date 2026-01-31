@@ -9,6 +9,7 @@ export default async function handler(req, res) {
       cycleDay,
       analysisMode, // backward compatibility
       previousSignals,
+      weeklyFocus,
       income,
       housing,
       electricity,
@@ -119,6 +120,24 @@ CRITICAL LENS RULE:
 - Select EXACTLY ONE dominant pressure.
 `;
 
+    if (weeklyFocus) {
+      systemPrompt += `
+WEEKLY INTERPRETATION LENS:
+- stability → emphasize predictability, fixed costs, and structural pressure
+- spending → emphasize behavioral patterns and discretionary control
+- resilience → emphasize buffers, risk tolerance, and fragility
+- direction → emphasize forward signals within the next 90 days
+
+ACTIVE WEEKLY FOCUS:
+- ${weeklyFocus}
+`;
+    } else {
+      systemPrompt += `
+WEEKLY INTERPRETATION:
+- Neutral structural interpretation
+`;
+    }
+
     if (region === "HU") {
       systemPrompt += `
 REGION: Hungary
@@ -196,10 +215,7 @@ ${baseUserPrompt}
        EXECUTION
     ================================= */
 
-    // 🔹 mindig lefut az executive
     const executive = await callGroq(executivePrompt, 0.15);
-
-    // 🔹 directive csak a dual / archív miatt
     const directive = await callGroq(directivePrompt, 0.1);
 
     /* ================================
@@ -207,10 +223,8 @@ ${baseUserPrompt}
     ================================= */
 
     return res.status(200).json({
-      // ⬅️ backward compatibility
       briefing: executive,
 
-      // ⬇️ új snapshot rendszerhez
       snapshot: {
         date: new Date().toISOString().slice(0, 10),
         cycleDay,
