@@ -105,9 +105,7 @@ export default function PremiumMonth() {
 
   /* ================= AI PANEL STATE ================= */
 
-  // panel csak akkor létezik, ha már volt AI futtatás
   const [aiVisible, setAiVisible] = useState(false);
-  // panel tartalom collapse / expand
   const [aiCollapsed, setAiCollapsed] = useState(true);
 
   /* ================= DAILY SIGNAL ================= */
@@ -129,6 +127,47 @@ export default function PremiumMonth() {
 
   const [isTodayAvailable, setIsTodayAvailable] = useState(false);
 
+  /* ================= WEEKLY FOCUS ================= */
+
+  const WEEK_LENGTH = 7;
+
+  const [weeklyFocus, setWeeklyFocus] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("weeklyFocus"));
+    } catch {
+      return null;
+    }
+  });
+
+  const [focusOpen, setFocusOpen] = useState(false);
+  const [focusPreview, setFocusPreview] = useState(null);
+
+  const getCurrentWeekIndex = () => {
+    return Math.floor((cycleDay - 1) / WEEK_LENGTH);
+  };
+
+  const FOCUS_OPTIONS = [
+    { key: "stability", label: "Stability" },
+    { key: "spending", label: "Spending behavior" },
+    { key: "resilience", label: "Resilience" },
+    { key: "direction", label: "Direction" },
+  ];
+
+  const confirmWeeklyFocus = () => {
+    if (!focusPreview) return;
+
+    const focus = {
+      key: focusPreview,
+      weekIndex: getCurrentWeekIndex(),
+      setAt: Date.now(),
+    };
+
+    setWeeklyFocus(focus);
+    localStorage.setItem("weeklyFocus", JSON.stringify(focus));
+    setFocusPreview(null);
+    setFocusOpen(false);
+  };
+
   /* ================= INPUTS ================= */
 
   const [inputs, setInputs] = useState({
@@ -145,7 +184,6 @@ export default function PremiumMonth() {
     unexpected: 200,
     other: 300,
   });
-
   const update = (key, value) => {
     setInputs({ ...inputs, [key]: Number(value) });
 
@@ -156,6 +194,7 @@ export default function PremiumMonth() {
     setDailySnapshot(null);
     setSelectedDay(null);
   };
+
   /* ================= CYCLE LOGIC ================= */
 
   useEffect(() => {
@@ -345,6 +384,7 @@ export default function PremiumMonth() {
     (viewMode === "executive"
       ? activeDual.executive
       : activeDual.directive);
+
   /* ================= EXPORT ================= */
 
   const getBriefings = range => {
@@ -357,7 +397,6 @@ export default function PremiumMonth() {
     if (range === "month") return stored;
     return [];
   };
-
   const handleDownload = () => {
     const data = getBriefings(exportRange);
     if (!data.length) return alert("No data available.");
@@ -443,6 +482,72 @@ export default function PremiumMonth() {
           <p style={{ opacity: 0.7 }}>Today’s signal is still forming.</p>
         ) : (
           <p>{dailySignal}</p>
+        )}
+      </div>
+
+      <div style={signalBox}>
+        <strong>Weekly focus</strong>
+
+        {!weeklyFocus && (
+          <>
+            <p style={{ opacity: 0.75 }}>
+              Choose one focus area for this week. This affects how your data is interpreted.
+            </p>
+
+            <button onClick={() => setFocusOpen(!focusOpen)} style={exportBtn}>
+              {focusOpen ? "Close" : "What is this?"}
+            </button>
+
+            {focusOpen && (
+              <div style={{ marginTop: 12 }}>
+                {FOCUS_OPTIONS.map((f, i) => {
+                  const disabled = i < getCurrentWeekIndex();
+                  return (
+                    <button
+                      key={f.key}
+                      disabled={disabled}
+                      onClick={() => setFocusPreview(f.key)}
+                      style={{
+                        ...exportBtn,
+                        opacity: disabled ? 0.3 : 1,
+                        cursor: disabled ? "not-allowed" : "pointer",
+                        background:
+                          focusPreview === f.key ? "#38bdf8" : "transparent",
+                        color:
+                          focusPreview === f.key ? "#020617" : "#38bdf8",
+                        marginBottom: 6,
+                      }}
+                    >
+                      {f.label}
+                    </button>
+                  );
+                })}
+
+                {focusPreview && (
+                  <div style={{ marginTop: 10 }}>
+                    <p style={{ fontSize: 13, opacity: 0.7 }}>
+                      You selected <strong>{focusPreview}</strong> for this week.
+                      This cannot be changed later.
+                    </p>
+                    <button onClick={confirmWeeklyFocus} style={aiButton}>
+                      Confirm focus
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
+
+        {weeklyFocus && (
+          <>
+            <p>
+              This week’s focus: <strong>{weeklyFocus.key}</strong>
+            </p>
+            <p style={{ fontSize: 13, opacity: 0.6 }}>
+              Expected insight window: 3–7 days
+            </p>
+          </>
         )}
       </div>
 
@@ -536,6 +641,7 @@ export default function PremiumMonth() {
             Save Today’s Snapshot
           </button>
         </div>
+
         {/* RIGHT COLUMN */}
         <div style={card}>
           <button
@@ -565,7 +671,6 @@ export default function PremiumMonth() {
             </div>
           )}
 
-          {/* AI PANEL */}
           {aiVisible && (
             <div>
               <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
