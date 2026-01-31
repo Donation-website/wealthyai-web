@@ -1,358 +1,364 @@
-import { useEffect, useState } from "react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-} from "recharts";
+import React from "react";  
+import Head from "next/head";
 
-export default function DayPremium() {
+export default function Home() {
+  const SITE_URL = "https://wealthyai-web.vercel.app";
+  const SHARE_TEXT = "AI-powered financial clarity with WealthyAI";
 
-  /* ===== SUBSCRIPTION CHECK ===== */
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const sessionId = params.get("session_id");
-
-    if (!sessionId) {
-      window.location.href = "/start";
-      return;
+  const clearSelectionIfNeeded = (e) => {
+    const tag = e.target.tagName.toLowerCase();
+    const interactive = ["a", "button", "input", "textarea", "select", "label"];
+    if (!interactive.includes(tag)) {
+      const sel = window.getSelection();
+      if (sel && sel.toString()) sel.removeAllRanges();
     }
-
-    fetch("/api/verify-active-subscription", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sessionId }),
-    })
-      .then(res => res.json())
-      .then(d => {
-        if (!d.valid) window.location.href = "/start";
-      })
-      .catch(() => {
-        window.location.href = "/start";
-      });
-  }, []);
-
-  const [data, setData] = useState({
-    income: 5000,
-    fixed: 2000,
-    variable: 1500,
-  });
-
-  const [aiText, setAiText] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [aiOpen, setAiOpen] = useState(false);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("userFinancials");
-    if (saved) setData(JSON.parse(saved));
-  }, []);
-
-  const surplus = data.income - (data.fixed + data.variable);
-  const savingsRate =
-    data.income > 0 ? (surplus / data.income) * 100 : 0;
-  const fiveYearProjection = surplus * 60 * 1.45;
-
-  const chartData = [
-    { name: "Now", value: surplus },
-    { name: "Y1", value: surplus * 12 * 1.08 },
-    { name: "Y3", value: surplus * 36 * 1.25 },
-    { name: "Y5", value: surplus * 60 * 1.45 },
-  ];
-
-  const askAI = async () => {
-    setLoading(true);
-    setAiOpen(true);
-    try {
-      const res = await fetch("/api/get-ai-insight", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          mode: "day",
-          income: data.income,
-          fixed: data.fixed,
-          variable: data.variable,
-        }),
-      });
-      const d = await res.json();
-      setAiText(d.insight);
-    } catch {
-      setAiText("AI system temporarily unavailable.");
-    }
-    setLoading(false);
   };
 
   return (
-    <div style={page}>
-      <a href="/day/help" style={helpButton}>Help</a>
+    <>
+      <Head>
+        <title>WealthyAI – AI-powered financial clarity</title>
+        <meta
+          name="description"
+          content="AI-powered financial planning with structured insights and clear perspective."
+        />
 
-      <div style={contentWrap}>
-        <div style={header}>
-          <h1 style={title}>WEALTHYAI · PRO INTELLIGENCE</h1>
-          <p style={subtitle}>
-            Thank you for choosing the <strong>1-Day Professional Access</strong>.
-          </p>
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={SITE_URL} />
+        <meta property="og:title" content="WealthyAI – AI-powered financial clarity" />
+        <meta
+          property="og:description"
+          content="Structured insights. Clear perspective. Financial intelligence."
+        />
+        <meta
+          property="og:image"
+          content="https://wealthyai-web.vercel.app/wealthyai/wealthyai.png"
+        />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="WealthyAI – AI-powered financial clarity" />
+        <meta
+          name="twitter:description"
+          content="Structured insights. Clear perspective. Financial intelligence."
+        />
+        <meta
+          name="twitter:image"
+          content="https://wealthyai-web.vercel.app/wealthyai/wealthyai.png"
+        />
+      </Head>
+
+      <main
+        onMouseDown={clearSelectionIfNeeded}
+        style={{
+          height: "100vh",
+          width: "100%",
+          boxSizing: "border-box",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#060b13",
+          backgroundImage:
+            "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          color: "white",
+          fontFamily: "'Inter', system-ui, Arial, sans-serif",
+          position: "relative",
+          overflow: "hidden",
+          margin: 0,
+          padding: 0,
+        }}
+      >
+        {/* TOP NAV */}
+        <div
+          className="top-nav"
+          style={{
+            position: "absolute",
+            top: "30px",
+            right: "40px",
+            display: "flex",
+            gap: "28px",
+            zIndex: 6,
+            fontSize: "0.95rem",
+          }}
+        >
+          <a href="/how-it-works" className="nav-link">How it works</a>
+          <a href="/how-to-use" className="nav-link">How to use</a>
+          <a href="/terms" className="nav-link">Terms</a>
         </div>
 
-        <div style={layout}>
-          <div>
-            <Metric label="MONTHLY SURPLUS" value={`$${surplus.toLocaleString()}`} />
-            <Metric label="SAVINGS RATE" value={`${savingsRate.toFixed(1)}%`} />
-            <Metric
-              label="5Y PROJECTION"
-              value={`$${Math.round(fiveYearProjection).toLocaleString()}`}
-            />
+        {/* CENTER BRAND & TEXT */}
+        <div
+          className="center-brand"
+          style={{
+            textAlign: "center",
+            zIndex: 3,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            width: "100%",
+            transform: "translateY(-40px)",
+          }}
+        >
+          <img
+            src="/wealthyai/icons/generated.png"
+            alt="WealthyAI logo"
+            className="brand-logo"
+            style={{
+              width: "860px",
+              maxWidth: "95vw",
+              display: "block",
+              cursor: "pointer",
+            }}
+          />
 
-            <button onClick={askAI} style={aiButton}>
-              {loading ? "ANALYZING…" : "GENERATE AI STRATEGY"}
-            </button>
+          <div
+            className="center-text"
+            style={{
+              color: "#FFFFFF",
+              lineHeight: "1.45",
+              textAlign: "center",
+              textShadow: "0 2px 10px rgba(0,0,0,0.5)",
+              marginTop: "-110px",
+              width: "100%",
+              maxWidth: "800px",
+              padding: "0 20px",
+              letterSpacing: "0.2px",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "1.55rem",
+                fontWeight: "300",
+                opacity: 0.9,
+                marginBottom: "15px",
+              }}
+            >
+              AI-powered financial thinking.<br />
+              Structured insights.<br />
+              Clear perspective.
+            </div>
 
-            {aiOpen && (
-              <div style={aiBox}>
-                <div style={aiHeader}>
-                  <strong>AI Insight</strong>
-                  <button onClick={() => setAiOpen(false)} style={closeBtn}>✕</button>
-                </div>
-                <pre style={aiTextStyle}>{aiText}</pre>
+            <div
+              className="badge-row"
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                fontSize: "0.85rem",
+                textTransform: "uppercase",
+                letterSpacing: "1.4px",
+                opacity: 0.8,
+                gap: "15px",
+                fontWeight: "500",
+              }}
+            >
+              <span className="discrete-pulse">Not advice.</span>
+              <span className="discrete-pulse">Not predictions.</span>
+              <span className="discrete-pulse">Financial intelligence.</span>
+            </div>
+          </div>
+        </div>
+
+        {/* START */}
+        <div
+          className="start-block"
+          style={{
+            position: "absolute",
+            top: "45%",
+            left: "10%",
+            transform: "translateY(-50%)",
+            zIndex: 4,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            gap: "10px",
+          }}
+        >
+          <a
+            href="/start"
+            className="start-btn"
+            style={{
+              padding: "14px 40px",
+              backgroundColor: "#1a253a",
+              border: "1px solid rgba(255,255,255,0.4)",
+              borderRadius: "10px",
+              color: "white",
+              textDecoration: "none",
+              fontWeight: "bold",
+              fontSize: "1.2rem",
+            }}
+          >
+            Start
+          </a>
+
+          <div
+            className="start-sub"
+            style={{
+              fontSize: "0.85rem",
+              opacity: 0.75,
+              letterSpacing: "0.3px",
+            }}
+          >
+            Start with a simple financial snapshot. Takes less than a minute.
+          </div>
+        </div>
+
+        {/* BOTTOM BAR */}
+        <div
+          className="bottom-bar"
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            width: "100%",
+            padding: "18px 24px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            zIndex: 5,
+            boxSizing: "border-box",
+          }}
+        >
+          <div className="copyright" style={{ fontSize: "0.85rem", opacity: 0.85 }}>
+            © 2026 WealthyAI — All rights reserved.
+          </div>
+
+          <div
+            className="bottom-right"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-end",
+              gap: "8px",
+            }}
+          >
+            <div
+              className="nav-link"
+              style={{
+                fontSize: "0.82rem",
+                textAlign: "right",
+                lineHeight: "1.4",
+                cursor: "pointer",
+              }}
+            >
+              <div style={{ fontWeight: 500 }}>
+                Contact & Partnerships
               </div>
-            )}
-          </div>
-
-          <div>
-            <div style={inputPanel}>
-              {["income", "fixed", "variable"].map((k) => (
-                <div key={k} style={inputRow}>
-                  <span>{k.toUpperCase()}</span>
-                  <input
-                    type="number"
-                    value={data[k]}
-                    onChange={(e) =>
-                      setData({ ...data, [k]: Number(e.target.value) })
-                    }
-                    style={input}
-                  />
-                </div>
-              ))}
+              <div style={{ opacity: 0.8 }}>
+                Media · Partnerships · Institutional use
+              </div>
+              <div>
+                <a
+                  href="mailto:wealthyaiweb@gmail.com"
+                  className="nav-link"
+                  style={{ fontWeight: 600 }}
+                >
+                  wealthyaiweb@gmail.com
+                </a>
+              </div>
             </div>
 
-            <div style={chartGrid}>
-              <MiniChart title="Cash Flow Projection" data={chartData} />
-              <MiniBar title="Expense Distribution" value={data.fixed + data.variable} />
+            <div className="social-row" style={{ display: "flex", gap: "18px", alignItems: "center" }}>
+              <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
+                <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
+              </a>
+              <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
+                <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
+              </a>
+              <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="icon-link">
+                <img src="/wealthyai/icons/insta.png" alt="Instagram" style={{ width: 34 }} />
+              </a>
             </div>
           </div>
         </div>
-      </div>
 
-      <div style={footerLeft}>
-        © 2026 WealthyAI — All rights reserved.
-      </div>
+        <style>{`
+          .brand-logo {
+            animation: logoFloat 9s ease-in-out infinite;
+          }
 
-      <div style={upsellFixed}>
-        Weekly and Monthly plans unlock country-specific tax optimization,
-        stress testing and advanced projections.
-      </div>
-    </div>
+          .discrete-pulse {
+            animation: discretePulse 3s ease-in-out infinite;
+          }
+
+          @keyframes logoFloat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.035); }
+            100% { transform: scale(1); }
+          }
+
+          @keyframes discretePulse {
+            0% { opacity: 0.4; }
+            50% { opacity: 1; }
+            100% { opacity: 0.4; }
+          }
+
+          .nav-link {
+            color: white;
+            text-decoration: none;
+            opacity: 0.85;
+          }
+
+          /* ===== MOBIL JAVÍTÁS – CSAK HOZZÁADÁS ===== */
+          @media (max-width: 768px) {
+            .top-nav {
+              position: relative !important;
+              top: 0 !important;
+              right: 0 !important;
+              justify-content: center;
+              margin-top: 16px;
+              flex-wrap: wrap;
+              gap: 18px;
+            }
+
+            .start-block {
+              position: relative !important;
+              top: auto !important;
+              left: auto !important;
+              transform: none !important;
+              align-items: center;
+              margin: 20px auto 10px;
+              text-align: center;
+            }
+
+            .center-brand {
+              transform: none !important;
+            }
+
+            .center-text {
+              margin-top: 20px !important;
+            }
+
+            .badge-row {
+              flex-direction: column;
+              gap: 6px;
+            }
+
+            .bottom-bar {
+              flex-direction: column;
+              align-items: center;
+              gap: 14px;
+            }
+
+            .bottom-right {
+              align-items: center !important;
+              text-align: center;
+            }
+
+            .social-row {
+              justify-content: center;
+            }
+
+            .copyright {
+              order: 3;
+              font-size: 0.8rem;
+              opacity: 0.75;
+            }
+          }
+        `}</style>
+      </main>
+    </>
   );
 }
-
-/* ===== COMPONENTS ===== */
-
-function Metric({ label, value }) {
-  return (
-    <div style={metric}>
-      <div style={metricLabel}>{label}</div>
-      <div style={metricValue}>{value}</div>
-    </div>
-  );
-}
-
-function MiniChart({ title, data }) {
-  return (
-    <div style={chartBox}>
-      <div style={chartTitle}>{title}</div>
-      <ResponsiveContainer width="100%" height={120}>
-        <LineChart data={data}>
-          <CartesianGrid stroke="#0f172a" />
-          <XAxis dataKey="name" stroke="#64748b" />
-          <YAxis stroke="#64748b" />
-          <Tooltip />
-          <Line type="monotone" dataKey="value" stroke="#38bdf8" strokeWidth={2} />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
-
-function MiniBar({ title, value }) {
-  const data = [{ name: "Value", v: value }];
-  return (
-    <div style={chartBox}>
-      <div style={chartTitle}>{title}</div>
-      <ResponsiveContainer width="100%" height={120}>
-        <BarChart data={data}>
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Bar dataKey="v" fill="#22d3ee" />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
-/* ===== STYLES ===== */
-
-const page = {
-  minHeight: "100vh",
-  position: "relative",
-  color: "#e5e7eb",
-  fontFamily: "Inter, system-ui, sans-serif",
-  backgroundColor: "#020617",
-  paddingBottom: "90px",
-  backgroundImage: `
-    repeating-linear-gradient(-25deg, rgba(56,189,248,0.06) 0px, rgba(56,189,248,0.06) 1px, transparent 1px, transparent 180px),
-    repeating-linear-gradient(35deg, rgba(167,139,250,0.05) 0px, rgba(167,139,250,0.05) 1px, transparent 1px, transparent 260px),
-    radial-gradient(circle at 20% 30%, rgba(56,189,248,0.18), transparent 45%),
-    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.18), transparent 50%),
-    radial-gradient(circle at 45% 85%, rgba(34,211,238,0.14), transparent 45%),
-    url("/wealthyai/icons/generated.png")
-  `,
-  backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
-  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 280px auto",
-  backgroundPosition: "center",
-};
-
-const contentWrap = { padding: "40px" };
-
-const header = {
-  marginBottom: "30px",
-  textAlign: "center",
-};
-
-const title = { fontSize: "2.6rem", margin: 0 };
-
-const subtitle = {
-  color: "#f8fafc",
-  marginTop: "10px",
-};
-
-const helpButton = {
-  position: "absolute",
-  top: 24,
-  right: 24,
-  padding: "8px 14px",
-  borderRadius: 10,
-  fontSize: 13,
-  textDecoration: "none",
-  color: "#7dd3fc",
-  border: "1px solid #1e293b",
-  background: "rgba(2,6,23,0.6)",
-  backdropFilter: "blur(6px)",
-};
-
-const layout = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1.3fr",
-  gap: "40px",
-};
-
-const metric = { marginBottom: "25px" };
-const metricLabel = { color: "#7dd3fc", fontSize: "0.8rem" };
-const metricValue = { fontSize: "2.2rem", fontWeight: "bold" };
-
-const aiBox = {
-  marginTop: "20px",
-  background: "#020617",
-  border: "1px solid #1e293b",
-  borderRadius: "12px",
-  padding: "16px",
-};
-
-const aiHeader = {
-  display: "flex",
-  justifyContent: "space-between",
-  marginBottom: 10,
-};
-
-const closeBtn = {
-  background: "transparent",
-  border: "none",
-  color: "#94a3b8",
-  cursor: "pointer",
-};
-
-const aiButton = {
-  width: "100%",
-  padding: "12px",
-  background: "#38bdf8",
-  border: "none",
-  borderRadius: "6px",
-  fontWeight: "bold",
-  cursor: "pointer",
-};
-
-const aiTextStyle = {
-  marginTop: "10px",
-  whiteSpace: "pre-wrap",
-  color: "#cbd5f5",
-};
-
-const inputPanel = {
-  marginBottom: "20px",
-  border: "1px solid #1e293b",
-  borderRadius: "12px",
-  padding: "15px",
-};
-
-const inputRow = {
-  display: "flex",
-  justifyContent: "space-between",
-  marginBottom: "10px",
-};
-
-const input = {
-  background: "transparent",
-  border: "none",
-  color: "#38bdf8",
-  textAlign: "right",
-  width: "120px",
-};
-
-const chartGrid = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: "16px",
-};
-
-const chartBox = {
-  background: "#020617",
-  border: "1px solid #1e293b",
-  borderRadius: "12px",
-  padding: "10px",
-};
-
-const chartTitle = {
-  fontSize: "0.75rem",
-  color: "#7dd3fc",
-  marginBottom: "6px",
-};
-
-const upsellFixed = {
-  position: "fixed",
-  bottom: 16,
-  left: 0,
-  width: "100%",
-  textAlign: "center",
-  color: "#f8fafc",
-  fontSize: 14,
-};
-
-const footerLeft = {
-  position: "fixed",
-  bottom: 16,
-  left: 20,
-  fontSize: 12,
-  color: "#94a3b8",
-};
