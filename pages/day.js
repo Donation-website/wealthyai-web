@@ -5,7 +5,6 @@ export default function Home() {
   const SITE_URL = "https://wealthyai-web.vercel.app";
   const SHARE_TEXT = "AI-powered financial clarity with WealthyAI";
 
-  // 👇 KIJELÖLÉS TÖRLÉSE NEM FUNKCIONÁLIS KATTINTÁSNÁL
   const clearSelectionIfNeeded = (e) => {
     const tag = e.target.tagName.toLowerCase();
     const interactive = ["a", "button", "input", "textarea", "select", "label"];
@@ -24,7 +23,6 @@ export default function Home() {
           content="AI-powered financial planning with structured insights and clear perspective."
         />
 
-        {/* Open Graph */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={SITE_URL} />
         <meta property="og:title" content="WealthyAI – AI-powered financial clarity" />
@@ -37,7 +35,6 @@ export default function Home() {
           content="https://wealthyai-web.vercel.app/wealthyai/wealthyai.png"
         />
 
-        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="WealthyAI – AI-powered financial clarity" />
         <meta
@@ -323,21 +320,22 @@ export default function Home() {
             .top-nav {
               right: auto !important;
               left: 50% !important;
-              transform: translateX(-55%);
+              transform: translateX(-50%);
+              margin-left: -6px;
               justify-content: center;
               flex-wrap: wrap;
             }
 
             .start-block {
               left: 50% !important;
-              top: 18% !important;
+              top: 22% !important;
               transform: translateX(-50%) !important;
               align-items: center;
               text-align: center;
             }
 
             .center-brand {
-              transform: translateY(40px) !important;
+              transform: translateY(60px) !important;
             }
 
             .badge-row {
