@@ -1,4 +1,4 @@
-import React from "react";   
+import React from "react";
 import Head from "next/head";
 
 export default function Home() {
@@ -88,7 +88,7 @@ export default function Home() {
           <a href="/terms" className="nav-link">Terms</a>
         </div>
 
-        {/* CENTER BRAND & TEXT */}
+        {/* CENTER BRAND */}
         <div
           className="center-brand"
           style={{
@@ -224,54 +224,6 @@ export default function Home() {
           <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
             © 2026 WealthyAI — All rights reserved.
           </div>
-
-          <div
-            className="bottom-right"
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-end",
-              gap: "8px",
-            }}
-          >
-            <div
-              className="nav-link"
-              style={{
-                fontSize: "0.82rem",
-                textAlign: "right",
-                lineHeight: "1.4",
-                cursor: "pointer",
-              }}
-            >
-              <div style={{ fontWeight: 500 }}>
-                Contact & Partnerships
-              </div>
-              <div style={{ opacity: 0.8 }}>
-                Media · Partnerships · Institutional use
-              </div>
-              <div>
-                <a
-                  href="mailto:wealthyaiweb@gmail.com"
-                  className="nav-link"
-                  style={{ fontWeight: 600 }}
-                >
-                  wealthyaiweb@gmail.com
-                </a>
-              </div>
-            </div>
-
-            <div className="social-row" style={{ display: "flex", gap: "18px", alignItems: "center" }}>
-              <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
-                <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
-              </a>
-              <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
-                <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
-              </a>
-              <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="icon-link">
-                <img src="/wealthyai/icons/insta.png" alt="Instagram" style={{ width: 34 }} />
-              </a>
-            </div>
-          </div>
         </div>
 
         <style>{`
@@ -301,61 +253,40 @@ export default function Home() {
             100% { opacity: 0.4; }
           }
 
-          .start-btn:hover,
-          .nav-link:hover,
-          .icon-link:hover {
-            box-shadow: 0 0 35px rgba(56,189,248,0.45);
-            filter: drop-shadow(0 0 18px rgba(56,189,248,0.45));
-          }
-
           .nav-link {
             color: white;
             text-decoration: none;
             opacity: 0.85;
           }
 
-          /* ===== MOBIL JAVÍTÁS – CSAK HOZZÁADÁS ===== */
+          /* ===== CSAK MOBIL FIX ===== */
           @media (max-width: 768px) {
 
             .top-nav {
               right: auto !important;
               left: 50% !important;
-              transform: translateX(-50%);
-              margin-left: -6px;
+              transform: translateX(-50%) !important;
               justify-content: center;
               flex-wrap: wrap;
             }
 
             .start-block {
-              left: 50% !important;
-              top: 22% !important;
-              transform: translateX(-50%) !important;
+              position: relative !important;
+              top: auto !important;
+              left: auto !important;
+              transform: none !important;
               align-items: center;
               text-align: center;
+              margin-bottom: 26px;
             }
 
             .center-brand {
-              transform: translateY(60px) !important;
+              transform: none !important;
             }
 
             .badge-row {
               flex-direction: column;
               gap: 6px;
-            }
-
-            .bottom-bar {
-              flex-direction: column;
-              align-items: center;
-              gap: 14px;
-            }
-
-            .bottom-right {
-              align-items: center !important;
-              text-align: center;
-            }
-
-            .social-row {
-              justify-content: center;
             }
           }
         `}</style>
