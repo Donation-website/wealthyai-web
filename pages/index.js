@@ -236,7 +236,7 @@ export default function Home() {
                 fontSize: "0.82rem",
                 textAlign: "right",
                 lineHeight: "1.4",
-                cursor: "pointer",
+                cursor: "pointer", // 👈 MUTATÓUJJ
               }}
             >
               <div style={{ fontWeight: 500 }}>
@@ -326,55 +326,6 @@ export default function Home() {
             color: white;
             text-decoration: none;
             opacity: 0.85;
-          }
-
-          /* ========================= */
-          /* 📱 MOBILE RÁÉPÍTÉS ONLY  */
-          /* PC-HEZ NEM NYÚLUNK      */
-          /* ========================= */
-
-          @media (max-width: 768px) {
-
-            /* TOP NAV BEFÉR */
-            main > div[style*="top: 30px"] {
-              top: 10px !important;
-              right: 50% !important;
-              transform: translateX(50%);
-              gap: 16px;
-              font-size: 0.75rem;
-              white-space: nowrap;
-            }
-
-            /* START A LOGÓ FÖLÉ */
-            a.start-btn {
-              position: absolute !important;
-              top: 90px !important;
-              left: 20px !important;
-              z-index: 6;
-            }
-
-            /* LOGÓ LEJJEBB */
-            .brand-logo {
-              margin-top: 120px;
-            }
-
-            /* BOTTOM BAR MOBIL */
-            main > div[style*="bottom: 0"] {
-              flex-direction: column !important;
-              gap: 14px;
-            }
-
-            /* SOCIAL FELÜL */
-            main > div[style*="bottom: 0"] > div:last-child {
-              order: 1;
-              align-items: center !important;
-            }
-
-            /* © 2026 ALUL */
-            main > div[style*="bottom: 0"] > div:first-child {
-              order: 2;
-              margin-top: 8px;
-            }
           }
         `}</style>
       </main>
