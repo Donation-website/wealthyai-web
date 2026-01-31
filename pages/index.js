@@ -110,16 +110,17 @@ export default function Home() {
         {/* ================= MOBILE LAYOUT ================= */}
         {isMobile && (
           <>
-            {/* MOBILE TOP NAV — FIXED POSITION ISSUE SOLVED */}
+            {/* MOBILE TOP NAV – STABILIZÁLT */}
             <div
               style={{
                 position: "absolute",
                 top: 0,
                 left: 0,
                 width: "100%",
-                padding: "14px 0",
+                height: "56px",
                 display: "flex",
                 justifyContent: "center",
+                alignItems: "center",
                 gap: "18px",
                 fontSize: "0.9rem",
                 background: "rgba(6,11,19,0.75)",
@@ -136,7 +137,7 @@ export default function Home() {
               style={{
                 width: "100%",
                 minHeight: "100vh",
-                paddingTop: "72px",   // 👈 KRITIKUS: hely a nav alatt
+                paddingTop: "76px", // 👈 hely a nav alatt
                 paddingLeft: "20px",
                 paddingRight: "20px",
                 paddingBottom: "20px",
