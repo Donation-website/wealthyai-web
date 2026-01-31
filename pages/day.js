@@ -1,10 +1,11 @@
-import React from "react";  
+import React from "react";   
 import Head from "next/head";
 
 export default function Home() {
   const SITE_URL = "https://wealthyai-web.vercel.app";
   const SHARE_TEXT = "AI-powered financial clarity with WealthyAI";
 
+  // 👇 KIJELÖLÉS TÖRLÉSE NEM FUNKCIONÁLIS KATTINTÁSNÁL
   const clearSelectionIfNeeded = (e) => {
     const tag = e.target.tagName.toLowerCase();
     const interactive = ["a", "button", "input", "textarea", "select", "label"];
@@ -23,6 +24,7 @@ export default function Home() {
           content="AI-powered financial planning with structured insights and clear perspective."
         />
 
+        {/* Open Graph */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={SITE_URL} />
         <meta property="og:title" content="WealthyAI – AI-powered financial clarity" />
@@ -35,6 +37,7 @@ export default function Home() {
           content="https://wealthyai-web.vercel.app/wealthyai/wealthyai.png"
         />
 
+        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="WealthyAI – AI-powered financial clarity" />
         <meta
@@ -221,7 +224,7 @@ export default function Home() {
             boxSizing: "border-box",
           }}
         >
-          <div className="copyright" style={{ fontSize: "0.85rem", opacity: 0.85 }}>
+          <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
             © 2026 WealthyAI — All rights reserved.
           </div>
 
@@ -277,22 +280,35 @@ export default function Home() {
         <style>{`
           .brand-logo {
             animation: logoFloat 9s ease-in-out infinite;
+            transition: filter 0.4s ease;
+          }
+
+          .brand-logo:hover {
+            filter: drop-shadow(0 0 18px rgba(56,189,248,0.55));
+          }
+
+          @keyframes logoFloat {
+            0% { transform: scale(1) translateY(0); opacity: 0.92; }
+            35% { transform: scale(1.035) translateY(-6px); opacity: 1; }
+            70% { transform: scale(1.02) translateY(3px); opacity: 0.97; }
+            100% { transform: scale(1) translateY(0); opacity: 0.92; }
           }
 
           .discrete-pulse {
             animation: discretePulse 3s ease-in-out infinite;
           }
 
-          @keyframes logoFloat {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.035); }
-            100% { transform: scale(1); }
-          }
-
           @keyframes discretePulse {
             0% { opacity: 0.4; }
             50% { opacity: 1; }
             100% { opacity: 0.4; }
+          }
+
+          .start-btn:hover,
+          .nav-link:hover,
+          .icon-link:hover {
+            box-shadow: 0 0 35px rgba(56,189,248,0.45);
+            filter: drop-shadow(0 0 18px rgba(56,189,248,0.45));
           }
 
           .nav-link {
@@ -303,32 +319,25 @@ export default function Home() {
 
           /* ===== MOBIL JAVÍTÁS – CSAK HOZZÁADÁS ===== */
           @media (max-width: 768px) {
+
             .top-nav {
-              position: relative !important;
-              top: 0 !important;
-              right: 0 !important;
+              right: auto !important;
+              left: 50% !important;
+              transform: translateX(-55%);
               justify-content: center;
-              margin-top: 16px;
               flex-wrap: wrap;
-              gap: 18px;
             }
 
             .start-block {
-              position: relative !important;
-              top: auto !important;
-              left: auto !important;
-              transform: none !important;
+              left: 50% !important;
+              top: 18% !important;
+              transform: translateX(-50%) !important;
               align-items: center;
-              margin: 20px auto 10px;
               text-align: center;
             }
 
             .center-brand {
-              transform: none !important;
-            }
-
-            .center-text {
-              margin-top: 20px !important;
+              transform: translateY(40px) !important;
             }
 
             .badge-row {
@@ -349,12 +358,6 @@ export default function Home() {
 
             .social-row {
               justify-content: center;
-            }
-
-            .copyright {
-              order: 3;
-              font-size: 0.8rem;
-              opacity: 0.75;
             }
           }
         `}</style>
