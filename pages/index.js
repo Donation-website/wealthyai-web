@@ -19,6 +19,7 @@ export default function Home() {
     <>
       <Head>
         <title>WealthyAI – AI-powered financial clarity</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         <meta
           name="description"
           content="AI-powered financial planning with structured insights and clear perspective."
@@ -48,6 +49,72 @@ export default function Home() {
           name="twitter:image"
           content="https://wealthyai-web.vercel.app/wealthyai/wealthyai.png"
         />
+
+        <style>{`
+          .nav-link { color: white; text-decoration: none; transition: opacity 0.2s; }
+          .nav-link:hover { opacity: 0.7; }
+          
+          @keyframes discretePulse {
+            0% { opacity: 0.4; }
+            50% { opacity: 1; }
+            100% { opacity: 0.4; }
+          }
+          .discrete-pulse {
+            animation: discretePulse 3s infinite ease-in-out;
+          }
+
+          /* MOBIL ELRENDEZÉS */
+          @media (max-width: 768px) {
+            .top-nav {
+              right: 0 !important;
+              left: 0 !important;
+              top: 20px !important;
+              justify-content: center !important;
+              width: 100% !important;
+              gap: 15px !important;
+              font-size: 0.8rem !important;
+            }
+            .brand-logo {
+              width: 90% !important;
+              margin-top: 40px !important;
+            }
+            .center-brand-container {
+              transform: translateY(-20px) !important;
+            }
+            .hero-text {
+              font-size: 1.1rem !important;
+              margin-top: -40px !important;
+            }
+            .pulse-container {
+              flex-direction: column !important;
+              gap: 5px !important;
+              font-size: 0.7rem !important;
+            }
+            .start-container {
+              left: 20px !important;
+              top: 65% !important;
+              width: 80% !important;
+            }
+            .start-btn {
+              padding: 10px 30px !important;
+              font-size: 1rem !important;
+            }
+            .start-desc {
+              font-size: 0.75rem !important;
+              max-width: 200px !important;
+            }
+            .bottom-bar {
+              flex-direction: column !important;
+              gap: 15px !important;
+              text-align: center !important;
+              padding-bottom: 25px !important;
+            }
+            .contact-info {
+              text-align: center !important;
+              align-items: center !important;
+            }
+          }
+        `}</style>
       </Head>
 
       <main
@@ -75,6 +142,7 @@ export default function Home() {
       >
         {/* TOP NAV */}
         <div
+          className="top-nav"
           style={{
             position: "absolute",
             top: "30px",
@@ -92,6 +160,7 @@ export default function Home() {
 
         {/* CENTER BRAND & TEXT */}
         <div
+          className="center-brand-container"
           style={{
             textAlign: "center",
             zIndex: 3,
@@ -115,6 +184,7 @@ export default function Home() {
           />
 
           <div
+            className="hero-text-container"
             style={{
               color: "#FFFFFF",
               lineHeight: "1.45",
@@ -128,6 +198,7 @@ export default function Home() {
             }}
           >
             <div
+              className="hero-text"
               style={{
                 fontSize: "1.55rem",
                 fontWeight: "300",
@@ -141,6 +212,7 @@ export default function Home() {
             </div>
 
             <div
+              className="pulse-container"
               style={{
                 display: "flex",
                 justifyContent: "center",
@@ -162,6 +234,7 @@ export default function Home() {
 
         {/* START */}
         <div
+          className="start-container"
           style={{
             position: "absolute",
             top: "45%",
@@ -192,6 +265,7 @@ export default function Home() {
           </a>
 
           <div
+            className="start-desc"
             style={{
               fontSize: "0.85rem",
               opacity: 0.75,
@@ -204,6 +278,7 @@ export default function Home() {
 
         {/* BOTTOM BAR */}
         <div
+          className="bottom-bar"
           style={{
             position: "absolute",
             bottom: 0,
@@ -222,6 +297,7 @@ export default function Home() {
           </div>
 
           <div
+            className="contact-info"
             style={{
               display: "flex",
               flexDirection: "column",
@@ -229,6 +305,7 @@ export default function Home() {
               gap: "8px",
             }}
           >
+            {/* CONTACT & PARTNERSHIPS */}
             <div
               className="nav-link"
               style={{
@@ -254,101 +331,8 @@ export default function Home() {
                 </a>
               </div>
             </div>
-
-            <div style={{ display: "flex", gap: "18px", alignItems: "center" }}>
-              <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
-                <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
-              </a>
-              <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
-                <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
-              </a>
-              <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="icon-link">
-                <img src="/wealthyai/icons/insta.png" alt="Instagram" style={{ width: 34 }} />
-              </a>
-            </div>
           </div>
         </div>
-
-        <style>{`
-          .brand-logo {
-            animation: logoFloat 9s ease-in-out infinite;
-            transition: filter 0.4s ease;
-          }
-
-          .brand-logo:hover {
-            filter: drop-shadow(0 0 18px rgba(56,189,248,0.55));
-          }
-
-          @keyframes logoFloat {
-            0% { transform: scale(1) translateY(0); opacity: 0.92; }
-            35% { transform: scale(1.035) translateY(-6px); opacity: 1; }
-            70% { transform: scale(1.02) translateY(3px); opacity: 0.97; }
-            100% { transform: scale(1) translateY(0); opacity: 0.92; }
-          }
-
-          .discrete-pulse {
-            animation: discretePulse 3s ease-in-out infinite;
-          }
-
-          @keyframes discretePulse {
-            0% { opacity: 0.4; }
-            50% { opacity: 1; }
-            100% { opacity: 0.4; }
-          }
-
-          .start-btn:hover,
-          .nav-link:hover,
-          .icon-link:hover {
-            box-shadow: 0 0 35px rgba(56,189,248,0.45);
-            filter: drop-shadow(0 0 18px rgba(56,189,248,0.45));
-          }
-
-          .nav-link {
-            color: white;
-            text-decoration: none;
-            opacity: 0.85;
-          }
-
-          /* ====== MOBIL ONLY – HOZZÁADVA, PC ÉRINTETLEN ====== */
-          @media (max-width: 768px) {
-            main {
-              padding-top: 70px;
-            }
-
-            main > div:first-child {
-              right: 50% !important;
-              transform: translateX(50%);
-              top: 14px !important;
-              gap: 16px !important;
-              font-size: 0.85rem !important;
-            }
-
-            .brand-logo {
-              width: 92vw !important;
-            }
-
-            main > div:nth-of-type(2) {
-              transform: translateY(0) !important;
-            }
-
-            main > div:nth-of-type(3) {
-              position: static !important;
-              transform: none !important;
-              align-items: center !important;
-              margin-top: 20px;
-            }
-
-            main > div:last-of-type {
-              flex-direction: column !important;
-              gap: 12px !important;
-              text-align: center !important;
-            }
-
-            main > div:last-of-type > div:last-child {
-              align-items: center !important;
-            }
-          }
-        `}</style>
       </main>
     </>
   );
