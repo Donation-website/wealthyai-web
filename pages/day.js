@@ -18,41 +18,14 @@ export default function Home() {
     <>
       <Head>
         <title>WealthyAI – AI-powered financial clarity</title>
-        <meta
-          name="description"
-          content="AI-powered financial planning with structured insights and clear perspective."
-        />
-
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={SITE_URL} />
-        <meta property="og:title" content="WealthyAI – AI-powered financial clarity" />
-        <meta
-          property="og:description"
-          content="Structured insights. Clear perspective. Financial intelligence."
-        />
-        <meta
-          property="og:image"
-          content="https://wealthyai-web.vercel.app/wealthyai/wealthyai.png"
-        />
-
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="WealthyAI – AI-powered financial clarity" />
-        <meta
-          name="twitter:description"
-          content="Structured insights. Clear perspective. Financial intelligence."
-        />
-        <meta
-          name="twitter:image"
-          content="https://wealthyai-web.vercel.app/wealthyai/wealthyai.png"
-        />
       </Head>
 
       <main
+        className="main-root"
         onMouseDown={clearSelectionIfNeeded}
         style={{
           height: "100vh",
           width: "100%",
-          boxSizing: "border-box",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -66,94 +39,31 @@ export default function Home() {
           fontFamily: "'Inter', system-ui, Arial, sans-serif",
           position: "relative",
           overflow: "hidden",
-          margin: 0,
-          padding: 0,
         }}
       >
         {/* TOP NAV */}
-        <div
-          className="top-nav"
-          style={{
-            position: "absolute",
-            top: "30px",
-            right: "40px",
-            display: "flex",
-            gap: "28px",
-            zIndex: 6,
-            fontSize: "0.95rem",
-          }}
-        >
+        <div className="top-nav">
           <a href="/how-it-works" className="nav-link">How it works</a>
           <a href="/how-to-use" className="nav-link">How to use</a>
           <a href="/terms" className="nav-link">Terms</a>
         </div>
 
         {/* CENTER BRAND */}
-        <div
-          className="center-brand"
-          style={{
-            textAlign: "center",
-            zIndex: 3,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            width: "100%",
-            transform: "translateY(-40px)",
-          }}
-        >
+        <div className="center-brand">
           <img
             src="/wealthyai/icons/generated.png"
             alt="WealthyAI logo"
             className="brand-logo"
-            style={{
-              width: "860px",
-              maxWidth: "95vw",
-              display: "block",
-              cursor: "pointer",
-            }}
           />
 
-          <div
-            className="center-text"
-            style={{
-              color: "#FFFFFF",
-              lineHeight: "1.45",
-              textAlign: "center",
-              textShadow: "0 2px 10px rgba(0,0,0,0.5)",
-              marginTop: "-110px",
-              width: "100%",
-              maxWidth: "800px",
-              padding: "0 20px",
-              letterSpacing: "0.2px",
-            }}
-          >
-            <div
-              style={{
-                fontSize: "1.55rem",
-                fontWeight: "300",
-                opacity: 0.9,
-                marginBottom: "15px",
-              }}
-            >
+          <div className="center-text">
+            <div className="headline">
               AI-powered financial thinking.<br />
               Structured insights.<br />
               Clear perspective.
             </div>
 
-            <div
-              className="badge-row"
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                fontSize: "0.85rem",
-                textTransform: "uppercase",
-                letterSpacing: "1.4px",
-                opacity: 0.8,
-                gap: "15px",
-                fontWeight: "500",
-              }}
-            >
+            <div className="badge-row">
               <span className="discrete-pulse">Not advice.</span>
               <span className="discrete-pulse">Not predictions.</span>
               <span className="discrete-pulse">Financial intelligence.</span>
@@ -162,126 +72,73 @@ export default function Home() {
         </div>
 
         {/* START */}
-        <div
-          className="start-block"
-          style={{
-            position: "absolute",
-            top: "45%",
-            left: "10%",
-            transform: "translateY(-50%)",
-            zIndex: 4,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-start",
-            gap: "10px",
-          }}
-        >
-          <a
-            href="/start"
-            className="start-btn"
-            style={{
-              padding: "14px 40px",
-              backgroundColor: "#1a253a",
-              border: "1px solid rgba(255,255,255,0.4)",
-              borderRadius: "10px",
-              color: "white",
-              textDecoration: "none",
-              fontWeight: "bold",
-              fontSize: "1.2rem",
-            }}
-          >
-            Start
-          </a>
-
-          <div
-            className="start-sub"
-            style={{
-              fontSize: "0.85rem",
-              opacity: 0.75,
-              letterSpacing: "0.3px",
-            }}
-          >
+        <div className="start-block">
+          <a href="/start" className="start-btn">Start</a>
+          <div className="start-sub">
             Start with a simple financial snapshot. Takes less than a minute.
           </div>
         </div>
 
-        {/* BOTTOM BAR */}
-        <div
-          className="bottom-bar"
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            width: "100%",
-            padding: "18px 24px",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            zIndex: 5,
-            boxSizing: "border-box",
-          }}
-        >
-          <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
-            © 2026 WealthyAI — All rights reserved.
-          </div>
-        </div>
-
         <style>{`
-          .brand-logo {
-            animation: logoFloat 9s ease-in-out infinite;
-            transition: filter 0.4s ease;
+          /* ===== DESKTOP (EREDTI VISZELKEDÉS) ===== */
+
+          .top-nav {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            display: flex;
+            gap: 28px;
+            z-index: 6;
           }
 
-          .brand-logo:hover {
-            filter: drop-shadow(0 0 18px rgba(56,189,248,0.55));
+          .center-brand {
+            position: relative;
+            z-index: 3;
+            text-align: center;
+            transform: translateY(-40px);
           }
 
-          @keyframes logoFloat {
-            0% { transform: scale(1) translateY(0); opacity: 0.92; }
-            35% { transform: scale(1.035) translateY(-6px); opacity: 1; }
-            70% { transform: scale(1.02) translateY(3px); opacity: 0.97; }
-            100% { transform: scale(1) translateY(0); opacity: 0.92; }
+          .start-block {
+            position: absolute;
+            top: 45%;
+            left: 10%;
+            transform: translateY(-50%);
+            z-index: 4;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
           }
 
-          .discrete-pulse {
-            animation: discretePulse 3s ease-in-out infinite;
-          }
-
-          @keyframes discretePulse {
-            0% { opacity: 0.4; }
-            50% { opacity: 1; }
-            100% { opacity: 0.4; }
-          }
-
-          .nav-link {
-            color: white;
-            text-decoration: none;
-            opacity: 0.85;
-          }
-
-          /* ===== CSAK MOBIL FIX ===== */
+          /* ===== MOBIL – A VALÓDI FIX ===== */
           @media (max-width: 768px) {
 
+            .main-root {
+              flex-direction: column;
+              justify-content: flex-start;
+              padding-top: 90px;
+            }
+
             .top-nav {
-              right: auto !important;
-              left: 50% !important;
-              transform: translateX(-50%) !important;
-              justify-content: center;
-              flex-wrap: wrap;
+              position: fixed;
+              top: 18px;
+              left: 50%;
+              transform: translateX(-50%);
             }
 
             .start-block {
-              position: relative !important;
-              top: auto !important;
-              left: auto !important;
-              transform: none !important;
+              position: relative;
+              transform: none;
+              left: auto;
+              top: auto;
+              order: 1;
               align-items: center;
               text-align: center;
-              margin-bottom: 26px;
+              margin-bottom: 24px;
             }
 
             .center-brand {
-              transform: none !important;
+              transform: none;
+              order: 2;
             }
 
             .badge-row {
