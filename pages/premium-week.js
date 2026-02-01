@@ -4,14 +4,13 @@ import {
   PieChart, Pie, Cell,
   ScatterChart, Scatter,
   XAxis, YAxis, Tooltip, Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
+  CartesianGrid
 } from "recharts";
 
 /* ===== CONSTANTS ===== */
-
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const CATEGORIES = ["rent", "food", "transport", "entertainment", "subscriptions", "other"];
-
 const COLORS = {
   rent: "#38bdf8",
   food: "#22d3ee",
@@ -22,16 +21,20 @@ const COLORS = {
 };
 
 export default function PremiumWeek() {
+  /* ===== MOBILE DETECTION ===== */
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   /* ===== SUBSCRIPTION CHECK ===== */
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get("session_id");
-
-    if (!sessionId) {
-      window.location.href = "/start";
-      return;
-    }
+    if (!sessionId) { window.location.href = "/start"; return; }
 
     fetch("/api/verify-active-subscription", {
       method: "POST",
@@ -39,18 +42,14 @@ export default function PremiumWeek() {
       body: JSON.stringify({ sessionId }),
     })
       .then(res => res.json())
-      .then(d => {
-        if (!d.valid) window.location.href = "/start";
-      })
-      .catch(() => {
-        window.location.href = "/start";
-      });
+      .then(d => { if (!d.valid) window.location.href = "/start"; })
+      .catch(() => { window.location.href = "/start"; });
   }, []);
 
+  /* ===== STATE ===== */
   const [incomeType, setIncomeType] = useState("monthly");
   const [incomeValue, setIncomeValue] = useState(3000);
   const [country, setCountry] = useState("US");
-
   const [aiOpen, setAiOpen] = useState(false);
   const [aiText, setAiText] = useState("");
   const [loading, setLoading] = useState(false);
@@ -58,7 +57,6 @@ export default function PremiumWeek() {
   useEffect(() => {
     const lang = navigator.language || "";
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
-
     if (lang.startsWith("hu") || tz.includes("Budapest")) setCountry("HU");
     else if (lang.startsWith("en-GB")) setCountry("UK");
     else if (lang.startsWith("en")) setCountry("US");
@@ -71,24 +69,23 @@ export default function PremiumWeek() {
       return acc;
     }, {})
   );
+
   const weeklyIncome =
     incomeType === "daily" ? incomeValue * 7 :
     incomeType === "weekly" ? incomeValue :
-    incomeValue / 4;
+    incomeValue / 4.33; // Pontosabb havi bontás
 
   const update = (day, cat, val) => {
     setWeek({ ...week, [day]: { ...week[day], [cat]: Number(val) } });
   };
 
-  const dailyTotals = DAYS.map(d =>
-    Object.values(week[d]).reduce((a, b) => a + b, 0)
-  );
-
+  const dailyTotals = DAYS.map(d => Object.values(week[d]).reduce((a, b) => a + b, 0));
   const weeklySpend = dailyTotals.reduce((a, b) => a + b, 0);
 
   const chartData = DAYS.map((d, i) => ({
     day: d,
     total: dailyTotals[i],
+    balance: (weeklyIncome / 7) - dailyTotals[i],
     ...week[d],
   }));
 
@@ -110,14 +107,7 @@ export default function PremiumWeek() {
       const res = await fetch("/api/get-ai-insight", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          mode: "week",
-          country,
-          weeklyIncome,
-          weeklySpend,
-          dailyTotals,
-          breakdown: week,
-        }),
+        body: JSON.stringify({ mode: "week", country, weeklyIncome, weeklySpend, dailyTotals, breakdown: week }),
       });
       const data = await res.json();
       setAiText(data.insight || "AI analysis unavailable.");
@@ -128,117 +118,141 @@ export default function PremiumWeek() {
   };
 
   return (
-    <div style={page}>
-      <a href="/help" style={helpButton}>Help</a>
+    <div style={{...page, padding: isMobile ? "20px 15px 100px 15px" : "40px"}}>
+      <a href="/help" style={{...helpButton, top: isMobile ? 15 : 24, right: isMobile ? 15 : 24}}>Help</a>
 
       <div style={header}>
-        <h1 style={title}>WEALTHYAI · WEEKLY INTELLIGENCE</h1>
-        <p style={subtitle}>
-          Weekly behavioral analysis with country-aware intelligence.
-        </p>
-      </div>
-      <div style={regionRow}>
-        <span style={regionLabel}>Region</span>
-        <select
-          value={country}
-          onChange={(e) => setCountry(e.target.value)}
-          style={regionSelect}
-        >
-          <option value="US">United States</option>
-          <option value="EU">European Union</option>
-          <option value="UK">United Kingdom</option>
-          <option value="HU">Hungary</option>
-        </select>
+        <h1 style={{...title, fontSize: isMobile ? "1.6rem" : "2.6rem"}}>WEALTHYAI · WEEKLY INTELLIGENCE</h1>
+        <p style={subtitle}>Weekly behavioral analysis with country-aware intelligence.</p>
       </div>
 
-      <div style={layout}>
+      <div style={{...layout, gridTemplateColumns: isMobile ? "1fr" : "1.2fr 1fr", gap: isMobile ? 20 : 30}}>
         <div style={left}>
+          {/* INCOME SECTION (MISSING BEFORE) */}
+          <div style={incomeBox}>
+            <div style={{color: "#7dd3fc", fontSize: "0.8rem", marginBottom: 10, fontWeight: "bold"}}>WEEKLY INCOME SETUP</div>
+            <div style={row}>
+              <select value={incomeType} onChange={(e) => setIncomeType(e.target.value)} style={regionSelect}>
+                <option value="daily">Daily Income</option>
+                <option value="weekly">Weekly Income</option>
+                <option value="monthly">Monthly Income</option>
+              </select>
+              <input 
+                type="number" 
+                value={incomeValue} 
+                onChange={(e) => setIncomeValue(Number(e.target.value))} 
+                style={input} 
+              />
+            </div>
+          </div>
+
+          <div style={regionRow}>
+            <span style={regionLabel}>Region</span>
+            <select value={country} onChange={(e) => setCountry(e.target.value)} style={regionSelect}>
+              <option value="US">United States</option>
+              <option value="EU">European Union</option>
+              <option value="UK">United Kingdom</option>
+              <option value="HU">Hungary</option>
+            </select>
+          </div>
+
           {DAYS.map((d, i) => (
             <details key={d} open={i === 0} style={dayBox}>
               <summary style={dayTitle}>{d}</summary>
-              {CATEGORIES.map(c => (
-                <div key={c} style={row}>
-                  <span>{c.toUpperCase()}</span>
-                  <input
-                    type="number"
-                    value={week[d][c]}
-                    onChange={e => update(d, c, e.target.value)}
-                    style={input}
-                  />
-                </div>
-              ))}
+              <div style={{marginTop: 10}}>
+                {CATEGORIES.map(c => (
+                  <div key={c} style={row}>
+                    <span style={{fontSize: "0.8rem"}}>{c.toUpperCase()}</span>
+                    <input type="number" value={week[d][c]} onChange={e => update(d, c, e.target.value)} style={input} />
+                  </div>
+                ))}
+              </div>
             </details>
           ))}
         </div>
-
-        <div style={right}>
-          <Chart title="Daily total spending">
+<div style={{...right, gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr"}}>
+          <Chart title="Daily spending vs Income">
             <LineChart data={chartData}>
-              <XAxis dataKey="day" />
-              <YAxis />
-              <Tooltip />
-              <Line dataKey="total" stroke="#38bdf8" strokeWidth={3} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+              <XAxis dataKey="day" fontSize={10} />
+              <YAxis fontSize={10} />
+              <Tooltip contentStyle={{background: "#020617", border: "1px solid #1e293b"}} />
+              <Line dataKey="total" name="Spending" stroke="#38bdf8" strokeWidth={3} dot={{r: 4}} />
+              <Line dataKey="balance" name="Net Balance" stroke="#facc15" strokeDasharray="5 5" />
             </LineChart>
           </Chart>
 
           <Chart title="Category trends">
             <LineChart data={chartData}>
-              <XAxis dataKey="day" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
+              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+              <XAxis dataKey="day" fontSize={10} />
+              <YAxis fontSize={10} />
+              <Tooltip contentStyle={{background: "#020617", border: "1px solid #1e293b"}} />
+              <Legend wrapperStyle={{fontSize: 10}} />
               {CATEGORIES.map(c => (
-                <Line key={c} dataKey={c} stroke={COLORS[c]} />
+                <Line key={c} dataKey={c} stroke={COLORS[c]} dot={false} strokeWidth={2} />
               ))}
             </LineChart>
           </Chart>
+          
           <Chart title="Weekly distribution">
             <PieChart>
-              <Pie data={pieData} dataKey="value" outerRadius={80}>
+              <Pie data={pieData} dataKey="value" outerRadius={isMobile ? 60 : 80} stroke="none">
                 {pieData.map((p, i) => (
                   <Cell key={i} fill={COLORS[p.name]} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip contentStyle={{background: "#020617", border: "1px solid #1e293b"}} />
             </PieChart>
           </Chart>
 
           <Chart title="Daily dispersion">
             <ScatterChart>
-              <XAxis dataKey="x" />
-              <YAxis dataKey="y" />
-              <Tooltip />
+              <CartesianGrid stroke="#1e293b" />
+              <XAxis dataKey="x" fontSize={10} name="Day" />
+              <YAxis dataKey="y" fontSize={10} name="Spend" />
+              <Tooltip contentStyle={{background: "#020617", border: "1px solid #1e293b"}} />
               <Scatter data={scatterData} fill="#a78bfa" />
             </ScatterChart>
           </Chart>
 
-          <div style={summary}>
-            Weekly spend: <strong>${weeklySpend}</strong> ·
-            Income: <strong>${weeklyIncome.toFixed(0)}</strong>
+          <div style={{...summary, textAlign: isMobile ? "center" : "right", gridColumn: "1 / -1"}}>
+            Weekly spend: <strong style={{color: "#fb7185"}}>${weeklySpend.toLocaleString()}</strong> ·
+            Net Surplus: <strong style={{color: "#34d399"}}>${(weeklyIncome - weeklySpend).toLocaleString()}</strong>
           </div>
 
-          <button onClick={runAI} style={aiButton}>
+          <button onClick={runAI} style={{...aiButton, gridColumn: "1 / -1", marginTop: 10}}>
             {loading ? "Analyzing…" : "Run Weekly AI Analysis"}
           </button>
 
           {aiOpen && (
-            <div style={aiBox}>
+            <div style={{...aiBox, gridColumn: "1 / -1"}}>
               <div style={aiHeader}>
                 <strong>Weekly AI Insight</strong>
                 <button onClick={() => setAiOpen(false)} style={closeBtn}>✕</button>
               </div>
-              <pre style={aiTextStyle}>{aiText}</pre>
+              <pre style={{...aiTextStyle, fontSize: isMobile ? "0.85rem" : "1rem"}}>{aiText}</pre>
             </div>
           )}
         </div>
       </div>
 
-      <div style={upsellRow}>
-        Monthly plans unlock country-specific tax optimization,
-        stress testing and advanced projections.
+      <div style={{
+        ...upsellRow, 
+        width: isMobile ? "90%" : "auto", 
+        textAlign: "center", 
+        bottom: isMobile ? 60 : 20,
+        fontSize: isMobile ? "11px" : "13px"
+      }}>
+        Monthly plans unlock country-specific tax optimization, stress testing and advanced projections.
       </div>
 
-      <div style={copyright}>
+      <div style={{
+        ...copyright, 
+        left: isMobile ? 0 : 40, 
+        width: isMobile ? "100%" : "auto", 
+        textAlign: "center"
+      }}>
         © 2026 WealthyAI — All rights reserved.
       </div>
     </div>
@@ -246,7 +260,6 @@ export default function PremiumWeek() {
 }
 
 /* ===== COMPONENTS ===== */
-
 function Chart({ title, children }) {
   return (
     <div style={chartBox}>
@@ -259,11 +272,9 @@ function Chart({ title, children }) {
 }
 
 /* ===== STYLES ===== */
-
 const page = {
   minHeight: "100vh",
   position: "relative",
-  padding: 40,
   fontFamily: "Inter, system-ui",
   backgroundColor: "#020617",
   color: "#e5e7eb",
@@ -277,93 +288,50 @@ const page = {
   `,
   backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
   backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
+  backgroundAttachment: "fixed",
+  overflowX: "hidden"
 };
 
 const header = { textAlign: "center", marginBottom: 20 };
-const title = { fontSize: "2.6rem", margin: 0 };
+const title = { margin: 0 };
 const subtitle = { color: "#f8fafc", marginTop: 10 };
 
-const upsellRow = {
-  position: "absolute",
-  bottom: 20,
-  left: "50%",
-  transform: "translateX(-50%)",
-  fontSize: 13,
-  color: "#f8fafc",
-  fontWeight: 500,
-};
+const upsellRow = { position: "absolute", left: "50%", transform: "translateX(-50%)", color: "#f8fafc", fontWeight: 500, zIndex: 10 };
+const copyright = { position: "absolute", bottom: 20, zIndex: 10 };
+const helpButton = { position: "absolute", padding: "8px 14px", borderRadius: 10, fontSize: 13, textDecoration: "none", color: "#7dd3fc", border: "1px solid #1e293b", background: "rgba(2,6,23,0.6)", zIndex: 15 };
 
-const copyright = {
-  position: "absolute",
-  bottom: 20,
-  left: 40,
-  fontSize: 13,
-  color: "#cbd5f5",
-};
+const regionRow = { marginBottom: 20, textAlign: "left", padding: "0 5px" };
+const regionLabel = { marginRight: 8, color: "#7dd3fc", fontSize: "0.85rem" };
+const regionSelect = { background: "#0f172a", color: "#e5e7eb", border: "1px solid #1e293b", padding: "6px 10px", borderRadius: 6, fontSize: "14px" };
 
-const helpButton = {
-  position: "absolute",
-  top: 24,
-  right: 24,
-  padding: "8px 14px",
-  borderRadius: 10,
-  fontSize: 13,
-  textDecoration: "none",
-  color: "#7dd3fc",
-  border: "1px solid #1e293b",
-  background: "rgba(2,6,23,0.6)",
-};
+const incomeBox = { ...glass, padding: 15, marginBottom: 20, border: "1px solid #38bdf8" };
 
-const regionRow = { marginBottom: 20 };
-const regionLabel = { marginRight: 8, color: "#7dd3fc" };
-const regionSelect = {
-  background: "#020617",
-  color: "#e5e7eb",
-  border: "1px solid #1e293b",
-  padding: "6px 10px",
-  borderRadius: 6,
-};
-
-const layout = { display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 30 };
-const left = { maxHeight: "70vh", overflowY: "auto" };
-const right = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 };
+const layout = { display: "grid", maxWidth: "1250px", margin: "0 auto" };
+const left = { overflowY: "auto", paddingRight: 5 };
+const right = { display: "grid", gap: 16 };
 
 const glass = {
-  background: "rgba(255,255,255,0.08)",
+  background: "rgba(2, 6, 23, 0.75)",
   backdropFilter: "blur(14px)",
-  border: "1px solid rgba(255,255,255,0.18)",
+  border: "1px solid rgba(255,255,255,0.12)",
   borderRadius: 14,
 };
 
 const dayBox = { ...glass, padding: 16, marginBottom: 12 };
 const dayTitle = { cursor: "pointer", color: "#38bdf8", fontWeight: "bold" };
-const row = { display: "flex", justifyContent: "space-between", marginBottom: 8 };
+const row = { display: "flex", justifyContent: "space-between", marginBottom: 8, alignItems: "center" };
 
-const input = {
-  background: "transparent",
-  border: "none",
-  borderBottom: "1px solid #38bdf8",
-  color: "#38bdf8",
-  width: 90,
-  textAlign: "right",
-};
+const input = { background: "rgba(56, 189, 248, 0.05)", border: "none", borderBottom: "1px solid #38bdf8", color: "#38bdf8", width: 90, textAlign: "right", padding: "4px 8px", fontSize: "16px" };
 
 const chartBox = { ...glass, padding: 12 };
-const chartTitle = { fontSize: 12, color: "#7dd3fc", marginBottom: 6 };
+const chartTitle = { fontSize: 12, color: "#7dd3fc", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.5px" };
 
-const summary = { gridColumn: "1 / -1", textAlign: "right", marginTop: 10 };
+const summary = { marginTop: 10, padding: 15, color: "#f8fafc", background: "rgba(255,255,255,0.03)", borderRadius: 10 };
 
-const aiBox = { ...glass, padding: 16, gridColumn: "1 / -1" };
+const aiBox = { ...glass, padding: 20, marginTop: 15, border: "1px solid #a78bfa" };
 const aiHeader = { display: "flex", justifyContent: "space-between", marginBottom: 10 };
-const closeBtn = { background: "transparent", border: "none", color: "#94a3b8", cursor: "pointer" };
+const closeBtn = { background: "transparent", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 18 };
 
-const aiButton = {
-  width: "100%",
-  padding: 14,
-  background: "#38bdf8",
-  border: "none",
-  borderRadius: 10,
-  fontWeight: "bold",
-};
+const aiButton = { width: "100%", padding: 14, background: "#38bdf8", border: "none", borderRadius: 10, fontWeight: "bold", color: "#020617", cursor: "pointer" };
 
-const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap" };
+const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap", lineHeight: 1.5, fontFamily: "inherit" };
