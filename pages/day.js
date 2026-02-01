@@ -180,14 +180,15 @@ export default function DayPremium() {
         </div>
       )}
 
-      {/* JAVÍTOTT RÉSZ: AZ ALSO SOR PC-N MOST MÁR ÁTTETSZŐ */}
+      {/* JAVÍTOTT RÉSZ: PC-n teljesen tiszta, vonalmentes megjelenés */}
       <div style={{
         ...upsellFixed,
         position: isMobile ? "relative" : "fixed",
         padding: isMobile ? "20px" : "20px 0",
-        background: isMobile ? "rgba(2,6,23,0.8)" : "transparent", // PC-n átlátszó háttér
-        backdropFilter: isMobile ? "blur(8px)" : "none", // PC-n nincs tejüveg effekt
-        fontSize: isMobile ? "12px" : "14px"
+        background: isMobile ? "rgba(2,6,23,0.8)" : "transparent",
+        backdropFilter: isMobile ? "blur(8px)" : "none",
+        fontSize: isMobile ? "12px" : "14px",
+        borderTop: isMobile ? "1px solid rgba(255,255,255,0.05)" : "none", 
       }}>
         Weekly and Monthly plans unlock country-specific tax optimization,
         stress testing and advanced projections.
@@ -240,7 +241,7 @@ function MiniBar({ title, value }) {
         <BarChart data={data}>
           <XAxis dataKey="name" stroke="#64748b" fontSize={10} />
           <YAxis stroke="#64748b" fontSize={10} />
-          <Bar dataKey="v" fill="#22d3ee" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="v" fill="#22d3ee" />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -270,18 +271,9 @@ const page = {
 };
 
 const contentWrap = { width: "100%", boxSizing: "border-box" };
-
-const header = {
-  marginBottom: "30px",
-  textAlign: "center",
-};
-
+const header = { marginBottom: "30px", textAlign: "center" };
 const title = { margin: 0, fontWeight: "bold" };
-
-const subtitle = {
-  color: "#f8fafc",
-  marginTop: "10px",
-};
+const subtitle = { color: "#f8fafc", marginTop: "10px" };
 
 const helpButton = {
   position: "absolute",
@@ -296,12 +288,7 @@ const helpButton = {
   zIndex: 10,
 };
 
-const layout = {
-  display: "grid",
-  maxWidth: "1200px",
-  margin: "0 auto",
-};
-
+const layout = { display: "grid", maxWidth: "1200px", margin: "0 auto" };
 const metric = { width: "100%" };
 const metricLabel = { color: "#7dd3fc", fontSize: "0.8rem", letterSpacing: "1px" };
 const metricValue = { fontWeight: "bold" };
@@ -315,19 +302,8 @@ const aiBox = {
   backdropFilter: "blur(10px)"
 };
 
-const aiHeader = {
-  display: "flex",
-  justifyContent: "space-between",
-  marginBottom: 10,
-};
-
-const closeBtn = {
-  background: "transparent",
-  border: "none",
-  color: "#94a3b8",
-  cursor: "pointer",
-  fontSize: "18px"
-};
+const aiHeader = { display: "flex", justifyContent: "space-between", marginBottom: 10 };
+const closeBtn = { background: "transparent", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: "18px" };
 
 const aiButton = {
   width: "100%",
@@ -357,12 +333,7 @@ const inputPanel = {
   background: "rgba(30, 41, 59, 0.2)"
 };
 
-const inputRow = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: "10px",
-};
+const inputRow = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" };
 
 const input = {
   background: "rgba(56, 189, 248, 0.05)",
@@ -375,25 +346,9 @@ const input = {
   fontSize: "16px"
 };
 
-const chartGrid = {
-  display: "grid",
-  gap: "16px",
-};
-
-const chartBox = {
-  background: "rgba(2, 6, 23, 0.7)",
-  border: "1px solid #1e293b",
-  borderRadius: "12px",
-  padding: "12px",
-};
-
-const chartTitle = {
-  fontSize: "0.75rem",
-  color: "#7dd3fc",
-  marginBottom: "10px",
-  textTransform: "uppercase",
-  letterSpacing: "0.5px"
-};
+const chartGrid = { display: "grid", gap: "16px" };
+const chartBox = { background: "rgba(2, 6, 23, 0.7)", border: "1px solid #1e293b", borderRadius: "12px", padding: "12px" };
+const chartTitle = { fontSize: "0.75rem", color: "#7dd3fc", marginBottom: "10px", textTransform: "uppercase", letterSpacing: "0.5px" };
 
 const upsellFixed = {
   bottom: 0,
@@ -403,14 +358,6 @@ const upsellFixed = {
   color: "#f8fafc",
   boxSizing: "border-box",
   zIndex: 5,
-  borderTop: "1px solid rgba(255,255,255,0.05)",
 };
 
-const footerLeft = {
-  position: "fixed",
-  bottom: 16,
-  left: 20,
-  fontSize: 12,
-  color: "#94a3b8",
-  zIndex: 6
-};
+const footerLeft = { position: "fixed", bottom: 16, left: 20, fontSize: 12, color: "#94a3b8", zIndex: 6 };
