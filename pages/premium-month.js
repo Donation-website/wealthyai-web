@@ -1,48 +1,70 @@
-/* ================= MOBILE SAFE STACK + iOS OVERFLOW FIX ================= */
+/* ================= MOBILE STABLE WRAPPER + ISOLATED AI BOX ================= */
 
 if (typeof document !== "undefined") {
   const isMobile = () => window.innerWidth <= 768;
 
-  const fixMobile = () => {
+  const fixMobileFinal = () => {
     if (!isMobile()) return;
 
-    /* 1. GLOBAL OVERFLOW STOP (SAFE) */
+    /* 1. GLOBAL SAFETY */
     document.documentElement.style.overflowX = "hidden";
     document.body.style.overflowX = "hidden";
-    document.body.style.maxWidth = "100%";
 
-    /* 2. FORCE ONLY 2-BOX GRIDS TO STACK */
-    document.querySelectorAll("div").forEach(el => {
-      const style = window.getComputedStyle(el);
+    /* 2. FIND THE 2-BOX WRAPPER AND LOCK IT */
+    document.querySelectorAll("div").forEach(wrapper => {
+      const style = window.getComputedStyle(wrapper);
 
       if (
         style.display === "grid" &&
         style.gridTemplateColumns.split(" ").length === 2 &&
-        el.children.length === 2
+        wrapper.children.length === 2
       ) {
-        el.style.gridTemplateColumns = "1fr";
-        el.style.width = "100%";
-        el.style.maxWidth = "100%";
+        /* stack, BUT lock wrapper */
+        wrapper.style.gridTemplateColumns = "1fr";
+        wrapper.style.width = "100%";
+        wrapper.style.maxWidth = "100%";
+        wrapper.style.position = "relative";
+        wrapper.style.left = "0";
+        wrapper.style.right = "0";
+        wrapper.style.marginLeft = "0";
+        wrapper.style.marginRight = "0";
+
+        const [inputBox, aiBox] = wrapper.children;
+
+        /* 3. INPUT BOX – NEVER MOVE */
+        inputBox.style.position = "relative";
+        inputBox.style.left = "0";
+        inputBox.style.right = "0";
+        inputBox.style.width = "100%";
+        inputBox.style.maxWidth = "100%";
+
+        /* 4. AI BOX – ISOLATED SCROLL */
+        aiBox.style.position = "relative";
+        aiBox.style.left = "0";
+        aiBox.style.right = "0";
+        aiBox.style.width = "100%";
+        aiBox.style.maxWidth = "100%";
+        aiBox.style.overflowX = "hidden";
       }
     });
 
-    /* 3. AI RESPONSE: NEVER PUSH PAGE WIDTH */
+    /* 5. AI CONTENT CAN NEVER AFFECT LAYOUT */
     document.querySelectorAll("pre, code").forEach(el => {
       el.style.maxWidth = "100%";
       el.style.boxSizing = "border-box";
       el.style.whiteSpace = "pre-wrap";
       el.style.wordBreak = "break-word";
-      el.style.overflowX = "auto"; // scroll INSIDE
+      el.style.overflowX = "auto"; // ONLY INSIDE AI BOX
     });
   };
 
-  window.addEventListener("load", fixMobile);
-  window.addEventListener("resize", fixMobile);
+  window.addEventListener("load", fixMobileFinal);
+  window.addEventListener("resize", fixMobileFinal);
 
   // React hydration / AI open timing
-  setTimeout(fixMobile, 300);
-  setTimeout(fixMobile, 800);
-  setTimeout(fixMobile, 1500);
+  setTimeout(fixMobileFinal, 300);
+  setTimeout(fixMobileFinal, 800);
+  setTimeout(fixMobileFinal, 1500);
 }
 
 import { useState, useEffect } from "react";
