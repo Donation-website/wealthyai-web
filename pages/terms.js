@@ -1,17 +1,34 @@
+import React, { useState, useEffect } from "react";
+
 export default function Terms() {
+  /* ===== MOBILE DETECTION ===== */
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <div style={page}>
       <div style={bgGrid} />
       <div style={bgLines} />
       <div style={bgGlow} />
 
-      <div style={content}>
+      <div style={{
+        ...content,
+        padding: isMobile ? "20px 15px" : "40px"
+      }}>
         <div style={container}>
           <button onClick={() => window.history.back()} style={back}>
             ← Back
           </button>
 
-          <h1 style={title}>Terms & Principles</h1>
+          <h1 style={{
+            ...title,
+            fontSize: isMobile ? "1.8rem" : "2.2rem"
+          }}>Terms & Principles</h1>
 
           <p style={intro}>
             WealthyAI is an informational system designed to support
@@ -67,14 +84,13 @@ const page = {
   position: "relative",
   minHeight: "100vh",
   background: "#020617",
-  overflow: "hidden",
+  overflowX: "hidden",
   fontFamily: "Inter, system-ui",
 };
 
 const content = {
   position: "relative",
   zIndex: 10,
-  padding: 40,
   display: "flex",
   justifyContent: "center",
 };
@@ -122,7 +138,6 @@ const back = {
 };
 
 const title = {
-  fontSize: "2.2rem",
   marginBottom: 12,
   color: "#ffffff",
 };
@@ -142,6 +157,7 @@ const section = {
   background: "rgba(56,189,248,0.14)",
   border: "1px solid rgba(125,211,252,0.35)",
   backdropFilter: "blur(12px)",
+  boxSizing: "border-box",
 };
 
 const sectionTitle = {
