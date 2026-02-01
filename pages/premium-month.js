@@ -1,61 +1,54 @@
-/* ================= FINAL MOBILE STACK + CENTER FIX ================= */
+/* ================= SAFE CENTER FIX ================= */
 
 if (typeof window !== "undefined") {
   const isMobile = () => window.innerWidth <= 768;
 
-  const forceStackAndCenter = () => {
+  const fixLayout = () => {
     if (!isMobile()) return;
 
-    // 1. Keressük meg az összes div-et, ami konténerként funkcionálhat
-    document.querySelectorAll("div").forEach(el => {
-      const style = window.getComputedStyle(el);
-      
-      // Csak ott avatkozunk be, ahol több gyerek van (layout konténerek)
-      if (el.children.length >= 1) {
+    // Csak azokat a boxokat keressük, amikben az input vagy a válasz van
+    // (A legtöbb AI tool "textarea"-t vagy nagy szövegmezőt használ)
+    const boxSelectors = "div:has(textarea), div:has(input), div:has(button)";
+    
+    try {
+      document.querySelectorAll(boxSelectors).forEach(el => {
+        // Csak a közvetlen szülőt igazítjuk, ha az egy rugalmas konténer
+        const parent = el.parentElement;
+        const style = window.getComputedStyle(parent);
+
         if (style.display === "flex" || style.display === "grid") {
-          el.style.display = "flex";
-          el.style.flexDirection = "column";
-          
-          // Ez felel a gyerekek vízszintes középre igazításáért
-          el.style.alignItems = "center"; 
-          el.style.justifyContent = "center";
-          el.style.textAlign = "center";
-          
-          // Biztosítjuk, hogy a konténer kitöltse a szélességet, így van mihez képest középre rakni
-          el.style.width = "100%";
+          parent.style.flexDirection = "column";
+          parent.style.alignItems = "center"; // Vízszintes közép
         }
-      }
-    });
 
-    // 2. Kifejezetten a boxok és az AI válasz ablak kezelése
-    // Minden gyerekelemet (boxot) korlátozunk egy ésszerű szélességre, hogy ne lógjanak ki, de középen legyenek
-    document.querySelectorAll("div > *").forEach(child => {
-      if (isMobile()) {
-        child.style.marginLeft = "auto";
-        child.style.marginRight = "auto";
-        child.style.width = "92%"; // Így marad egy kis margó kétoldalt
-        child.style.maxWidth = "500px"; // Opcionális: ne legyen túl ormótlan nagy mobilon sem
-        child.style.display = "block"; 
-      }
-    });
-
-    // Viewport fixek
-    document.documentElement.style.overflowX = "hidden";
-    document.body.style.overflowX = "hidden";
+        // A box maga legyen középen és ne legyen szélesebb a képernyőnél
+        el.style.width = "94%";
+        el.style.maxWidth = "600px";
+        el.style.marginLeft = "auto";
+        el.style.marginRight = "auto";
+        el.style.display = "block";
+      });
+    } catch (e) {
+      // Régebbi böngészők kedvéért, ha a :has nem támogatott
+      document.querySelectorAll("div").forEach(div => {
+        if (div.innerText.includes("Generate") || div.querySelector("textarea")) {
+           div.style.width = "94%";
+           div.style.marginInline = "auto";
+        }
+      });
+    }
   };
 
-  // Eseményfigyelők
-  window.addEventListener("load", forceStackAndCenter);
-  window.addEventListener("resize", forceStackAndCenter);
-
-  // Az AI válaszok és a dinamikus betöltés miatt többszöri ellenőrzés
-  const timers = [100, 300, 800, 1500, 3000];
-  timers.forEach(t => setTimeout(forceStackAndCenter, t));
-
-  // Bónusz: Figyeljük, ha változik a DOM (pl. beugrik az AI válasz box)
-  const observer = new MutationObserver(forceStackAndCenter);
-  observer.observe(document.body, { childList: true, subtree: true });
-}
+  // Futtatás
+  window.addEventListener("load", fixLayout);
+  window.addEventListener("resize", fixLayout);
+  
+  // Az AI válasz érkezésekor (amikor a box létrejön)
+  const obs = new MutationObserver(fixLayout);
+  obs.observe(document.body, { childList: true, subtree: true });
+  
+  setTimeout(fixLayout, 500);
+  
 import { useState, useEffect } from "react";
 import {
   saveMonthlySnapshot,
