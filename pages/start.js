@@ -244,7 +244,7 @@ export default function UserDashboard() {
       }}
     >
       {/* ===== HELP BUTTON ===== */}
-      <a href="/help" style={helpButton}>Help</a>
+      <a href="/start/help" style={helpButton}>Help</a>
 
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: "30px" }}>
