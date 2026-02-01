@@ -1,4 +1,15 @@
-  export default function HowItWorks() {
+import React, { useState, useEffect } from "react";
+
+export default function HowItWorks() {
+  /* ===== MOBILE DETECTION ===== */
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <div style={page}>
       {/* BACKGROUND */}
@@ -6,13 +17,19 @@
       <div style={bgLines} />
       <div style={bgGlow} />
 
-      <div style={content}>
+      <div style={{
+        ...content,
+        padding: isMobile ? "20px 15px" : "40px"
+      }}>
         <div style={container}>
           <button onClick={() => window.history.back()} style={back}>
             ← Back
           </button>
 
-          <h1 style={title}>How WealthyAI Works</h1>
+          <h1 style={{
+            ...title,
+            fontSize: isMobile ? "1.8rem" : "2.2rem"
+          }}>How WealthyAI Works</h1>
 
           <p style={intro}>
             WealthyAI is built around a single principle:
@@ -34,19 +51,19 @@
               Designed for orientation only.
             </p>
 
-            <p>
+            <p style={{ marginTop: "15px" }}>
               <strong>Daily Intelligence</strong><br />
               Short-form interpretation focused on immediate financial state.
               Useful when clarity is needed today.
             </p>
 
-            <p>
+            <p style={{ marginTop: "15px" }}>
               <strong>Weekly Intelligence</strong><br />
               Behavioral pattern detection across days and categories,
               including regional context.
             </p>
 
-            <p>
+            <p style={{ marginTop: "15px" }}>
               <strong>Monthly Intelligence</strong><br />
               Multi-week analysis that connects structure, pressure,
               and forward-looking signals to support better decisions.
@@ -54,7 +71,7 @@
           </Section>
 
           <Section title="What WealthyAI is not">
-            <ul>
+            <ul style={{ paddingLeft: "20px" }}>
               <li>It is not a budgeting enforcement system</li>
               <li>It is not an automated decision-maker</li>
               <li>It does not promise optimization or guaranteed outcomes</li>
@@ -87,14 +104,13 @@ const page = {
   position: "relative",
   minHeight: "100vh",
   background: "#020617",
-  overflow: "hidden",
+  overflowX: "hidden",
   fontFamily: "Inter, system-ui",
 };
 
 const content = {
   position: "relative",
   zIndex: 10,
-  padding: 40,
   display: "flex",
   justifyContent: "center",
 };
@@ -142,7 +158,6 @@ const back = {
 };
 
 const title = {
-  fontSize: "2.2rem",
   marginBottom: 12,
   color: "#ffffff",
 };
@@ -162,6 +177,7 @@ const section = {
   background: "rgba(56,189,248,0.14)",
   border: "1px solid rgba(125,211,252,0.35)",
   backdropFilter: "blur(12px)",
+  boxSizing: "border-box", // Fontos mobilon a padding miatt
 };
 
 const sectionTitle = {
