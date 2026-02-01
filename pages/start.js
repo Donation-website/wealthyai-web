@@ -204,10 +204,25 @@ export default function UserDashboard() {
     flex: isMobile ? "1 1 100%" : "0 1 240px",
   };
 
+  const helpButton = {
+    position: "absolute",
+    top: isMobile ? 15 : 24,
+    right: isMobile ? 15 : 24,
+    padding: "8px 14px",
+    borderRadius: 10,
+    fontSize: 13,
+    textDecoration: "none",
+    color: "#7dd3fc",
+    border: "1px solid #1e293b",
+    background: "rgba(2,6,23,0.6)",
+    zIndex: 15,
+  };
+
   return (
     <main
       style={{
         minHeight: "100vh",
+        position: "relative",
         padding: isMobile ? "20px 15px" : "40px",
         color: "white",
         fontFamily: "Inter, system-ui, sans-serif",
@@ -223,15 +238,28 @@ export default function UserDashboard() {
         backgroundRepeat:
           "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
         backgroundSize:
-          isMobile ? "auto, auto, 200% 200%, 200% 200%, 200% 200%, 420px auto" : "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
+          isMobile
+            ? "auto, auto, 200% 200%, 200% 200%, 200% 200%, 420px auto"
+            : "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
       }}
     >
+      {/* ===== HELP BUTTON ===== */}
+      <a href="/help" style={helpButton}>Help</a>
+
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: "30px" }}>
-          <h1 style={{ fontSize: isMobile ? "1.8rem" : "2.5rem" }}>Your Financial Overview (Basic)</h1>
+          <h1 style={{ fontSize: isMobile ? "1.8rem" : "2.5rem" }}>
+            Your Financial Overview (Basic)
+          </h1>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 20 }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+            gap: 20,
+          }}
+        >
           <div style={card}>
             <h3>Income & Expenses</h3>
 
@@ -279,13 +307,22 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        {/* ===== ORIENTATION BLOCK (RESTORED) ===== */}
         <div style={{ marginTop: isMobile ? 40 : 70, textAlign: "center" }}>
-          <h2 className="pulse-title" style={{ fontSize: isMobile ? "1.4rem" : "2rem" }}>
+          <h2
+            className="pulse-title"
+            style={{ fontSize: isMobile ? "1.4rem" : "2rem" }}
+          >
             Choose your depth of financial intelligence
           </h2>
 
-          <p style={{ maxWidth: 700, margin: "18px auto", opacity: 0.85, fontSize: isMobile ? "14px" : "16px" }}>
+          <p
+            style={{
+              maxWidth: 700,
+              margin: "18px auto",
+              opacity: 0.85,
+              fontSize: isMobile ? "14px" : "16px",
+            }}
+          >
             Different questions require different levels of context.
             You can choose the depth that matches what you want to understand right now.
           </p>
@@ -293,7 +330,9 @@ export default function UserDashboard() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(240px, 1fr))",
+              gridTemplateColumns: isMobile
+                ? "1fr"
+                : "repeat(auto-fit, minmax(240px, 1fr))",
               gap: 20,
               marginTop: 30,
             }}
@@ -324,9 +363,14 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        {/* ===== PRICING ===== */}
         <div style={{ marginTop: isMobile ? 40 : 60 }}>
-          <h2 style={{ textAlign: "center", marginBottom: 30, fontSize: isMobile ? "1.4rem" : "2rem" }}>
+          <h2
+            style={{
+              textAlign: "center",
+              marginBottom: 30,
+              fontSize: isMobile ? "1.4rem" : "2rem",
+            }}
+          >
             Unlock Advanced AI Intelligence
           </h2>
 
