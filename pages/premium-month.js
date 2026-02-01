@@ -5,17 +5,26 @@ if (typeof document !== "undefined") {
   style.innerHTML = `
     @media (max-width: 768px) {
 
-      /* === extend the existing page background everywhere === */
+      /* === replicate the REAL page background everywhere === */
       html, body {
-        background-color: #020617 !important;
         min-width: 100vw !important;
         min-height: 100vh !important;
         overflow-x: auto !important;
-      }
 
-      /* keep page background continuous even when content overflows */
-      body {
-        background-attachment: fixed !important;
+        background-color: #020617 !important;
+        background-image:
+          repeating-linear-gradient(-25deg, rgba(56,189,248,0.04) 0px, rgba(56,189,248,0.04) 1px, transparent 1px, transparent 180px),
+          repeating-linear-gradient(35deg, rgba(167,139,250,0.04) 0px, rgba(167,139,250,0.04) 1px, transparent 1px, transparent 260px),
+          radial-gradient(circle at 20% 30%, rgba(56,189,248,0.14), transparent 45%),
+          radial-gradient(circle at 80% 60%, rgba(167,139,250,0.14), transparent 50%),
+          radial-gradient(circle at 45% 85%, rgba(34,211,238,0.10), transparent 45%),
+          url("/wealthyai/icons/generated.png") !important;
+
+        background-repeat:
+          repeat, repeat, no-repeat, no-repeat, no-repeat, repeat !important;
+
+        background-size:
+          auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto !important;
       }
 
       /* layout: two columns -> one column */
@@ -49,11 +58,11 @@ if (typeof document !== "undefined") {
         width: 100% !important;
       }
 
-      /* AI response: keep it wide, just readable */
+      /* AI response stays wide, but visually integrated */
       pre {
         font-size: 13px !important;
         white-space: pre-wrap !important;
-        background-color: rgba(2,6,23,0.85) !important;
+        background-color: rgba(2,6,23,0.78) !important;
       }
     }
   `;
