@@ -5,35 +5,14 @@ if (typeof document !== "undefined") {
   style.innerHTML = `
     @media (max-width: 768px) {
 
-      /* lock document scrolling model */
+      /* keep the page stable */
       html, body {
         width: 100%;
         overflow-x: hidden !important;
         background: transparent !important;
       }
 
-      /* ONE true background, fixed, infinite */
-      body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        z-index: -1;
-
-        background-color: #020617;
-        background-image:
-          repeating-linear-gradient(-25deg, rgba(56,189,248,0.04) 0px, rgba(56,189,248,0.04) 1px, transparent 1px, transparent 180px),
-          repeating-linear-gradient(35deg, rgba(167,139,250,0.04) 0px, rgba(167,139,250,0.04) 1px, transparent 1px, transparent 260px),
-          radial-gradient(circle at 20% 30%, rgba(56,189,248,0.14), transparent 45%),
-          radial-gradient(circle at 80% 60%, rgba(167,139,250,0.14), transparent 50%),
-          radial-gradient(circle at 45% 85%, rgba(34,211,238,0.10), transparent 45%),
-          url("/wealthyai/icons/generated.png");
-
-        background-repeat:
-          repeat, repeat, no-repeat, no-repeat, no-repeat, repeat;
-
-        background-size:
-          auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto;
-      }
+      /* page background stays as-is (no second layer, no fixed tricks) */
 
       /* layout: two columns -> one */
       div[style*="gridTemplateColumns"] {
@@ -66,10 +45,15 @@ if (typeof document !== "undefined") {
         width: 100% !important;
       }
 
+      /* ✅ AI RESPONSE: horizontal scroll ONLY here */
       pre {
         font-size: 13px !important;
-        white-space: pre-wrap !important;
+        white-space: pre !important;        /* keep wide formatting */
+        overflow-x: auto !important;        /* allow sideways scroll */
+        max-width: 100vw !important;
+        padding-bottom: 8px !important;
         background-color: rgba(2,6,23,0.78) !important;
+        -webkit-overflow-scrolling: touch;
       }
     }
   `;
