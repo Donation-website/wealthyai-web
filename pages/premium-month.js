@@ -1,76 +1,48 @@
-/* ================= MOBILE CHAT STACK & STABILITY FIX ================= */
+/* ================= HARD MOBILE STACK FIX (NO CSS DEPENDENCY) ================= */
 
 if (typeof window !== "undefined") {
   const isMobile = () => window.innerWidth <= 768;
 
-  const injectCSS = () => {
+  const forceStack = () => {
     if (!isMobile()) return;
-    if (document.getElementById("mobile-chat-fix")) return;
 
-    const style = document.createElement("style");
-    style.id = "mobile-chat-fix";
-    style.innerHTML = `
-      /* 🔒 Stabil viewport */
-      @supports (scrollbar-gutter: stable) {
-        html {
-          scrollbar-gutter: stable;
-        }
+    // végigmegyünk MINDEN elemén
+    document.querySelectorAll("div").forEach(el => {
+      if (el.children.length !== 2) return;
+
+      const style = window.getComputedStyle(el);
+
+      // csak az, ami eddig egymás mellett volt
+      if (
+        style.display === "flex" ||
+        style.display === "grid"
+      ) {
+        // 💣 KÉNYSZERÍTETT STACK
+        el.style.display = "flex";
+        el.style.flexDirection = "column";
+        el.style.alignItems = "stretch";
+
+        // gyerekek teljes szélesség
+        Array.from(el.children).forEach(child => {
+          child.style.width = "100%";
+          child.style.maxWidth = "100%";
+        });
       }
+    });
 
-      html, body {
-        width: 100%;
-        max-width: 100%;
-        overflow-x: hidden;
-      }
-
-      *, *::before, *::after {
-        box-sizing: border-box;
-      }
-
-      /* 🧱 CHAT BOXOK KÉNYSZERÍTETT STACK */
-      .chat-wrapper,
-      [data-chat-wrapper] {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: stretch !important;
-      }
-
-      /* 🧱 BELSŐ BOXOK */
-      .chat-box,
-      .input-box,
-      .ai-box {
-        width: 100% !important;
-        max-width: 100% !important;
-      }
-
-      /* 🧠 AI tartalom nem tolhat */
-      pre, code {
-        max-width: 100%;
-        white-space: pre-wrap;
-        word-break: break-word;
-        overflow-x: auto;
-      }
-    `;
-    document.head.appendChild(style);
-  };
-
-  const lockWidth = () => {
-    if (!isMobile()) return;
+    // viewport stabilizálás
     const w = document.documentElement.clientWidth;
     document.documentElement.style.maxWidth = w + "px";
     document.body.style.maxWidth = w + "px";
   };
 
-  window.addEventListener("load", () => {
-    injectCSS();
-    lockWidth();
-  });
+  window.addEventListener("load", forceStack);
+  window.addEventListener("resize", forceStack);
 
-  window.addEventListener("resize", lockWidth);
-
-  setTimeout(lockWidth, 300);
-  setTimeout(lockWidth, 800);
-  setTimeout(lockWidth, 1500);
+  // hydration / AI válasz után
+  setTimeout(forceStack, 300);
+  setTimeout(forceStack, 800);
+  setTimeout(forceStack, 1500);
 }
 
 import { useState, useEffect } from "react";
