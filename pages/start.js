@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 export default function UserDashboard() {
   const [data, setData] = useState({
@@ -11,6 +11,15 @@ export default function UserDashboard() {
     internet: 80,
     subscriptions: 120,
   });
+
+  /* ===== MOBILE DETECTION ===== */
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   /* ===== CALCULATIONS ===== */
 
@@ -97,7 +106,7 @@ export default function UserDashboard() {
 
   /* ===== RADAR COMPONENT ===== */
 
-  const Radar = ({ data, size = 200 }) => {
+  const Radar = ({ data, size = isMobile ? 180 : 200 }) => {
     const c = size / 2;
     const r = size / 2 - 24;
     const step = (Math.PI * 2) / data.length;
@@ -173,7 +182,7 @@ export default function UserDashboard() {
     background: "rgba(15,23,42,0.65)",
     backdropFilter: "blur(14px)",
     borderRadius: "22px",
-    padding: "26px",
+    padding: isMobile ? "20px" : "26px",
     border: "1px solid rgba(255,255,255,0.08)",
   };
 
@@ -185,19 +194,21 @@ export default function UserDashboard() {
     border: "none",
     background: "rgba(255,255,255,0.08)",
     color: "white",
+    boxSizing: "border-box",
   };
 
   const priceCard = {
     ...card,
     textAlign: "center",
     cursor: "pointer",
+    flex: isMobile ? "1 1 100%" : "0 1 240px",
   };
 
   return (
     <main
       style={{
         minHeight: "100vh",
-        padding: "40px",
+        padding: isMobile ? "20px 15px" : "40px",
         color: "white",
         fontFamily: "Inter, system-ui, sans-serif",
         backgroundColor: "#020617",
@@ -212,15 +223,15 @@ export default function UserDashboard() {
         backgroundRepeat:
           "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
         backgroundSize:
-          "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
+          isMobile ? "auto, auto, 200% 200%, 200% 200%, 200% 200%, 420px auto" : "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
       }}
     >
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: "30px" }}>
-          <h1>Your Financial Overview (Basic)</h1>
+          <h1 style={{ fontSize: isMobile ? "1.8rem" : "2.5rem" }}>Your Financial Overview (Basic)</h1>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 20 }}>
           <div style={card}>
             <h3>Income & Expenses</h3>
 
@@ -229,8 +240,8 @@ export default function UserDashboard() {
               ["Fixed Expenses", "fixed"],
               ["Variable Expenses", "variable"],
             ].map(([label, key]) => (
-              <div key={key}>
-                <label>{label}</label>
+              <div key={key} style={{ marginBottom: 15 }}>
+                <label style={{ fontSize: "14px" }}>{label}</label>
                 <input
                   type="number"
                   value={data[key]}
@@ -250,31 +261,31 @@ export default function UserDashboard() {
             <p>
               Risk Level: <strong>{riskLevel}</strong>
             </p>
-            <p>
+            <p style={{ marginBottom: 15 }}>
               Savings Score: <strong>{savingsScore}/100</strong>
             </p>
 
-            <ul>
+            <ul style={{ paddingLeft: 20 }}>
               {insights.map((i, idx) => (
-                <li key={idx} style={{ marginBottom: 12 }}>
+                <li key={idx} style={{ marginBottom: 12, fontSize: "14px" }}>
                   {i}
                 </li>
               ))}
             </ul>
 
-            <p style={{ opacity: 0.65, marginTop: 18 }}>
+            <p style={{ opacity: 0.65, marginTop: 18, fontSize: "12px" }}>
               This view shows a snapshot — not behavior, not direction.
             </p>
           </div>
         </div>
 
         {/* ===== ORIENTATION BLOCK (RESTORED) ===== */}
-        <div style={{ marginTop: 70, textAlign: "center" }}>
-          <h2 className="pulse-title">
+        <div style={{ marginTop: isMobile ? 40 : 70, textAlign: "center" }}>
+          <h2 className="pulse-title" style={{ fontSize: isMobile ? "1.4rem" : "2rem" }}>
             Choose your depth of financial intelligence
           </h2>
 
-          <p style={{ maxWidth: 700, margin: "18px auto", opacity: 0.85 }}>
+          <p style={{ maxWidth: 700, margin: "18px auto", opacity: 0.85, fontSize: isMobile ? "14px" : "16px" }}>
             Different questions require different levels of context.
             You can choose the depth that matches what you want to understand right now.
           </p>
@@ -282,14 +293,14 @@ export default function UserDashboard() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(240px, 1fr))",
               gap: 20,
               marginTop: 30,
             }}
           >
             <div style={card}>
               <h4>Daily Intelligence</h4>
-              <p>
+              <p style={{ fontSize: "14px", opacity: 0.8 }}>
                 Short-term interpretation of your current financial state.
                 Best for immediate clarity.
               </p>
@@ -297,7 +308,7 @@ export default function UserDashboard() {
 
             <div style={card}>
               <h4>Weekly Intelligence</h4>
-              <p>
+              <p style={{ fontSize: "14px", opacity: 0.8 }}>
                 Behavioral patterns across days and categories.
                 Best for understanding habits.
               </p>
@@ -305,7 +316,7 @@ export default function UserDashboard() {
 
             <div style={card}>
               <h4>Monthly Intelligence</h4>
-              <p>
+              <p style={{ fontSize: "14px", opacity: 0.8 }}>
                 Multi-week context, regional insights, and forward-looking analysis.
                 Best when decisions require direction.
               </p>
@@ -314,8 +325,8 @@ export default function UserDashboard() {
         </div>
 
         {/* ===== PRICING ===== */}
-        <div style={{ marginTop: 60 }}>
-          <h2 style={{ textAlign: "center", marginBottom: 30 }}>
+        <div style={{ marginTop: isMobile ? 40 : 60 }}>
+          <h2 style={{ textAlign: "center", marginBottom: 30, fontSize: isMobile ? "1.4rem" : "2rem" }}>
             Unlock Advanced AI Intelligence
           </h2>
 
