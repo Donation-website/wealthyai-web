@@ -1,4 +1,4 @@
-/* ================= MOBILE BANKING-STYLE LAYOUT (WORKING) ================= */
+/* ================= MOBILE BANKING-STYLE LAYOUT (FIXED) ================= */
 
 if (typeof document !== "undefined") {
   const style = document.createElement("style");
@@ -10,16 +10,17 @@ if (typeof document !== "undefined") {
         overflow-x: hidden !important;
       }
 
+      /* FORCE GRID INTO SINGLE COLUMN ON MOBILE */
       div[style*="gridTemplateColumns"] {
-        display: flex !important;
-        flex-direction: column !important;
+        display: grid !important;
+        grid-template-columns: 1fr !important;
         gap: 20px !important;
       }
 
       div[style*="gridTemplateColumns"] > div {
         width: 100% !important;
         max-width: 100% !important;
-        flex: none !important;
+        grid-column: 1 / -1 !important;
       }
 
       div[style*="maxWidth: 1100px"] {
