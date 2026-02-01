@@ -5,10 +5,20 @@ if (typeof document !== "undefined") {
   style.innerHTML = `
     @media (max-width: 768px) {
 
-      body {
-        overflow-x: hidden;
+      /* === extend the existing page background everywhere === */
+      html, body {
+        background-color: #020617 !important;
+        min-width: 100vw !important;
+        min-height: 100vh !important;
+        overflow-x: auto !important;
       }
 
+      /* keep page background continuous even when content overflows */
+      body {
+        background-attachment: fixed !important;
+      }
+
+      /* layout: two columns -> one column */
       div[style*="gridTemplateColumns"] {
         display: flex !important;
         flex-direction: column !important;
@@ -39,9 +49,11 @@ if (typeof document !== "undefined") {
         width: 100% !important;
       }
 
+      /* AI response: keep it wide, just readable */
       pre {
         font-size: 13px !important;
         white-space: pre-wrap !important;
+        background-color: rgba(2,6,23,0.85) !important;
       }
     }
   `;
