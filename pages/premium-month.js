@@ -44,18 +44,17 @@ const REGIONS = [
 ];
 
 export default function PremiumMonth() {
-
-  /* === MOBILE ADDITION: MOBILE DETECTION ONLY === */
+    // === MOBILE ADDITION: device detection ===
   const [isMobile, setIsMobile] = useState(false);
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-  /* === END MOBILE ADDITION === */
-
-  /* ================= ACCESS CHECK ================= */
+  
+/* ================= ACCESS CHECK ================= */
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -178,6 +177,7 @@ export default function PremiumMonth() {
     setFocusPreview(null);
     setFocusOpen(false);
   };
+
   /* ================= INPUTS ================= */
 
   const [inputs, setInputs] = useState({
@@ -380,6 +380,7 @@ export default function PremiumMonth() {
 
     setLoading(false);
   };
+
   /* ================= ACTIVE CONTENT ================= */
 
   const activeSnapshot = selectedDay
@@ -406,7 +407,6 @@ export default function PremiumMonth() {
     if (range === "month") return stored;
     return [];
   };
-
   const handleDownload = () => {
     const data = getBriefings(exportRange);
     if (!data.length) return alert("No data available.");
@@ -461,11 +461,12 @@ export default function PremiumMonth() {
 
   return (
     <div
-      style={{
-        ...page,
-        overflowX: isMobile ? "hidden" : undefined, // === MOBILE ADDITION ===
-      }}
-    >
+  style={{
+    ...page,
+    overflowX: isMobile ? "hidden" : undefined,
+  }}
+>
+
       <a href="/month/help" style={helpButton}>Help</a>
 
       <div style={header}>
@@ -502,17 +503,78 @@ export default function PremiumMonth() {
 
       <div style={signalBox}>
         <strong>Weekly focus</strong>
-        {/* … TARTALOM VÁLTOZATLANUL JÖN TOVÁBB … */}
+
+        {!weeklyFocus && (
+          <>
+            <p style={{ opacity: 0.75 }}>
+              Choose one focus area for this week. This affects how your data is interpreted.
+            </p>
+
+            <button onClick={() => setFocusOpen(!focusOpen)} style={exportBtn}>
+              {focusOpen ? "Close" : "What is this?"}
+            </button>
+
+            {focusOpen && (
+              <div style={{ marginTop: 12 }}>
+                {FOCUS_OPTIONS.map((f, i) => {
+                  const disabled = i < getCurrentWeekIndex();
+                  return (
+                    <button
+                      key={f.key}
+                      disabled={disabled}
+                      onClick={() => setFocusPreview(f.key)}
+                      style={{
+                        ...exportBtn,
+                        opacity: disabled ? 0.3 : 1,
+                        cursor: disabled ? "not-allowed" : "pointer",
+                        background:
+                          focusPreview === f.key ? "#38bdf8" : "transparent",
+                        color:
+                          focusPreview === f.key ? "#020617" : "#38bdf8",
+                        marginBottom: 6,
+                      }}
+                    >
+                      {f.label}
+                    </button>
+                  );
+                })}
+
+                {focusPreview && (
+                  <div style={{ marginTop: 10 }}>
+                    <p style={{ fontSize: 13, opacity: 0.7 }}>
+                      You selected <strong>{focusPreview}</strong> for this week.
+                      This cannot be changed later.
+                    </p>
+                    <button onClick={confirmWeeklyFocus} style={aiButton}>
+                      Confirm focus
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
+
+        {weeklyFocus && (
+          <>
+            <p>
+              This week’s focus: <strong>{weeklyFocus.key}</strong>
+            </p>
+            <p style={{ fontSize: 13, opacity: 0.6 }}>
+              Expected insight window: 3–7 days
+            </p>
+          </>
+        )}
       </div>
 
-      {/* === MOBILE STACK: INPUT + AI EGYMÁS ALÁ === */}
       <div
-        style={{
-          ...layout,
-          gridTemplateColumns: isMobile ? "1fr" : layout.gridTemplateColumns, // === MOBILE ADDITION ===
-          gap: isMobile ? 20 : layout.gap, // === MOBILE ADDITION ===
-        }}
-      >
+  style={{
+    ...layout,
+    gridTemplateColumns: isMobile ? "1fr" : layout.gridTemplateColumns,
+    gap: isMobile ? 20 : layout.gap,
+  }}
+>
+
         {/* LEFT COLUMN */}
         <div style={card}>
           <h3>Monthly Financial Structure</h3>
@@ -604,12 +666,7 @@ export default function PremiumMonth() {
         </div>
 
         {/* RIGHT COLUMN */}
-        <div
-          style={{
-            ...card,
-            marginTop: isMobile ? 12 : undefined, // === MOBILE ADDITION ===
-          }}
-        >
+        <div style={card}>
           <button
             onClick={() => setArchiveOpen(!archiveOpen)}
             style={{ ...exportBtn, marginBottom: 10 }}
@@ -697,7 +754,7 @@ export default function PremiumMonth() {
                         marginTop: 16,
                         display: "flex",
                         gap: 12,
-                        flexWrap: isMobile ? "wrap" : "nowrap", // === MOBILE ADDITION ===
+                        flexWrap: isMobile ? "wrap" : "nowrap",
                       }}
                     >
                       <select
