@@ -1,37 +1,38 @@
-/* ================= MOBILE BANKING-STYLE LAYOUT (NON-INTRUSIVE) ================= */
+/* ================= MOBILE BANKING-STYLE LAYOUT (WORKING) ================= */
 
 if (typeof document !== "undefined") {
   const style = document.createElement("style");
   style.innerHTML = `
     @media (max-width: 768px) {
 
-      /* --- GLOBAL RESET FOR MOBILE --- */
       html, body {
         width: 100%;
         overflow-x: hidden !important;
       }
 
-      /* --- FORCE SINGLE COLUMN FLOW --- */
       div[style*="gridTemplateColumns"] {
         display: flex !important;
         flex-direction: column !important;
         gap: 20px !important;
       }
 
-      /* --- PAGE WIDTH & PADDING --- */
+      div[style*="gridTemplateColumns"] > div {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: none !important;
+      }
+
       div[style*="maxWidth: 1100px"] {
         max-width: 100% !important;
         padding-left: 16px !important;
         padding-right: 16px !important;
       }
 
-      /* --- HEADLINE SCALE --- */
       h1 {
         font-size: 1.6rem !important;
         line-height: 1.3 !important;
       }
 
-      /* --- INPUTS: FULL WIDTH, TOUCH FRIENDLY --- */
       input,
       input[type="number"],
       select {
@@ -39,21 +40,18 @@ if (typeof document !== "undefined") {
         font-size: 16px !important;
       }
 
-      /* --- ROWS BECOME STACKS --- */
       div[style*="justifyContent: space-between"] {
         flex-direction: column !important;
         align-items: stretch !important;
         gap: 8px !important;
       }
 
-      /* --- BUTTONS: FULL WIDTH --- */
       button {
         width: 100% !important;
         min-height: 44px !important;
         font-size: 15px !important;
       }
 
-      /* --- AI RESPONSE: PART OF PAGE FLOW --- */
       pre {
         white-space: pre-wrap !important;
         overflow: visible !important;
@@ -62,11 +60,6 @@ if (typeof document !== "undefined") {
         line-height: 1.6 !important;
         background-color: rgba(2,6,23,0.78) !important;
         border-radius: 12px !important;
-      }
-
-      /* --- REMOVE ANY INTERNAL SCROLL TRAPS --- */
-      * {
-        scroll-margin-top: 0 !important;
       }
     }
   `;
