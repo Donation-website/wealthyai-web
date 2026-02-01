@@ -1,3 +1,53 @@
+/* ================= MOBILE RESPONSIVE CSS (ADDED, NON-INTRUSIVE) ================= */
+
+if (typeof document !== "undefined") {
+  const style = document.createElement("style");
+  style.innerHTML = `
+    @media (max-width: 768px) {
+
+      body {
+        overflow-x: hidden;
+      }
+
+      div[style*="gridTemplateColumns"] {
+        display: flex !important;
+        flex-direction: column !important;
+      }
+
+      div[style*="maxWidth: 1100px"] {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+      }
+
+      h1 {
+        font-size: 1.6rem !important;
+        line-height: 1.3 !important;
+      }
+
+      input[type="number"] {
+        width: 100% !important;
+        text-align: left !important;
+      }
+
+      div[style*="justifyContent: space-between"] {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 6px !important;
+      }
+
+      button {
+        width: 100% !important;
+      }
+
+      pre {
+        font-size: 13px !important;
+        white-space: pre-wrap !important;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 import { useState, useEffect } from "react";
 import {
   saveMonthlySnapshot,
