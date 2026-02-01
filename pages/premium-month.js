@@ -1,70 +1,53 @@
-/* ================= MOBILE STABLE WRAPPER + ISOLATED AI BOX ================= */
+/* ================= MOBILE WRAPPER CENTER LOCK FIX ================= */
 
 if (typeof document !== "undefined") {
   const isMobile = () => window.innerWidth <= 768;
 
-  const fixMobileFinal = () => {
+  const fixMobileWrapper = () => {
     if (!isMobile()) return;
 
-    /* 1. GLOBAL SAFETY */
+    /* Global safety – but minimal */
     document.documentElement.style.overflowX = "hidden";
     document.body.style.overflowX = "hidden";
 
-    /* 2. FIND THE 2-BOX WRAPPER AND LOCK IT */
     document.querySelectorAll("div").forEach(wrapper => {
       const style = window.getComputedStyle(wrapper);
 
+      // ONLY the wrapper that holds the 2 boxes
       if (
         style.display === "grid" &&
         style.gridTemplateColumns.split(" ").length === 2 &&
         wrapper.children.length === 2
       ) {
-        /* stack, BUT lock wrapper */
+        // stack
         wrapper.style.gridTemplateColumns = "1fr";
+
+        // CENTER & LOCK wrapper
         wrapper.style.width = "100%";
         wrapper.style.maxWidth = "100%";
-        wrapper.style.position = "relative";
-        wrapper.style.left = "0";
-        wrapper.style.right = "0";
-        wrapper.style.marginLeft = "0";
-        wrapper.style.marginRight = "0";
-
-        const [inputBox, aiBox] = wrapper.children;
-
-        /* 3. INPUT BOX – NEVER MOVE */
-        inputBox.style.position = "relative";
-        inputBox.style.left = "0";
-        inputBox.style.right = "0";
-        inputBox.style.width = "100%";
-        inputBox.style.maxWidth = "100%";
-
-        /* 4. AI BOX – ISOLATED SCROLL */
-        aiBox.style.position = "relative";
-        aiBox.style.left = "0";
-        aiBox.style.right = "0";
-        aiBox.style.width = "100%";
-        aiBox.style.maxWidth = "100%";
-        aiBox.style.overflowX = "hidden";
+        wrapper.style.marginInline = "auto";
+        wrapper.style.boxSizing = "border-box";
+        wrapper.style.overflowX = "hidden";
       }
     });
 
-    /* 5. AI CONTENT CAN NEVER AFFECT LAYOUT */
+    /* AI CONTENT MUST NEVER AFFECT WIDTH */
     document.querySelectorAll("pre, code").forEach(el => {
       el.style.maxWidth = "100%";
       el.style.boxSizing = "border-box";
       el.style.whiteSpace = "pre-wrap";
       el.style.wordBreak = "break-word";
-      el.style.overflowX = "auto"; // ONLY INSIDE AI BOX
+      el.style.overflowX = "auto"; // inner scroll only
     });
   };
 
-  window.addEventListener("load", fixMobileFinal);
-  window.addEventListener("resize", fixMobileFinal);
+  window.addEventListener("load", fixMobileWrapper);
+  window.addEventListener("resize", fixMobileWrapper);
 
   // React hydration / AI open timing
-  setTimeout(fixMobileFinal, 300);
-  setTimeout(fixMobileFinal, 800);
-  setTimeout(fixMobileFinal, 1500);
+  setTimeout(fixMobileWrapper, 300);
+  setTimeout(fixMobileWrapper, 800);
+  setTimeout(fixMobileWrapper, 1500);
 }
 
 import { useState, useEffect } from "react";
