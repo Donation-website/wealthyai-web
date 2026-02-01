@@ -1,35 +1,61 @@
-/* ================= MOBILE FORCE STACK FIX ================= */
+/* ================= MOBILE FINAL CENTER + OVERFLOW FIX ================= */
 
 if (typeof document !== "undefined") {
   const isMobile = () => window.innerWidth <= 768;
 
-  const forceStack = () => {
+  const fixMobileLayout = () => {
     if (!isMobile()) return;
 
-    document.querySelectorAll("div").forEach((el) => {
+    /* GLOBAL SAFETY */
+    document.documentElement.style.width = "100%";
+    document.documentElement.style.overflowX = "hidden";
+    document.body.style.width = "100%";
+    document.body.style.maxWidth = "100%";
+    document.body.style.overflowX = "hidden";
+
+    /* FORCE BORDER-BOX EVERYWHERE */
+    document.querySelectorAll("*").forEach(el => {
+      el.style.boxSizing = "border-box";
+    });
+
+    document.querySelectorAll("div").forEach(el => {
       const style = window.getComputedStyle(el);
 
+      /* STACK TWO-COLUMN GRIDS */
       if (
         style.display === "grid" &&
-        style.gridTemplateColumns.split(" ").length === 2 &&
-        el.children.length === 2
+        style.gridTemplateColumns.split(" ").length === 2
       ) {
         el.style.gridTemplateColumns = "1fr";
-        el.style.gap = "16px";
-
-        Array.from(el.children).forEach((child) => {
-          child.style.width = "100%";
-          child.style.maxWidth = "100%";
-        });
+        el.style.width = "100%";
+        el.style.maxWidth = "100%";
+        el.style.marginLeft = "auto";
+        el.style.marginRight = "auto";
       }
+
+      /* CENTER MAJOR CONTAINERS */
+      if (style.display === "grid" || style.display === "flex") {
+        el.style.maxWidth = "100%";
+        el.style.marginLeft = "auto";
+        el.style.marginRight = "auto";
+      }
+    });
+
+    /* AI RESPONSE / MARKDOWN FIX */
+    document.querySelectorAll("pre, code").forEach(el => {
+      el.style.maxWidth = "100%";
+      el.style.whiteSpace = "pre-wrap";
+      el.style.wordBreak = "break-word";
+      el.style.overflowX = "hidden";
     });
   };
 
-  window.addEventListener("load", forceStack);
-  window.addEventListener("resize", forceStack);
+  window.addEventListener("load", fixMobileLayout);
+  window.addEventListener("resize", fixMobileLayout);
 
-  setTimeout(forceStack, 300);
-  setTimeout(forceStack, 800);
+  // React hydration safety
+  setTimeout(fixMobileLayout, 300);
+  setTimeout(fixMobileLayout, 800);
 }
 
 import { useState, useEffect } from "react";
