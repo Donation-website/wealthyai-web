@@ -44,72 +44,7 @@ const REGIONS = [
 ];
 
 export default function PremiumMonth() {
-/* ================= COMPLETE MOBILE ENGINE (STACK + CENTER) ================= */
-  useEffect(() => {
-    const runMobileFix = () => {
-      // Csak 768px szélesség alatt dolgozunk
-      if (window.innerWidth > 768) return;
-
-      // 1. A fő elrendezés (grid -> column flex)
-      // Megkeressük a konténert, ami a bal és jobb oldali kártyákat tartja
-      const layoutContainer = document.querySelector('div[style*="grid"]');
-      if (layoutContainer) {
-        layoutContainer.style.display = "flex";
-        layoutContainer.style.flexDirection = "column";
-        layoutContainer.style.alignItems = "center";
-        layoutContainer.style.gap = "25px";
-        layoutContainer.style.width = "100%";
-      }
-
-      // 2. A kártyák (Boxok) formázása
-      // Minden olyan div-et célzunk, ami kártyaként néz ki (padding + border + background)
-      const allDivs = document.querySelectorAll('div');
-      allDivs.forEach(div => {
-        const style = div.style;
-        // Beazonosítjuk a kártyákat a stílusjegyeik alapján (padding: 22 vagy borderRadius: 16)
-        if (style.borderRadius === "16px" || style.padding === "22px" || div.innerText?.includes("Financial Structure")) {
-          style.width = "94%";
-          style.maxWidth = "550px";
-          style.marginLeft = "auto";
-          style.marginRight = "auto";
-          style.float = "none";
-          style.display = "block";
-        }
-      });
-
-      // 3. Speciális fix a "Generate" gomb után felugró AI ablaknak
-      // Ha már látható az AI szekció, azt is kényszerítjük középre
-      const aiSection = document.querySelector('pre')?.parentElement;
-      if (aiSection) {
-        aiSection.style.width = "100%";
-        aiSection.style.display = "flex";
-        aiSection.style.flexDirection = "column";
-        aiSection.style.alignItems = "center";
-      }
-    };
-
-    // Futtatás azonnal
-    runMobileFix();
-
-    // Dinamikus tartalom figyelése (AI válasz megjelenésekor újra lefut)
-    const observer = new MutationObserver(() => {
-      runMobileFix();
-    });
-    
-    observer.observe(document.body, { 
-      childList: true, 
-      subtree: true,
-      attributes: true // A stílusváltozásokat is figyeli
-    });
-
-    window.addEventListener("resize", runMobileFix);
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("resize", runMobileFix);
-    };
-  }, []);
-  /* ================= END OF MOBILE ENGINE ================= */  /* ================= ACCESS CHECK ================= */
+  /* ================= ACCESS CHECK ================= */
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
