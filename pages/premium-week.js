@@ -21,7 +21,6 @@ const COLORS = {
 };
 
 export default function PremiumWeek() {
-  /* ===== MOBILE DETECTION ===== */
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
@@ -30,12 +29,10 @@ export default function PremiumWeek() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  /* ===== SUBSCRIPTION CHECK ===== */
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get("session_id");
     if (!sessionId) { window.location.href = "/start"; return; }
-
     fetch("/api/verify-active-subscription", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -46,7 +43,6 @@ export default function PremiumWeek() {
       .catch(() => { window.location.href = "/start"; });
   }, []);
 
-  /* ===== STATE ===== */
   const [incomeType, setIncomeType] = useState("monthly");
   const [incomeValue, setIncomeValue] = useState(3000);
   const [country, setCountry] = useState("US");
@@ -73,7 +69,7 @@ export default function PremiumWeek() {
   const weeklyIncome =
     incomeType === "daily" ? incomeValue * 7 :
     incomeType === "weekly" ? incomeValue :
-    incomeValue / 4.33;
+    incomeValue / 4.333; // JAVÍTVA: 3000 / 4.333 = ~692
 
   const update = (day, cat, val) => {
     setWeek({ ...week, [day]: { ...week[day], [cat]: Number(val) } });
@@ -118,7 +114,7 @@ export default function PremiumWeek() {
   };
 
   return (
-    <div style={{...page, padding: isMobile ? "20px 15px 100px 15px" : "40px"}}>
+    <div style={{...page, padding: isMobile ? "20px 15px 120px 15px" : "40px"}}>
       <a href="/help" style={{...helpButton, top: isMobile ? 15 : 24, right: isMobile ? 15 : 24}}>Help</a>
 
       <div style={header}>
@@ -126,9 +122,8 @@ export default function PremiumWeek() {
         <p style={subtitle}>Weekly behavioral analysis with country-aware intelligence.</p>
       </div>
 
-      <div style={{...layout, gridTemplateColumns: isMobile ? "1fr" : "1.2fr 1fr", gap: isMobile ? 20 : 30}}>
+      <div style={{...layout, gridTemplateColumns: isMobile ? "1fr" : "1.2fr 1.3fr", gap: isMobile ? 20 : 30}}>
         <div style={left}>
-          {/* INCOME SECTION */}
           <div style={incomeBox}>
             <div style={{color: "#7dd3fc", fontSize: "0.8rem", marginBottom: 10, fontWeight: "bold"}}>WEEKLY INCOME SETUP</div>
             <div style={row}>
@@ -170,8 +165,8 @@ export default function PremiumWeek() {
           <Chart title="Daily spending vs Income">
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-              <XAxis dataKey="day" fontSize={10} />
-              <YAxis fontSize={10} />
+              <XAxis dataKey="day" fontSize={10} stroke="#64748b" />
+              <YAxis fontSize={10} stroke="#64748b" />
               <Tooltip contentStyle={{background: "#020617", border: "1px solid #1e293b"}} />
               <Line dataKey="total" name="Spending" stroke="#38bdf8" strokeWidth={3} dot={{r: 4}} />
               <Line dataKey="balance" name="Net Balance" stroke="#facc15" strokeDasharray="5 5" />
@@ -181,8 +176,8 @@ export default function PremiumWeek() {
           <Chart title="Category trends">
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-              <XAxis dataKey="day" fontSize={10} />
-              <YAxis fontSize={10} />
+              <XAxis dataKey="day" fontSize={10} stroke="#64748b" />
+              <YAxis fontSize={10} stroke="#64748b" />
               <Tooltip contentStyle={{background: "#020617", border: "1px solid #1e293b"}} />
               <Legend wrapperStyle={{fontSize: 10}} />
               {CATEGORIES.map(c => (
@@ -205,16 +200,16 @@ export default function PremiumWeek() {
           <Chart title="Daily dispersion">
             <ScatterChart>
               <CartesianGrid stroke="#1e293b" />
-              <XAxis dataKey="x" fontSize={10} />
-              <YAxis dataKey="y" fontSize={10} />
+              <XAxis dataKey="x" fontSize={10} stroke="#64748b" />
+              <YAxis dataKey="y" fontSize={10} stroke="#64748b" />
               <Tooltip contentStyle={{background: "#020617", border: "1px solid #1e293b"}} />
               <Scatter data={scatterData} fill="#a78bfa" />
             </ScatterChart>
           </Chart>
 
-          <div style={{...summary, textAlign: isMobile ? "center" : "right", gridColumn: "1 / -1"}}>
-            Weekly spend: <strong style={{color: "#fb7185"}}>${weeklySpend.toLocaleString()}</strong> ·
-            Net Surplus: <strong style={{color: "#34d399"}}>${(weeklyIncome - weeklySpend).toLocaleString()}</strong>
+          <div style={{...summary, gridColumn: "1 / -1"}}>
+            Weekly spend: <strong style={{color: "#fb7185"}}>${Math.round(weeklySpend).toLocaleString()}</strong> ·
+            Net Surplus: <strong style={{color: "#34d399"}}>${Math.round(weeklyIncome - weeklySpend).toLocaleString()}</strong>
           </div>
 
           <button onClick={runAI} style={{...aiButton, gridColumn: "1 / -1", marginTop: 10}}>
@@ -233,17 +228,16 @@ export default function PremiumWeek() {
         </div>
       </div>
 
-      <div style={{...upsellRow, width: isMobile ? "90%" : "auto", textAlign: "center", bottom: isMobile ? 60 : 20}}>
+      <div style={{...upsellRow, width: isMobile ? "90%" : "auto", bottom: isMobile ? 60 : 20}}>
         Monthly plans unlock country-specific tax optimization, stress testing and advanced projections.
       </div>
-      <div style={{...copyright, left: isMobile ? 0 : 40, width: isMobile ? "100%" : "auto", textAlign: "center"}}>
+      <div style={{...copyright, left: isMobile ? 0 : 40, width: isMobile ? "100%" : "auto", textAlign: isMobile ? "center" : "left"}}>
         © 2026 WealthyAI — All rights reserved.
       </div>
     </div>
   );
 }
 
-/* ===== COMPONENTS ===== */
 function Chart({ title, children }) {
   return (
     <div style={chartBox}>
@@ -255,34 +249,42 @@ function Chart({ title, children }) {
   );
 }
 
-/* ===== STYLES ===== */
 const page = {
   minHeight: "100vh", position: "relative", fontFamily: "Inter, system-ui", backgroundColor: "#020617", color: "#e5e7eb",
-  backgroundImage: "radial-gradient(circle at 20% 30%, rgba(56,189,248,0.22), transparent 40%), radial-gradient(circle at 80% 60%, rgba(167,139,250,0.22), transparent 45%)",
+  backgroundImage: `
+    repeating-linear-gradient(-25deg, rgba(56,189,248,0.07) 0px, rgba(56,189,248,0.07) 1px, transparent 1px, transparent 160px),
+    repeating-linear-gradient(35deg, rgba(167,139,250,0.06) 0px, rgba(167,139,250,0.06) 1px, transparent 1px, transparent 220px),
+    radial-gradient(circle at 20% 30%, rgba(56,189,248,0.22), transparent 40%),
+    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.22), transparent 45%),
+    radial-gradient(circle at 45% 85%, rgba(34,211,238,0.18), transparent 40%),
+    url("/wealthyai/icons/generated.png")
+  `,
+  backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
+  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
   backgroundAttachment: "fixed", overflowX: "hidden"
 };
 const header = { textAlign: "center", marginBottom: 20 };
-const title = { margin: 0 };
-const subtitle = { color: "#f8fafc", marginTop: 10 };
-const upsellRow = { position: "absolute", left: "50%", transform: "translateX(-50%)", color: "#f8fafc", fontWeight: 500, fontSize: 13, zIndex: 10 };
-const copyright = { position: "absolute", bottom: 20, zIndex: 10, fontSize: 13, color: "#cbd5f5" };
+const title = { margin: 0, fontWeight: "bold" };
+const subtitle = { color: "#f8fafc", marginTop: 10, opacity: 0.8 };
+const upsellRow = { position: "absolute", left: "50%", transform: "translateX(-50%)", color: "#f8fafc", fontWeight: 500, fontSize: 12, zIndex: 10, opacity: 0.7 };
+const copyright = { position: "absolute", bottom: 20, zIndex: 10, fontSize: 12, color: "#94a3b8" };
 const helpButton = { position: "absolute", padding: "8px 14px", borderRadius: 10, fontSize: 13, textDecoration: "none", color: "#7dd3fc", border: "1px solid #1e293b", background: "rgba(2,6,23,0.6)", zIndex: 15 };
-const regionRow = { marginBottom: 20, textAlign: "left", padding: "0 5px" };
+const regionRow = { marginBottom: 20, textAlign: "left" };
 const regionLabel = { marginRight: 8, color: "#7dd3fc", fontSize: "0.85rem" };
 const regionSelect = { background: "#0f172a", color: "#e5e7eb", border: "1px solid #1e293b", padding: "6px 10px", borderRadius: 6, fontSize: "14px" };
 const incomeBox = { background: "rgba(2, 6, 23, 0.75)", backdropFilter: "blur(14px)", border: "1px solid #38bdf8", borderRadius: 14, padding: 15, marginBottom: 20 };
-const layout = { display: "grid", maxWidth: "1250px", margin: "0 auto" };
-const left = { overflowY: "auto", paddingRight: 5 };
+const layout = { display: "grid", maxWidth: "1300px", margin: "0 auto" };
+const left = { overflowY: "visible" };
 const right = { display: "grid", gap: 16 };
 const dayBox = { background: "rgba(2, 6, 23, 0.75)", backdropFilter: "blur(14px)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 14, padding: 16, marginBottom: 12 };
-const dayTitle = { cursor: "pointer", color: "#38bdf8", fontWeight: "bold" };
+const dayTitle = { cursor: "pointer", color: "#38bdf8", fontWeight: "bold", fontSize: "1.1rem" };
 const row = { display: "flex", justifyContent: "space-between", marginBottom: 8, alignItems: "center" };
 const input = { background: "rgba(56, 189, 248, 0.05)", border: "none", borderBottom: "1px solid #38bdf8", color: "#38bdf8", width: 90, textAlign: "right", padding: "4px 8px", fontSize: "16px" };
 const chartBox = { background: "rgba(2, 6, 23, 0.75)", backdropFilter: "blur(14px)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 14, padding: 12 };
-const chartTitle = { fontSize: 12, color: "#7dd3fc", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.5px" };
-const summary = { marginTop: 10, padding: 15, color: "#f8fafc", background: "rgba(255,255,255,0.03)", borderRadius: 10 };
-const aiBox = { background: "rgba(2, 6, 23, 0.75)", backdropFilter: "blur(14px)", border: "1px solid #a78bfa", borderRadius: 14, padding: 20, marginTop: 15 };
+const chartTitle = { fontSize: 11, color: "#7dd3fc", marginBottom: 10, textTransform: "uppercase", letterSpacing: "1px", opacity: 0.8 };
+const summary = { marginTop: 10, padding: 20, color: "#f8fafc", background: "rgba(255,255,255,0.05)", borderRadius: 14, textAlign: "center", border: "1px solid rgba(255,255,255,0.1)" };
+const aiBox = { background: "rgba(2, 6, 23, 0.85)", backdropFilter: "blur(14px)", border: "1px solid #a78bfa", borderRadius: 14, padding: 20, marginTop: 15 };
 const aiHeader = { display: "flex", justifyContent: "space-between", marginBottom: 10 };
 const closeBtn = { background: "transparent", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 18 };
-const aiButton = { width: "100%", padding: 14, background: "#38bdf8", border: "none", borderRadius: 10, fontWeight: "bold", color: "#020617", cursor: "pointer" };
-const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap", lineHeight: 1.5, fontFamily: "inherit" };
+const aiButton = { width: "100%", padding: 16, background: "#38bdf8", border: "none", borderRadius: 12, fontWeight: "bold", color: "#020617", cursor: "pointer", fontSize: "1rem" };
+const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap", lineHeight: 1.6, fontFamily: "inherit" };
