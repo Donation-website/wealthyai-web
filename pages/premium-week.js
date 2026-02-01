@@ -89,6 +89,7 @@ export default function PremiumWeek() {
   const pieData = CATEGORIES.map(c => ({
     name: c,
     value: DAYS.reduce((s, d) => s + week[d][c], 0),
+    fill: COLORS[c],
   }));
 
   const scatterData = DAYS.map((d, i) => ({
@@ -191,32 +192,38 @@ export default function PremiumWeek() {
             <PieChart>
               <Pie data={pieData} dataKey="value" outerRadius={isMobile ? 60 : 80} stroke="none">
                 {pieData.map((p, i) => (
-                  <Cell key={i} fill={COLORS[p.name]} />
+                  <Cell key={i} fill={p.fill} />
                 ))}
               </Pie>
-              <Tooltip contentStyle={{background: "#020617", color: "#ffffff", border: "1px solid #38bdf8"}} />
-            </PieChart>
-          </Chart>
-
-          <Chart title="Daily dispersion">
-            <ScatterChart>
-              <CartesianGrid stroke="#0f172a" />
-              <XAxis dataKey="x" name="Day index" fontSize={10} stroke="#cbd5ee" />
-              <YAxis dataKey="y" name="Spending" fontSize={10} stroke="#cbd5ee" />
               <Tooltip
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
-                    const d = payload[0].payload;
+                    const p = payload[0];
                     return (
-                      <div style={{background: "#020617", padding: 10, border: "1px solid #a78bfa", color: "#ffffff"}}>
-                        <div><strong>Day:</strong> {d.day}</div>
-                        <div><strong>Spending:</strong> ${d.y}</div>
+                      <div style={{
+                        background: "rgba(255,255,255,0.85)",
+                        backdropFilter: "blur(10px)",
+                        padding: 10,
+                        borderRadius: 10,
+                        color: p.payload.fill,
+                        fontWeight: "bold"
+                      }}>
+                        {p.name}: {p.value}
                       </div>
                     );
                   }
                   return null;
                 }}
               />
+            </PieChart>
+          </Chart>
+
+          <Chart title="Daily dispersion">
+            <ScatterChart>
+              <CartesianGrid stroke="#0f172a" />
+              <XAxis dataKey="x" name="Day" fontSize={10} stroke="#cbd5ee" />
+              <YAxis dataKey="y" name="Spending" fontSize={10} stroke="#cbd5ee" />
+              <Tooltip contentStyle={{background: "#020617", color: "#ffffff", border: "1px solid #a78bfa"}} />
               <Scatter data={scatterData} fill="#a78bfa" />
             </ScatterChart>
           </Chart>
@@ -264,24 +271,13 @@ function Chart({ title, children }) {
 }
 
 /* ===== STYLES ===== */
+
 const page = {
   minHeight: "100vh",
   position: "relative",
   fontFamily: "Inter, system-ui",
   backgroundColor: "#020617",
   color: "#e5e7eb",
-  backgroundImage: `
-    repeating-linear-gradient(-25deg, rgba(56,189,248,0.07) 0px, rgba(56,189,248,0.07) 1px, transparent 1px, transparent 160px),
-    repeating-linear-gradient(35deg, rgba(167,139,250,0.06) 0px, rgba(167,139,250,0.06) 1px, transparent 1px, transparent 220px),
-    radial-gradient(circle at 20% 30%, rgba(56,189,248,0.22), transparent 40%),
-    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.22), transparent 45%),
-    radial-gradient(circle at 45% 85%, rgba(34,211,238,0.18), transparent 40%),
-    url("/wealthyai/icons/generated.png")
-  `,
-  backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
-  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
-  backgroundAttachment: "fixed",
-  overflowX: "hidden"
 };
 
 const header = { textAlign: "center", marginBottom: 20 };
@@ -292,22 +288,22 @@ const copyright = { position: "absolute", bottom: 20, zIndex: 10, fontSize: 12, 
 const helpButton = { position: "absolute", padding: "8px 14px", borderRadius: 10, fontSize: 13, textDecoration: "none", color: "#7dd3fc", border: "1px solid #1e293b", background: "rgba(2,6,23,0.6)", zIndex: 15 };
 const regionRow = { marginBottom: 20, textAlign: "left" };
 const regionLabel = { marginRight: 8, color: "#7dd3fc", fontSize: "0.85rem" };
-const regionSelect = { background: "#0f172a", color: "#e5e7eb", border: "1px solid #1e293b", padding: "6px 10px", borderRadius: 6, fontSize: "14px" };
+const regionSelect = { background: "rgba(148,163,184,0.18)", color: "#e5e7eb", border: "1px solid rgba(167,139,250,0.35)", padding: "6px 10px", borderRadius: 8, fontSize: "14px" };
 const layout = { display: "grid", maxWidth: "1300px", margin: "0 auto" };
 const left = { overflowY: "visible" };
 const right = { display: "grid", gap: 16 };
 const dayTitle = { cursor: "pointer", color: "#38bdf8", fontWeight: "bold", fontSize: "1.1rem" };
 const row = { display: "flex", justifyContent: "space-between", marginBottom: 8, alignItems: "center" };
-const input = { background: "rgba(56,189,248,0.05)", border: "none", borderBottom: "1px solid #38bdf8", color: "#38bdf8", width: 90, textAlign: "right", padding: "4px 8px", fontSize: "16px" };
+const input = { background: "rgba(255,255,255,0.18)", border: "none", borderBottom: "1px solid #38bdf8", color: "#38bdf8", width: 90, textAlign: "right", padding: "4px 8px", fontSize: "16px" };
 const chartTitle = { fontSize: 11, color: "#7dd3fc", marginBottom: 10, textTransform: "uppercase", letterSpacing: "1px", opacity: 0.8 };
 const aiHeader = { display: "flex", justifyContent: "space-between", marginBottom: 10 };
 const closeBtn = { background: "transparent", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 18 };
 const aiButton = { width: "100%", padding: 16, background: "#38bdf8", border: "none", borderRadius: 12, fontWeight: "bold", color: "#020617", cursor: "pointer", fontSize: "1rem" };
 const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap", lineHeight: 1.5 };
 
-/* ===== "JÓ" BOX SZÍNEK ===== */
-const incomeBox = { background: "rgba(15,23,42,0.6)", backdropFilter: "blur(14px)", border: "1px solid rgba(56,189,248,0.4)", borderRadius: 14, padding: 15, marginBottom: 20 };
-const dayBox = { background: "rgba(15,23,42,0.6)", backdropFilter: "blur(14px)", border: "1px solid rgba(167,139,250,0.35)", borderRadius: 14, padding: 16, marginBottom: 12 };
-const chartBox = { background: "rgba(15,23,42,0.55)", backdropFilter: "blur(14px)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 14, padding: 12 };
-const summary = { marginTop: 10, padding: 20, color: "#f8fafc", background: "rgba(15,23,42,0.6)", borderRadius: 14, textAlign: "center", border: "1px solid rgba(255,255,255,0.18)" };
-const aiBox = { background: "rgba(15,23,42,0.7)", backdropFilter: "blur(14px)", border: "1px solid #a78bfa", borderRadius: 14, padding: 20, marginTop: 15 };
+/* ===== „JÓ” BOX SZÍNEK ===== */
+const incomeBox = { background: "rgba(148,163,184,0.18)", backdropFilter: "blur(16px)", border: "1px solid rgba(167,139,250,0.45)", borderRadius: 14, padding: 15, marginBottom: 20 };
+const dayBox = { background: "rgba(148,163,184,0.18)", backdropFilter: "blur(16px)", border: "1px solid rgba(167,139,250,0.35)", borderRadius: 14, padding: 16, marginBottom: 12 };
+const chartBox = { background: "rgba(148,163,184,0.15)", backdropFilter: "blur(18px)", border: "1px solid rgba(167,139,250,0.35)", borderRadius: 14, padding: 12 };
+const summary = { marginTop: 10, padding: 20, color: "#f8fafc", background: "rgba(148,163,184,0.18)", borderRadius: 14, textAlign: "center", border: "1px solid rgba(255,255,255,0.18)" };
+const aiBox = { background: "rgba(148,163,184,0.22)", backdropFilter: "blur(18px)", border: "1px solid #a78bfa", borderRadius: 14, padding: 20, marginTop: 15 };
