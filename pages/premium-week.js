@@ -33,6 +33,7 @@ export default function PremiumWeek() {
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get("session_id");
     if (!sessionId) { window.location.href = "/start"; return; }
+
     fetch("/api/verify-active-subscription", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -69,7 +70,7 @@ export default function PremiumWeek() {
   const weeklyIncome =
     incomeType === "daily" ? incomeValue * 7 :
     incomeType === "weekly" ? incomeValue :
-    incomeValue / 4.333; // JAVÍTVA: 3000 / 4.333 = ~692
+    incomeValue / 4.333;
 
   const update = (day, cat, val) => {
     setWeek({ ...week, [day]: { ...week[day], [cat]: Number(val) } });
@@ -164,10 +165,10 @@ export default function PremiumWeek() {
         <div style={{...right, gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr"}}>
           <Chart title="Daily spending vs Income">
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-              <XAxis dataKey="day" fontSize={10} stroke="#64748b" />
-              <YAxis fontSize={10} stroke="#64748b" />
-              <Tooltip contentStyle={{background: "#020617", border: "1px solid #1e293b"}} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#0f172a" />
+              <XAxis dataKey="day" fontSize={10} stroke="#cbd5ee" />
+              <YAxis fontSize={10} stroke="#cbd5ee" />
+              <Tooltip contentStyle={{background: "#0f172a", border: "1px solid #38bdf8", color: "#f8fafc"}} />
               <Line dataKey="total" name="Spending" stroke="#38bdf8" strokeWidth={3} dot={{r: 4}} />
               <Line dataKey="balance" name="Net Balance" stroke="#facc15" strokeDasharray="5 5" />
             </LineChart>
@@ -175,11 +176,11 @@ export default function PremiumWeek() {
 
           <Chart title="Category trends">
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-              <XAxis dataKey="day" fontSize={10} stroke="#64748b" />
-              <YAxis fontSize={10} stroke="#64748b" />
-              <Tooltip contentStyle={{background: "#020617", border: "1px solid #1e293b"}} />
-              <Legend wrapperStyle={{fontSize: 10}} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#0f172a" />
+              <XAxis dataKey="day" fontSize={10} stroke="#cbd5ee" />
+              <YAxis fontSize={10} stroke="#cbd5ee" />
+              <Tooltip contentStyle={{background: "#0f172a", border: "1px solid #38bdf8", color: "#f8fafc"}} />
+              <Legend wrapperStyle={{fontSize: 10, color: "#cbd5ee"}} />
               {CATEGORIES.map(c => (
                 <Line key={c} dataKey={c} stroke={COLORS[c]} dot={false} strokeWidth={2} />
               ))}
@@ -193,16 +194,16 @@ export default function PremiumWeek() {
                   <Cell key={i} fill={COLORS[p.name]} />
                 ))}
               </Pie>
-              <Tooltip contentStyle={{background: "#020617", border: "1px solid #1e293b"}} />
+              <Tooltip contentStyle={{background: "#0f172a", border: "1px solid #38bdf8", color: "#f8fafc"}} />
             </PieChart>
           </Chart>
 
           <Chart title="Daily dispersion">
             <ScatterChart>
-              <CartesianGrid stroke="#1e293b" />
-              <XAxis dataKey="x" fontSize={10} stroke="#64748b" />
-              <YAxis dataKey="y" fontSize={10} stroke="#64748b" />
-              <Tooltip contentStyle={{background: "#020617", border: "1px solid #1e293b"}} />
+              <CartesianGrid stroke="#0f172a" />
+              <XAxis dataKey="x" fontSize={10} stroke="#cbd5ee" />
+              <YAxis dataKey="y" fontSize={10} stroke="#cbd5ee" />
+              <Tooltip contentStyle={{background: "#0f172a", border: "1px solid #38bdf8", color: "#f8fafc"}} />
               <Scatter data={scatterData} fill="#a78bfa" />
             </ScatterChart>
           </Chart>
