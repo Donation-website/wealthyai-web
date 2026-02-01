@@ -16,7 +16,7 @@ export default function DayPremium() {
   /* ===== MOBILE DETECTION ===== */
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 1024); // 1024 alatt váltunk mobil/tablet nézetre
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -180,11 +180,13 @@ export default function DayPremium() {
         </div>
       )}
 
+      {/* JAVÍTOTT RÉSZ: AZ ALSO SOR PC-N MOST MÁR ÁTTETSZŐ */}
       <div style={{
         ...upsellFixed,
         position: isMobile ? "relative" : "fixed",
-        padding: isMobile ? "20px" : "0",
-        background: isMobile ? "rgba(2,6,23,0.8)" : "transparent",
+        padding: isMobile ? "20px" : "20px 0",
+        background: isMobile ? "rgba(2,6,23,0.8)" : "transparent", // PC-n átlátszó háttér
+        backdropFilter: isMobile ? "blur(8px)" : "none", // PC-n nincs tejüveg effekt
         fontSize: isMobile ? "12px" : "14px"
       }}>
         Weekly and Monthly plans unlock country-specific tax optimization,
@@ -336,7 +338,6 @@ const aiButton = {
   fontWeight: "bold",
   color: "#020617",
   cursor: "pointer",
-  transition: "opacity 0.2s"
 };
 
 const aiTextStyle = {
@@ -371,7 +372,7 @@ const input = {
   color: "#38bdf8",
   textAlign: "right",
   width: "100px",
-  fontSize: "16px" // iOS zoom megelőzése
+  fontSize: "16px"
 };
 
 const chartGrid = {
@@ -401,9 +402,8 @@ const upsellFixed = {
   textAlign: "center",
   color: "#f8fafc",
   boxSizing: "border-box",
-  backdropFilter: "blur(8px)",
+  zIndex: 5,
   borderTop: "1px solid rgba(255,255,255,0.05)",
-  zIndex: 5
 };
 
 const footerLeft = {
