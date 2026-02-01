@@ -1,60 +1,60 @@
-<style>
-/* ================= MOBILE LAYOUT STABILIZER ================= */
+/* ================= MOBILE LAYOUT STABILIZER (JS SAFE) ================= */
 
-/* 1️⃣ Scrollbar NEM változtathatja meg a layoutot */
-@supports (scrollbar-gutter: stable) {
-  html {
-    scrollbar-gutter: stable;
-  }
-}
-
-/* 2️⃣ Mobilon rögzített viewport szélesség */
-@media (max-width: 768px) {
-  html, body {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-  }
-
-  /* 3️⃣ MINDEN layout elem biztonságos dobozmodell */
-  *, *::before, *::after {
-    box-sizing: border-box;
-  }
-
-  /* 4️⃣ Dinamikus AI tartalom nem tolhat */
-  pre, code {
-    max-width: 100%;
-    white-space: pre-wrap;
-    word-break: break-word;
-    overflow-x: auto;
-  }
-}
-</style>
-
-<script>
-/* ================= MOBILE VIEWPORT LOCK ================= */
-(function () {
-  if (typeof window === "undefined") return;
-
+if (typeof window !== "undefined") {
   const isMobile = () => window.innerWidth <= 768;
 
-  const lockViewport = () => {
+  const injectMobileCSS = () => {
     if (!isMobile()) return;
+    if (document.getElementById("mobile-layout-stabilizer")) return;
 
-    const width = document.documentElement.clientWidth;
+    const style = document.createElement("style");
+    style.id = "mobile-layout-stabilizer";
+    style.innerHTML = `
+      @supports (scrollbar-gutter: stable) {
+        html {
+          scrollbar-gutter: stable;
+        }
+      }
 
-    document.documentElement.style.maxWidth = width + "px";
-    document.body.style.maxWidth = width + "px";
+      html, body {
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      pre, code {
+        max-width: 100%;
+        white-space: pre-wrap;
+        word-break: break-word;
+        overflow-x: auto;
+      }
+    `;
+    document.head.appendChild(style);
   };
 
-  window.addEventListener("load", lockViewport);
-  window.addEventListener("resize", lockViewport);
+  const lockViewportWidth = () => {
+    if (!isMobile()) return;
 
-  // AI válasz megjelenés / hydration után
-  setTimeout(lockViewport, 300);
-  setTimeout(lockViewport, 800);
-})();
-</script>
+    const w = document.documentElement.clientWidth;
+    document.documentElement.style.maxWidth = w + "px";
+    document.body.style.maxWidth = w + "px";
+  };
+
+  window.addEventListener("load", () => {
+    injectMobileCSS();
+    lockViewportWidth();
+  });
+
+  window.addEventListener("resize", lockViewportWidth);
+
+  // AI válasz / hydration utáni stabilizálás
+  setTimeout(lockViewportWidth, 300);
+  setTimeout(lockViewportWidth, 800);
+  setTimeout(lockViewportWidth, 1500);
+}
 
 import { useState, useEffect } from "react";
 import {
