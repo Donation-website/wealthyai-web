@@ -1,4 +1,15 @@
+import React, { useState, useEffect } from "react";
+
 export default function HelpPage() {
+  /* ===== MOBILE DETECTION ===== */
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <div style={page}>
       {/* FUTURISTIC BACKGROUND LAYERS */}
@@ -6,20 +17,32 @@ export default function HelpPage() {
       <div style={bgLines} />
       <div style={bgGlow} />
 
-      <div style={content}>
+      <div
+        style={{
+          ...content,
+          padding: isMobile ? "20px 15px" : 40,
+        }}
+      >
         <div style={container}>
           <button onClick={() => window.history.back()} style={back}>
             ← Back
           </button>
 
-          <h1 style={title}>How Monthly Financial Intelligence Works</h1>
+          <h1
+            style={{
+              ...title,
+              fontSize: isMobile ? "1.8rem" : "2.2rem",
+            }}
+          >
+            How Monthly Financial Intelligence Works
+          </h1>
 
           <p style={intro}>
             This page explains how to use the Monthly Intelligence view in WealthyAI.
             The purpose is long-range clarity — not optimization, not control.
           </p>
 
-          <Section title="What this page is">
+          <Section title="What this page is" isMobile={isMobile}>
             The monthly view provides <strong>strategic financial intelligence</strong>.
             <br /><br />
             It is designed to surface pressure, structure, and direction
@@ -28,7 +51,7 @@ export default function HelpPage() {
             Nothing here updates automatically unless you ask for it.
           </Section>
 
-          <Section title="Daily signal vs monthly briefing">
+          <Section title="Daily signal vs monthly briefing" isMobile={isMobile}>
             These are <strong>not the same thing</strong>.
             <br /><br />
             <strong>Daily Signal</strong>
@@ -49,7 +72,7 @@ export default function HelpPage() {
             </ul>
           </Section>
 
-          <Section title="Snapshots (important)">
+          <Section title="Snapshots (important)" isMobile={isMobile}>
             Monthly briefings are <strong>temporary by default</strong>.
             <br /><br />
             If you close the page or generate a new briefing without saving,
@@ -67,7 +90,7 @@ export default function HelpPage() {
             This behavior is intentional.
           </Section>
 
-          <Section title="Why nothing is saved automatically">
+          <Section title="Why nothing is saved automatically" isMobile={isMobile}>
             Financial intelligence loses value when it becomes something you stop noticing.
             <br /><br />
             By requiring intentional saving:
@@ -79,7 +102,7 @@ export default function HelpPage() {
             <strong>If everything were saved, nothing would stand out.</strong>
           </Section>
 
-          <Section title="Returning daily">
+          <Section title="Returning daily" isMobile={isMobile}>
             You are not expected to act every day.
             <br /><br />
             Returning daily allows subtle shifts to become visible,
@@ -89,7 +112,7 @@ export default function HelpPage() {
             The system is quiet by design.
           </Section>
 
-          <Section title="What this system does NOT do">
+          <Section title="What this system does NOT do" isMobile={isMobile}>
             <ul>
               <li>It does not provide financial advice</li>
               <li>It does not optimize budgets</li>
@@ -109,9 +132,14 @@ export default function HelpPage() {
 
 /* ===== SECTION COMPONENT ===== */
 
-function Section({ title, children }) {
+function Section({ title, children, isMobile }) {
   return (
-    <div style={section}>
+    <div
+      style={{
+        ...section,
+        padding: isMobile ? "20px" : 24,
+      }}
+    >
       <h2 style={sectionTitle}>{title}</h2>
       <div style={sectionText}>{children}</div>
     </div>
@@ -124,14 +152,13 @@ const page = {
   position: "relative",
   minHeight: "100vh",
   background: "#020617",
-  overflow: "hidden",
+  overflowX: "hidden",
   fontFamily: "Inter, system-ui",
 };
 
 const content = {
   position: "relative",
   zIndex: 10,
-  padding: 40,
   display: "flex",
   justifyContent: "center",
 };
@@ -183,7 +210,6 @@ const back = {
 };
 
 const title = {
-  fontSize: "2.2rem",
   marginBottom: 12,
   color: "#ffffff",
 };
@@ -200,11 +226,11 @@ const intro = {
 const section = {
   width: "100%",
   marginBottom: 28,
-  padding: 24,
   borderRadius: 16,
   background: "rgba(56,189,248,0.14)",
   border: "1px solid rgba(125,211,252,0.35)",
   backdropFilter: "blur(12px)",
+  boxSizing: "border-box",
 };
 
 const sectionTitle = {
@@ -221,6 +247,7 @@ const sectionText = {
 
 const footer = {
   marginTop: 48,
+  marginBottom: 40,
   fontSize: 14,
   color: "#e5e7eb",
   maxWidth: 720,
