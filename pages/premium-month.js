@@ -1,59 +1,48 @@
-/* ================= MOBILE iOS SAFARI OPEN-AI FIX ================= */
+/* ================= MOBILE SAFE STACK + iOS OVERFLOW FIX ================= */
 
 if (typeof document !== "undefined") {
   const isMobile = () => window.innerWidth <= 768;
 
-  const fixIOSOpenStateShift = () => {
+  const fixMobile = () => {
     if (!isMobile()) return;
 
-    /* 1. LOCK PAGE WIDTH TO VIEWPORT */
-    const vw = window.innerWidth;
-    document.documentElement.style.width = vw + "px";
-    document.documentElement.style.maxWidth = vw + "px";
+    /* 1. GLOBAL OVERFLOW STOP (SAFE) */
     document.documentElement.style.overflowX = "hidden";
-
-    document.body.style.width = vw + "px";
-    document.body.style.maxWidth = vw + "px";
     document.body.style.overflowX = "hidden";
-    document.body.style.position = "relative";
-    document.body.style.left = "0px";
+    document.body.style.maxWidth = "100%";
 
-    /* 2. FORCE ALL TOP-LEVEL SECTIONS TO STAY INSIDE VIEWPORT */
-    Array.from(document.body.children).forEach(el => {
-      el.style.maxWidth = "100%";
-      el.style.overflowX = "hidden";
-    });
-
-    /* 3. AI RESPONSE CONTAINER SAFETY (THE REAL CULPRIT) */
-    document.querySelectorAll("pre, code, textarea").forEach(el => {
-      el.style.maxWidth = "100%";
-      el.style.width = "100%";
-      el.style.boxSizing = "border-box";
-      el.style.whiteSpace = "pre-wrap";
-      el.style.wordBreak = "break-word";
-      el.style.overflowX = "auto";   // scroll INSIDE, not page
-    });
-
-    /* 4. GRID / FLEX CONTAINERS: NEVER CENTER-SHIFT */
+    /* 2. FORCE ONLY 2-BOX GRIDS TO STACK */
     document.querySelectorAll("div").forEach(el => {
       const style = window.getComputedStyle(el);
 
-      if (style.display === "grid" || style.display === "flex") {
-        el.style.maxWidth = "100%";
+      if (
+        style.display === "grid" &&
+        style.gridTemplateColumns.split(" ").length === 2 &&
+        el.children.length === 2
+      ) {
+        el.style.gridTemplateColumns = "1fr";
         el.style.width = "100%";
-        el.style.marginLeft = "0";
-        el.style.marginRight = "0";
+        el.style.maxWidth = "100%";
       }
+    });
+
+    /* 3. AI RESPONSE: NEVER PUSH PAGE WIDTH */
+    document.querySelectorAll("pre, code").forEach(el => {
+      el.style.maxWidth = "100%";
+      el.style.boxSizing = "border-box";
+      el.style.whiteSpace = "pre-wrap";
+      el.style.wordBreak = "break-word";
+      el.style.overflowX = "auto"; // scroll INSIDE
     });
   };
 
-  window.addEventListener("load", fixIOSOpenStateShift);
-  window.addEventListener("resize", fixIOSOpenStateShift);
+  window.addEventListener("load", fixMobile);
+  window.addEventListener("resize", fixMobile);
 
-  // React hydration / AI open animation safety
-  setTimeout(fixIOSOpenStateShift, 300);
-  setTimeout(fixIOSOpenStateShift, 800);
-  setTimeout(fixIOSOpenStateShift, 1500);
+  // React hydration / AI open timing
+  setTimeout(fixMobile, 300);
+  setTimeout(fixMobile, 800);
+  setTimeout(fixMobile, 1500);
 }
 
 import { useState, useEffect } from "react";
