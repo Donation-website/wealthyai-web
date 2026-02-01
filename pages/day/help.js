@@ -1,4 +1,15 @@
+import React, { useState, useEffect } from "react";
+
 export default function DayHelpPage() {
+  /* ===== MOBILE DETECTION ===== */
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <div style={page}>
       {/* FUTURISTIC BACKGROUND */}
@@ -6,13 +17,19 @@ export default function DayHelpPage() {
       <div style={bgLines} />
       <div style={bgGlow} />
 
-      <div style={content}>
+      <div style={{
+        ...content,
+        padding: isMobile ? "20px 15px" : "40px"
+      }}>
         <div style={container}>
           <button onClick={() => window.history.back()} style={back}>
             ← Back
           </button>
 
-          <h1 style={title}>How Daily Financial Intelligence Works</h1>
+          <h1 style={{
+            ...title,
+            fontSize: isMobile ? "1.8rem" : "2.2rem"
+          }}>How Daily Financial Intelligence Works</h1>
 
           <p style={intro}>
             This page explains how to use the <strong>Daily view</strong> in WealthyAI.
@@ -26,9 +43,9 @@ export default function DayHelpPage() {
             and what direction the next few days are heading.
           </Section>
 
-          <Section title="What the daily analysis does">
+          <Section title="What the daily analysis does" isMobile={isMobile}>
             The system looks at:
-            <ul>
+            <ul style={{ paddingLeft: "20px", marginTop: "10px" }}>
               <li>your current income input</li>
               <li>your fixed and variable costs</li>
               <li>your immediate surplus or deficit</li>
@@ -36,8 +53,8 @@ export default function DayHelpPage() {
             Based on this, it provides a short, grounded interpretation.
           </Section>
 
-          <Section title="What this analysis does NOT do">
-            <ul>
+          <Section title="What this analysis does NOT do" isMobile={isMobile}>
+            <ul style={{ paddingLeft: "20px" }}>
               <li>It does not replace weekly or monthly planning</li>
               <li>It does not predict long-term outcomes</li>
               <li>It does not judge spending decisions</li>
@@ -49,10 +66,10 @@ export default function DayHelpPage() {
             <p><strong>Today's Financial State</strong><br />
             A snapshot of where you stand right now.</p>
 
-            <p><strong>What This Means</strong><br />
+            <p style={{ marginTop: "15px" }}><strong>What This Means</strong><br />
             Context for your current numbers.</p>
 
-            <p><strong>7-Day Direction</strong><br />
+            <p style={{ marginTop: "15px" }}><strong>7-Day Direction</strong><br />
             A conservative short-term outlook — not a promise.</p>
           </Section>
 
@@ -73,9 +90,12 @@ export default function DayHelpPage() {
 
 /* ===== SECTION COMPONENT ===== */
 
-function Section({ title, children }) {
+function Section({ title, children, isMobile }) {
   return (
-    <div style={section}>
+    <div style={{
+      ...section,
+      padding: isMobile ? "20px" : "24px"
+    }}>
       <h2 style={sectionTitle}>{title}</h2>
       <div style={sectionText}>{children}</div>
     </div>
@@ -88,14 +108,13 @@ const page = {
   position: "relative",
   minHeight: "100vh",
   background: "#020617",
-  overflow: "hidden",
+  overflowX: "hidden", // Megakadályozza a vízszintes csúszkát mobilon
   fontFamily: "Inter, system-ui",
 };
 
 const content = {
   position: "relative",
   zIndex: 10,
-  padding: 40,
   display: "flex",
   justifyContent: "center",
 };
@@ -147,9 +166,9 @@ const back = {
 };
 
 const title = {
-  fontSize: "2.2rem",
   marginBottom: 12,
   color: "#ffffff",
+  lineHeight: "1.2",
 };
 
 const intro = {
@@ -157,6 +176,7 @@ const intro = {
   maxWidth: 720,
   marginBottom: 32,
   fontSize: 15,
+  lineHeight: "1.5",
 };
 
 /* ===== GLASS SECTIONS ===== */
@@ -164,11 +184,11 @@ const intro = {
 const section = {
   width: "100%",
   marginBottom: 28,
-  padding: 24,
   borderRadius: 16,
   background: "rgba(56,189,248,0.14)",
   border: "1px solid rgba(125,211,252,0.35)",
   backdropFilter: "blur(12px)",
+  boxSizing: "border-box", // Fontos, hogy ne lógjon ki a padding miatt
 };
 
 const sectionTitle = {
@@ -185,6 +205,7 @@ const sectionText = {
 
 const footer = {
   marginTop: 48,
+  marginBottom: 40,
   fontSize: 14,
   color: "#e5e7eb",
   maxWidth: 720,
