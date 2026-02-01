@@ -1,9 +1,18 @@
-import React from "react"; 
+import React, { useState, useEffect } from "react"; 
 import Head from "next/head";
 
 export default function Home() {
   const SITE_URL = "https://wealthyai-web.vercel.app";
   const SHARE_TEXT = "AI-powered financial clarity with WealthyAI";
+
+  // 👇 MOBIL FIGYELŐ
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // 👇 KIJELÖLÉS TÖRLÉSE NEM FUNKCIONÁLIS KATTINTÁSNÁL
   const clearSelectionIfNeeded = (e) => {
@@ -34,7 +43,7 @@ export default function Home() {
         />
         <meta
           property="og:image"
-          content="https://wealthyai-web.vercel.app/wealthyai/wealthyai.png"
+          content="https://wealthyai-web.vercel.app"
         />
 
         {/* Twitter */}
@@ -46,19 +55,21 @@ export default function Home() {
         />
         <meta
           name="twitter:image"
-          content="https://wealthyai-web.vercel.app/wealthyai/wealthyai.png"
+          content="https://wealthyai-web.vercel.app"
         />
       </Head>
 
       <main
         onMouseDown={clearSelectionIfNeeded}
         style={{
-          height: "100vh",
+          height: isMobile ? "auto" : "100vh",
+          minHeight: "100vh",
           width: "100%",
           boxSizing: "border-box",
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: isMobile ? "flex-start" : "center",
           backgroundColor: "#060b13",
           backgroundImage:
             "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
@@ -68,21 +79,24 @@ export default function Home() {
           color: "white",
           fontFamily: "'Inter', system-ui, Arial, sans-serif",
           position: "relative",
-          overflow: "hidden",
+          overflowX: "hidden",
           margin: 0,
-          padding: 0,
+          padding: isMobile ? "80px 0 100px 0" : 0,
         }}
       >
         {/* TOP NAV */}
         <div
           style={{
-            position: "absolute",
-            top: "30px",
-            right: "40px",
+            position: isMobile ? "fixed" : "absolute",
+            top: isMobile ? "15px" : "30px",
+            right: isMobile ? "0" : "40px",
+            left: isMobile ? "0" : "auto",
             display: "flex",
-            gap: "28px",
+            justifyContent: isMobile ? "center" : "flex-end",
+            gap: isMobile ? "15px" : "28px",
             zIndex: 6,
-            fontSize: "0.95rem",
+            fontSize: isMobile ? "0.8rem" : "0.95rem",
+            width: isMobile ? "100%" : "auto",
           }}
         >
           <a href="/how-it-works" className="nav-link">How it works</a>
@@ -99,7 +113,7 @@ export default function Home() {
             flexDirection: "column",
             alignItems: "center",
             width: "100%",
-            transform: "translateY(-40px)",
+            transform: isMobile ? "none" : "translateY(-40px)",
           }}
         >
           <img
@@ -107,7 +121,7 @@ export default function Home() {
             alt="WealthyAI logo"
             className="brand-logo"
             style={{
-              width: "860px",
+              width: isMobile ? "320px" : "860px",
               maxWidth: "95vw",
               display: "block",
               cursor: "pointer",
@@ -120,7 +134,7 @@ export default function Home() {
               lineHeight: "1.45",
               textAlign: "center",
               textShadow: "0 2px 10px rgba(0,0,0,0.5)",
-              marginTop: "-110px",
+              marginTop: isMobile ? "0px" : "-110px",
               width: "100%",
               maxWidth: "800px",
               padding: "0 20px",
@@ -129,7 +143,7 @@ export default function Home() {
           >
             <div
               style={{
-                fontSize: "1.55rem",
+                fontSize: isMobile ? "1.1rem" : "1.55rem",
                 fontWeight: "300",
                 opacity: 0.9,
                 marginBottom: "15px",
@@ -143,13 +157,14 @@ export default function Home() {
             <div
               style={{
                 display: "flex",
+                flexDirection: isMobile ? "column" : "row",
                 justifyContent: "center",
                 alignItems: "center",
-                fontSize: "0.85rem",
+                fontSize: isMobile ? "0.7rem" : "0.85rem",
                 textTransform: "uppercase",
                 letterSpacing: "1.4px",
                 opacity: 0.8,
-                gap: "15px",
+                gap: isMobile ? "8px" : "15px",
                 fontWeight: "500",
               }}
             >
@@ -163,15 +178,18 @@ export default function Home() {
         {/* START */}
         <div
           style={{
-            position: "absolute",
-            top: "45%",
-            left: "10%",
-            transform: "translateY(-50%)",
+            position: isMobile ? "relative" : "absolute",
+            top: isMobile ? "auto" : "45%",
+            left: isMobile ? "auto" : "10%",
+            transform: isMobile ? "none" : "translateY(-50%)",
+            marginTop: isMobile ? "40px" : "0",
             zIndex: 4,
             display: "flex",
             flexDirection: "column",
-            alignItems: "flex-start",
+            alignItems: isMobile ? "center" : "flex-start",
             gap: "10px",
+            padding: isMobile ? "0 20px" : "0",
+            textAlign: isMobile ? "center" : "left",
           }}
         >
           <a
@@ -185,7 +203,7 @@ export default function Home() {
               color: "white",
               textDecoration: "none",
               fontWeight: "bold",
-              fontSize: "1.2rem",
+              fontSize: isMobile ? "1rem" : "1.2rem",
             }}
           >
             Start
@@ -196,6 +214,7 @@ export default function Home() {
               fontSize: "0.85rem",
               opacity: 0.75,
               letterSpacing: "0.3px",
+              maxWidth: isMobile ? "280px" : "100%",
             }}
           >
             Start with a simple financial snapshot. Takes less than a minute.
@@ -205,16 +224,19 @@ export default function Home() {
         {/* BOTTOM BAR */}
         <div
           style={{
-            position: "absolute",
+            position: isMobile ? "relative" : "absolute",
             bottom: 0,
             left: 0,
             width: "100%",
-            padding: "18px 24px",
+            padding: isMobile ? "40px 24px" : "18px 24px",
             display: "flex",
+            flexDirection: isMobile ? "column-reverse" : "row",
             justifyContent: "space-between",
-            alignItems: "center",
+            alignItems: isMobile ? "center" : "center",
             zIndex: 5,
             boxSizing: "border-box",
+            gap: isMobile ? "30px" : "0",
+            backgroundColor: isMobile ? "rgba(6, 11, 19, 0.8)" : "transparent",
           }}
         >
           <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
@@ -225,7 +247,7 @@ export default function Home() {
             style={{
               display: "flex",
               flexDirection: "column",
-              alignItems: "flex-end",
+              alignItems: isMobile ? "center" : "flex-end",
               gap: "8px",
             }}
           >
@@ -234,9 +256,9 @@ export default function Home() {
               className="nav-link"
               style={{
                 fontSize: "0.82rem",
-                textAlign: "right",
+                textAlign: isMobile ? "center" : "right",
                 lineHeight: "1.4",
-                cursor: "pointer", // 👈 MUTATÓUJJ
+                cursor: "pointer",
               }}
             >
               <div style={{ fontWeight: 500 }}>
@@ -257,7 +279,7 @@ export default function Home() {
             </div>
 
             {/* SOCIAL ICONS */}
-            <div style={{ display: "flex", gap: "18px", alignItems: "center" }}>
+            <div style={{ display: "flex", gap: "18px", alignItems: "center", marginTop: isMobile ? "10px" : "0" }}>
               <a
                 href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`}
                 target="_blank"
