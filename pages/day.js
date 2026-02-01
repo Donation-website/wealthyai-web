@@ -13,6 +13,15 @@ import {
 
 export default function DayPremium() {
 
+  /* ===== MOBILE DETECTION ===== */
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 1024); // 1024 alatt váltunk mobil/tablet nézetre
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   /* ===== SUBSCRIPTION CHECK ===== */
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -88,23 +97,38 @@ export default function DayPremium() {
 
   return (
     <div style={page}>
-      <a href="/day/help" style={helpButton}>Help</a>
+      <a href="/day/help" style={{
+        ...helpButton,
+        top: isMobile ? 12 : 24,
+        right: isMobile ? 12 : 24
+      }}>Help</a>
 
-      <div style={contentWrap}>
+      <div style={{
+        ...contentWrap,
+        padding: isMobile ? "60px 15px 120px 15px" : "40px"
+      }}>
         <div style={header}>
-          <h1 style={title}>WEALTHYAI · PRO INTELLIGENCE</h1>
+          <h1 style={{
+            ...title,
+            fontSize: isMobile ? "1.6rem" : "2.6rem"
+          }}>WEALTHYAI · PRO INTELLIGENCE</h1>
           <p style={subtitle}>
             Thank you for choosing the <strong>1-Day Professional Access</strong>.
           </p>
         </div>
 
-        <div style={layout}>
+        <div style={{
+          ...layout,
+          gridTemplateColumns: isMobile ? "1fr" : "1fr 1.3fr",
+          gap: isMobile ? "20px" : "40px"
+        }}>
           <div>
-            <Metric label="MONTHLY SURPLUS" value={`$${surplus.toLocaleString()}`} />
-            <Metric label="SAVINGS RATE" value={`${savingsRate.toFixed(1)}%`} />
+            <Metric label="MONTHLY SURPLUS" value={`$${surplus.toLocaleString()}`} isMobile={isMobile} />
+            <Metric label="SAVINGS RATE" value={`${savingsRate.toFixed(1)}%`} isMobile={isMobile} />
             <Metric
               label="5Y PROJECTION"
               value={`$${Math.round(fiveYearProjection).toLocaleString()}`}
+              isMobile={isMobile}
             />
 
             <button onClick={askAI} style={aiButton}>
@@ -139,7 +163,10 @@ export default function DayPremium() {
               ))}
             </div>
 
-            <div style={chartGrid}>
+            <div style={{
+              ...chartGrid,
+              gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr"
+            }}>
               <MiniChart title="Cash Flow Projection" data={chartData} />
               <MiniBar title="Expense Distribution" value={data.fixed + data.variable} />
             </div>
@@ -147,13 +174,22 @@ export default function DayPremium() {
         </div>
       </div>
 
-      <div style={footerLeft}>
-        © 2026 WealthyAI — All rights reserved.
-      </div>
+      {!isMobile && (
+        <div style={footerLeft}>
+          © 2026 WealthyAI — All rights reserved.
+        </div>
+      )}
 
-      <div style={upsellFixed}>
+      <div style={{
+        ...upsellFixed,
+        position: isMobile ? "relative" : "fixed",
+        padding: isMobile ? "20px" : "0",
+        background: isMobile ? "rgba(2,6,23,0.8)" : "transparent",
+        fontSize: isMobile ? "12px" : "14px"
+      }}>
         Weekly and Monthly plans unlock country-specific tax optimization,
         stress testing and advanced projections.
+        {isMobile && <div style={{marginTop: 10, fontSize: 10, opacity: 0.6}}>© 2026 WealthyAI</div>}
       </div>
     </div>
   );
@@ -161,11 +197,17 @@ export default function DayPremium() {
 
 /* ===== COMPONENTS ===== */
 
-function Metric({ label, value }) {
+function Metric({ label, value, isMobile }) {
   return (
-    <div style={metric}>
+    <div style={{
+      ...metric,
+      marginBottom: isMobile ? "15px" : "25px"
+    }}>
       <div style={metricLabel}>{label}</div>
-      <div style={metricValue}>{value}</div>
+      <div style={{
+        ...metricValue,
+        fontSize: isMobile ? "1.6rem" : "2.2rem"
+      }}>{value}</div>
     </div>
   );
 }
@@ -176,11 +218,11 @@ function MiniChart({ title, data }) {
       <div style={chartTitle}>{title}</div>
       <ResponsiveContainer width="100%" height={120}>
         <LineChart data={data}>
-          <CartesianGrid stroke="#0f172a" />
-          <XAxis dataKey="name" stroke="#64748b" />
-          <YAxis stroke="#64748b" />
-          <Tooltip />
-          <Line type="monotone" dataKey="value" stroke="#38bdf8" strokeWidth={2} />
+          <CartesianGrid stroke="#0f172a" strokeDasharray="3 3" />
+          <XAxis dataKey="name" stroke="#64748b" fontSize={10} />
+          <YAxis stroke="#64748b" fontSize={10} />
+          <Tooltip contentStyle={{backgroundColor: '#020617', border: '1px solid #1e293b'}} />
+          <Line type="monotone" dataKey="value" stroke="#38bdf8" strokeWidth={2} dot={{ r: 3 }} />
         </LineChart>
       </ResponsiveContainer>
     </div>
@@ -188,20 +230,21 @@ function MiniChart({ title, data }) {
 }
 
 function MiniBar({ title, value }) {
-  const data = [{ name: "Value", v: value }];
+  const data = [{ name: "Total", v: value }];
   return (
     <div style={chartBox}>
       <div style={chartTitle}>{title}</div>
       <ResponsiveContainer width="100%" height={120}>
         <BarChart data={data}>
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Bar dataKey="v" fill="#22d3ee" />
+          <XAxis dataKey="name" stroke="#64748b" fontSize={10} />
+          <YAxis stroke="#64748b" fontSize={10} />
+          <Bar dataKey="v" fill="#22d3ee" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
   );
 }
+
 /* ===== STYLES ===== */
 
 const page = {
@@ -210,7 +253,6 @@ const page = {
   color: "#e5e7eb",
   fontFamily: "Inter, system-ui, sans-serif",
   backgroundColor: "#020617",
-  paddingBottom: "90px",
   backgroundImage: `
     repeating-linear-gradient(-25deg, rgba(56,189,248,0.06) 0px, rgba(56,189,248,0.06) 1px, transparent 1px, transparent 180px),
     repeating-linear-gradient(35deg, rgba(167,139,250,0.05) 0px, rgba(167,139,250,0.05) 1px, transparent 1px, transparent 260px),
@@ -222,16 +264,17 @@ const page = {
   backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
   backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 280px auto",
   backgroundPosition: "center",
+  overflowX: "hidden"
 };
 
-const contentWrap = { padding: "40px" };
+const contentWrap = { width: "100%", boxSizing: "border-box" };
 
 const header = {
   marginBottom: "30px",
   textAlign: "center",
 };
 
-const title = { fontSize: "2.6rem", margin: 0 };
+const title = { margin: 0, fontWeight: "bold" };
 
 const subtitle = {
   color: "#f8fafc",
@@ -240,8 +283,6 @@ const subtitle = {
 
 const helpButton = {
   position: "absolute",
-  top: 24,
-  right: 24,
   padding: "8px 14px",
   borderRadius: 10,
   fontSize: 13,
@@ -250,24 +291,26 @@ const helpButton = {
   border: "1px solid #1e293b",
   background: "rgba(2,6,23,0.6)",
   backdropFilter: "blur(6px)",
+  zIndex: 10,
 };
 
 const layout = {
   display: "grid",
-  gridTemplateColumns: "1fr 1.3fr",
-  gap: "40px",
+  maxWidth: "1200px",
+  margin: "0 auto",
 };
 
-const metric = { marginBottom: "25px" };
-const metricLabel = { color: "#7dd3fc", fontSize: "0.8rem" };
-const metricValue = { fontSize: "2.2rem", fontWeight: "bold" };
+const metric = { width: "100%" };
+const metricLabel = { color: "#7dd3fc", fontSize: "0.8rem", letterSpacing: "1px" };
+const metricValue = { fontWeight: "bold" };
 
 const aiBox = {
   marginTop: "20px",
-  background: "#020617",
+  background: "rgba(2,6,23,0.8)",
   border: "1px solid #1e293b",
   borderRadius: "12px",
   padding: "16px",
+  backdropFilter: "blur(10px)"
 };
 
 const aiHeader = {
@@ -281,22 +324,28 @@ const closeBtn = {
   border: "none",
   color: "#94a3b8",
   cursor: "pointer",
+  fontSize: "18px"
 };
 
 const aiButton = {
   width: "100%",
-  padding: "12px",
+  padding: "14px",
   background: "#38bdf8",
   border: "none",
-  borderRadius: "6px",
+  borderRadius: "8px",
   fontWeight: "bold",
+  color: "#020617",
   cursor: "pointer",
+  transition: "opacity 0.2s"
 };
 
 const aiTextStyle = {
   marginTop: "10px",
   whiteSpace: "pre-wrap",
   color: "#cbd5f5",
+  fontSize: "14px",
+  lineHeight: "1.5",
+  fontFamily: "inherit"
 };
 
 const inputPanel = {
@@ -304,49 +353,57 @@ const inputPanel = {
   border: "1px solid #1e293b",
   borderRadius: "12px",
   padding: "15px",
+  background: "rgba(30, 41, 59, 0.2)"
 };
 
 const inputRow = {
   display: "flex",
   justifyContent: "space-between",
+  alignItems: "center",
   marginBottom: "10px",
 };
 
 const input = {
-  background: "transparent",
-  border: "none",
+  background: "rgba(56, 189, 248, 0.05)",
+  border: "1px solid rgba(56, 189, 248, 0.2)",
+  borderRadius: "4px",
+  padding: "5px 10px",
   color: "#38bdf8",
   textAlign: "right",
-  width: "120px",
+  width: "100px",
+  fontSize: "16px" // iOS zoom megelőzése
 };
 
 const chartGrid = {
   display: "grid",
-  gridTemplateColumns: "1fr 1fr",
   gap: "16px",
 };
 
 const chartBox = {
-  background: "#020617",
+  background: "rgba(2, 6, 23, 0.7)",
   border: "1px solid #1e293b",
   borderRadius: "12px",
-  padding: "10px",
+  padding: "12px",
 };
 
 const chartTitle = {
   fontSize: "0.75rem",
   color: "#7dd3fc",
-  marginBottom: "6px",
+  marginBottom: "10px",
+  textTransform: "uppercase",
+  letterSpacing: "0.5px"
 };
 
 const upsellFixed = {
-  position: "fixed",
-  bottom: 16,
+  bottom: 0,
   left: 0,
   width: "100%",
   textAlign: "center",
   color: "#f8fafc",
-  fontSize: 14,
+  boxSizing: "border-box",
+  backdropFilter: "blur(8px)",
+  borderTop: "1px solid rgba(255,255,255,0.05)",
+  zIndex: 5
 };
 
 const footerLeft = {
@@ -355,5 +412,5 @@ const footerLeft = {
   left: 20,
   fontSize: 12,
   color: "#94a3b8",
+  zIndex: 6
 };
-
