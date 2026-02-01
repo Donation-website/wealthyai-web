@@ -1,26 +1,25 @@
-/* ================= HARD MOBILE STACK FIX (NO CSS DEPENDENCY) ================= */
+/* ================= FINAL MOBILE STACK + CENTER FIX ================= */
 
 if (typeof window !== "undefined") {
   const isMobile = () => window.innerWidth <= 768;
 
-  const forceStack = () => {
+  const forceStackAndCenter = () => {
     if (!isMobile()) return;
 
-    // végigmegyünk MINDEN elemén
     document.querySelectorAll("div").forEach(el => {
       if (el.children.length !== 2) return;
 
       const style = window.getComputedStyle(el);
 
-      // csak az, ami eddig egymás mellett volt
-      if (
-        style.display === "flex" ||
-        style.display === "grid"
-      ) {
-        // 💣 KÉNYSZERÍTETT STACK
+      // csak layout konténer
+      if (style.display === "flex" || style.display === "grid") {
+        // egymás alá
         el.style.display = "flex";
         el.style.flexDirection = "column";
         el.style.alignItems = "stretch";
+
+        // vízszintes középre igazítás
+        el.style.marginInline = "auto";
 
         // gyerekek teljes szélesség
         Array.from(el.children).forEach(child => {
@@ -36,13 +35,13 @@ if (typeof window !== "undefined") {
     document.body.style.maxWidth = w + "px";
   };
 
-  window.addEventListener("load", forceStack);
-  window.addEventListener("resize", forceStack);
+  window.addEventListener("load", forceStackAndCenter);
+  window.addEventListener("resize", forceStackAndCenter);
 
   // hydration / AI válasz után
-  setTimeout(forceStack, 300);
-  setTimeout(forceStack, 800);
-  setTimeout(forceStack, 1500);
+  setTimeout(forceStackAndCenter, 300);
+  setTimeout(forceStackAndCenter, 800);
+  setTimeout(forceStackAndCenter, 1500);
 }
 
 import { useState, useEffect } from "react";
