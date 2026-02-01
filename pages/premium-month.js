@@ -1,15 +1,16 @@
-/* ================= MOBILE LAYOUT STABILIZER (JS SAFE) ================= */
+/* ================= MOBILE CHAT STACK & STABILITY FIX ================= */
 
 if (typeof window !== "undefined") {
   const isMobile = () => window.innerWidth <= 768;
 
-  const injectMobileCSS = () => {
+  const injectCSS = () => {
     if (!isMobile()) return;
-    if (document.getElementById("mobile-layout-stabilizer")) return;
+    if (document.getElementById("mobile-chat-fix")) return;
 
     const style = document.createElement("style");
-    style.id = "mobile-layout-stabilizer";
+    style.id = "mobile-chat-fix";
     style.innerHTML = `
+      /* 🔒 Stabil viewport */
       @supports (scrollbar-gutter: stable) {
         html {
           scrollbar-gutter: stable;
@@ -17,6 +18,7 @@ if (typeof window !== "undefined") {
       }
 
       html, body {
+        width: 100%;
         max-width: 100%;
         overflow-x: hidden;
       }
@@ -25,6 +27,23 @@ if (typeof window !== "undefined") {
         box-sizing: border-box;
       }
 
+      /* 🧱 CHAT BOXOK KÉNYSZERÍTETT STACK */
+      .chat-wrapper,
+      [data-chat-wrapper] {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+      }
+
+      /* 🧱 BELSŐ BOXOK */
+      .chat-box,
+      .input-box,
+      .ai-box {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+
+      /* 🧠 AI tartalom nem tolhat */
       pre, code {
         max-width: 100%;
         white-space: pre-wrap;
@@ -35,25 +54,23 @@ if (typeof window !== "undefined") {
     document.head.appendChild(style);
   };
 
-  const lockViewportWidth = () => {
+  const lockWidth = () => {
     if (!isMobile()) return;
-
     const w = document.documentElement.clientWidth;
     document.documentElement.style.maxWidth = w + "px";
     document.body.style.maxWidth = w + "px";
   };
 
   window.addEventListener("load", () => {
-    injectMobileCSS();
-    lockViewportWidth();
+    injectCSS();
+    lockWidth();
   });
 
-  window.addEventListener("resize", lockViewportWidth);
+  window.addEventListener("resize", lockWidth);
 
-  // AI válasz / hydration utáni stabilizálás
-  setTimeout(lockViewportWidth, 300);
-  setTimeout(lockViewportWidth, 800);
-  setTimeout(lockViewportWidth, 1500);
+  setTimeout(lockWidth, 300);
+  setTimeout(lockWidth, 800);
+  setTimeout(lockWidth, 1500);
 }
 
 import { useState, useEffect } from "react";
