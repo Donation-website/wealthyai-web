@@ -23,15 +23,6 @@ const COLORS = {
 
 export default function PremiumWeek() {
 
-  /* ===== MOBILE DETECTION ===== */
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 1024);
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   /* ===== SUBSCRIPTION CHECK ===== */
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -137,11 +128,11 @@ export default function PremiumWeek() {
   };
 
   return (
-    <div style={{...page, padding: isMobile ? "20px 15px 100px 15px" : "40px"}}>
-      <a href="/help" style={{...helpButton, top: isMobile ? 15 : 24, right: isMobile ? 15 : 24}}>Help</a>
+    <div style={page}>
+      <a href="/help" style={helpButton}>Help</a>
 
       <div style={header}>
-        <h1 style={{...title, fontSize: isMobile ? "1.6rem" : "2.6rem"}}>WEALTHYAI · WEEKLY INTELLIGENCE</h1>
+        <h1 style={title}>WEALTHYAI · WEEKLY INTELLIGENCE</h1>
         <p style={subtitle}>
           Weekly behavioral analysis with country-aware intelligence.
         </p>
@@ -160,76 +151,73 @@ export default function PremiumWeek() {
         </select>
       </div>
 
-      <div style={{...layout, gridTemplateColumns: isMobile ? "1fr" : "1.2fr 1fr", gap: isMobile ? 20 : 30}}>
-        <div style={{...left, maxHeight: isMobile ? "none" : "70vh"}}>
+      <div style={layout}>
+        <div style={left}>
           {DAYS.map((d, i) => (
             <details key={d} open={i === 0} style={dayBox}>
               <summary style={dayTitle}>{d}</summary>
-              <div style={{marginTop: 10}}>
-                {CATEGORIES.map(c => (
-                  <div key={c} style={row}>
-                    <span style={{fontSize: "0.8rem"}}>{c.toUpperCase()}</span>
-                    <input
-                      type="number"
-                      value={week[d][c]}
-                      onChange={e => update(d, c, e.target.value)}
-                      style={{...input, fontSize: "16px"}}
-                    />
-                  </div>
-                ))}
-              </div>
+              {CATEGORIES.map(c => (
+                <div key={c} style={row}>
+                  <span>{c.toUpperCase()}</span>
+                  <input
+                    type="number"
+                    value={week[d][c]}
+                    onChange={e => update(d, c, e.target.value)}
+                    style={input}
+                  />
+                </div>
+              ))}
             </details>
           ))}
         </div>
 
-        <div style={{...right, gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr"}}>
+        <div style={right}>
           <Chart title="Daily total spending">
             <LineChart data={chartData}>
-              <XAxis dataKey="day" fontSize={10} />
-              <YAxis fontSize={10} />
-              <Tooltip contentStyle={{background: "#020617", border: "1px solid #1e293b"}} />
-              <Line dataKey="total" stroke="#38bdf8" strokeWidth={3} dot={{r: 4}} />
+              <XAxis dataKey="day" />
+              <YAxis />
+              <Tooltip />
+              <Line dataKey="total" stroke="#38bdf8" strokeWidth={3} />
             </LineChart>
           </Chart>
 
           <Chart title="Category trends">
             <LineChart data={chartData}>
-              <XAxis dataKey="day" fontSize={10} />
-              <YAxis fontSize={10} />
-              <Tooltip contentStyle={{background: "#020617", border: "1px solid #1e293b"}} />
-              <Legend wrapperStyle={{fontSize: 10}} />
+              <XAxis dataKey="day" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
               {CATEGORIES.map(c => (
-                <Line key={c} dataKey={c} stroke={COLORS[c]} dot={false} strokeWidth={2} />
+                <Line key={c} dataKey={c} stroke={COLORS[c]} />
               ))}
             </LineChart>
           </Chart>
-          
           <Chart title="Weekly distribution">
             <PieChart>
-              <Pie data={pieData} dataKey="value" outerRadius={isMobile ? 60 : 80}>
+              <Pie data={pieData} dataKey="value" outerRadius={80}>
                 {pieData.map((p, i) => (
                   <Cell key={i} fill={COLORS[p.name]} />
                 ))}
               </Pie>
-              <Tooltip contentStyle={{background: "#020617", border: "1px solid #1e293b"}} />
+              <Tooltip />
             </PieChart>
           </Chart>
 
           <Chart title="Daily dispersion">
             <ScatterChart>
-              <XAxis dataKey="x" fontSize={10} />
-              <YAxis dataKey="y" fontSize={10} />
-              <Tooltip contentStyle={{background: "#020617", border: "1px solid #1e293b"}} />
+              <XAxis dataKey="x" />
+              <YAxis dataKey="y" />
+              <Tooltip />
               <Scatter data={scatterData} fill="#a78bfa" />
             </ScatterChart>
           </Chart>
 
-          <div style={{...summary, textAlign: isMobile ? "center" : "right"}}>
+          <div style={summary}>
             Weekly spend: <strong>${weeklySpend}</strong> ·
             Income: <strong>${weeklyIncome.toFixed(0)}</strong>
           </div>
 
-          <button onClick={runAI} style={{...aiButton, gridColumn: "1 / -1", marginTop: 10}}>
+          <button onClick={runAI} style={aiButton}>
             {loading ? "Analyzing…" : "Run Weekly AI Analysis"}
           </button>
 
@@ -239,29 +227,18 @@ export default function PremiumWeek() {
                 <strong>Weekly AI Insight</strong>
                 <button onClick={() => setAiOpen(false)} style={closeBtn}>✕</button>
               </div>
-              <pre style={{...aiTextStyle, fontSize: isMobile ? "0.85rem" : "1rem"}}>{aiText}</pre>
+              <pre style={aiTextStyle}>{aiText}</pre>
             </div>
           )}
         </div>
       </div>
 
-      <div style={{
-        ...upsellRow, 
-        width: isMobile ? "90%" : "auto", 
-        textAlign: "center", 
-        bottom: isMobile ? 60 : 20,
-        fontSize: isMobile ? "11px" : "13px"
-      }}>
+      <div style={upsellRow}>
         Monthly plans unlock country-specific tax optimization,
         stress testing and advanced projections.
       </div>
 
-      <div style={{
-        ...copyright, 
-        left: isMobile ? 0 : 40, 
-        width: isMobile ? "100%" : "auto", 
-        textAlign: "center"
-      }}>
+      <div style={copyright}>
         © 2026 WealthyAI — All rights reserved.
       </div>
     </div>
@@ -286,6 +263,7 @@ function Chart({ title, children }) {
 const page = {
   minHeight: "100vh",
   position: "relative",
+  padding: 40,
   fontFamily: "Inter, system-ui",
   backgroundColor: "#020617",
   color: "#e5e7eb",
@@ -299,31 +277,34 @@ const page = {
   `,
   backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
   backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
-  backgroundAttachment: "fixed",
-  overflowX: "hidden"
 };
 
 const header = { textAlign: "center", marginBottom: 20 };
-const title = { margin: 0 };
+const title = { fontSize: "2.6rem", margin: 0 };
 const subtitle = { color: "#f8fafc", marginTop: 10 };
 
 const upsellRow = {
   position: "absolute",
+  bottom: 20,
   left: "50%",
   transform: "translateX(-50%)",
+  fontSize: 13,
   color: "#f8fafc",
   fontWeight: 500,
-  zIndex: 10
 };
 
 const copyright = {
   position: "absolute",
   bottom: 20,
-  zIndex: 10
+  left: 40,
+  fontSize: 13,
+  color: "#cbd5f5",
 };
 
 const helpButton = {
   position: "absolute",
+  top: 24,
+  right: 24,
   padding: "8px 14px",
   borderRadius: 10,
   fontSize: 13,
@@ -331,10 +312,9 @@ const helpButton = {
   color: "#7dd3fc",
   border: "1px solid #1e293b",
   background: "rgba(2,6,23,0.6)",
-  zIndex: 15
 };
 
-const regionRow = { marginBottom: 20, textAlign: "center" };
+const regionRow = { marginBottom: 20 };
 const regionLabel = { marginRight: 8, color: "#7dd3fc" };
 const regionSelect = {
   background: "#020617",
@@ -344,39 +324,38 @@ const regionSelect = {
   borderRadius: 6,
 };
 
-const layout = { display: "grid" };
-const left = { overflowY: "auto", paddingRight: 5 };
-const right = { display: "grid", gap: 16 };
+const layout = { display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 30 };
+const left = { maxHeight: "70vh", overflowY: "auto" };
+const right = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 };
 
 const glass = {
-  background: "rgba(2, 6, 23, 0.7)",
+  background: "rgba(255,255,255,0.08)",
   backdropFilter: "blur(14px)",
-  border: "1px solid rgba(255,255,255,0.12)",
+  border: "1px solid rgba(255,255,255,0.18)",
   borderRadius: 14,
 };
 
 const dayBox = { ...glass, padding: 16, marginBottom: 12 };
 const dayTitle = { cursor: "pointer", color: "#38bdf8", fontWeight: "bold" };
-const row = { display: "flex", justifyContent: "space-between", marginBottom: 8, alignItems: "center" };
+const row = { display: "flex", justifyContent: "space-between", marginBottom: 8 };
 
 const input = {
-  background: "rgba(56, 189, 248, 0.05)",
+  background: "transparent",
   border: "none",
   borderBottom: "1px solid #38bdf8",
   color: "#38bdf8",
   width: 90,
   textAlign: "right",
-  padding: "4px 8px"
 };
 
 const chartBox = { ...glass, padding: 12 };
-const chartTitle = { fontSize: 12, color: "#7dd3fc", marginBottom: 10, textTransform: "uppercase" };
+const chartTitle = { fontSize: 12, color: "#7dd3fc", marginBottom: 6 };
 
-const summary = { marginTop: 10, padding: 10, color: "#f8fafc" };
+const summary = { gridColumn: "1 / -1", textAlign: "right", marginTop: 10 };
 
-const aiBox = { ...glass, padding: 16, marginTop: 15 };
+const aiBox = { ...glass, padding: 16, gridColumn: "1 / -1" };
 const aiHeader = { display: "flex", justifyContent: "space-between", marginBottom: 10 };
-const closeBtn = { background: "transparent", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 18 };
+const closeBtn = { background: "transparent", border: "none", color: "#94a3b8", cursor: "pointer" };
 
 const aiButton = {
   width: "100%",
@@ -385,8 +364,6 @@ const aiButton = {
   border: "none",
   borderRadius: 10,
   fontWeight: "bold",
-  color: "#020617",
-  cursor: "pointer"
 };
 
-const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap", lineHeight: 1.5, fontFamily: "inherit" };
+const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap" };
