@@ -1,59 +1,72 @@
-/* ================= MOBILE RESPONSIVE CSS (ADDED, NON-INTRUSIVE) ================= */
+/* ================= MOBILE BANKING-STYLE LAYOUT (NON-INTRUSIVE) ================= */
 
 if (typeof document !== "undefined") {
   const style = document.createElement("style");
   style.innerHTML = `
     @media (max-width: 768px) {
 
-      /* keep the page stable */
+      /* --- GLOBAL RESET FOR MOBILE --- */
       html, body {
         width: 100%;
         overflow-x: hidden !important;
-        background: transparent !important;
       }
 
-      /* page background stays as-is (no second layer, no fixed tricks) */
-
-      /* layout: two columns -> one */
+      /* --- FORCE SINGLE COLUMN FLOW --- */
       div[style*="gridTemplateColumns"] {
         display: flex !important;
         flex-direction: column !important;
+        gap: 20px !important;
       }
 
+      /* --- PAGE WIDTH & PADDING --- */
       div[style*="maxWidth: 1100px"] {
-        padding-left: 12px !important;
-        padding-right: 12px !important;
+        max-width: 100% !important;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
       }
 
+      /* --- HEADLINE SCALE --- */
       h1 {
         font-size: 1.6rem !important;
         line-height: 1.3 !important;
       }
 
-      input[type="number"] {
+      /* --- INPUTS: FULL WIDTH, TOUCH FRIENDLY --- */
+      input,
+      input[type="number"],
+      select {
         width: 100% !important;
-        text-align: left !important;
+        font-size: 16px !important;
       }
 
+      /* --- ROWS BECOME STACKS --- */
       div[style*="justifyContent: space-between"] {
         flex-direction: column !important;
         align-items: stretch !important;
-        gap: 6px !important;
+        gap: 8px !important;
       }
 
+      /* --- BUTTONS: FULL WIDTH --- */
       button {
         width: 100% !important;
+        min-height: 44px !important;
+        font-size: 15px !important;
       }
 
-      /* ✅ AI RESPONSE: horizontal scroll ONLY here */
+      /* --- AI RESPONSE: PART OF PAGE FLOW --- */
       pre {
-        font-size: 13px !important;
-        white-space: pre !important;        /* keep wide formatting */
-        overflow-x: auto !important;        /* allow sideways scroll */
-        max-width: 100vw !important;
-        padding-bottom: 8px !important;
+        white-space: pre-wrap !important;
+        overflow: visible !important;
+        max-width: 100% !important;
+        font-size: 14px !important;
+        line-height: 1.6 !important;
         background-color: rgba(2,6,23,0.78) !important;
-        -webkit-overflow-scrolling: touch;
+        border-radius: 12px !important;
+      }
+
+      /* --- REMOVE ANY INTERNAL SCROLL TRAPS --- */
+      * {
+        scroll-margin-top: 0 !important;
       }
     }
   `;
