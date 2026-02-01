@@ -1,4 +1,15 @@
+import React, { useState, useEffect } from "react";
+
 export default function HelpPage() {
+  /* ===== MOBILE DETECTION ===== */
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <div style={page}>
       {/* FUTURISTIC BACKGROUND LAYERS */}
@@ -6,20 +17,26 @@ export default function HelpPage() {
       <div style={bgLines} />
       <div style={bgGlow} />
 
-      <div style={content}>
+      <div style={{
+        ...content,
+        padding: isMobile ? "20px 15px" : "40px"
+      }}>
         <div style={container}>
           <button onClick={() => window.history.back()} style={back}>
             ← Back
           </button>
 
-          <h1 style={title}>How Weekly Financial Intelligence Works</h1>
+          <h1 style={{
+            ...title,
+            fontSize: isMobile ? "1.8rem" : "2.2rem"
+          }}>How Weekly Financial Intelligence Works</h1>
 
           <p style={intro}>
             This page explains how to read and use your weekly insights in WealthyAI.
             The goal is clarity — not judgment, not pressure.
           </p>
 
-          <Section title="What this page is">
+          <Section title="What this page is" isMobile={isMobile}>
             WealthyAI provides <strong>weekly financial intelligence</strong>.
             This is not a budgeting spreadsheet, not a finance course, and not daily coaching.
             <br /><br />
@@ -27,9 +44,9 @@ export default function HelpPage() {
             evolves over short periods — before small issues turn into long-term problems.
           </Section>
 
-          <Section title="What the weekly analysis does">
+          <Section title="What the weekly analysis does" isMobile={isMobile}>
             Each week, the system looks at:
-            <ul>
+            <ul style={{ paddingLeft: "20px", marginTop: "10px" }}>
               <li>your reported weekly income</li>
               <li>your total weekly spending</li>
               <li>how spending is distributed across days</li>
@@ -38,8 +55,8 @@ export default function HelpPage() {
             From this, it highlights patterns that are difficult to notice day-by-day.
           </Section>
 
-          <Section title="What this analysis does NOT do">
-            <ul>
+          <Section title="What this analysis does NOT do" isMobile={isMobile}>
+            <ul style={{ paddingLeft: "20px" }}>
               <li>It does not judge or score you</li>
               <li>It does not assume perfect data</li>
               <li>It does not replace professional financial advice</li>
@@ -47,30 +64,30 @@ export default function HelpPage() {
             </ul>
           </Section>
 
-          <Section title="How to read the insights">
+          <Section title="How to read the insights" isMobile={isMobile}>
             <p><strong>Weekly Snapshot</strong><br />
             A factual summary of what happened this week.</p>
 
-            <p><strong>What This Means</strong><br />
+            <p style={{ marginTop: "15px" }}><strong>What This Means</strong><br />
             Explains why the snapshot matters.</p>
 
-            <p><strong>Behavior Signal</strong><br />
+            <p style={{ marginTop: "15px" }}><strong>Behavior Signal</strong><br />
             Describes a pattern — not a verdict.</p>
 
-            <p><strong>Next Week Action Plan</strong><br />
+            <p style={{ marginTop: "15px" }}><strong>Next Week Action Plan</strong><br />
             Focused actions for the coming week only.</p>
 
-            <p><strong>1-Month Outlook</strong><br />
+            <p style={{ marginTop: "15px" }}><strong>1-Month Outlook</strong><br />
             Short forward-looking context when data allows.</p>
           </Section>
 
-          <Section title="Why weekly analysis matters">
+          <Section title="Why weekly analysis matters" isMobile={isMobile}>
             Financial problems rarely appear overnight.
             <br /><br />
             Weekly analysis helps you notice drift early — while correction is easy.
           </Section>
 
-          <Section title="Weekly vs Monthly plans">
+          <Section title="Weekly vs Monthly plans" isMobile={isMobile}>
             Weekly focuses on short-term awareness.
             <br /><br />
             Monthly plans unlock deeper pattern recognition across multiple weeks.
@@ -87,9 +104,12 @@ export default function HelpPage() {
 
 /* ===== SECTION COMPONENT ===== */
 
-function Section({ title, children }) {
+function Section({ title, children, isMobile }) {
   return (
-    <div style={section}>
+    <div style={{
+      ...section,
+      padding: isMobile ? "20px" : "24px"
+    }}>
       <h2 style={sectionTitle}>{title}</h2>
       <div style={sectionText}>{children}</div>
     </div>
@@ -102,14 +122,13 @@ const page = {
   position: "relative",
   minHeight: "100vh",
   background: "#020617",
-  overflow: "hidden",
+  overflowX: "hidden", // Megakadályozza a vízszintes csúszkát mobilon
   fontFamily: "Inter, system-ui",
 };
 
 const content = {
   position: "relative",
   zIndex: 10,
-  padding: 40,
   display: "flex",
   justifyContent: "center",
 };
@@ -161,9 +180,9 @@ const back = {
 };
 
 const title = {
-  fontSize: "2.2rem",
   marginBottom: 12,
-  color: "#ffffff", // ✅ FIX: explicit white
+  color: "#ffffff",
+  lineHeight: "1.2",
 };
 
 const intro = {
@@ -171,6 +190,7 @@ const intro = {
   maxWidth: 720,
   marginBottom: 32,
   fontSize: 15,
+  lineHeight: "1.5",
 };
 
 /* ===== GLASS SECTIONS – BLUE-TINTED ===== */
@@ -178,11 +198,11 @@ const intro = {
 const section = {
   width: "100%",
   marginBottom: 28,
-  padding: 24,
   borderRadius: 16,
   background: "rgba(56,189,248,0.14)",
   border: "1px solid rgba(125,211,252,0.35)",
   backdropFilter: "blur(12px)",
+  boxSizing: "border-box",
 };
 
 const sectionTitle = {
@@ -199,6 +219,7 @@ const sectionText = {
 
 const footer = {
   marginTop: 48,
+  marginBottom: 40,
   fontSize: 14,
   color: "#e5e7eb",
   maxWidth: 720,
