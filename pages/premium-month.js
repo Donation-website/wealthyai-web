@@ -1,78 +1,35 @@
-/* ================= MOBILE BANKING-STYLE LAYOUT (ACTUALLY FIXED) ================= */
+/* ================= MOBILE FORCE STACK FIX ================= */
 
 if (typeof document !== "undefined") {
-  const style = document.createElement("style");
-  style.innerHTML = `
-    @media (max-width: 768px) {
+  const isMobile = () => window.innerWidth <= 768;
 
-      html, body {
-        width: 100%;
-        overflow-x: hidden !important;
-      }
+  const forceStack = () => {
+    if (!isMobile()) return;
 
-      /* MAIN + INNER GRIDS -> FORCE SINGLE COLUMN */
-      div[style*="gridTemplateColumns"] {
-        display: grid !important;
-        grid-template-columns: 1fr !important;
-        grid-auto-flow: row !important;
-        gap: 16px !important;
-      }
+    document.querySelectorAll("div").forEach((el) => {
+      const style = window.getComputedStyle(el);
 
-      /* ALL GRID CHILDREN FULL WIDTH */
-      div[style*="gridTemplateColumns"] > * {
-        width: 100% !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
-        grid-column: 1 / -1 !important;
-      }
+      if (
+        style.display === "grid" &&
+        style.gridTemplateColumns.split(" ").length === 2 &&
+        el.children.length === 2
+      ) {
+        el.style.gridTemplateColumns = "1fr";
+        el.style.gap = "16px";
 
-      /* FIX THOSE THIN SIDE BOXES */
-      div[style*="gridTemplateColumns"] > div[style*="maxWidth"] {
-        max-width: 100% !important;
+        Array.from(el.children).forEach((child) => {
+          child.style.width = "100%";
+          child.style.maxWidth = "100%";
+        });
       }
+    });
+  };
 
-      div[style*="maxWidth: 1100px"] {
-        max-width: 100% !important;
-        padding-left: 16px !important;
-        padding-right: 16px !important;
-      }
+  window.addEventListener("load", forceStack);
+  window.addEventListener("resize", forceStack);
 
-      h1 {
-        font-size: 1.6rem !important;
-        line-height: 1.3 !important;
-      }
-
-      input,
-      input[type="number"],
-      select {
-        width: 100% !important;
-        font-size: 16px !important;
-      }
-
-      div[style*="justifyContent: space-between"] {
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 8px !important;
-      }
-
-      button {
-        width: 100% !important;
-        min-height: 44px !important;
-        font-size: 15px !important;
-      }
-
-      pre {
-        white-space: pre-wrap !important;
-        overflow: visible !important;
-        max-width: 100% !important;
-        font-size: 14px !important;
-        line-height: 1.6 !important;
-        background-color: rgba(2,6,23,0.78) !important;
-        border-radius: 12px !important;
-      }
-    }
-  `;
-  document.head.appendChild(style);
+  setTimeout(forceStack, 300);
+  setTimeout(forceStack, 800);
 }
 
 import { useState, useEffect } from "react";
