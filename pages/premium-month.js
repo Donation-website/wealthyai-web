@@ -1,54 +1,60 @@
-/* ================= MOBILE WRAPPER CENTER LOCK FIX ================= */
+<style>
+/* ================= MOBILE LAYOUT STABILIZER ================= */
 
-if (typeof document !== "undefined") {
+/* 1️⃣ Scrollbar NEM változtathatja meg a layoutot */
+@supports (scrollbar-gutter: stable) {
+  html {
+    scrollbar-gutter: stable;
+  }
+}
+
+/* 2️⃣ Mobilon rögzített viewport szélesség */
+@media (max-width: 768px) {
+  html, body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* 3️⃣ MINDEN layout elem biztonságos dobozmodell */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  /* 4️⃣ Dinamikus AI tartalom nem tolhat */
+  pre, code {
+    max-width: 100%;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: auto;
+  }
+}
+</style>
+
+<script>
+/* ================= MOBILE VIEWPORT LOCK ================= */
+(function () {
+  if (typeof window === "undefined") return;
+
   const isMobile = () => window.innerWidth <= 768;
 
-  const fixMobileWrapper = () => {
+  const lockViewport = () => {
     if (!isMobile()) return;
 
-    /* Global safety – but minimal */
-    document.documentElement.style.overflowX = "hidden";
-    document.body.style.overflowX = "hidden";
+    const width = document.documentElement.clientWidth;
 
-    document.querySelectorAll("div").forEach(wrapper => {
-      const style = window.getComputedStyle(wrapper);
-
-      // ONLY the wrapper that holds the 2 boxes
-      if (
-        style.display === "grid" &&
-        style.gridTemplateColumns.split(" ").length === 2 &&
-        wrapper.children.length === 2
-      ) {
-        // stack
-        wrapper.style.gridTemplateColumns = "1fr";
-
-        // CENTER & LOCK wrapper
-        wrapper.style.width = "100%";
-        wrapper.style.maxWidth = "100%";
-        wrapper.style.marginInline = "auto";
-        wrapper.style.boxSizing = "border-box";
-        wrapper.style.overflowX = "hidden";
-      }
-    });
-
-    /* AI CONTENT MUST NEVER AFFECT WIDTH */
-    document.querySelectorAll("pre, code").forEach(el => {
-      el.style.maxWidth = "100%";
-      el.style.boxSizing = "border-box";
-      el.style.whiteSpace = "pre-wrap";
-      el.style.wordBreak = "break-word";
-      el.style.overflowX = "auto"; // inner scroll only
-    });
+    document.documentElement.style.maxWidth = width + "px";
+    document.body.style.maxWidth = width + "px";
   };
 
-  window.addEventListener("load", fixMobileWrapper);
-  window.addEventListener("resize", fixMobileWrapper);
+  window.addEventListener("load", lockViewport);
+  window.addEventListener("resize", lockViewport);
 
-  // React hydration / AI open timing
-  setTimeout(fixMobileWrapper, 300);
-  setTimeout(fixMobileWrapper, 800);
-  setTimeout(fixMobileWrapper, 1500);
-}
+  // AI válasz megjelenés / hydration után
+  setTimeout(lockViewport, 300);
+  setTimeout(lockViewport, 800);
+})();
+</script>
 
 import { useState, useEffect } from "react";
 import {
