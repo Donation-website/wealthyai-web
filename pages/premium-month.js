@@ -1,61 +1,59 @@
-/* ================= MOBILE FINAL CENTER + OVERFLOW FIX ================= */
+/* ================= MOBILE iOS SAFARI OPEN-AI FIX ================= */
 
 if (typeof document !== "undefined") {
   const isMobile = () => window.innerWidth <= 768;
 
-  const fixMobileLayout = () => {
+  const fixIOSOpenStateShift = () => {
     if (!isMobile()) return;
 
-    /* GLOBAL SAFETY */
-    document.documentElement.style.width = "100%";
+    /* 1. LOCK PAGE WIDTH TO VIEWPORT */
+    const vw = window.innerWidth;
+    document.documentElement.style.width = vw + "px";
+    document.documentElement.style.maxWidth = vw + "px";
     document.documentElement.style.overflowX = "hidden";
-    document.body.style.width = "100%";
-    document.body.style.maxWidth = "100%";
-    document.body.style.overflowX = "hidden";
 
-    /* FORCE BORDER-BOX EVERYWHERE */
-    document.querySelectorAll("*").forEach(el => {
-      el.style.boxSizing = "border-box";
+    document.body.style.width = vw + "px";
+    document.body.style.maxWidth = vw + "px";
+    document.body.style.overflowX = "hidden";
+    document.body.style.position = "relative";
+    document.body.style.left = "0px";
+
+    /* 2. FORCE ALL TOP-LEVEL SECTIONS TO STAY INSIDE VIEWPORT */
+    Array.from(document.body.children).forEach(el => {
+      el.style.maxWidth = "100%";
+      el.style.overflowX = "hidden";
     });
 
+    /* 3. AI RESPONSE CONTAINER SAFETY (THE REAL CULPRIT) */
+    document.querySelectorAll("pre, code, textarea").forEach(el => {
+      el.style.maxWidth = "100%";
+      el.style.width = "100%";
+      el.style.boxSizing = "border-box";
+      el.style.whiteSpace = "pre-wrap";
+      el.style.wordBreak = "break-word";
+      el.style.overflowX = "auto";   // scroll INSIDE, not page
+    });
+
+    /* 4. GRID / FLEX CONTAINERS: NEVER CENTER-SHIFT */
     document.querySelectorAll("div").forEach(el => {
       const style = window.getComputedStyle(el);
 
-      /* STACK TWO-COLUMN GRIDS */
-      if (
-        style.display === "grid" &&
-        style.gridTemplateColumns.split(" ").length === 2
-      ) {
-        el.style.gridTemplateColumns = "1fr";
-        el.style.width = "100%";
-        el.style.maxWidth = "100%";
-        el.style.marginLeft = "auto";
-        el.style.marginRight = "auto";
-      }
-
-      /* CENTER MAJOR CONTAINERS */
       if (style.display === "grid" || style.display === "flex") {
         el.style.maxWidth = "100%";
-        el.style.marginLeft = "auto";
-        el.style.marginRight = "auto";
+        el.style.width = "100%";
+        el.style.marginLeft = "0";
+        el.style.marginRight = "0";
       }
-    });
-
-    /* AI RESPONSE / MARKDOWN FIX */
-    document.querySelectorAll("pre, code").forEach(el => {
-      el.style.maxWidth = "100%";
-      el.style.whiteSpace = "pre-wrap";
-      el.style.wordBreak = "break-word";
-      el.style.overflowX = "hidden";
     });
   };
 
-  window.addEventListener("load", fixMobileLayout);
-  window.addEventListener("resize", fixMobileLayout);
+  window.addEventListener("load", fixIOSOpenStateShift);
+  window.addEventListener("resize", fixIOSOpenStateShift);
 
-  // React hydration safety
-  setTimeout(fixMobileLayout, 300);
-  setTimeout(fixMobileLayout, 800);
+  // React hydration / AI open animation safety
+  setTimeout(fixIOSOpenStateShift, 300);
+  setTimeout(fixIOSOpenStateShift, 800);
+  setTimeout(fixIOSOpenStateShift, 1500);
 }
 
 import { useState, useEffect } from "react";
