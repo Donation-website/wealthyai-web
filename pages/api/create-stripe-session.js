@@ -10,7 +10,6 @@ export default async function handler(req, res) {
 
   const { priceId } = req.body;
 
-  // 🔴 DIAGNOSZTIKA – EZT KERESSÜK A LOGBAN
   console.log("🔥 CREATE STRIPE SESSION HIT");
   console.log("🔥 PRICE ID RECEIVED:", priceId);
 
@@ -19,25 +18,22 @@ export default async function handler(req, res) {
   }
 
   let successPath = "/start";
-  let mode = "payment"; // alapértelmezett: day / week
+  let mode = "payment"; // day / week
 
-  // DAY
   if (priceId === "price_1SscYJDyLtejYlZiyDvhdaIx") {
     successPath = "/day";
   }
 
-  // WEEK
   if (priceId === "price_1SscaYDyLtejYlZiDjSeF5Wm") {
     successPath = "/premium-week";
   }
 
-  // MONTH — CSAK ITT SUBSCRIPTION
+  // ✅ MONTH = SUBSCRIPTION
   if (priceId === "price_1SscbeDyLtejYlZixJcT3B4o") {
     successPath = "/premium-month";
     mode = "subscription";
   }
 
-  // 🔴 DIAGNOSZTIKA – EZ IS KELL
   console.log("🔥 CHECKOUT MODE USED:", mode);
   console.log("🔥 SUCCESS PATH:", successPath);
 
@@ -60,12 +56,11 @@ export default async function handler(req, res) {
       },
     });
 
-    // 🔴 DIAGNOSZTIKA – SESSION ID
     console.log("🔥 SESSION CREATED:", session.id);
 
     return res.status(200).json({ url: session.url });
   } catch (err) {
-    console.error("❌ STRIPE SESSION CREATE ERROR:", err);
+    console.error("❌ STRIPE ERROR:", err);
     return res.status(500).json({ error: "Stripe session creation failed" });
   }
 }
