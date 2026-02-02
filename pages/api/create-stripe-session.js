@@ -15,22 +15,27 @@ export default async function handler(req, res) {
   }
 
   let successPath = "/start";
+  let mode = "payment"; // 🧸 alapértelmezett: day / week
 
+  // ✅ DAY
   if (priceId === "price_1SscYJDyLtejYlZiyDvhdaIx") {
     successPath = "/day";
   }
 
+  // ✅ WEEK
   if (priceId === "price_1SscaYDyLtejYlZiDjSeF5Wm") {
     successPath = "/premium-week";
   }
 
+  // ✅ MONTH — EZ A KÜLÖNBSÉG
   if (priceId === "price_1SscbeDyLtejYlZixJcT3B4o") {
     successPath = "/premium-month";
+    mode = "subscription"; // 👈 CSAK ITT
   }
 
   try {
     const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
+      mode,
 
       line_items: [
         {
