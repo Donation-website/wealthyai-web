@@ -35,23 +35,36 @@ export default async function handler(req, res) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // ✅ EZ A FONTOS ESEMÉNY
+  /* ======================================
+     ✅ CHECKOUT COMPLETED
+  ====================================== */
+
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
 
     const priceId = session.metadata?.priceId;
-    const customerEmail = session.customer_details?.email;
+    const subscriptionId = session.subscription;
 
     console.log('✅ PAYMENT CONFIRMED');
     console.log('Plan:', priceId);
-    console.log('Customer:', customerEmail);
+    console.log('Subscription:', subscriptionId);
 
-    /**
-     * IDE KÉSŐBB:
-     * - adatbázis
-     * - user jogosultság
-     * - lejárati idő
-     */
+    // 🟢 CSAK HAVI ELŐFIZETÉS
+    const MONTH_PRICE_ID = 'price_1SscbeDyLtejYlZixJcT3B4o';
+
+    if (priceId === MONTH_PRICE_ID && subscriptionId) {
+      try {
+        await stripe.subscriptions.update(subscriptionId, {
+          metadata: {
+            had_month_before: 'true',
+          },
+        });
+
+        console.log('🧠 Month history saved to Stripe metadata');
+      } catch (err) {
+        console.error('❌ Failed to update subscription metadata:', err);
+      }
+    }
   }
 
   res.status(200).json({ received: true });
