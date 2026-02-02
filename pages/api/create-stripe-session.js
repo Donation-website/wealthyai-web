@@ -32,9 +32,6 @@ export default async function handler(req, res) {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
 
-      // 🟢 EZ AZ EGYETLEN ÚJ SOR (NAGYON FONTOS)
-      customer_creation: "always",
-
       line_items: [
         {
           price: priceId,
