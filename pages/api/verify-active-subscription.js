@@ -26,10 +26,14 @@ export default async function handler(req, res) {
     const subscription = session.subscription;
 
     if (subscription && subscription.status === "active") {
+      const isReturningCustomer =
+        subscription.metadata?.had_month_before === "true";
+
       return res.status(200).json({
         valid: true,
         subscriptionId: subscription.id,
         periodStart: subscription.current_period_start,
+        isReturningCustomer, // 🆕 EZ AZ EGÉSZ LÉNYEG
       });
     }
 
