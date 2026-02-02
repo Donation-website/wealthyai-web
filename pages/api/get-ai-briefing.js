@@ -10,6 +10,7 @@ export default async function handler(req, res) {
       analysisMode, // backward compatibility
       previousSignals,
       weeklyFocus,
+      isReturningCustomer, // 🆕 CSAK HOZZÁADVA
       income,
       housing,
       electricity,
@@ -145,6 +146,22 @@ REGION: Hungary
 - High sensitivity
 `;
     }
+
+    /* ================================
+       🆕 RETURNING CUSTOMER CONTEXT
+       (INTERNAL ONLY — NO OUTPUT CHANGE)
+    ================================= */
+
+    systemPrompt += `
+RETURNING CONTEXT:
+- Returning monthly subscriber: ${isReturningCustomer ? "YES" : "NO"}
+
+NARRATIVE CONTINUITY RULE:
+- If returning subscriber = YES:
+  - Do NOT frame insights as first-time exposure
+  - Maintain structural continuity across cycles
+  - Preserve tone maturity without altering structure
+`;
 
     const baseUserPrompt = `
 Region: ${region}
