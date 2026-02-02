@@ -72,23 +72,32 @@ export default function UserDashboard() {
 
   /* ===== STRIPE (DO NOT TOUCH) ===== */
 
-  const handleCheckout = async (priceId) => {
-    localStorage.setItem("userFinancials", JSON.stringify(data));
+ const handleCheckout = async (priceId) => {
+  localStorage.setItem("userFinancials", JSON.stringify(data));
 
-    try {
-      const res = await fetch("/api/create-stripe-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId }),
-      });
-
-      const session = await res.json();
-      if (session.url) window.location.href = session.url;
-      else alert("Payment initialization failed.");
-    } catch {
-      alert("Payment initialization failed.");
+  // 🔐 ONLY FOR MONTH PLAN
+  if (priceId === "price_1SscbeDyLtejYlZixJcT3B4o") {
+    const hasHadMonth = localStorage.getItem("hadMonthSubscription");
+    if (hasHadMonth) {
+      localStorage.setItem("isReturningMonthCustomer", "true");
     }
-  };
+  }
+
+  try {
+    const res = await fetch("/api/create-stripe-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ priceId }),
+    });
+
+    const session = await res.json();
+    if (session.url) window.location.href = session.url;
+    else alert("Payment initialization failed.");
+  } catch {
+    alert("Payment initialization failed.");
+  }
+};
+
 
   /* ===== RADAR DATA ===== */
 
