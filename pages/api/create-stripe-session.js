@@ -10,32 +10,31 @@ export default async function handler(req, res) {
 
   const { priceId } = req.body;
 
-  console.log("🔥 CREATE STRIPE SESSION HIT");
-  console.log("🔥 PRICE ID RECEIVED:", priceId);
-
   if (!priceId) {
     return res.status(400).json({ error: "Missing priceId" });
   }
 
+  // 🔒 ALAPÉRTELMEZÉS: DAY / WEEK
+  let mode = "payment";
   let successPath = "/start";
-  let mode = "payment"; // day / week
 
+  // DAY — egyszeri fizetés
   if (priceId === "price_1SscYJDyLtejYlZiyDvhdaIx") {
     successPath = "/day";
+    mode = "payment";
   }
 
-  if (priceId === "price_1SscaYDyLtejYlZiDjSeF5Wm") {
+  // WEEK — egyszeri fizetés
+  else if (priceId === "price_1SscaYDyLtejYlZiDjSeF5Wm") {
     successPath = "/premium-week";
+    mode = "payment";
   }
 
-  // ✅ MONTH = SUBSCRIPTION
-  if (priceId === "price_1SscbeDyLtejYlZixJcT3B4o") {
+  // MONTH — ELŐFIZETÉS
+  else if (priceId === "price_1SscbeDyLtejYlZixJcT3B4o") {
     successPath = "/premium-month";
     mode = "subscription";
   }
-
-  console.log("🔥 CHECKOUT MODE USED:", mode);
-  console.log("🔥 SUCCESS PATH:", successPath);
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -56,11 +55,9 @@ export default async function handler(req, res) {
       },
     });
 
-    console.log("🔥 SESSION CREATED:", session.id);
-
     return res.status(200).json({ url: session.url });
   } catch (err) {
-    console.error("❌ STRIPE ERROR:", err);
+    console.error("Stripe error:", err);
     return res.status(500).json({ error: "Stripe session creation failed" });
   }
 }
