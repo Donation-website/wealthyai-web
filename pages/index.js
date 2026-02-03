@@ -81,15 +81,15 @@ export default function Home() {
           position: "relative",
           overflowX: "hidden",
           margin: 0,
-          /* ⬇️ MOBIL PADDING CSÖKKENTVE */
-          padding: isMobile ? "80px 0 60px 0" : 0,
+          /* ⬇️ MOBIL: FELÜL MÉG KEVESEBB */
+          padding: isMobile ? "40px 0 60px 0" : 0,
         }}
       >
         {/* TOP NAV */}
         <div
           style={{
-            position: isMobile ? "fixed" : "absolute",
-            top: isMobile ? "15px" : "30px",
+            position: isMobile ? "relative" : "absolute",   // ⬅️ FIXED KIKAPCS
+            top: isMobile ? "0" : "30px",
             right: isMobile ? "0" : "40px",
             left: isMobile ? "0" : "auto",
             display: "flex",
@@ -98,6 +98,7 @@ export default function Home() {
             zIndex: 6,
             fontSize: isMobile ? "0.8rem" : "0.95rem",
             width: isMobile ? "100%" : "auto",
+            marginBottom: isMobile ? "20px" : "0",
           }}
         >
           <a href="/how-it-works" className="nav-link">How it works</a>
@@ -115,6 +116,7 @@ export default function Home() {
             alignItems: "center",
             width: "100%",
             transform: isMobile ? "none" : "translateY(-40px)",
+            marginTop: isMobile ? "30px" : "0",   // ⬅️ LOGO LEBB
           }}
         >
           <img
@@ -177,6 +179,9 @@ export default function Home() {
         </div>
 
         {/* START */}
+        {/* 🔽 INNENTŐL MINDEN VÁLTOZATLAN 🔽 */}
+
+        {/* START */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
@@ -223,13 +228,14 @@ export default function Home() {
         </div>
 
         {/* BOTTOM BAR */}
+        {/* ⬇️ TELJESEN VÁLTOZATLAN */}
+
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
             bottom: 0,
             left: 0,
             width: "100%",
-            /* ⬇️ ALUL IS VISSZAVETTÜK */
             padding: isMobile ? "36px 24px 24px" : "18px 24px",
             display: "flex",
             flexDirection: isMobile ? "column-reverse" : "row",
