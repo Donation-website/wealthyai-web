@@ -268,16 +268,16 @@ export default function Home() {
             </div>
 
             <div style={{ display: "flex", gap: "18px", alignItems: "center", marginTop: isMobile ? "10px" : "0" }}>
-              <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
+              <a className="icon-link" href="#">
                 <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
               </a>
-              <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
+              <a className="icon-link" href="#">
                 <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
               </a>
-              <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
+              <a className="icon-link" href="#">
                 <img src="/wealthyai/icons/linkedin.png" alt="LinkedIn" style={{ width: 34 }} />
               </a>
-              <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="icon-link">
+              <a className="icon-link" href="#">
                 <img src="/wealthyai/icons/insta.png" alt="Instagram" style={{ width: 34 }} />
               </a>
             </div>
@@ -295,24 +295,25 @@ export default function Home() {
 
           .nav-link {
             position: relative;
+            display: inline-block;
             color: white;
             text-decoration: none;
             opacity: 0.85;
+            background-color: transparent;
           }
 
-          /* 🔑 FINOMÍTOTT PSEUDO-GLOW: NINCS DOBOZ */
           .nav-link::before {
             content: "";
             position: absolute;
-            inset: -2px -4px;
+            inset: -2px -6px;
             border-radius: 999px;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.25s ease;
             box-shadow:
-              0 0 22px rgba(56,189,248,0.85),
-              0 0 48px rgba(56,189,248,0.65),
-              0 0 80px rgba(56,189,248,0.45);
+              0 0 22px rgba(56,189,248,0.9),
+              0 0 48px rgba(56,189,248,0.7),
+              0 0 80px rgba(56,189,248,0.5);
           }
 
           .nav-link:hover::before {
@@ -322,12 +323,15 @@ export default function Home() {
           .nav-link:hover {
             text-shadow:
               0 0 10px rgba(56,189,248,1),
-              0 0 26px rgba(56,189,248,0.9),
-              0 0 48px rgba(56,189,248,0.7);
+              0 0 26px rgba(56,189,248,0.95),
+              0 0 48px rgba(56,189,248,0.8);
           }
 
           .icon-link:hover img {
-            filter: drop-shadow(0 0 34px rgba(56,189,248,0.95));
+            filter:
+              drop-shadow(0 0 18px rgba(56,189,248,1))
+              drop-shadow(0 0 36px rgba(56,189,248,0.9))
+              drop-shadow(0 0 60px rgba(56,189,248,0.7));
           }
         `}</style>
       </main>
