@@ -299,6 +299,15 @@ export default function Home() {
               </a>
 
               <a
+                href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="icon-link"
+              >
+                <img src="/wealthyai/icons/linkedin.png" alt="LinkedIn" style={{ width: 34 }} />
+              </a>
+
+              <a
                 href="https://www.instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
