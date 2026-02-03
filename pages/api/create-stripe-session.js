@@ -7,7 +7,8 @@ export default async function handler(req, res) {
     return res.status(405).end("Method Not Allowed");
   }
 
-  const { priceId } = req.body;
+  const { priceId, email } = req.body;
+
   if (!priceId) {
     return res.status(400).json({ error: "Missing priceId" });
   }
@@ -26,8 +27,8 @@ export default async function handler(req, res) {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
 
-      // 🔑 EZ A HIÁNYZÓ RÉSZ
-      customer_creation: "always",
+      // 🔑 EZ A HELYES MEGOLDÁS
+      customer_email: email || undefined,
 
       line_items: [
         {
