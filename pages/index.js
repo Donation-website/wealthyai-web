@@ -62,8 +62,11 @@ export default function Home() {
       <main
         onMouseDown={clearSelectionIfNeeded}
         style={{
-          height: isMobile ? "auto" : "100vh",
+          // 🔧 MOBILE FIX – valódi teteje vágás
+          height: isMobile ? "100svh" : "100vh",
           minHeight: "100vh",
+          overflowY: isMobile ? "hidden" : "visible",
+
           width: "100%",
           boxSizing: "border-box",
           display: "flex",
@@ -73,8 +76,11 @@ export default function Home() {
           backgroundColor: "#060b13",
           backgroundImage:
             "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
+
+          // 🔧 MOBILE FIX – háttér felső része levágva
+          backgroundPosition: isMobile ? "center 22%" : "center",
+
           backgroundSize: "cover",
-          backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
           color: "white",
           fontFamily: "'Inter', system-ui, Arial, sans-serif",
@@ -82,8 +88,7 @@ export default function Home() {
           overflowX: "hidden",
           margin: 0,
 
-          // 🔧 MOBILE FIX — felső sötét rész levágása
-          padding: isMobile ? "40px 0 60px 0" : 0,
+          padding: isMobile ? "0 0 60px 0" : 0,
         }}
       >
         {/* TOP NAV */}
@@ -115,9 +120,7 @@ export default function Home() {
             flexDirection: "column",
             alignItems: "center",
             width: "100%",
-
-            // 🔧 MOBILE FIX — logo lejjebb hozása
-            transform: isMobile ? "translateY(24px)" : "translateY(-40px)",
+            transform: isMobile ? "none" : "translateY(-40px)",
           }}
         >
           <img
@@ -129,6 +132,9 @@ export default function Home() {
               maxWidth: "95vw",
               display: "block",
               cursor: "pointer",
+
+              // 🔧 MOBILE FIX – LOGO VALÓBAN LEJJEBB
+              marginTop: isMobile ? "24px" : "0px",
             }}
           />
 
@@ -236,7 +242,7 @@ export default function Home() {
             display: "flex",
             flexDirection: isMobile ? "column-reverse" : "row",
             justifyContent: "space-between",
-            alignItems: isMobile ? "center" : "center",
+            alignItems: "center",
             zIndex: 5,
             boxSizing: "border-box",
             gap: isMobile ? "30px" : "0",
