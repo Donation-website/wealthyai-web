@@ -77,11 +77,12 @@ export default function Home() {
           color: "white",
           fontFamily: "'Inter', system-ui, Arial, sans-serif",
           position: "relative",
-          overflow: "hidden",
+          overflowX: "hidden",
           margin: 0,
           padding: isMobile ? "80px 0 100px 0" : 0,
         }}
       >
+        {/* NAV */}
         <div
           style={{
             position: isMobile ? "fixed" : "absolute",
@@ -96,11 +97,12 @@ export default function Home() {
             width: isMobile ? "100%" : "auto",
           }}
         >
-          <a href="/how-it-works" className="nav-link text-glow">How it works</a>
-          <a href="/how-to-use" className="nav-link text-glow">How to use</a>
-          <a href="/terms" className="nav-link text-glow">Terms</a>
+          <a href="/how-it-works" className="nav-link">How it works</a>
+          <a href="/how-to-use" className="nav-link">How to use</a>
+          <a href="/terms" className="nav-link">Terms</a>
         </div>
 
+        {/* LOGO + HERO */}
         <div
           style={{
             textAlign: "center",
@@ -171,6 +173,7 @@ export default function Home() {
           </div>
         </div>
 
+        {/* CTA */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
@@ -216,6 +219,7 @@ export default function Home() {
           </div>
         </div>
 
+        {/* FOOTER */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
@@ -263,7 +267,7 @@ export default function Home() {
               <div>
                 <a
                   href="mailto:wealthyaiweb@gmail.com"
-                  className="nav-link text-glow"
+                  className="nav-link"
                   style={{ fontWeight: 600 }}
                 >
                   wealthyaiweb@gmail.com
@@ -318,9 +322,7 @@ export default function Home() {
           }
 
           .brand-logo:hover {
-            filter:
-              drop-shadow(0 0 18px rgba(56,189,248,0.55))
-              drop-shadow(0 0 40px rgba(56,189,248,0.35));
+            filter: drop-shadow(0 0 18px rgba(56,189,248,0.55));
           }
 
           @keyframes logoFloat {
@@ -340,27 +342,11 @@ export default function Home() {
             100% { opacity: 0.4; }
           }
 
-  .text-glow:hover {
-  filter:
-    drop-shadow(0 0 4px rgba(56,189,248,1))
-    drop-shadow(0 0 14px rgba(56,189,248,0.95))
-    drop-shadow(0 0 36px rgba(56,189,248,0.85))
-    drop-shadow(0 0 72px rgba(56,189,248,0.65));
-}
-
+          .start-btn:hover,
+          .nav-link:hover,
           .icon-link:hover {
-            transform: translateY(-1px);
-            filter:
-              drop-shadow(0 0 14px rgba(56,189,248,0.55))
-              drop-shadow(0 0 32px rgba(56,189,248,0.45));
-          }
-
-          .start-btn:hover {
-            box-shadow:
-              0 0 22px rgba(56,189,248,0.45),
-              0 0 48px rgba(56,189,248,0.35),
-              inset 0 0 0 1px rgba(255,255,255,0.25);
-            filter: drop-shadow(0 0 24px rgba(56,189,248,0.45));
+            box-shadow: 0 0 45px rgba(56,189,248,0.6);
+            filter: drop-shadow(0 0 26px rgba(56,189,248,0.6));
           }
 
           .nav-link {
