@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react"; 
 import Head from "next/head";
 
 export default function Home() {
   const SITE_URL = "https://wealthyai-web.vercel.app";
   const SHARE_TEXT = "AI-powered financial clarity with WealthyAI";
 
+  // 👇 MOBIL FIGYELŐ
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -13,6 +14,7 @@ export default function Home() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // 👇 KIJELÖLÉS TÖRLÉSE NEM FUNKCIONÁLIS KATTINTÁSNÁL
   const clearSelectionIfNeeded = (e) => {
     const tag = e.target.tagName.toLowerCase();
     const interactive = ["a", "button", "input", "textarea", "select", "label"];
@@ -31,6 +33,7 @@ export default function Home() {
           content="AI-powered financial planning with structured insights and clear perspective."
         />
 
+        {/* Open Graph */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={SITE_URL} />
         <meta property="og:title" content="WealthyAI – AI-powered financial clarity" />
@@ -40,11 +43,10 @@ export default function Home() {
         />
         <meta
           property="og:image"
-          content="https://wealthyai-web.vercel.app/wealthyai/icons/megosztas.png"
+          content="https://wealthyai-web.vercel.app"
         />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
 
+        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="WealthyAI – AI-powered financial clarity" />
         <meta
@@ -53,7 +55,7 @@ export default function Home() {
         />
         <meta
           name="twitter:image"
-          content="https://wealthyai-web.vercel.app/wealthyai/icons/megosztas.png"
+          content="https://wealthyai-web.vercel.app"
         />
       </Head>
 
@@ -82,7 +84,7 @@ export default function Home() {
           padding: isMobile ? "80px 0 100px 0" : 0,
         }}
       >
-        {/* NAV */}
+        {/* TOP NAV */}
         <div
           style={{
             position: isMobile ? "fixed" : "absolute",
@@ -102,7 +104,7 @@ export default function Home() {
           <a href="/terms" className="nav-link">Terms</a>
         </div>
 
-        {/* HERO */}
+        {/* CENTER BRAND & TEXT */}
         <div
           style={{
             textAlign: "center",
@@ -173,7 +175,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* CTA */}
+        {/* START */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
@@ -219,7 +221,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* FOOTER */}
+        {/* BOTTOM BAR */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
@@ -249,6 +251,7 @@ export default function Home() {
               gap: "8px",
             }}
           >
+            {/* CONTACT & PARTNERSHIPS */}
             <div
               className="nav-link"
               style={{
@@ -275,6 +278,7 @@ export default function Home() {
               </div>
             </div>
 
+            {/* SOCIAL ICONS */}
             <div style={{ display: "flex", gap: "18px", alignItems: "center", marginTop: isMobile ? "10px" : "0" }}>
               <a
                 href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`}
@@ -292,15 +296,6 @@ export default function Home() {
                 className="icon-link"
               >
                 <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
-              </a>
-
-              <a
-                href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="icon-link"
-              >
-                <img src="/wealthyai/icons/linkedin.png" alt="LinkedIn" style={{ width: 34 }} />
               </a>
 
               <a
@@ -345,8 +340,8 @@ export default function Home() {
           .start-btn:hover,
           .nav-link:hover,
           .icon-link:hover {
-            box-shadow: 0 0 45px rgba(56,189,248,0.6);
-            filter: drop-shadow(0 0 26px rgba(56,189,248,0.6));
+            box-shadow: 0 0 35px rgba(56,189,248,0.45);
+            filter: drop-shadow(0 0 18px rgba(56,189,248,0.45));
           }
 
           .nav-link {
