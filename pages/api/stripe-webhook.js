@@ -35,13 +35,10 @@ export default async function handler(req, res) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  /* ======================================
-     ✅ CHECKOUT COMPLETED
-  ====================================== */
-
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
 
+    // ✅ MOST MÁR LÉTEZIK
     const priceId = session.metadata?.priceId;
     const subscriptionId = session.subscription;
 
@@ -49,7 +46,6 @@ export default async function handler(req, res) {
     console.log('Plan:', priceId);
     console.log('Subscription:', subscriptionId);
 
-    // 🟢 CSAK HAVI ELŐFIZETÉS
     const MONTH_PRICE_ID = 'price_1SscbeDyLtejYlZixJcT3B4o';
 
     if (priceId === MONTH_PRICE_ID && subscriptionId) {
