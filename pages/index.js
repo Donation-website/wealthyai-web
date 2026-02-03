@@ -342,17 +342,44 @@ export default function Home() {
             100% { opacity: 0.4; }
           }
 
-          .start-btn:hover,
-          .nav-link:hover,
-          .icon-link:hover {
-            box-shadow: 0 0 35px rgba(56,189,248,0.45);
-            filter: drop-shadow(0 0 18px rgba(56,189,248,0.45));
-          }
+          /* ===== GLOW FIX ===== */
 
-          .nav-link {
+          .nav-link,
+          .icon-link {
+            position: relative;
             color: white;
             text-decoration: none;
             opacity: 0.85;
+          }
+
+          .nav-link::before,
+          .icon-link::before {
+            content: "";
+            position: absolute;
+            inset: -12px -22px;
+            background: radial-gradient(
+              circle,
+              rgba(56,189,248,0.55) 0%,
+              rgba(56,189,248,0.25) 40%,
+              transparent 70%
+            );
+            filter: blur(16px);
+            opacity: 0;
+            transition: opacity 0.25s ease;
+            pointer-events: none;
+            z-index: -1;
+          }
+
+          .nav-link:hover::before,
+          .icon-link:hover::before {
+            opacity: 1;
+          }
+
+          /* ===== START GOMB ÉRINTETLEN ===== */
+
+          .start-btn:hover {
+            box-shadow: 0 0 35px rgba(56,189,248,0.45);
+            filter: drop-shadow(0 0 18px rgba(56,189,248,0.45));
           }
         `}</style>
       </main>
