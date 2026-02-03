@@ -82,7 +82,6 @@ export default function Home() {
           padding: isMobile ? "80px 0 100px 0" : 0,
         }}
       >
-        {/* TOP NAV */}
         <div
           style={{
             position: isMobile ? "fixed" : "absolute",
@@ -102,7 +101,6 @@ export default function Home() {
           <a href="/terms" className="nav-link">Terms</a>
         </div>
 
-        {/* CENTER */}
         <div
           style={{
             textAlign: "center",
@@ -173,7 +171,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* START */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
@@ -219,7 +216,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* BOTTOM */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
@@ -249,7 +245,15 @@ export default function Home() {
               gap: "8px",
             }}
           >
-            <div className="nav-link">
+            <div
+              className="nav-link"
+              style={{
+                fontSize: "0.82rem",
+                textAlign: isMobile ? "center" : "right",
+                lineHeight: "1.4",
+                cursor: "pointer",
+              }}
+            >
               <div style={{ fontWeight: 500 }}>
                 Contact & Partnerships
               </div>
@@ -268,16 +272,30 @@ export default function Home() {
             </div>
 
             <div style={{ display: "flex", gap: "18px", alignItems: "center", marginTop: isMobile ? "10px" : "0" }}>
-              <a className="icon-link" href="#">
+              <a
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="icon-link"
+              >
                 <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
               </a>
-              <a className="icon-link" href="#">
+
+              <a
+                href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="icon-link"
+              >
                 <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
               </a>
-              <a className="icon-link" href="#">
-                <img src="/wealthyai/icons/linkedin.png" alt="LinkedIn" style={{ width: 34 }} />
-              </a>
-              <a className="icon-link" href="#">
+
+              <a
+                href="https://www.instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="icon-link"
+              >
                 <img src="/wealthyai/icons/insta.png" alt="Instagram" style={{ width: 34 }} />
               </a>
             </div>
@@ -285,53 +303,43 @@ export default function Home() {
         </div>
 
         <style>{`
-          .brand-logo:hover {
-            filter: drop-shadow(0 0 28px rgba(56,189,248,0.85));
+          .brand-logo {
+            animation: logoFloat 9s ease-in-out infinite;
+            transition: filter 0.4s ease;
           }
 
-          .start-btn:hover {
-            box-shadow: 0 0 45px rgba(56,189,248,0.75);
+          .brand-logo:hover {
+            filter: drop-shadow(0 0 18px rgba(56,189,248,0.55));
+          }
+
+          @keyframes logoFloat {
+            0% { transform: scale(1) translateY(0); opacity: 0.92; }
+            35% { transform: scale(1.035) translateY(-6px); opacity: 1; }
+            70% { transform: scale(1.02) translateY(3px); opacity: 0.97; }
+            100% { transform: scale(1) translateY(0); opacity: 0.92; }
+          }
+
+          .discrete-pulse {
+            animation: discretePulse 3s ease-in-out infinite;
+          }
+
+          @keyframes discretePulse {
+            0% { opacity: 0.4; }
+            50% { opacity: 1; }
+            100% { opacity: 0.4; }
+          }
+
+          .start-btn:hover,
+          .nav-link:hover,
+          .icon-link:hover {
+            box-shadow: 0 0 35px rgba(56,189,248,0.45);
+            filter: drop-shadow(0 0 18px rgba(56,189,248,0.45));
           }
 
           .nav-link {
-            position: relative;
-            display: inline-block;
             color: white;
             text-decoration: none;
             opacity: 0.85;
-            background-color: transparent;
-          }
-
-          .nav-link::before {
-            content: "";
-            position: absolute;
-            inset: -2px -6px;
-            border-radius: 999px;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.25s ease;
-            box-shadow:
-              0 0 22px rgba(56,189,248,0.9),
-              0 0 48px rgba(56,189,248,0.7),
-              0 0 80px rgba(56,189,248,0.5);
-          }
-
-          .nav-link:hover::before {
-            opacity: 1;
-          }
-
-          .nav-link:hover {
-            text-shadow:
-              0 0 10px rgba(56,189,248,1),
-              0 0 26px rgba(56,189,248,0.95),
-              0 0 48px rgba(56,189,248,0.8);
-          }
-
-          .icon-link:hover img {
-            filter:
-              drop-shadow(0 0 18px rgba(56,189,248,1))
-              drop-shadow(0 0 36px rgba(56,189,248,0.9))
-              drop-shadow(0 0 60px rgba(56,189,248,0.7));
           }
         `}</style>
       </main>
