@@ -26,6 +26,12 @@ export default async function handler(req, res) {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription", // 🔑 MINDIG
       line_items: [{ price: priceId, quantity: 1 }],
+
+      // ✅ HIÁNYZÓ METADATA – MOST MÁR OTT VAN
+      metadata: {
+        priceId,
+      },
+
       success_url: `${req.headers.origin}${successPath}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.origin}/start?canceled=true`,
     });
