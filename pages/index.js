@@ -252,13 +252,15 @@ export default function Home() {
             }}
           >
             {/* CONTACT & PARTNERSHIPS */}
-            <div
+            <a
+              href="mailto:wealthyaiweb@gmail.com"
               className="nav-link"
               style={{
                 fontSize: "0.82rem",
                 textAlign: isMobile ? "center" : "right",
                 lineHeight: "1.4",
                 cursor: "pointer",
+                textDecoration: "none",
               }}
             >
               <div style={{ fontWeight: 500 }}>
@@ -267,16 +269,10 @@ export default function Home() {
               <div style={{ opacity: 0.8 }}>
                 Media · Partnerships · Institutional use
               </div>
-              <div>
-                <a
-                  href="mailto:wealthyaiweb@gmail.com"
-                  className="nav-link"
-                  style={{ fontWeight: 600 }}
-                >
-                  wealthyaiweb@gmail.com
-                </a>
+              <div style={{ fontWeight: 600 }}>
+                wealthyaiweb@gmail.com
               </div>
-            </div>
+            </a>
 
             {/* SOCIAL ICONS */}
             <div style={{ display: "flex", gap: "18px", alignItems: "center", marginTop: isMobile ? "10px" : "0" }}>
