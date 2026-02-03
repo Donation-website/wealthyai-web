@@ -96,9 +96,9 @@ export default function Home() {
             width: isMobile ? "100%" : "auto",
           }}
         >
-          <a href="/how-it-works" className="nav-link">How it works</a>
-          <a href="/how-to-use" className="nav-link">How to use</a>
-          <a href="/terms" className="nav-link">Terms</a>
+          <a href="/how-it-works" className="nav-link text-glow">How it works</a>
+          <a href="/how-to-use" className="nav-link text-glow">How to use</a>
+          <a href="/terms" className="nav-link text-glow">Terms</a>
         </div>
 
         <div
@@ -246,7 +246,7 @@ export default function Home() {
             }}
           >
             <div
-              className="nav-link"
+              className="nav-link text-glow"
               style={{
                 fontSize: "0.82rem",
                 textAlign: isMobile ? "center" : "right",
@@ -263,7 +263,7 @@ export default function Home() {
               <div>
                 <a
                   href="mailto:wealthyaiweb@gmail.com"
-                  className="nav-link"
+                  className="nav-link text-glow"
                   style={{ fontWeight: 600 }}
                 >
                   wealthyaiweb@gmail.com
@@ -318,7 +318,9 @@ export default function Home() {
           }
 
           .brand-logo:hover {
-            filter: drop-shadow(0 0 18px rgba(56,189,248,0.55));
+            filter:
+              drop-shadow(0 0 18px rgba(56,189,248,0.55))
+              drop-shadow(0 0 40px rgba(56,189,248,0.35));
           }
 
           @keyframes logoFloat {
@@ -338,11 +340,26 @@ export default function Home() {
             100% { opacity: 0.4; }
           }
 
-          .start-btn:hover,
-          .nav-link:hover,
+          .text-glow:hover {
+            filter:
+              drop-shadow(0 0 10px rgba(56,189,248,0.55))
+              drop-shadow(0 0 24px rgba(56,189,248,0.45))
+              drop-shadow(0 0 42px rgba(56,189,248,0.35));
+          }
+
           .icon-link:hover {
-            box-shadow: 0 0 45px rgba(56,189,248,0.65);
-            filter: drop-shadow(0 0 26px rgba(56,189,248,0.65));
+            transform: translateY(-1px);
+            filter:
+              drop-shadow(0 0 14px rgba(56,189,248,0.55))
+              drop-shadow(0 0 32px rgba(56,189,248,0.45));
+          }
+
+          .start-btn:hover {
+            box-shadow:
+              0 0 22px rgba(56,189,248,0.45),
+              0 0 48px rgba(56,189,248,0.35),
+              inset 0 0 0 1px rgba(255,255,255,0.25);
+            filter: drop-shadow(0 0 24px rgba(56,189,248,0.45));
           }
 
           .nav-link {
