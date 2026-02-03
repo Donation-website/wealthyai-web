@@ -249,15 +249,7 @@ export default function Home() {
               gap: "8px",
             }}
           >
-            <div
-              className="nav-link"
-              style={{
-                fontSize: "0.82rem",
-                textAlign: isMobile ? "center" : "right",
-                lineHeight: "1.4",
-                cursor: "pointer",
-              }}
-            >
+            <div className="nav-link contact-block">
               <div style={{ fontWeight: 500 }}>
                 Contact & Partnerships
               </div>
@@ -346,6 +338,31 @@ export default function Home() {
             box-shadow: 0 0 45px rgba(56,189,248,0.75);
           }
 
+          .nav-link {
+            position: relative;
+            color: white;
+            text-decoration: none;
+            opacity: 0.85;
+          }
+
+          .nav-link::before {
+            content: "";
+            position: absolute;
+            inset: -8px -12px;
+            border-radius: 12px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+            box-shadow:
+              0 0 18px rgba(56,189,248,0.55),
+              0 0 42px rgba(56,189,248,0.45),
+              0 0 70px rgba(56,189,248,0.35);
+          }
+
+          .nav-link:hover::before {
+            opacity: 1;
+          }
+
           .nav-link:hover {
             text-shadow:
               0 0 10px rgba(56,189,248,1),
@@ -355,13 +372,7 @@ export default function Home() {
           }
 
           .icon-link:hover img {
-            filter: drop-shadow(0 0 28px rgba(56,189,248,0.85));
-          }
-
-          .nav-link {
-            color: white;
-            text-decoration: none;
-            opacity: 0.85;
+            filter: drop-shadow(0 0 32px rgba(56,189,248,0.9));
           }
         `}</style>
       </main>
