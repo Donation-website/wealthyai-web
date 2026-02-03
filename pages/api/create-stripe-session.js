@@ -7,8 +7,7 @@ export default async function handler(req, res) {
     return res.status(405).end("Method Not Allowed");
   }
 
-  const { priceId, email } = req.body;
-
+  const { priceId } = req.body;
   if (!priceId) {
     return res.status(400).json({ error: "Missing priceId" });
   }
@@ -25,25 +24,15 @@ export default async function handler(req, res) {
 
   try {
     const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
-
-      // 🔑 EZ A HELYES MEGOLDÁS
-      customer_email: email || undefined,
-
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-
+      mode: "subscription", // 🔑 MINDIG
+      line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${req.headers.origin}${successPath}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.origin}/start?canceled=true`,
     });
 
     return res.status(200).json({ url: session.url });
   } catch (err) {
-    console.error("Stripe error:", err);
+    console.error(err);
     return res.status(500).json({ error: "Stripe error" });
   }
 }
