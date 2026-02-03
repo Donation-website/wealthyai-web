@@ -81,7 +81,8 @@ export default function Home() {
           position: "relative",
           overflowX: "hidden",
           margin: 0,
-          padding: isMobile ? "80px 0 120px 0" : 0,
+          /* ⬇️ MOBIL PADDING CSÖKKENTVE */
+          padding: isMobile ? "80px 0 60px 0" : 0,
         }}
       >
         {/* TOP NAV */}
@@ -228,7 +229,8 @@ export default function Home() {
             bottom: 0,
             left: 0,
             width: "100%",
-            padding: isMobile ? "48px 24px 40px" : "18px 24px",
+            /* ⬇️ ALUL IS VISSZAVETTÜK */
+            padding: isMobile ? "36px 24px 24px" : "18px 24px",
             display: "flex",
             flexDirection: isMobile ? "column-reverse" : "row",
             justifyContent: "space-between",
@@ -237,7 +239,7 @@ export default function Home() {
             boxSizing: "border-box",
             gap: isMobile ? "30px" : "0",
             background: isMobile
-              ? "linear-gradient(to top, rgba(6,11,19,0.95) 0%, rgba(6,11,19,0.85) 45%, rgba(6,11,19,0.55) 70%, rgba(6,11,19,0.0) 100%)"
+              ? "linear-gradient(to top, rgba(6,11,19,0.95) 0%, rgba(6,11,19,0.8) 50%, rgba(6,11,19,0.0) 100%)"
               : "transparent",
           }}
         >
