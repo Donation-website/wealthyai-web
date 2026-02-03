@@ -81,8 +81,9 @@ export default function Home() {
           position: "relative",
           overflowX: "hidden",
           margin: 0,
-          /* ⬇️ MOBIL PADDING CSÖKKENTVE */
-          padding: isMobile ? "80px 0 60px 0" : 0,
+
+          // 🔧 MOBILE FIX — felső sötét rész levágása
+          padding: isMobile ? "40px 0 60px 0" : 0,
         }}
       >
         {/* TOP NAV */}
@@ -114,7 +115,9 @@ export default function Home() {
             flexDirection: "column",
             alignItems: "center",
             width: "100%",
-            transform: isMobile ? "none" : "translateY(-40px)",
+
+            // 🔧 MOBILE FIX — logo lejjebb hozása
+            transform: isMobile ? "translateY(24px)" : "translateY(-40px)",
           }}
         >
           <img
@@ -229,7 +232,6 @@ export default function Home() {
             bottom: 0,
             left: 0,
             width: "100%",
-            /* ⬇️ ALUL IS VISSZAVETTÜK */
             padding: isMobile ? "36px 24px 24px" : "18px 24px",
             display: "flex",
             flexDirection: isMobile ? "column-reverse" : "row",
