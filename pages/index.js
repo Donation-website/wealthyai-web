@@ -81,7 +81,7 @@ export default function Home() {
           position: "relative",
           overflowX: "hidden",
           margin: 0,
-          padding: isMobile ? "80px 0 100px 0" : 0,
+          padding: isMobile ? "80px 0 120px 0" : 0,
         }}
       >
         {/* TOP NAV */}
@@ -228,7 +228,7 @@ export default function Home() {
             bottom: 0,
             left: 0,
             width: "100%",
-            padding: isMobile ? "40px 24px" : "18px 24px",
+            padding: isMobile ? "48px 24px 40px" : "18px 24px",
             display: "flex",
             flexDirection: isMobile ? "column-reverse" : "row",
             justifyContent: "space-between",
@@ -236,7 +236,9 @@ export default function Home() {
             zIndex: 5,
             boxSizing: "border-box",
             gap: isMobile ? "30px" : "0",
-            backgroundColor: isMobile ? "rgba(6, 11, 19, 0.8)" : "transparent",
+            background: isMobile
+              ? "linear-gradient(to top, rgba(6,11,19,0.95) 0%, rgba(6,11,19,0.85) 45%, rgba(6,11,19,0.55) 70%, rgba(6,11,19,0.0) 100%)"
+              : "transparent",
           }}
         >
           <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
@@ -251,7 +253,6 @@ export default function Home() {
               gap: "8px",
             }}
           >
-            {/* CONTACT & PARTNERSHIPS */}
             <a
               href="mailto:wealthyaiweb@gmail.com"
               className="nav-link"
@@ -274,41 +275,17 @@ export default function Home() {
               </div>
             </a>
 
-            {/* SOCIAL ICONS */}
             <div style={{ display: "flex", gap: "18px", alignItems: "center", marginTop: isMobile ? "10px" : "0" }}>
-              <a
-                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="icon-link"
-              >
+              <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
                 <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
               </a>
-
-              <a
-                href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="icon-link"
-              >
+              <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
                 <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
               </a>
-
-              <a
-                href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="icon-link"
-              >
+              <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
                 <img src="/wealthyai/icons/linkedin.png" alt="LinkedIn" style={{ width: 34 }} />
               </a>
-
-              <a
-                href="https://www.instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="icon-link"
-              >
+              <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="icon-link">
                 <img src="/wealthyai/icons/insta.png" alt="Instagram" style={{ width: 34 }} />
               </a>
             </div>
@@ -342,8 +319,6 @@ export default function Home() {
             100% { opacity: 0.4; }
           }
 
-          /* ===== GLOW FIX ===== */
-
           .nav-link,
           .icon-link {
             position: relative;
@@ -374,8 +349,6 @@ export default function Home() {
           .icon-link:hover::before {
             opacity: 1;
           }
-
-          /* ===== START GOMB ÉRINTETLEN ===== */
 
           .start-btn:hover {
             box-shadow: 0 0 35px rgba(56,189,248,0.45);
