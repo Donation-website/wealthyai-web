@@ -343,7 +343,10 @@ export default function Home() {
           }
 
           .nav-link:hover {
-            text-shadow: 0 0 18px rgba(56,189,248,0.45);
+            text-shadow:
+              0 0 6px rgba(56,189,248,0.9),
+              0 0 16px rgba(56,189,248,0.7),
+              0 0 30px rgba(56,189,248,0.45);
           }
 
           .icon-link:hover img {
