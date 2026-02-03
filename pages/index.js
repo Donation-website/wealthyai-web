@@ -246,7 +246,7 @@ export default function Home() {
             }}
           >
             <div
-              className="nav-link text-glow"
+              className="nav-link"
               style={{
                 fontSize: "0.82rem",
                 textAlign: isMobile ? "center" : "right",
