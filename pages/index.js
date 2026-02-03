@@ -291,6 +291,15 @@ export default function Home() {
               </a>
 
               <a
+                href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="icon-link"
+              >
+                <img src="/wealthyai/icons/linkedin.png" alt="LinkedIn" style={{ width: 34 }} />
+              </a>
+
+              <a
                 href="https://www.instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -329,10 +338,15 @@ export default function Home() {
             100% { opacity: 0.4; }
           }
 
-          .start-btn:hover,
-          .nav-link:hover,
-          .icon-link:hover {
+          .start-btn:hover {
             box-shadow: 0 0 35px rgba(56,189,248,0.45);
+          }
+
+          .nav-link:hover {
+            text-shadow: 0 0 18px rgba(56,189,248,0.45);
+          }
+
+          .icon-link:hover img {
             filter: drop-shadow(0 0 18px rgba(56,189,248,0.45));
           }
 
