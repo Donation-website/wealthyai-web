@@ -5,10 +5,15 @@ export default function Home() {
   const SITE_URL = "https://wealthyai-web.vercel.app";
   const SHARE_TEXT = "AI-powered financial clarity with WealthyAI";
 
-  // 👇 MOBIL FIGYELŐ
+  // 👇 MOBIL + ORIENTÁCIÓ FIGYELŐ
   const [isMobile, setIsMobile] = useState(false);
+  const [isLandscape, setIsLandscape] = useState(false);
+
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      setIsLandscape(window.innerWidth > window.innerHeight);
+    };
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -41,10 +46,7 @@ export default function Home() {
           property="og:description"
           content="Structured insights. Clear perspective. Financial intelligence."
         />
-        <meta
-          property="og:image"
-          content="https://wealthyai-web.vercel.app"
-        />
+        <meta property="og:image" content={SITE_URL} />
 
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
@@ -53,19 +55,16 @@ export default function Home() {
           name="twitter:description"
           content="Structured insights. Clear perspective. Financial intelligence."
         />
-        <meta
-          name="twitter:image"
-          content="https://wealthyai-web.vercel.app"
-        />
+        <meta name="twitter:image" content={SITE_URL} />
       </Head>
 
       <main
         onMouseDown={clearSelectionIfNeeded}
         style={{
-          // 🔧 MOBILE FIX – valódi teteje vágás
-          height: isMobile ? "100svh" : "100vh",
+          /* 🔧 MOBIL LOGIKA */
+          height: isMobile && !isLandscape ? "100svh" : "auto",
           minHeight: "100vh",
-          overflowY: isMobile ? "hidden" : "visible",
+          overflowY: isMobile && !isLandscape ? "hidden" : "auto",
 
           width: "100%",
           boxSizing: "border-box",
@@ -77,8 +76,9 @@ export default function Home() {
           backgroundImage:
             "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
 
-          // 🔧 MOBILE FIX – háttér felső része levágva
-          backgroundPosition: isMobile ? "center 22%" : "center",
+          /* 🔧 TETEJE VÁGÁS CSAK ÁLLÓ MOBILON */
+          backgroundPosition:
+            isMobile && !isLandscape ? "center 22%" : "center",
 
           backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
@@ -88,7 +88,8 @@ export default function Home() {
           overflowX: "hidden",
           margin: 0,
 
-          padding: isMobile ? "0 0 60px 0" : 0,
+          /* EREDETI padding logika MEGTARTVA */
+          padding: isMobile ? "80px 0 60px 0" : 0,
         }}
       >
         {/* TOP NAV */}
@@ -133,7 +134,7 @@ export default function Home() {
               display: "block",
               cursor: "pointer",
 
-              // 🔧 MOBILE FIX – LOGO VALÓBAN LEJJEBB
+              /* 🔧 LOGO VALÓDI LEJJEBB TOLÁS */
               marginTop: isMobile ? "24px" : "0px",
             }}
           />
@@ -231,7 +232,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* BOTTOM BAR */}
+        {/* BOTTOM BAR — TELJES, EREDETI */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
