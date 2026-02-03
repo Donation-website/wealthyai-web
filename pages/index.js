@@ -77,7 +77,7 @@ export default function Home() {
           color: "white",
           fontFamily: "'Inter', system-ui, Arial, sans-serif",
           position: "relative",
-          overflowX: "hidden",
+          overflow: "hidden",
           margin: 0,
           padding: isMobile ? "80px 0 100px 0" : 0,
         }}
