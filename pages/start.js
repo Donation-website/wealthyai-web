@@ -72,38 +72,32 @@ export default function UserDashboard() {
 
   /* ===== STRIPE (DO NOT TOUCH) ===== */
 
-  const handleCheckout = async (priceId) => {
-    localStorage.setItem("userFinancials", JSON.stringify(data));
+ const handleCheckout = async (priceId) => {
+  localStorage.setItem("userFinancials", JSON.stringify(data));
 
-    // 🔐 ONLY FOR MONTH PLAN (maradhat)
-    if (priceId === "price_1SscbeDyLtejYlZixJcT3B4o") {
-      const hasHadMonth = localStorage.getItem("hadMonthSubscription");
-      if (hasHadMonth) {
-        localStorage.setItem("isReturningMonthCustomer", "true");
-      }
+  // 🔐 ONLY FOR MONTH PLAN
+  if (priceId === "price_1SscbeDyLtejYlZixJcT3B4o") {
+    const hasHadMonth = localStorage.getItem("hadMonthSubscription");
+    if (hasHadMonth) {
+      localStorage.setItem("isReturningMonthCustomer", "true");
     }
+  }
 
-    // 🔑 IDEIGLENES EMAIL BEKÉRÉS (CSAK TESZT)
-    const email = window.prompt("Enter your email:");
+  try {
+    const res = await fetch("/api/create-stripe-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ priceId }),
+    });
 
-    try {
-      const res = await fetch("/api/create-stripe-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId, email }),
-      });
+    const session = await res.json();
+    if (session.url) window.location.href = session.url;
+    else alert("Payment initialization failed.");
+  } catch {
+    alert("Payment initialization failed.");
+  }
+};
 
-      const session = await res.json();
-      if (session.url) {
-        window.location.href = session.url;
-      } else {
-        alert("Payment initialization failed.");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Payment initialization failed.");
-    }
-  };
 
   /* ===== RADAR DATA ===== */
 
@@ -233,7 +227,6 @@ export default function UserDashboard() {
     zIndex: 15,
   };
 
-  /* ===== RETURN JSX A KÖVETKEZŐ RÉSZBEN ===== */
   return (
     <main
       style={{
@@ -320,17 +313,17 @@ export default function UserDashboard() {
             <p style={{ opacity: 0.65, marginTop: 18, fontSize: "12px" }}>
               This view shows a snapshot — not behavior, not direction.
             </p>
-
-            <p
-              style={{
-                marginTop: 10,
-                fontSize: "12px",
-                opacity: 0.5,
-                textAlign: "center",
-              }}
-            >
-              Daily / Weekly / Monthly intelligence available ↓
-            </p>
+               <p
+  style={{
+    marginTop: 10,
+    fontSize: "12px",
+    opacity: 0.5,
+    textAlign: "center",
+  }}
+>
+  Daily / Weekly / Monthly intelligence available ↓
+</p>
+ 
           </div>
         </div>
 
