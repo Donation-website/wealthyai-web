@@ -340,11 +340,12 @@ export default function Home() {
             100% { opacity: 0.4; }
           }
 
-   .text-glow:hover {
+  .text-glow:hover {
   filter:
-    drop-shadow(0 0 16px rgba(56,189,248,0.95))
+    drop-shadow(0 0 4px rgba(56,189,248,1))
+    drop-shadow(0 0 14px rgba(56,189,248,0.95))
     drop-shadow(0 0 36px rgba(56,189,248,0.85))
-    drop-shadow(0 0 64px rgba(56,189,248,0.75));
+    drop-shadow(0 0 72px rgba(56,189,248,0.65));
 }
 
           .icon-link:hover {
