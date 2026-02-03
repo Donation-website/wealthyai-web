@@ -82,6 +82,7 @@ export default function Home() {
           padding: isMobile ? "80px 0 100px 0" : 0,
         }}
       >
+        {/* TOP NAV */}
         <div
           style={{
             position: isMobile ? "fixed" : "absolute",
@@ -101,6 +102,7 @@ export default function Home() {
           <a href="/terms" className="nav-link">Terms</a>
         </div>
 
+        {/* CENTER */}
         <div
           style={{
             textAlign: "center",
@@ -171,6 +173,7 @@ export default function Home() {
           </div>
         </div>
 
+        {/* START */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
@@ -216,6 +219,7 @@ export default function Home() {
           </div>
         </div>
 
+        {/* BOTTOM */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
@@ -318,7 +322,7 @@ export default function Home() {
           }
 
           .brand-logo:hover {
-            filter: drop-shadow(0 0 18px rgba(56,189,248,0.55));
+            filter: drop-shadow(0 0 28px rgba(56,189,248,0.85));
           }
 
           @keyframes logoFloat {
@@ -339,18 +343,19 @@ export default function Home() {
           }
 
           .start-btn:hover {
-            box-shadow: 0 0 35px rgba(56,189,248,0.45);
+            box-shadow: 0 0 45px rgba(56,189,248,0.75);
           }
 
           .nav-link:hover {
             text-shadow:
-              0 0 6px rgba(56,189,248,0.9),
-              0 0 16px rgba(56,189,248,0.7),
-              0 0 30px rgba(56,189,248,0.45);
+              0 0 10px rgba(56,189,248,1),
+              0 0 26px rgba(56,189,248,0.9),
+              0 0 48px rgba(56,189,248,0.7),
+              0 0 70px rgba(56,189,248,0.5);
           }
 
           .icon-link:hover img {
-            filter: drop-shadow(0 0 18px rgba(56,189,248,0.45));
+            filter: drop-shadow(0 0 28px rgba(56,189,248,0.85));
           }
 
           .nav-link {
