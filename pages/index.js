@@ -14,7 +14,7 @@ export default function Home() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // 👇 KIJELÖLÉS TÖRLÉSE
+  // 👇 KIJELÖLÉS TÖRLÉSE NEM FUNKCIONÁLIS KATTINTÁSNÁL
   const clearSelectionIfNeeded = (e) => {
     const tag = e.target.tagName.toLowerCase();
     const interactive = ["a", "button", "input", "textarea", "select", "label"];
@@ -28,18 +28,35 @@ export default function Home() {
     <>
       <Head>
         <title>WealthyAI – AI-powered financial clarity</title>
-        <meta name="description" content="AI-powered financial planning with structured insights and clear perspective." />
+        <meta
+          name="description"
+          content="AI-powered financial planning with structured insights and clear perspective."
+        />
 
+        {/* Open Graph */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={SITE_URL} />
         <meta property="og:title" content="WealthyAI – AI-powered financial clarity" />
-        <meta property="og:description" content="Structured insights. Clear perspective. Financial intelligence." />
-        <meta property="og:image" content={SITE_URL} />
+        <meta
+          property="og:description"
+          content="Structured insights. Clear perspective. Financial intelligence."
+        />
+        <meta
+          property="og:image"
+          content="https://wealthyai-web.vercel.app"
+        />
 
+        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="WealthyAI – AI-powered financial clarity" />
-        <meta name="twitter:description" content="Structured insights. Clear perspective. Financial intelligence." />
-        <meta name="twitter:image" content={SITE_URL} />
+        <meta
+          name="twitter:description"
+          content="Structured insights. Clear perspective. Financial intelligence."
+        />
+        <meta
+          name="twitter:image"
+          content="https://wealthyai-web.vercel.app"
+        />
       </Head>
 
       <main
@@ -64,24 +81,23 @@ export default function Home() {
           position: "relative",
           overflowX: "hidden",
           margin: 0,
-          /* ⬇️ TETEJE LEVÁGVA MOBILON */
-          padding: isMobile ? "30px 0 60px 0" : 0,
+          /* ⬇️ MOBIL PADDING CSÖKKENTVE */
+          padding: isMobile ? "80px 0 60px 0" : 0,
         }}
       >
         {/* TOP NAV */}
         <div
           style={{
-            position: isMobile ? "relative" : "absolute", // ⬅️ NEM FIXED MOBILON
-            top: isMobile ? "0" : "30px",
+            position: isMobile ? "fixed" : "absolute",
+            top: isMobile ? "15px" : "30px",
             right: isMobile ? "0" : "40px",
             left: isMobile ? "0" : "auto",
             display: "flex",
             justifyContent: isMobile ? "center" : "flex-end",
-            gap: isMobile ? "16px" : "28px",
+            gap: isMobile ? "15px" : "28px",
             zIndex: 6,
-            fontSize: isMobile ? "0.78rem" : "0.95rem",
+            fontSize: isMobile ? "0.8rem" : "0.95rem",
             width: isMobile ? "100%" : "auto",
-            marginBottom: isMobile ? "18px" : "0",
           }}
         >
           <a href="/how-it-works" className="nav-link">How it works</a>
@@ -99,8 +115,6 @@ export default function Home() {
             alignItems: "center",
             width: "100%",
             transform: isMobile ? "none" : "translateY(-40px)",
-            /* ⬇️ LOGO LEBB MOBILON */
-            marginTop: isMobile ? "32px" : "0",
           }}
         >
           <img
@@ -121,7 +135,7 @@ export default function Home() {
               lineHeight: "1.45",
               textAlign: "center",
               textShadow: "0 2px 10px rgba(0,0,0,0.5)",
-              marginTop: isMobile ? "4px" : "-110px",
+              marginTop: isMobile ? "0px" : "-110px",
               width: "100%",
               maxWidth: "800px",
               padding: "0 20px",
@@ -208,13 +222,14 @@ export default function Home() {
           </div>
         </div>
 
-        {/* BOTTOM BAR – VÁLTOZATLAN */}
+        {/* BOTTOM BAR */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
             bottom: 0,
             left: 0,
             width: "100%",
+            /* ⬇️ ALUL IS VISSZAVETTÜK */
             padding: isMobile ? "36px 24px 24px" : "18px 24px",
             display: "flex",
             flexDirection: isMobile ? "column-reverse" : "row",
