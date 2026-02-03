@@ -102,7 +102,7 @@ export default function Home() {
           <a href="/terms" className="nav-link">Terms</a>
         </div>
 
-        {/* LOGO + HERO */}
+        {/* HERO */}
         <div
           style={{
             textAlign: "center",
