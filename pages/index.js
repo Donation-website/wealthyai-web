@@ -341,11 +341,12 @@ export default function Home() {
           }
 
           .text-glow:hover {
-            filter:
-              drop-shadow(0 0 10px rgba(56,189,248,0.55))
-              drop-shadow(0 0 24px rgba(56,189,248,0.45))
-              drop-shadow(0 0 42px rgba(56,189,248,0.35));
-          }
+  filter:
+    drop-shadow(0 0 16px rgba(56,189,248,0.65))
+    drop-shadow(0 0 36px rgba(56,189,248,0.55))
+    drop-shadow(0 0 64px rgba(56,189,248,0.45));
+}
+
 
           .icon-link:hover {
             transform: translateY(-1px);
