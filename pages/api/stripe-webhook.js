@@ -66,16 +66,30 @@ async function sendPaymentConfirmationEmail({
     date,
   });
 
+  const smtpPort = Number(process.env.SMTP_PORT);
+  const useSecure = smtpPort === 465; // 🔑 EZ KRITIKUS
+
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT),
-    secure: false,
+    port: smtpPort,
+    secure: useSecure,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
   });
 
+  // 🔍 SMTP kapcsolat ellenőrzése
+  await transporter.verify();
+  console.log('✅ SMTP connection verified', {
+    host: process.env.SMTP_HOST,
+    port: smtpPort,
+    secure: useSecure,
+    from: process.env.MAIL_FROM,
+    user: process.env.SMTP_USER,
+  });
+
+  // 📧 EMAIL KÜLDÉS
   await transporter.sendMail({
     from: process.env.MAIL_FROM,
     to,
@@ -88,6 +102,8 @@ async function sendPaymentConfirmationEmail({
       },
     ],
   });
+
+  console.log('📧 Email sendMail() called');
 }
 
 export default async function handler(req, res) {
@@ -141,11 +157,14 @@ export default async function handler(req, res) {
           currency: session.currency,
           date: new Date(session.created * 1000).toLocaleDateString(),
         });
+      } else {
+        console.log('⚠️ No customer email found in session');
       }
     } catch (err) {
-      console.error('Email/PDF failed (ignored):', err);
+      console.error('⚠️ Email/PDF failed (ignored):', err);
     }
   }
 
+  // ⚠️ STRIPE MINDIG 200-AT KAP
   res.status(200).json({ received: true });
 }
