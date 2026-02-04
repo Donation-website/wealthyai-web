@@ -26,51 +26,38 @@ export default function Home() {
 
   return (
     <>
-     <Head>
-  {/* Primary SEO */}
-  <title>
-    WealthyAI – AI-Driven Financial Intelligence for Structured Decision-Making
-  </title>
+      <Head>
+        <title>WealthyAI – AI-powered financial clarity</title>
+        <meta
+          name="description"
+          content="AI-powered financial planning with structured insights and clear perspective."
+        />
 
-  <meta
-    name="description"
-    content="WealthyAI is an AI-driven financial intelligence system designed to interpret financial context over time, supporting structured and disciplined decision-making."
-  />
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={SITE_URL} />
+        <meta property="og:title" content="WealthyAI – AI-powered financial clarity" />
+        <meta
+          property="og:description"
+          content="Structured insights. Clear perspective. Financial intelligence."
+        />
+        <meta
+          property="og:image"
+          content="https://wealthyai-web.vercel.app"
+        />
 
-  {/* Canonical */}
-  <link rel="canonical" href={SITE_URL} />
-
-  {/* Open Graph */}
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content={SITE_URL} />
-  <meta
-    property="og:title"
-    content="WealthyAI – AI-Driven Financial Intelligence"
-  />
-  <meta
-    property="og:description"
-    content="Structured insights and probabilistic thinking to support disciplined financial decision-making."
-  />
-  <meta
-    property="og:image"
-    content="https://wealthyai-web.vercel.app/wealthyai/wealthyai.png"
-  />
-
-  {/* Twitter */}
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta
-    name="twitter:title"
-    content="WealthyAI – AI-Driven Financial Intelligence"
-  />
-  <meta
-    name="twitter:description"
-    content="Structured insights and probabilistic thinking to support disciplined financial decision-making."
-  />
-  <meta
-    name="twitter:image"
-    content="https://wealthyai-web.vercel.app/wealthyai/wealthyai.png"
-  />
-</Head>
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="WealthyAI – AI-powered financial clarity" />
+        <meta
+          name="twitter:description"
+          content="Structured insights. Clear perspective. Financial intelligence."
+        />
+        <meta
+          name="twitter:image"
+          content="https://wealthyai-web.vercel.app"
+        />
+      </Head>
 
       <main
         onMouseDown={clearSelectionIfNeeded}
@@ -379,4 +366,4 @@ export default function Home() {
       </main>
     </>
   );
-}
+}  
