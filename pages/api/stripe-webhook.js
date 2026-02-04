@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
 import nodemailer from 'nodemailer';
-import { generateAccessConfirmationPDF } from '@/lib/pdf/generateAccessConfirmation';
+import { generateAccessConfirmationPDF } from '../../lib/pdf/generateAccessConfirmation';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
