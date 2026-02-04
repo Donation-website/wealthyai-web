@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
 import nodemailer from 'nodemailer';
-import PDFDocument from 'pdfkit';
+import { generateAccessConfirmationPDF } from '@/lib/pdf/generateAccessConfirmation';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -19,39 +19,7 @@ function buffer(readable) {
   });
 }
 
-// 📄 PDF GENERÁLÁS BUFFERBE
-function generatePaymentPDF({ productName, amount, currency, date }) {
-  return new Promise((resolve) => {
-    const doc = new PDFDocument({ size: 'A4', margin: 50 });
-    const buffers = [];
-
-    doc.on('data', buffers.push.bind(buffers));
-    doc.on('end', () => {
-      resolve(Buffer.concat(buffers));
-    });
-
-    doc.fontSize(20).text('WealthyAI', { align: 'center' });
-    doc.moveDown();
-    doc.fontSize(14).text('Payment Confirmation', { align: 'center' });
-    doc.moveDown(2);
-
-    doc.fontSize(12).text(`Product: ${productName}`);
-    doc.text(`Amount paid: ${amount} ${currency.toUpperCase()}`);
-    doc.text(`Payment date: ${date}`);
-
-    doc.moveDown(2);
-    doc
-      .fontSize(10)
-      .fillColor('gray')
-      .text(
-        'This document is not a tax invoice.\nOfficial payment receipt is provided by Stripe.'
-      );
-
-    doc.end();
-  });
-}
-
-// 📧 EMAIL KÜLDÉS
+// 📧 EMAIL KÜLDÉS (PDF már a külön modulból jön)
 async function sendPaymentConfirmationEmail({
   to,
   productName,
@@ -59,7 +27,7 @@ async function sendPaymentConfirmationEmail({
   currency,
   date,
 }) {
-  const pdfBuffer = await generatePaymentPDF({
+  const pdfBuffer = await generateAccessConfirmationPDF({
     productName,
     amount,
     currency,
@@ -67,7 +35,7 @@ async function sendPaymentConfirmationEmail({
   });
 
   const smtpPort = Number(process.env.SMTP_PORT);
-  const useSecure = smtpPort === 465; // 🔑 EZ KRITIKUS
+  const useSecure = smtpPort === 465;
 
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
@@ -86,24 +54,23 @@ async function sendPaymentConfirmationEmail({
     port: smtpPort,
     secure: useSecure,
     from: process.env.MAIL_FROM,
-    user: process.env.SMTP_USER,
   });
 
   // 📧 EMAIL KÜLDÉS
   await transporter.sendMail({
     from: process.env.MAIL_FROM,
     to,
-    subject: 'Your WealthyAI purchase confirmation',
-    text: 'Thank you for your purchase. Please find your confirmation attached.',
+    subject: 'Your WealthyAI access is now active',
+    text: 'Your WealthyAI access is confirmed. Please find the attached document for your records.',
     attachments: [
       {
-        filename: 'wealthyai-payment-confirmation.pdf',
+        filename: 'wealthyai-access-confirmation.pdf',
         content: pdfBuffer,
       },
     ],
   });
 
-  console.log('📧 Email sendMail() called');
+  console.log('📧 Access confirmation email sent');
 }
 
 export default async function handler(req, res) {
@@ -127,7 +94,7 @@ export default async function handler(req, res) {
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
 
-    // 🔒 MEGLÉVŐ ÜZLETI LOGIKA – NEM VÁLTOZIK
+    // 🔒 MEGLÉVŐ ÜZLETI LOGIKA – VÁLTOZATLAN
     const priceId = session.metadata?.priceId;
     const subscriptionId = session.subscription;
 
@@ -145,7 +112,7 @@ export default async function handler(req, res) {
       }
     }
 
-    // 📧 UX EXTRA – EMAIL (NEM KRITIKUS)
+    // 📧 ACCESS EMAIL (NEM KRITIKUS, DE FONTOS UX)
     try {
       const customerEmail = session.customer_details?.email;
 
@@ -155,7 +122,9 @@ export default async function handler(req, res) {
           productName: 'WealthyAI Monthly Pass',
           amount: (session.amount_total / 100).toFixed(2),
           currency: session.currency,
-          date: new Date(session.created * 1000).toLocaleDateString(),
+          date: new Date(session.created * 1000)
+            .toISOString()
+            .split('T')[0],
         });
       } else {
         console.log('⚠️ No customer email found in session');
@@ -165,6 +134,6 @@ export default async function handler(req, res) {
     }
   }
 
-  // ⚠️ STRIPE MINDIG 200-AT KAP
+  // ⚠️ Stripe mindig 200-at kap
   res.status(200).json({ received: true });
 }
