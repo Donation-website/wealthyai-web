@@ -313,16 +313,21 @@ export default function UserDashboard() {
             <p style={{ opacity: 0.65, marginTop: 18, fontSize: "12px" }}>
               This view shows a snapshot — not behavior, not direction.
             </p>
-               <p
+              <p
+  onClick={() =>
+    document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })
+  }
   style={{
     marginTop: 10,
     fontSize: "12px",
     opacity: 0.5,
     textAlign: "center",
+    cursor: "pointer",
   }}
 >
   Daily / Weekly / Monthly intelligence available ↓
 </p>
+
  
           </div>
         </div>
@@ -383,7 +388,11 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        <div style={{ marginTop: isMobile ? 40 : 60 }}>
+        <div
+  id="pricing"
+  style={{ marginTop: isMobile ? 40 : 60 }}
+>
+
           <h2
             style={{
               textAlign: "center",
