@@ -1,12 +1,12 @@
 import Stripe from 'stripe';
 import nodemailer from 'nodemailer';
-import pdf from 'html-pdf-node';
+import PDFDocument from 'pdfkit';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export const config = {
   api: {
-    bodyParser: false, // ⚠️ Stripe KÖTELEZŐ
+    bodyParser: false,
   },
 };
 
@@ -19,7 +19,39 @@ function buffer(readable) {
   });
 }
 
-// 📧 EMAIL + PDF (NON-CRITICAL, UX EXTRA)
+// 📄 PDF GENERÁLÁS BUFFERBE
+function generatePaymentPDF({ productName, amount, currency, date }) {
+  return new Promise((resolve) => {
+    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+    const buffers = [];
+
+    doc.on('data', buffers.push.bind(buffers));
+    doc.on('end', () => {
+      resolve(Buffer.concat(buffers));
+    });
+
+    doc.fontSize(20).text('WealthyAI', { align: 'center' });
+    doc.moveDown();
+    doc.fontSize(14).text('Payment Confirmation', { align: 'center' });
+    doc.moveDown(2);
+
+    doc.fontSize(12).text(`Product: ${productName}`);
+    doc.text(`Amount paid: ${amount} ${currency.toUpperCase()}`);
+    doc.text(`Payment date: ${date}`);
+
+    doc.moveDown(2);
+    doc
+      .fontSize(10)
+      .fillColor('gray')
+      .text(
+        'This document is not a tax invoice.\nOfficial payment receipt is provided by Stripe.'
+      );
+
+    doc.end();
+  });
+}
+
+// 📧 EMAIL KÜLDÉS
 async function sendPaymentConfirmationEmail({
   to,
   productName,
@@ -27,31 +59,12 @@ async function sendPaymentConfirmationEmail({
   currency,
   date,
 }) {
-  const html = `
-    <html>
-      <body style="font-family: Arial, sans-serif; padding: 20px;">
-        <img src="https://wealthyai.ai/logo.png" width="120" />
-        <h2>Thank you for choosing WealthyAI</h2>
-
-        <p>You have successfully purchased:</p>
-
-        <p><strong>Product:</strong> ${productName}</p>
-        <p><strong>Amount paid:</strong> ${amount} ${currency.toUpperCase()}</p>
-        <p><strong>Payment date:</strong> ${date}</p>
-
-        <hr />
-        <p style="font-size:12px;color:#666">
-          This document is not a tax invoice.<br/>
-          Official payment receipt is provided by Stripe.
-        </p>
-      </body>
-    </html>
-  `;
-
-  const pdfBuffer = await pdf.generatePdf(
-    { content: html },
-    { format: 'A4' }
-  );
+  const pdfBuffer = await generatePaymentPDF({
+    productName,
+    amount,
+    currency,
+    date,
+  });
 
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
@@ -98,15 +111,9 @@ export default async function handler(req, res) {
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
 
-    // ============================
-    // ✅ MEGLÉVŐ ÜZLETI LOGIKA (NEM NYÚLUNK HOZZÁ)
-    // ============================
+    // 🔒 MEGLÉVŐ ÜZLETI LOGIKA – NEM VÁLTOZIK
     const priceId = session.metadata?.priceId;
     const subscriptionId = session.subscription;
-
-    console.log('✅ PAYMENT CONFIRMED');
-    console.log('Plan:', priceId);
-    console.log('Subscription:', subscriptionId);
 
     const MONTH_PRICE_ID = 'price_1SscbeDyLtejYlZixJcT3B4o';
 
@@ -117,39 +124,28 @@ export default async function handler(req, res) {
             had_month_before: 'true',
           },
         });
-
-        console.log('🧠 Month history saved to Stripe metadata');
       } catch (err) {
-        console.error('❌ Failed to update subscription metadata:', err);
+        console.error('Subscription metadata update failed:', err);
       }
     }
 
-    // ============================
-    // 📧 UX EXTRA – PAYMENT CONFIRMATION EMAIL (NON-CRITICAL)
-    // ============================
+    // 📧 UX EXTRA – EMAIL (NEM KRITIKUS)
     try {
       const customerEmail = session.customer_details?.email;
-      const amount = (session.amount_total / 100).toFixed(2);
-      const currency = session.currency;
-      const productName = 'WealthyAI Monthly Pass';
-      const date = new Date(session.created * 1000).toLocaleDateString();
 
       if (customerEmail) {
         await sendPaymentConfirmationEmail({
           to: customerEmail,
-          productName,
-          amount,
-          currency,
-          date,
+          productName: 'WealthyAI Monthly Pass',
+          amount: (session.amount_total / 100).toFixed(2),
+          currency: session.currency,
+          date: new Date(session.created * 1000).toLocaleDateString(),
         });
-
-        console.log('📧 Payment confirmation email sent');
       }
     } catch (err) {
-      console.error('⚠️ Email/PDF generation failed (ignored):', err);
+      console.error('Email/PDF failed (ignored):', err);
     }
   }
 
-  // ⚠️ STRIPE MINDIG 200-AT KAP
   res.status(200).json({ received: true });
 }
