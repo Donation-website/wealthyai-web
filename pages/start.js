@@ -477,10 +477,10 @@ export default function UserDashboard() {
               border: "1px solid rgba(56,189,248,0.45)",
             }}
           >
-            <h3>Live Environment</h3>
+            <h3>Month · €29.99</h3>
             <small>Always-on financial context</small>
             <p style={{ marginTop: 8, fontSize: 14 }}>
-              1 Month · €29.99
+              Live Environment
             </p>
           </div>
         </div>
