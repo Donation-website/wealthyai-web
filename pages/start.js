@@ -218,6 +218,11 @@ export default function UserDashboard() {
     background: "rgba(2,6,23,0.6)",
     zIndex: 15,
   };
+// ===============================
+// UserDashboard.jsx — 2 / 2 RÉSZ
+// (AZ 1/2 FOLYTATÁSA, TELJES)
+// ===============================
+
   return (
     <main
       style={{
@@ -244,11 +249,10 @@ export default function UserDashboard() {
       }}
     >
       {/* ===== HELP BUTTON ===== */}
-      <a href="/start/help" style={helpButton}>
-        Help
-      </a>
+      <a href="/start/help" style={helpButton}>Help</a>
 
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+        {/* ===== HEADER ===== */}
         <div style={{ textAlign: "center", marginBottom: "30px" }}>
           <h1 style={{ fontSize: isMobile ? "1.8rem" : "2.5rem" }}>
             Your Financial Overview (Basic)
@@ -263,7 +267,7 @@ export default function UserDashboard() {
             gap: 20,
           }}
         >
-          {/* LEFT CARD */}
+          {/* ===== LEFT CARD ===== */}
           <div style={card}>
             <h3>Income & Expenses</h3>
 
@@ -286,7 +290,7 @@ export default function UserDashboard() {
             ))}
           </div>
 
-          {/* RIGHT CARD */}
+          {/* ===== RIGHT CARD ===== */}
           <div style={card}>
             <h3>Insights (Basic)</h3>
             <Radar data={radar} />
@@ -300,10 +304,7 @@ export default function UserDashboard() {
 
             <ul style={{ paddingLeft: 20 }}>
               {insights.map((i, idx) => (
-                <li
-                  key={idx}
-                  style={{ marginBottom: 12, fontSize: "14px" }}
-                >
+                <li key={idx} style={{ marginBottom: 12, fontSize: "14px" }}>
                   {i}
                 </li>
               ))}
@@ -332,7 +333,7 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        {/* ===== INTELLIGENCE LEVELS ===== */}
+        {/* ===== INTELLIGENCE INTRO ===== */}
         <div style={{ marginTop: isMobile ? 40 : 70, textAlign: "center" }}>
           <h2
             className="pulse-title"
@@ -352,15 +353,17 @@ export default function UserDashboard() {
             Different questions require different levels of context.
             You can choose the depth that matches what you want to understand right now.
           </p>
+        </div>
 
+        {/* ===== 4 EQUAL INTELLIGENCE BOXES ===== */}
+        <div style={{ marginTop: 30 }}>
           <div
             style={{
               display: "grid",
               gridTemplateColumns: isMobile
                 ? "1fr"
-                : "repeat(auto-fit, minmax(240px, 1fr))",
+                : "repeat(4, 1fr)",
               gap: 20,
-              marginTop: 30,
             }}
           >
             <div style={card}>
@@ -379,36 +382,19 @@ export default function UserDashboard() {
               </p>
             </div>
 
-            {/* ===== MONTHLY + RIGHT SIDE BOX ===== */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-                gap: 20,
-              }}
-            >
-              <div style={card}>
-                <h4>Monthly Intelligence</h4>
-                <p style={{ fontSize: "14px", opacity: 0.8 }}>
-                  Multi-week context, regional insights, and forward-looking analysis.
-                  Best when decisions require direction.
-                </p>
-              </div>
+            <div style={card}>
+              <h4>Monthly Intelligence</h4>
+              <p style={{ fontSize: "14px", opacity: 0.8 }}>
+                Multi-week context, regional insights, and forward-looking analysis.
+                Best when decisions require direction.
+              </p>
+            </div>
 
-              {/* 👉 JOBB OLDALI ÚJ BOX (NEM KATTINTHATÓ) */}
-              <div
-                style={{
-                  ...card,
-                  background: "rgba(2,6,23,0.7)",
-                  border: "1px dashed rgba(255,255,255,0.15)",
-                }}
-              >
-                <h4>Live Environment</h4>
-                <p style={{ fontSize: "14px", opacity: 0.7 }}>
-                  A continuously updating financial context layer.
-                  No alerts. No advice. No noise.
-                </p>
-              </div>
+            <div style={card}>
+              <h4>Live Environment</h4>
+              <p style={{ fontSize: "14px", opacity: 0.8 }}>
+                Continuously updating global and regional financial context.
+              </p>
             </div>
           </div>
         </div>
@@ -465,31 +451,22 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        {/* ===== BOTTOM LIVE STRIPE BOX (€29.99) ===== */}
-        <div style={{ marginTop: isMobile ? 50 : 70 }}>
+        {/* ===== LIVE STRIPE BOX (ARÁNYOS) ===== */}
+        <div style={{ marginTop: 40 }}>
           <div
             onClick={() => (window.location.href = "/live")}
             style={{
-              ...card,
-              maxWidth: 520,
+              ...priceCard,
+              maxWidth: 240,
               margin: "0 auto",
-              textAlign: "center",
-              cursor: "pointer",
               border: "1px solid rgba(56,189,248,0.45)",
             }}
           >
-            <h3 style={{ fontSize: "1.5rem", marginBottom: 12 }}>
-              Live Financial Environment
-            </h3>
-
-            <p style={{ fontSize: "14px", opacity: 0.8, marginBottom: 16 }}>
-              Real-time interpretation of the global and regional financial environment.
-              Updates appear only when structural meaning changes.
+            <h3>Live Environment</h3>
+            <small>Always-on financial context</small>
+            <p style={{ marginTop: 8, fontSize: 14 }}>
+              1 Month · €29.99
             </p>
-
-            <strong style={{ fontSize: "16px" }}>
-              Unlock 30 days · €29.99
-            </strong>
           </div>
         </div>
       </div>
