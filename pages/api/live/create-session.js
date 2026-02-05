@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const session = await stripe.checkout.sessions.create({
+    const session = await liveStripe.checkout.sessions.create({
       mode: "subscription", // Live csomag: always-on access
 
       line_items: [
