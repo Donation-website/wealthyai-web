@@ -62,11 +62,8 @@ export default function Home() {
       <main
         onMouseDown={clearSelectionIfNeeded}
         style={{
-          // 🔧 MOBILE FIX – valódi teteje vágás
-          height: isMobile ? "100svh" : "100vh",
+          height: isMobile ? "auto" : "100vh",
           minHeight: "100vh",
-          overflowY: isMobile ? "hidden" : "visible",
-
           width: "100%",
           boxSizing: "border-box",
           display: "flex",
@@ -77,7 +74,7 @@ export default function Home() {
           backgroundImage:
             "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
 
-          // 🔧 MOBILE FIX – háttér felső része levágva
+          // 🔧 MOBILE FIX — az oldal tetejének vizuális „levágása”, PC érintetlen
           backgroundPosition: isMobile ? "center 22%" : "center",
 
           backgroundSize: "cover",
@@ -88,7 +85,8 @@ export default function Home() {
           overflowX: "hidden",
           margin: 0,
 
-          padding: isMobile ? "0 0 60px 0" : 0,
+          // 🔧 MOBILE FIX — eredeti logika megtartva, funkciók nem sérülnek
+          padding: isMobile ? "80px 0 60px 0" : 0,
         }}
       >
         {/* TOP NAV */}
@@ -133,7 +131,7 @@ export default function Home() {
               display: "block",
               cursor: "pointer",
 
-              // 🔧 MOBILE FIX – LOGO VALÓBAN LEJJEBB
+              // 🔧 MOBILE FIX — logo ténylegesen lejjebb, PC érintetlen
               marginTop: isMobile ? "24px" : "0px",
             }}
           />
@@ -344,9 +342,9 @@ export default function Home() {
             inset: -12px -22px;
             background: radial-gradient(
               circle,
-              rgba(56,189,248,0.55) 0%,
-              rgba(56,189,248,0.25) 40%,
-              transparent 70%
+               rgba(56,189,248,0.55) 0%,
+               rgba(56,189,248,0.25) 40%,
+               transparent 70%
             );
             filter: blur(16px);
             opacity: 0;
