@@ -1,6 +1,4 @@
-import Stripe from "stripe";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+import { liveStripe } from "../../../lib/live/stripe";
 
 // 🔒 HARD-CODED LIVE PRICE (€29.99)
 const LIVE_PRICE_ID = "price_1SxRUGDyLtejYlZiBIbwZXlx";
