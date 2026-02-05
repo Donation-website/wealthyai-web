@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react"; 
-import Head from "next/head";
+import React, { useState, useEffect } from "react";
+import SEO from "../components/SEO";
 
 export default function Home() {
   const SITE_URL = "https://wealthyai-web.vercel.app";
@@ -26,38 +26,11 @@ export default function Home() {
 
   return (
     <>
-      <Head>
-        <title>WealthyAI – AI-powered financial clarity</title>
-        <meta
-          name="description"
-          content="AI-powered financial planning with structured insights and clear perspective."
-        />
-
-        {/* Open Graph */}
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={SITE_URL} />
-        <meta property="og:title" content="WealthyAI – AI-powered financial clarity" />
-        <meta
-          property="og:description"
-          content="Structured insights. Clear perspective. Financial intelligence."
-        />
-        <meta
-          property="og:image"
-          content="https://wealthyai-web.vercel.app"
-        />
-
-        {/* Twitter */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="WealthyAI – AI-powered financial clarity" />
-        <meta
-          name="twitter:description"
-          content="Structured insights. Clear perspective. Financial intelligence."
-        />
-        <meta
-          name="twitter:image"
-          content="https://wealthyai-web.vercel.app"
-        />
-      </Head>
+      <SEO
+        title="WealthyAI – AI-powered financial clarity"
+        description="AI-powered financial planning with structured insights and clear perspective."
+        url={SITE_URL}
+      />
 
       <main
         onMouseDown={clearSelectionIfNeeded}
@@ -73,10 +46,7 @@ export default function Home() {
           backgroundColor: "#060b13",
           backgroundImage:
             "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
-
-          // 🔧 MOBILE FIX — az oldal tetejének vizuális „levágása”, PC érintetlen
           backgroundPosition: isMobile ? "center 22%" : "center",
-
           backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
           color: "white",
@@ -84,8 +54,6 @@ export default function Home() {
           position: "relative",
           overflowX: "hidden",
           margin: 0,
-
-          // 🔧 MOBILE FIX — eredeti logika megtartva, funkciók nem sérülnek
           padding: isMobile ? "80px 0 60px 0" : 0,
         }}
       >
@@ -130,8 +98,6 @@ export default function Home() {
               maxWidth: "95vw",
               display: "block",
               cursor: "pointer",
-
-              // 🔧 MOBILE FIX — logo ténylegesen lejjebb, PC érintetlen
               marginTop: isMobile ? "24px" : "0px",
             }}
           />
@@ -272,9 +238,7 @@ export default function Home() {
                 textDecoration: "none",
               }}
             >
-              <div style={{ fontWeight: 500 }}>
-                Contact & Partnerships
-              </div>
+              <div style={{ fontWeight: 500 }}>Contact & Partnerships</div>
               <div style={{ opacity: 0.8 }}>
                 Media · Partnerships · Institutional use
               </div>
