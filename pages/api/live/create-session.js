@@ -2,43 +2,38 @@ import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+// 🔒 HARD-CODED LIVE PRICE (€29.99)
+const LIVE_PRICE_ID = "price_1SxRUGDyLtejYlZiBIbwZXlx";
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).end("Method Not Allowed");
   }
 
-  const { priceId } = req.body;
-  if (!priceId) {
-    return res.status(400).json({ error: "Missing priceId" });
-  }
-
-  let successPath = "/start";
-
-  if (priceId === "price_1SscYJDyLtejYlZiyDvhdaIx") {
-    successPath = "/day";
-  } else if (priceId === "price_1SscaYDyLtejYlZiDjSeF5Wm") {
-    successPath = "/premium-week";
-  } else if (priceId === "price_1SscbeDyLtejYlZixJcT3B4o") {
-    successPath = "/premium-month";
-  }
-
   try {
     const session = await stripe.checkout.sessions.create({
-      mode: "subscription", // 🔑 MINDIG
-      line_items: [{ price: priceId, quantity: 1 }],
+      mode: "subscription", // Live csomag: always-on access
 
-      // ✅ HIÁNYZÓ METADATA – MOST MÁR OTT VAN
+      line_items: [
+        {
+          price: LIVE_PRICE_ID,
+          quantity: 1,
+        },
+      ],
+
+      // 🔐 Explicit metadata – csak live
       metadata: {
-        priceId,
+        product: "live-financial-environment",
+        priceId: LIVE_PRICE_ID,
       },
 
-      success_url: `${req.headers.origin}${successPath}?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.origin}/start?canceled=true`,
+      success_url: `${req.headers.origin}/live/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.headers.origin}/live?canceled=true`,
     });
 
     return res.status(200).json({ url: session.url });
   } catch (err) {
-    console.error(err);
+    console.error("LIVE STRIPE ERROR:", err);
     return res.status(500).json({ error: "Stripe error" });
   }
 }
