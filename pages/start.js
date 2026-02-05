@@ -454,7 +454,22 @@ export default function UserDashboard() {
         {/* ===== LIVE STRIPE BOX (ARÁNYOS) ===== */}
         <div style={{ marginTop: 40 }}>
           <div
-            onClick={() => (window.location.href = "/live")}
+            onClick={async () => {
+  try {
+    const res = await fetch("/api/live/create-session", {
+      method: "POST",
+    });
+    const data = await res.json();
+    if (data?.url) {
+      window.location.href = data.url;
+    } else {
+      alert("Checkout failed.");
+    }
+  } catch {
+    alert("Checkout failed.");
+  }
+}}
+
             style={{
               ...priceCard,
               maxWidth: 240,
