@@ -22,6 +22,7 @@ export default function UserDashboard() {
   }, []);
 
   /* ===== CALCULATIONS ===== */
+
   const totalExpenses = data.fixed + data.variable;
   const balance = data.income - totalExpenses;
 
@@ -44,6 +45,7 @@ export default function UserDashboard() {
       : "Low Risk";
 
   /* ===== INSIGHTS ===== */
+
   const insights = [];
 
   if (balance < 0) {
@@ -69,32 +71,36 @@ export default function UserDashboard() {
   }
 
   /* ===== STRIPE (DO NOT TOUCH) ===== */
-  const handleCheckout = async (priceId) => {
-    localStorage.setItem("userFinancials", JSON.stringify(data));
 
-    if (priceId === "price_1SscbeDyLtejYlZixJcT3B4o") {
-      const hasHadMonth = localStorage.getItem("hadMonthSubscription");
-      if (hasHadMonth) {
-        localStorage.setItem("isReturningMonthCustomer", "true");
-      }
+ const handleCheckout = async (priceId) => {
+  localStorage.setItem("userFinancials", JSON.stringify(data));
+
+  // 🔐 ONLY FOR MONTH PLAN
+  if (priceId === "price_1SscbeDyLtejYlZixJcT3B4o") {
+    const hasHadMonth = localStorage.getItem("hadMonthSubscription");
+    if (hasHadMonth) {
+      localStorage.setItem("isReturningMonthCustomer", "true");
     }
+  }
 
-    try {
-      const res = await fetch("/api/create-stripe-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId }),
-      });
+  try {
+    const res = await fetch("/api/create-stripe-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ priceId }),
+    });
 
-      const session = await res.json();
-      if (session.url) window.location.href = session.url;
-      else alert("Payment initialization failed.");
-    } catch {
-      alert("Payment initialization failed.");
-    }
-  };
+    const session = await res.json();
+    if (session.url) window.location.href = session.url;
+    else alert("Payment initialization failed.");
+  } catch {
+    alert("Payment initialization failed.");
+  }
+};
+
 
   /* ===== RADAR DATA ===== */
+
   const radar = [
     { label: "Expense Load", value: usagePercent },
     { label: "Savings Strength", value: Math.min(100, savingsRate * 3) },
@@ -108,6 +114,7 @@ export default function UserDashboard() {
   ];
 
   /* ===== RADAR COMPONENT ===== */
+
   const Radar = ({ data, size = isMobile ? 180 : 200 }) => {
     const c = size / 2;
     const r = size / 2 - 24;
@@ -179,6 +186,7 @@ export default function UserDashboard() {
   };
 
   /* ===== STYLES ===== */
+
   const card = {
     background: "rgba(15,23,42,0.65)",
     backdropFilter: "blur(14px)",
@@ -218,10 +226,6 @@ export default function UserDashboard() {
     background: "rgba(2,6,23,0.6)",
     zIndex: 15,
   };
-// ===============================
-// UserDashboard.jsx — 2 / 2 RÉSZ
-// (AZ 1/2 FOLYTATÁSA, TELJES)
-// ===============================
 
   return (
     <main
@@ -252,14 +256,12 @@ export default function UserDashboard() {
       <a href="/start/help" style={helpButton}>Help</a>
 
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        {/* ===== HEADER ===== */}
         <div style={{ textAlign: "center", marginBottom: "30px" }}>
           <h1 style={{ fontSize: isMobile ? "1.8rem" : "2.5rem" }}>
             Your Financial Overview (Basic)
           </h1>
         </div>
 
-        {/* ===== TOP GRID ===== */}
         <div
           style={{
             display: "grid",
@@ -267,7 +269,6 @@ export default function UserDashboard() {
             gap: 20,
           }}
         >
-          {/* ===== LEFT CARD ===== */}
           <div style={card}>
             <h3>Income & Expenses</h3>
 
@@ -290,7 +291,6 @@ export default function UserDashboard() {
             ))}
           </div>
 
-          {/* ===== RIGHT CARD ===== */}
           <div style={card}>
             <h3>Insights (Basic)</h3>
             <Radar data={radar} />
@@ -313,27 +313,25 @@ export default function UserDashboard() {
             <p style={{ opacity: 0.65, marginTop: 18, fontSize: "12px" }}>
               This view shows a snapshot — not behavior, not direction.
             </p>
+              <p
+  onClick={() =>
+    document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })
+  }
+  style={{
+    marginTop: 10,
+    fontSize: "12px",
+    opacity: 0.5,
+    textAlign: "center",
+    cursor: "pointer",
+  }}
+>
+  Daily / Weekly / Monthly intelligence available ↓
+</p>
 
-            <p
-              onClick={() =>
-                document
-                  .getElementById("pricing")
-                  ?.scrollIntoView({ behavior: "smooth" })
-              }
-              style={{
-                marginTop: 10,
-                fontSize: "12px",
-                opacity: 0.5,
-                textAlign: "center",
-                cursor: "pointer",
-              }}
-            >
-              Daily / Weekly / Monthly intelligence available ↓
-            </p>
+ 
           </div>
         </div>
 
-        {/* ===== INTELLIGENCE INTRO ===== */}
         <div style={{ marginTop: isMobile ? 40 : 70, textAlign: "center" }}>
           <h2
             className="pulse-title"
@@ -353,17 +351,15 @@ export default function UserDashboard() {
             Different questions require different levels of context.
             You can choose the depth that matches what you want to understand right now.
           </p>
-        </div>
 
-        {/* ===== 4 EQUAL INTELLIGENCE BOXES ===== */}
-        <div style={{ marginTop: 30 }}>
           <div
             style={{
               display: "grid",
               gridTemplateColumns: isMobile
                 ? "1fr"
-                : "repeat(4, 1fr)",
+                : "repeat(auto-fit, minmax(240px, 1fr))",
               gap: 20,
+              marginTop: 30,
             }}
           >
             <div style={card}>
@@ -389,18 +385,14 @@ export default function UserDashboard() {
                 Best when decisions require direction.
               </p>
             </div>
-
-            <div style={card}>
-              <h4>Live Environment</h4>
-              <p style={{ fontSize: "14px", opacity: 0.8 }}>
-                Continuously updating global and regional financial context.
-              </p>
-            </div>
           </div>
         </div>
 
-        {/* ===== PRICING ===== */}
-        <div id="pricing" style={{ marginTop: isMobile ? 40 : 60 }}>
+        <div
+  id="pricing"
+  style={{ marginTop: isMobile ? 40 : 60 }}
+>
+
           <h2
             style={{
               textAlign: "center",
@@ -448,40 +440,6 @@ export default function UserDashboard() {
               <h3>1 Month · $24.99</h3>
               <small>Full intelligence engine</small>
             </div>
-          </div>
-        </div>
-
-        {/* ===== LIVE STRIPE BOX (ARÁNYOS) ===== */}
-        <div style={{ marginTop: 40 }}>
-          <div
-            onClick={async () => {
-  try {
-    const res = await fetch("/api/live/create-session", {
-      method: "POST",
-    });
-    const data = await res.json();
-    if (data?.url) {
-      window.location.href = data.url;
-    } else {
-      alert("Checkout failed.");
-    }
-  } catch {
-    alert("Checkout failed.");
-  }
-}}
-
-            style={{
-              ...priceCard,
-              maxWidth: 240,
-              margin: "0 auto",
-              border: "1px solid rgba(56,189,248,0.45)",
-            }}
-          >
-            <h3>Month · €29.99</h3>
-            <small>Always-on financial context</small>
-            <p style={{ marginTop: 8, fontSize: 14 }}>
-              Live Environment
-            </p>
           </div>
         </div>
       </div>
