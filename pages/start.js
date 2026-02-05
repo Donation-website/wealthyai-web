@@ -22,7 +22,6 @@ export default function UserDashboard() {
   }, []);
 
   /* ===== CALCULATIONS ===== */
-
   const totalExpenses = data.fixed + data.variable;
   const balance = data.income - totalExpenses;
 
@@ -45,7 +44,6 @@ export default function UserDashboard() {
       : "Low Risk";
 
   /* ===== INSIGHTS ===== */
-
   const insights = [];
 
   if (balance < 0) {
@@ -71,36 +69,32 @@ export default function UserDashboard() {
   }
 
   /* ===== STRIPE (DO NOT TOUCH) ===== */
+  const handleCheckout = async (priceId) => {
+    localStorage.setItem("userFinancials", JSON.stringify(data));
 
- const handleCheckout = async (priceId) => {
-  localStorage.setItem("userFinancials", JSON.stringify(data));
-
-  // 🔐 ONLY FOR MONTH PLAN
-  if (priceId === "price_1SscbeDyLtejYlZixJcT3B4o") {
-    const hasHadMonth = localStorage.getItem("hadMonthSubscription");
-    if (hasHadMonth) {
-      localStorage.setItem("isReturningMonthCustomer", "true");
+    if (priceId === "price_1SscbeDyLtejYlZixJcT3B4o") {
+      const hasHadMonth = localStorage.getItem("hadMonthSubscription");
+      if (hasHadMonth) {
+        localStorage.setItem("isReturningMonthCustomer", "true");
+      }
     }
-  }
 
-  try {
-    const res = await fetch("/api/create-stripe-session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ priceId }),
-    });
+    try {
+      const res = await fetch("/api/create-stripe-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ priceId }),
+      });
 
-    const session = await res.json();
-    if (session.url) window.location.href = session.url;
-    else alert("Payment initialization failed.");
-  } catch {
-    alert("Payment initialization failed.");
-  }
-};
-
+      const session = await res.json();
+      if (session.url) window.location.href = session.url;
+      else alert("Payment initialization failed.");
+    } catch {
+      alert("Payment initialization failed.");
+    }
+  };
 
   /* ===== RADAR DATA ===== */
-
   const radar = [
     { label: "Expense Load", value: usagePercent },
     { label: "Savings Strength", value: Math.min(100, savingsRate * 3) },
@@ -114,7 +108,6 @@ export default function UserDashboard() {
   ];
 
   /* ===== RADAR COMPONENT ===== */
-
   const Radar = ({ data, size = isMobile ? 180 : 200 }) => {
     const c = size / 2;
     const r = size / 2 - 24;
@@ -186,7 +179,6 @@ export default function UserDashboard() {
   };
 
   /* ===== STYLES ===== */
-
   const card = {
     background: "rgba(15,23,42,0.65)",
     backdropFilter: "blur(14px)",
@@ -226,7 +218,6 @@ export default function UserDashboard() {
     background: "rgba(2,6,23,0.6)",
     zIndex: 15,
   };
-
   return (
     <main
       style={{
@@ -253,7 +244,9 @@ export default function UserDashboard() {
       }}
     >
       {/* ===== HELP BUTTON ===== */}
-      <a href="/start/help" style={helpButton}>Help</a>
+      <a href="/start/help" style={helpButton}>
+        Help
+      </a>
 
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: "30px" }}>
@@ -262,6 +255,7 @@ export default function UserDashboard() {
           </h1>
         </div>
 
+        {/* ===== TOP GRID ===== */}
         <div
           style={{
             display: "grid",
@@ -269,6 +263,7 @@ export default function UserDashboard() {
             gap: 20,
           }}
         >
+          {/* LEFT CARD */}
           <div style={card}>
             <h3>Income & Expenses</h3>
 
@@ -291,6 +286,7 @@ export default function UserDashboard() {
             ))}
           </div>
 
+          {/* RIGHT CARD */}
           <div style={card}>
             <h3>Insights (Basic)</h3>
             <Radar data={radar} />
@@ -304,7 +300,10 @@ export default function UserDashboard() {
 
             <ul style={{ paddingLeft: 20 }}>
               {insights.map((i, idx) => (
-                <li key={idx} style={{ marginBottom: 12, fontSize: "14px" }}>
+                <li
+                  key={idx}
+                  style={{ marginBottom: 12, fontSize: "14px" }}
+                >
                   {i}
                 </li>
               ))}
@@ -313,25 +312,27 @@ export default function UserDashboard() {
             <p style={{ opacity: 0.65, marginTop: 18, fontSize: "12px" }}>
               This view shows a snapshot — not behavior, not direction.
             </p>
-              <p
-  onClick={() =>
-    document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })
-  }
-  style={{
-    marginTop: 10,
-    fontSize: "12px",
-    opacity: 0.5,
-    textAlign: "center",
-    cursor: "pointer",
-  }}
->
-  Daily / Weekly / Monthly intelligence available ↓
-</p>
 
- 
+            <p
+              onClick={() =>
+                document
+                  .getElementById("pricing")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
+              style={{
+                marginTop: 10,
+                fontSize: "12px",
+                opacity: 0.5,
+                textAlign: "center",
+                cursor: "pointer",
+              }}
+            >
+              Daily / Weekly / Monthly intelligence available ↓
+            </p>
           </div>
         </div>
 
+        {/* ===== INTELLIGENCE LEVELS ===== */}
         <div style={{ marginTop: isMobile ? 40 : 70, textAlign: "center" }}>
           <h2
             className="pulse-title"
@@ -378,21 +379,42 @@ export default function UserDashboard() {
               </p>
             </div>
 
-            <div style={card}>
-              <h4>Monthly Intelligence</h4>
-              <p style={{ fontSize: "14px", opacity: 0.8 }}>
-                Multi-week context, regional insights, and forward-looking analysis.
-                Best when decisions require direction.
-              </p>
+            {/* ===== MONTHLY + RIGHT SIDE BOX ===== */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+                gap: 20,
+              }}
+            >
+              <div style={card}>
+                <h4>Monthly Intelligence</h4>
+                <p style={{ fontSize: "14px", opacity: 0.8 }}>
+                  Multi-week context, regional insights, and forward-looking analysis.
+                  Best when decisions require direction.
+                </p>
+              </div>
+
+              {/* 👉 JOBB OLDALI ÚJ BOX (NEM KATTINTHATÓ) */}
+              <div
+                style={{
+                  ...card,
+                  background: "rgba(2,6,23,0.7)",
+                  border: "1px dashed rgba(255,255,255,0.15)",
+                }}
+              >
+                <h4>Live Environment</h4>
+                <p style={{ fontSize: "14px", opacity: 0.7 }}>
+                  A continuously updating financial context layer.
+                  No alerts. No advice. No noise.
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-        <div
-  id="pricing"
-  style={{ marginTop: isMobile ? 40 : 60 }}
->
-
+        {/* ===== PRICING ===== */}
+        <div id="pricing" style={{ marginTop: isMobile ? 40 : 60 }}>
           <h2
             style={{
               textAlign: "center",
@@ -440,6 +462,34 @@ export default function UserDashboard() {
               <h3>1 Month · $24.99</h3>
               <small>Full intelligence engine</small>
             </div>
+          </div>
+        </div>
+
+        {/* ===== BOTTOM LIVE STRIPE BOX (€29.99) ===== */}
+        <div style={{ marginTop: isMobile ? 50 : 70 }}>
+          <div
+            onClick={() => (window.location.href = "/live")}
+            style={{
+              ...card,
+              maxWidth: 520,
+              margin: "0 auto",
+              textAlign: "center",
+              cursor: "pointer",
+              border: "1px solid rgba(56,189,248,0.45)",
+            }}
+          >
+            <h3 style={{ fontSize: "1.5rem", marginBottom: 12 }}>
+              Live Financial Environment
+            </h3>
+
+            <p style={{ fontSize: "14px", opacity: 0.8, marginBottom: 16 }}>
+              Real-time interpretation of the global and regional financial environment.
+              Updates appear only when structural meaning changes.
+            </p>
+
+            <strong style={{ fontSize: "16px" }}>
+              Unlock 30 days · €29.99
+            </strong>
           </div>
         </div>
       </div>
