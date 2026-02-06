@@ -127,8 +127,8 @@ export default function Home() {
               Structured insights.<br />
               Clear perspective.
             </div>
-
- style={{
+<div
+              style={{
                 display: "flex",
                 flexDirection: isMobile ? "column" : "row",
                 justifyContent: "center",
@@ -198,7 +198,7 @@ export default function Home() {
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
-            bottom: isMobile ? 0 : "150px",
+            bottom: 0,
             left: 0,
             width: "100%",
             padding: isMobile ? "36px 24px 24px" : "18px 24px",
@@ -247,13 +247,13 @@ export default function Home() {
             </a>
 
             <div style={{ display: "flex", gap: "18px", alignItems: "center", marginTop: isMobile ? "10px" : "0" }}>
-              <a href={`https://www.facebook.com{encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
+              <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
                 <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
               </a>
-              <a href={`https://twitter.com{encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
+              <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
                 <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
               </a>
-              <a href={`https://www.linkedin.com{encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
+              <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
                 <img src="/wealthyai/icons/linkedin.png" alt="LinkedIn" style={{ width: 34 }} />
               </a>
               <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="icon-link">
