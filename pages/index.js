@@ -128,7 +128,7 @@ export default function Home() {
               Clear perspective.
             </div>
 
-            <div
+<div
               style={{
                 display: "flex",
                 flexDirection: isMobile ? "column" : "row",
@@ -199,7 +199,7 @@ export default function Home() {
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
-            bottom: 0,
+            bottom: isMobile ? 0 : "12px",
             left: 0,
             width: "100%",
             padding: isMobile ? "36px 24px 24px" : "18px 24px",
