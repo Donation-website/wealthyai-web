@@ -226,8 +226,7 @@ export default function UserDashboard() {
     background: "rgba(2,6,23,0.6)",
     zIndex: 15,
   };
-
-  return (
+return (
     <main
       style={{
         minHeight: "100vh",
@@ -328,7 +327,7 @@ export default function UserDashboard() {
   Daily / Weekly / Monthly intelligence available ↓
 </p>
 
- 
+
           </div>
         </div>
 
@@ -441,6 +440,16 @@ export default function UserDashboard() {
               <small>Full intelligence engine</small>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div style={{ 
+        marginTop: "50px", 
+        textAlign: "center", 
+        paddingBottom: "20px" 
+      }}>
+        <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
+          © 2026 WealthyAI — All rights reserved.
         </div>
       </div>
 
