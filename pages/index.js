@@ -35,7 +35,7 @@ export default function Home() {
       <main
         onMouseDown={clearSelectionIfNeeded}
         style={{
-          height: isMobile ? "auto" : "100vh",
+          height: isMobile ? "100%" : "100vh",
           minHeight: "100vh",
           width: "100%",
           boxSizing: "border-box",
@@ -46,8 +46,8 @@ export default function Home() {
           backgroundColor: "#060b13",
           backgroundImage:
             "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
-          // JAVÍTÁS: Mobilon top pozíció, hogy ne legyen fekete sáv
-          backgroundPosition: isMobile ? "center top" : "center",
+          // JAVÍTÁS: Mobilon top pozíció fixálva, hogy ne legyen fekete sáv
+          backgroundPosition: "center top",
           backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
           color: "white",
@@ -61,7 +61,7 @@ export default function Home() {
         {/* TOP NAV - Mobilon is áttetsző */}
         <div
           style={{
-            position: isMobile ? "absolute" : "absolute",
+            position: "absolute",
             top: isMobile ? "20px" : "30px",
             right: isMobile ? "0" : "40px",
             left: isMobile ? "0" : "auto",
@@ -89,8 +89,8 @@ export default function Home() {
             alignItems: "center",
             width: "100%",
             transform: isMobile ? "none" : "translateY(-40px)",
-            // JAVÍTÁS: Csak mobilon toljuk le a logót a nav alá
-            paddingTop: isMobile ? "110px" : "0px", 
+            // JAVÍTÁS: Mobilon elegendő hely a nav alatt, de sáv nélkül
+            paddingTop: isMobile ? "80px" : "0px", 
           }}
         >
           <img
@@ -328,7 +328,7 @@ export default function Home() {
             position: absolute;
             inset: -12px -22px;
             background: radial-gradient(
-              circle,
+               circle,
                rgba(56,189,248,0.55) 0%,
                rgba(56,189,248,0.25) 40%,
                transparent 70%
