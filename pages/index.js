@@ -46,24 +46,22 @@ export default function Home() {
           backgroundColor: "#060b13",
           backgroundImage:
             "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
-          // JAVÍTÁS: Mobilon fixált háttér, hogy ne legyen sáv sehol
-          backgroundPosition: "center top",
+          backgroundPosition: isMobile ? "center 22%" : "center",
           backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
-          backgroundAttachment: isMobile ? "fixed" : "scroll", 
           color: "white",
           fontFamily: "'Inter', system-ui, Arial, sans-serif",
           position: "relative",
           overflowX: "hidden",
           margin: 0,
-          padding: 0,
+          padding: isMobile ? "80px 0 60px 0" : 0,
         }}
       >
         {/* TOP NAV */}
         <div
           style={{
-            position: "absolute",
-            top: isMobile ? "20px" : "30px",
+            position: isMobile ? "fixed" : "absolute",
+            top: isMobile ? "15px" : "30px",
             right: isMobile ? "0" : "40px",
             left: isMobile ? "0" : "auto",
             display: "flex",
@@ -89,8 +87,6 @@ export default function Home() {
             alignItems: "center",
             width: "100%",
             transform: isMobile ? "none" : "translateY(-40px)",
-            // JAVÍTÁS: Mobilon itt toljuk le az egészet a menü alá
-            marginTop: isMobile ? "100px" : "0px",
           }}
         >
           <img
@@ -102,6 +98,7 @@ export default function Home() {
               maxWidth: "95vw",
               display: "block",
               cursor: "pointer",
+              marginTop: isMobile ? "24px" : "0px",
             }}
           />
 
@@ -111,7 +108,7 @@ export default function Home() {
               lineHeight: "1.45",
               textAlign: "center",
               textShadow: "0 2px 10px rgba(0,0,0,0.5)",
-              marginTop: isMobile ? "10px" : "-110px",
+              marginTop: isMobile ? "0px" : "-110px",
               width: "100%",
               maxWidth: "800px",
               padding: "0 20px",
@@ -196,6 +193,7 @@ export default function Home() {
             Start with a simple financial snapshot. Takes less than a minute.
           </div>
 
+          {/* 👇 SMARAGD LOGO JELZÉS */}
           <div style={{
             display: "flex",
             alignItems: "center",
@@ -224,7 +222,7 @@ export default function Home() {
             display: "flex",
             flexDirection: isMobile ? "column-reverse" : "row",
             justifyContent: "space-between",
-            alignItems: isMobile ? "center" : "flex-end",
+            alignItems: isMobile ? "center" : "flex-end", // Align to bottom for desktop
             zIndex: 5,
             boxSizing: "border-box",
             gap: isMobile ? "30px" : "0",
@@ -236,7 +234,7 @@ export default function Home() {
           <div style={{ 
             fontSize: "0.85rem", 
             opacity: 0.6, 
-            paddingBottom: isMobile ? "0" : "6px" 
+            paddingBottom: isMobile ? "0" : "6px" // Copyright finomhangolás
           }}>
             © 2026 WealthyAI — All rights reserved.
           </div>
