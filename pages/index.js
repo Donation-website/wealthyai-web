@@ -46,7 +46,8 @@ export default function Home() {
           backgroundColor: "#060b13",
           backgroundImage:
             "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
-          backgroundPosition: isMobile ? "center 22%" : "center",
+          // JAVÍTÁS: Mobilon top pozíció, hogy ne legyen fekete sáv
+          backgroundPosition: isMobile ? "center top" : "center",
           backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
           color: "white",
@@ -54,15 +55,14 @@ export default function Home() {
           position: "relative",
           overflowX: "hidden",
           margin: 0,
-          // JAVÍTÁS: Mobilon lecsökkentve, hogy ne legyen üres sáv a tetején
-          padding: isMobile ? "20px 0 60px 0" : 0,
+          padding: 0,
         }}
       >
-        {/* TOP NAV */}
+        {/* TOP NAV - Mobilon is áttetsző */}
         <div
           style={{
-            position: isMobile ? "fixed" : "absolute",
-            top: isMobile ? "0px" : "30px", // Mobilon rátoljuk a szélére a biztonság kedvéért
+            position: isMobile ? "absolute" : "absolute",
+            top: isMobile ? "20px" : "30px",
             right: isMobile ? "0" : "40px",
             left: isMobile ? "0" : "auto",
             display: "flex",
@@ -71,10 +71,7 @@ export default function Home() {
             zIndex: 6,
             fontSize: isMobile ? "0.8rem" : "0.95rem",
             width: isMobile ? "100%" : "auto",
-            // Mobilos menü háttér a jobb olvashatóságért görgetéskor
-            background: isMobile ? "rgba(6,11,19,0.4)" : "transparent",
-            backdropFilter: isMobile ? "blur(8px)" : "none",
-            padding: isMobile ? "15px 0" : "0",
+            background: "transparent",
           }}
         >
           <a href="/how-it-works" className="nav-link">How it works</a>
@@ -92,6 +89,8 @@ export default function Home() {
             alignItems: "center",
             width: "100%",
             transform: isMobile ? "none" : "translateY(-40px)",
+            // JAVÍTÁS: Csak mobilon toljuk le a logót a nav alá
+            paddingTop: isMobile ? "110px" : "0px", 
           }}
         >
           <img
@@ -103,8 +102,6 @@ export default function Home() {
               maxWidth: "95vw",
               display: "block",
               cursor: "pointer",
-              // JAVÍTÁS: Mobilon itt toljuk lejjebb, így a kép feljebb ér a háttérben
-              marginTop: isMobile ? "100px" : "0px",
             }}
           />
 
@@ -114,7 +111,7 @@ export default function Home() {
               lineHeight: "1.45",
               textAlign: "center",
               textShadow: "0 2px 10px rgba(0,0,0,0.5)",
-              marginTop: isMobile ? "0px" : "-110px",
+              marginTop: isMobile ? "10px" : "-110px",
               width: "100%",
               maxWidth: "800px",
               padding: "0 20px",
@@ -199,6 +196,7 @@ export default function Home() {
             Start with a simple financial snapshot. Takes less than a minute.
           </div>
 
+          {/* SMARAGD LOGO JELZÉS */}
           <div style={{
             display: "flex",
             alignItems: "center",
