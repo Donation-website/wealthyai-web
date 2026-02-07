@@ -177,7 +177,6 @@ export default function PremiumMonth() {
     setFocusPreview(null);
     setFocusOpen(false);
   };
-
   /* ================= INPUTS ================= */
 
   const [inputs, setInputs] = useState({
@@ -456,16 +455,16 @@ export default function PremiumMonth() {
     } catch {}
     setEmailSending(false);
   };
-
   /* ================= RENDER ================= */
 
   return (
     <div
-  style={{
-    ...page,
-    overflowX: isMobile ? "hidden" : undefined,
-  }}
->
+      style={{
+        ...page,
+        overflowX: isMobile ? "hidden" : undefined,
+        backgroundAttachment: "fixed", // FIXÁLT HÁTTÉR
+      }}
+    >
 
       <a href="/month/help" style={helpButton}>Help</a>
 
@@ -568,12 +567,12 @@ export default function PremiumMonth() {
       </div>
 
       <div
-  style={{
-    ...layout,
-    gridTemplateColumns: isMobile ? "1fr" : layout.gridTemplateColumns,
-    gap: isMobile ? 20 : layout.gap,
-  }}
->
+        style={{
+          ...layout,
+          gridTemplateColumns: isMobile ? "1fr" : layout.gridTemplateColumns,
+          gap: isMobile ? 20 : layout.gap,
+        }}
+      >
 
         {/* LEFT COLUMN */}
         <div style={card}>
@@ -833,6 +832,7 @@ const page = {
   color: "#e5e7eb",
   fontFamily: "Inter, system-ui",
   backgroundColor: "#020617",
+  backgroundAttachment: "fixed", // FIXÁLT HÁTTÉR
   backgroundImage: `
     repeating-linear-gradient(-25deg, rgba(56,189,248,0.04) 0px, rgba(56,189,248,0.04) 1px, transparent 1px, transparent 180px),
     repeating-linear-gradient(35deg, rgba(167,139,250,0.04) 0px, rgba(167,139,250,0.04) 1px, transparent 1px, transparent 260px),
