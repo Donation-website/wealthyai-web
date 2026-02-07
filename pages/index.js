@@ -54,14 +54,15 @@ export default function Home() {
           position: "relative",
           overflowX: "hidden",
           margin: 0,
-          padding: isMobile ? "80px 0 60px 0" : 0,
+          // JAVÍTÁS: Mobilon lecsökkentve, hogy ne legyen üres sáv a tetején
+          padding: isMobile ? "20px 0 60px 0" : 0,
         }}
       >
         {/* TOP NAV */}
         <div
           style={{
             position: isMobile ? "fixed" : "absolute",
-            top: isMobile ? "15px" : "30px",
+            top: isMobile ? "0px" : "30px", // Mobilon rátoljuk a szélére a biztonság kedvéért
             right: isMobile ? "0" : "40px",
             left: isMobile ? "0" : "auto",
             display: "flex",
@@ -70,6 +71,10 @@ export default function Home() {
             zIndex: 6,
             fontSize: isMobile ? "0.8rem" : "0.95rem",
             width: isMobile ? "100%" : "auto",
+            // Mobilos menü háttér a jobb olvashatóságért görgetéskor
+            background: isMobile ? "rgba(6,11,19,0.4)" : "transparent",
+            backdropFilter: isMobile ? "blur(8px)" : "none",
+            padding: isMobile ? "15px 0" : "0",
           }}
         >
           <a href="/how-it-works" className="nav-link">How it works</a>
@@ -98,7 +103,8 @@ export default function Home() {
               maxWidth: "95vw",
               display: "block",
               cursor: "pointer",
-              marginTop: isMobile ? "24px" : "0px",
+              // JAVÍTÁS: Mobilon itt toljuk lejjebb, így a kép feljebb ér a háttérben
+              marginTop: isMobile ? "100px" : "0px",
             }}
           />
 
@@ -193,7 +199,6 @@ export default function Home() {
             Start with a simple financial snapshot. Takes less than a minute.
           </div>
 
-          {/* 👇 SMARAGD LOGO JELZÉS */}
           <div style={{
             display: "flex",
             alignItems: "center",
@@ -222,7 +227,7 @@ export default function Home() {
             display: "flex",
             flexDirection: isMobile ? "column-reverse" : "row",
             justifyContent: "space-between",
-            alignItems: isMobile ? "center" : "flex-end", // Align to bottom for desktop
+            alignItems: isMobile ? "center" : "flex-end",
             zIndex: 5,
             boxSizing: "border-box",
             gap: isMobile ? "30px" : "0",
@@ -234,7 +239,7 @@ export default function Home() {
           <div style={{ 
             fontSize: "0.85rem", 
             opacity: 0.6, 
-            paddingBottom: isMobile ? "0" : "6px" // Copyright finomhangolás
+            paddingBottom: isMobile ? "0" : "6px" 
           }}>
             © 2026 WealthyAI — All rights reserved.
           </div>
