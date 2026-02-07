@@ -14,6 +14,7 @@ export default function Home() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // 👇 KIJELÖLÉS TÖRLÉSE NEM FUNKCIONÁLIS KATTINTÁSNÁL
   const clearSelectionIfNeeded = (e) => {
     const tag = e.target.tagName.toLowerCase();
     const interactive = ["a", "button", "input", "textarea", "select", "label"];
@@ -44,27 +45,23 @@ export default function Home() {
           justifyContent: isMobile ? "flex-start" : "center",
           backgroundColor: "#060b13",
           backgroundImage:
-            "linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('/wealthyai/wealthyai.png')",
-          // JAVÍTÁS: Fixen a tetejére húzzuk a hátteret, hogy ne legyen fekete sáv felül
-          backgroundPosition: "center top",
+            "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
+          // JAVÍTÁS: Mobilon a kép tetejét rögzítjük, hogy ne legyen fekete sáv
+          backgroundPosition: isMobile ? "center top" : "center",
           backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
-          backgroundAttachment: isMobile ? "scroll" : "fixed",
           color: "white",
           fontFamily: "'Inter', system-ui, Arial, sans-serif",
           position: "relative",
           overflowX: "hidden",
           margin: 0,
-          padding: 0,
+          padding: isMobile ? "110px 0 60px 0" : 0, // Mobilon felül helyet hagyunk a navnak
         }}
       >
-        {/* HULLÓCSILLAG ANIMÁCIÓ */}
-        <div className="shooting-star"></div>
-
         {/* TOP NAV */}
         <div
           style={{
-            position: "absolute",
+            position: isMobile ? "absolute" : "absolute",
             top: isMobile ? "20px" : "30px",
             right: isMobile ? "0" : "40px",
             left: isMobile ? "0" : "auto",
@@ -74,7 +71,6 @@ export default function Home() {
             zIndex: 6,
             fontSize: isMobile ? "0.8rem" : "0.95rem",
             width: isMobile ? "100%" : "auto",
-            background: "transparent",
           }}
         >
           <a href="/how-it-works" className="nav-link">How it works</a>
@@ -92,8 +88,6 @@ export default function Home() {
             alignItems: "center",
             width: "100%",
             transform: isMobile ? "none" : "translateY(-40px)",
-            // JAVÍTÁS: Mobilon pontosított padding, hogy a logo lejjebb kerüljön a nav alá
-            paddingTop: isMobile ? "130px" : "0px", 
           }}
         >
           <img
@@ -105,6 +99,8 @@ export default function Home() {
               maxWidth: "95vw",
               display: "block",
               cursor: "pointer",
+              // JAVÍTÁS: Mobilon lejjebb toljuk a logót a szöveg miatt
+              marginTop: isMobile ? "40px" : "0px",
             }}
           />
 
@@ -154,7 +150,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* START SECTION */}
+        {/* START */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
@@ -187,9 +183,18 @@ export default function Home() {
           >
             Start
           </a>
-          <div style={{ fontSize: "0.85rem", opacity: 0.75, letterSpacing: "0.3px", maxWidth: isMobile ? "280px" : "100%" }}>
+
+          <div
+            style={{
+              fontSize: "0.85rem",
+              opacity: 0.75,
+              letterSpacing: "0.3px",
+              maxWidth: isMobile ? "280px" : "100%",
+            }}
+          >
             Start with a simple financial snapshot. Takes less than a minute.
           </div>
+
           <div style={{
             display: "flex",
             alignItems: "center",
@@ -227,51 +232,67 @@ export default function Home() {
               : "transparent",
           }}
         >
-          <div style={{ fontSize: "0.85rem", opacity: 0.6, paddingBottom: isMobile ? "0" : "6px" }}>
+          <div style={{ 
+            fontSize: "0.85rem", 
+            opacity: 0.6, 
+            paddingBottom: isMobile ? "0" : "6px" 
+          }}>
             © 2026 WealthyAI — All rights reserved.
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", alignItems: isMobile ? "center" : "flex-end", gap: "8px" }}>
-            <a href="mailto:wealthyaiweb@gmail.com" className="nav-link" style={{ fontSize: "0.82rem", textAlign: isMobile ? "center" : "right", textDecoration: "none" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: isMobile ? "center" : "flex-end",
+              gap: "8px",
+            }}
+          >
+            <a
+              href="mailto:wealthyaiweb@gmail.com"
+              className="nav-link"
+              style={{
+                fontSize: "0.82rem",
+                textAlign: isMobile ? "center" : "right",
+                lineHeight: "1.4",
+                cursor: "pointer",
+                textDecoration: "none",
+              }}
+            >
               <div style={{ fontWeight: 500 }}>Contact & Partnerships</div>
-              <div style={{ opacity: 0.8 }}>Media · Partnerships · Institutional use</div>
-              <div style={{ fontWeight: 600 }}>wealthyaiweb@gmail.com</div>
+              <div style={{ opacity: 0.8 }}>
+                Media · Partnerships · Institutional use
+              </div>
+              <div style={{ fontWeight: 600 }}>
+                wealthyaiweb@gmail.com
+              </div>
             </a>
+
             <div style={{ display: "flex", gap: "18px", alignItems: "center", marginTop: isMobile ? "10px" : "0" }}>
-              <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
-              <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
-              <img src="/wealthyai/icons/linkedin.png" alt="LinkedIn" style={{ width: 34 }} />
-              <img src="/wealthyai/icons/insta.png" alt="Instagram" style={{ width: 34 }} />
+              <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
+                <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
+              </a>
+              <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
+                <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
+              </a>
+              <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
+                <img src="/wealthyai/icons/linkedin.png" alt="LinkedIn" style={{ width: 34 }} />
+              </a>
+              <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="icon-link">
+                <img src="/wealthyai/icons/insta.png" alt="Instagram" style={{ width: 34 }} />
+              </a>
             </div>
           </div>
         </div>
 
         <style>{`
-          /* HULLÓCSILLAG */
-          .shooting-star {
-            position: absolute;
-            top: 10%;
-            left: 50%;
-            width: 2px;
-            height: 2px;
-            background: white;
-            border-radius: 50%;
-            box-shadow: 0 0 10px 2px white, 0 0 20px 2px rgba(56, 189, 248, 0.5);
-            opacity: 0;
-            z-index: 1;
-            animation: shooting 10s linear infinite;
-          }
-
-          @keyframes shooting {
-            0% { transform: translateX(0) translateY(0) rotate(-35deg) scale(0); opacity: 0; }
-            5% { opacity: 1; transform: translateX(-100px) translateY(100px) rotate(-35deg) scale(1); }
-            10% { opacity: 0; transform: translateX(-250px) translateY(250px) rotate(-35deg) scale(0); }
-            100% { opacity: 0; }
-          }
-
           .brand-logo {
             animation: logoFloat 9s ease-in-out infinite;
             transition: filter 0.4s ease;
+          }
+
+          .brand-logo:hover {
+            filter: drop-shadow(0 0 18px rgba(56,189,248,0.55));
           }
 
           @keyframes logoFloat {
@@ -291,15 +312,40 @@ export default function Home() {
             100% { opacity: 0.4; }
           }
 
-          .nav-link {
+          .nav-link,
+          .icon-link {
             position: relative;
             color: white;
             text-decoration: none;
             opacity: 0.85;
           }
 
+          .nav-link::before,
+          .icon-link::before {
+            content: "";
+            position: absolute;
+            inset: -12px -22px;
+            background: radial-gradient(
+              circle,
+               rgba(56,189,248,0.55) 0%,
+               rgba(56,189,248,0.25) 40%,
+               transparent 70%
+            );
+            filter: blur(16px);
+            opacity: 0;
+            transition: opacity 0.25s ease;
+            pointer-events: none;
+            z-index: -1;
+          }
+
+          .nav-link:hover::before,
+          .icon-link:hover::before {
+            opacity: 1;
+          }
+
           .start-btn:hover {
             box-shadow: 0 0 35px rgba(56,189,248,0.45);
+            filter: drop-shadow(0 0 18px rgba(56,189,248,0.45));
           }
         `}</style>
       </main>
