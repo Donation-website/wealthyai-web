@@ -180,7 +180,6 @@ export default function DayPremium() {
         </div>
       )}
 
-      {/* JAVÍTOTT RÉSZ: PC-n teljesen tiszta, vonalmentes megjelenés */}
       <div style={{
         ...upsellFixed,
         position: isMobile ? "relative" : "fixed",
@@ -256,6 +255,7 @@ const page = {
   color: "#e5e7eb",
   fontFamily: "Inter, system-ui, sans-serif",
   backgroundColor: "#020617",
+  backgroundAttachment: "fixed", // FIXÁLT HÁTTÉR
   backgroundImage: `
     repeating-linear-gradient(-25deg, rgba(56,189,248,0.06) 0px, rgba(56,189,248,0.06) 1px, transparent 1px, transparent 180px),
     repeating-linear-gradient(35deg, rgba(167,139,250,0.05) 0px, rgba(167,139,250,0.05) 1px, transparent 1px, transparent 260px),
@@ -360,4 +360,4 @@ const upsellFixed = {
   zIndex: 5,
 };
 
-const footerLeft = { position: "fixed", bottom: 16, left: 20, fontSize: 12, color: "#94a3b8", zIndex: 6 };
+const footerLeft = { position: "fixed", bottom: 16, left: 20, fontSize: 12, color: "#94a3b8" };
