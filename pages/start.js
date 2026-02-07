@@ -22,6 +22,7 @@ export default function UserDashboard() {
   }, []);
 
   /* ===== CALCULATIONS ===== */
+
   const totalExpenses = data.fixed + data.variable;
   const balance = data.income - totalExpenses;
 
@@ -44,6 +45,7 @@ export default function UserDashboard() {
       : "Low Risk";
 
   /* ===== INSIGHTS ===== */
+
   const insights = [];
 
   if (balance < 0) {
@@ -69,9 +71,11 @@ export default function UserDashboard() {
   }
 
   /* ===== STRIPE (DO NOT TOUCH) ===== */
+
   const handleCheckout = async (priceId) => {
     localStorage.setItem("userFinancials", JSON.stringify(data));
 
+    // 🔐 ONLY FOR MONTH PLAN
     if (priceId === "price_1SscbeDyLtejYlZixJcT3B4o") {
       const hasHadMonth = localStorage.getItem("hadMonthSubscription");
       if (hasHadMonth) {
@@ -94,7 +98,9 @@ export default function UserDashboard() {
     }
   };
 
+
   /* ===== RADAR DATA ===== */
+
   const radar = [
     { label: "Expense Load", value: usagePercent },
     { label: "Savings Strength", value: Math.min(100, savingsRate * 3) },
@@ -108,6 +114,7 @@ export default function UserDashboard() {
   ];
 
   /* ===== RADAR COMPONENT ===== */
+
   const Radar = ({ data, size = isMobile ? 180 : 200 }) => {
     const c = size / 2;
     const r = size / 2 - 24;
@@ -177,7 +184,8 @@ export default function UserDashboard() {
       </svg>
     );
   };
-/* ===== STYLES ===== */
+
+  /* ===== STYLES ===== */
 
   const card = {
     background: "rgba(15,23,42,0.65)",
@@ -187,7 +195,7 @@ export default function UserDashboard() {
     border: "1px solid rgba(255,255,255,0.08)",
   };
 
-  const inputStyle = {
+  const input = {
     width: "100%",
     padding: "10px",
     marginTop: "6px",
@@ -218,7 +226,6 @@ export default function UserDashboard() {
     background: "rgba(2,6,23,0.6)",
     zIndex: 15,
   };
-
   return (
     <main
       style={{
@@ -236,13 +243,16 @@ export default function UserDashboard() {
           radial-gradient(circle at 45% 85%, rgba(34,211,238,0.18), transparent 40%),
           url("/wealthyai/icons/generated.png")
         `,
-        backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
-        backgroundSize: isMobile
-          ? "auto, auto, 200% 200%, 200% 200%, 200% 200%, 420px auto"
-          : "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
-        backgroundAttachment: "fixed", // 🔥 Fix a fehér sáv ellen
+        backgroundRepeat:
+          "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
+        backgroundSize:
+          isMobile
+            ? "auto, auto, 200% 200%, 200% 200%, 200% 200%, 420px auto"
+            : "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
+        backgroundAttachment: "fixed",
       }}
     >
+      {/* ===== HELP BUTTON ===== */}
       <a href="/start/help" style={helpButton}>Help</a>
 
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
@@ -266,18 +276,13 @@ export default function UserDashboard() {
               ["Monthly Income ($)", "income"],
               ["Fixed Expenses", "fixed"],
               ["Variable Expenses", "variable"],
-              ["Electricity", "electricity"],
-              ["Water", "water"],
-              ["Gas", "gas"],
-              ["Internet", "internet"],
-              ["Subscriptions", "subscriptions"],
             ].map(([label, key]) => (
               <div key={key} style={{ marginBottom: 15 }}>
                 <label style={{ fontSize: "14px" }}>{label}</label>
                 <input
                   type="number"
                   value={data[key]}
-                  style={inputStyle}
+                  style={input}
                   onChange={(e) =>
                     setData({ ...data, [key]: Number(e.target.value) })
                   }
@@ -290,7 +295,9 @@ export default function UserDashboard() {
             <h3>Insights (Basic)</h3>
             <Radar data={radar} />
 
-            <p>Risk Level: <strong>{riskLevel}</strong></p>
+            <p>
+              Risk Level: <strong>{riskLevel}</strong>
+            </p>
             <p style={{ marginBottom: 15 }}>
               Savings Score: <strong>{savingsScore}/100</strong>
             </p>
@@ -306,20 +313,22 @@ export default function UserDashboard() {
             <p style={{ opacity: 0.65, marginTop: 18, fontSize: "12px" }}>
               This view shows a snapshot — not behavior, not direction.
             </p>
-            <p
-              onClick={() =>
-                document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })
-              }
-              style={{
-                marginTop: 10,
-                fontSize: "12px",
-                opacity: 0.5,
-                textAlign: "center",
-                cursor: "pointer",
-              }}
-            >
-              Daily / Weekly / Monthly intelligence available ↓
-            </p>
+              <p
+  onClick={() =>
+    document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })
+  }
+  style={{
+    marginTop: 10,
+    fontSize: "12px",
+    opacity: 0.5,
+    textAlign: "center",
+    cursor: "pointer",
+  }}
+>
+  Daily / Weekly / Monthly intelligence available ↓
+</p>
+
+
           </div>
         </div>
 
@@ -364,7 +373,7 @@ export default function UserDashboard() {
             <div style={card}>
               <h4>Weekly Intelligence</h4>
               <p style={{ fontSize: "14px", opacity: 0.8 }}>
-                Behavioral patterns across days and categories.
+                Behavior patterns across days and categories.
                 Best for understanding habits.
               </p>
             </div>
@@ -379,7 +388,11 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        <div id="pricing" style={{ marginTop: isMobile ? 40 : 60 }}>
+        <div
+  id="pricing"
+  style={{ marginTop: isMobile ? 40 : 60 }}
+>
+
           <h2
             style={{
               textAlign: "center",
@@ -390,16 +403,23 @@ export default function UserDashboard() {
             Unlock Advanced AI Intelligence
           </h2>
 
-          {/* TRÚSZT BLOKK - EMOJI NÉLKÜL */}
-          <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", alignItems: "center", justifyContent: "center", gap: isMobile ? "10px" : "25px", marginBottom: "30px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#10b981", boxShadow: "0 0 6px #10b981" }} />
-              <span style={{ fontSize: "11px", color: "#10b981", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px" }}>Strict Data Privacy</span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <img src="https://js.stripe.com/v3/fingerprinted/img/visa-7ad5735830.svg" alt="Secure" style={{ width: "16px", opacity: 0.6 }} />
-              <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)" }}>Secure transaction processed via <strong>Stripe</strong></span>
-            </div>
+          <div style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            justifyContent: "center", 
+            gap: "8px", 
+            marginBottom: 30,
+            fontSize: "13px",
+            opacity: 0.9
+          }}>
+            <span style={{ color: "#10b981", fontWeight: "600" }}>Strict Data Privacy</span>
+            <span style={{ opacity: 0.6 }}>|</span>
+            <span>Secure transaction processed via</span>
+            <img 
+              src="/wealthyai/icons/stripe.png" 
+              alt="Stripe" 
+              style={{ height: "16px", display: "inline-block", verticalAlign: "middle" }} 
+            />
           </div>
 
           <div
@@ -412,7 +432,9 @@ export default function UserDashboard() {
           >
             <div
               style={priceCard}
-              onClick={() => handleCheckout("price_1SscYJDyLtejYlZiyDvhdaIx")}
+              onClick={() =>
+                handleCheckout("price_1SscYJDyLtejYlZiyDvhdaIx")
+              }
             >
               <h3>1 Day · $9.99</h3>
               <small>Immediate clarity</small>
@@ -420,7 +442,9 @@ export default function UserDashboard() {
 
             <div
               style={priceCard}
-              onClick={() => handleCheckout("price_1SscaYDyLtejYlZiDjSeF5Wm")}
+              onClick={() =>
+                handleCheckout("price_1SscaYDyLtejYlZiDjSeF5Wm")
+              }
             >
               <h3>1 Week · $14.99</h3>
               <small>Behavior & patterns</small>
@@ -428,7 +452,9 @@ export default function UserDashboard() {
 
             <div
               style={priceCard}
-              onClick={() => handleCheckout("price_1SscbeDyLtejYlZixJcT3B4o")}
+              onClick={() =>
+                handleCheckout("price_1SscbeDyLtejYlZixJcT3B4o")
+              }
             >
               <h3>1 Month · $24.99</h3>
               <small>Full intelligence engine</small>
@@ -437,14 +463,20 @@ export default function UserDashboard() {
         </div>
       </div>
 
-      <div style={{ marginTop: "50px", textAlign: "center", paddingBottom: "40px" }}>
+      <div style={{ 
+        marginTop: "50px", 
+        textAlign: "center", 
+        paddingBottom: "20px" 
+      }}>
         <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
           © 2026 WealthyAI — All rights reserved.
         </div>
       </div>
 
       <style>{`
-        .pulse-title { animation: pulseSoft 3s ease-in-out infinite; }
+        .pulse-title {
+          animation: pulseSoft 3s ease-in-out infinite;
+        }
         @keyframes pulseSoft {
           0% { opacity: 0.6; }
           50% { opacity: 1; }
