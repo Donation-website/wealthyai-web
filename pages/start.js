@@ -407,19 +407,19 @@ export default function UserDashboard() {
             display: "flex", 
             alignItems: "center", 
             justifyContent: "center", 
-            gap: "10px", 
+            gap: "12px", 
             marginBottom: 30,
-            fontSize: isMobile ? "12px" : "14px",
+            fontSize: isMobile ? "14px" : "16px",
             opacity: 0.9,
             flexWrap: "wrap"
           }}>
             <span style={{ color: "#10b981", fontWeight: "600" }}>Strict Data Privacy</span>
-            <span style={{ opacity: 0.4 }}>|</span>
+            <span style={{ opacity: 0.3 }}>|</span>
             <span>Secure transaction processed via</span>
             <img 
               src="/wealthyai/icons/stripe.png" 
               alt="Stripe" 
-              style={{ height: "25px", width: "auto", display: "inline-block" }} 
+              style={{ height: "35px", width: "auto", display: "inline-block" }} 
             />
           </div>
 
