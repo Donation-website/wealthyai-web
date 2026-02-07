@@ -46,22 +46,23 @@ export default function Home() {
           backgroundColor: "#060b13",
           backgroundImage:
             "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
-          // JAVÍTÁS: Mobilon a kép tetejét rögzítjük, hogy ne legyen fekete sáv
-          backgroundPosition: isMobile ? "center top" : "center",
+          // JAVÍTÁS: Mobilon fixált háttér, hogy ne legyen sáv sehol
+          backgroundPosition: "center top",
           backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
+          backgroundAttachment: isMobile ? "fixed" : "scroll", 
           color: "white",
           fontFamily: "'Inter', system-ui, Arial, sans-serif",
           position: "relative",
           overflowX: "hidden",
           margin: 0,
-          padding: isMobile ? "110px 0 60px 0" : 0, // Mobilon felül helyet hagyunk a navnak
+          padding: 0,
         }}
       >
         {/* TOP NAV */}
         <div
           style={{
-            position: isMobile ? "absolute" : "absolute",
+            position: "absolute",
             top: isMobile ? "20px" : "30px",
             right: isMobile ? "0" : "40px",
             left: isMobile ? "0" : "auto",
@@ -88,6 +89,8 @@ export default function Home() {
             alignItems: "center",
             width: "100%",
             transform: isMobile ? "none" : "translateY(-40px)",
+            // JAVÍTÁS: Mobilon itt toljuk le az egészet a menü alá
+            marginTop: isMobile ? "100px" : "0px",
           }}
         >
           <img
@@ -99,8 +102,6 @@ export default function Home() {
               maxWidth: "95vw",
               display: "block",
               cursor: "pointer",
-              // JAVÍTÁS: Mobilon lejjebb toljuk a logót a szöveg miatt
-              marginTop: isMobile ? "40px" : "0px",
             }}
           />
 
