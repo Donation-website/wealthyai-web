@@ -127,7 +127,47 @@ export default function Home() {
               Structured insights.<br />
               Clear perspective.
             </div>
-<div
+
+            {/* 👇 NEW: TRUST BADGES (SMARAGDZÖLD) */}
+            <div style={{
+              display: "flex",
+              flexDirection: isMobile ? "column" : "row",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: isMobile ? "10px" : "20px",
+              marginBottom: "25px",
+              marginTop: isMobile ? "15px" : "0px"
+            }}>
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "5px 12px",
+                borderRadius: "20px",
+                background: "rgba(16, 185, 129, 0.12)",
+                border: "1px solid rgba(16, 185, 129, 0.25)"
+              }}>
+                <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#10b981", boxShadow: "0 0 8px #10b981" }} />
+                <span style={{ fontSize: "10px", color: "#10b981", fontWeight: "700", textTransform: "uppercase", letterSpacing: "1px" }}>
+                  Zero-Data Architecture
+                </span>
+              </div>
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "5px 12px",
+                borderRadius: "20px",
+                background: "rgba(56, 189, 248, 0.1)",
+                border: "1px solid rgba(56, 189, 248, 0.2)"
+              }}>
+                <span style={{ fontSize: "10px", color: "#7dd3fc", fontWeight: "700", textTransform: "uppercase", letterSpacing: "1px" }}>
+                  No Accounts Required
+                </span>
+              </div>
+            </div>
+
+            <div
               style={{
                 display: "flex",
                 flexDirection: isMobile ? "column" : "row",
@@ -153,7 +193,7 @@ export default function Home() {
           style={{
             position: isMobile ? "relative" : "absolute",
             top: isMobile ? "auto" : "45%",
-            left: isMobile ? "auto" : "10%",
+            left: isMobile ? "10%" : "10%",
             transform: isMobile ? "none" : "translateY(-50%)",
             marginTop: isMobile ? "40px" : "0",
             zIndex: 4,
@@ -201,7 +241,7 @@ export default function Home() {
             bottom: 0,
             left: 0,
             width: "100%",
-            padding: isMobile ? "36px 24px 24px" : "18px 24px",
+            padding: isMobile ? "36px 24px 24px" : "24px 40px", // Megnövelt padding
             display: "flex",
             flexDirection: isMobile ? "column-reverse" : "row",
             justifyContent: "space-between",
@@ -214,7 +254,11 @@ export default function Home() {
               : "transparent",
           }}
         >
-          <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
+          <div style={{ 
+            fontSize: "0.8rem", // Kicsit kisebb betű
+            opacity: 0.6, // Halványabb
+            marginTop: isMobile ? "10px" : "20px" // Lejjebb tolt copyright
+          }}>
             © 2026 WealthyAI — All rights reserved.
           </div>
 
