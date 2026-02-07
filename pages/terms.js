@@ -32,34 +32,56 @@ export default function Terms() {
 
           <p style={intro}>
             WealthyAI is an informational system designed to support
-            financial awareness and structured understanding.
+            financial awareness and structured understanding through 
+            autonomous interpretation.
           </p>
 
           <Section title="Nature of the information">
             All insights are generated from user-provided inputs
-            and contextual models.
+            and contextual models. 
             <br /><br />
             They do not constitute financial, legal, tax,
-            or investment advice.
+            or investment advice. WealthyAI is not a financial advisor 
+            and does not manage assets.
+          </Section>
+
+          <Section title="Privacy by Architecture (Zero-Storage)">
+            WealthyAI is built on a zero-server principle. 
+            <br /><br />
+            We do not require registration. We do not store your financial data, 
+            your identity, or your history on any database. Your information 
+            lives exclusively in your browser's local storage. When you close 
+            your session or clear your cache, your data remains yours alone.
+          </Section>
+
+          <Section title="AI Interpretation vs. Training">
+            Your structural data is processed in real-time to provide context, 
+            but it is never used to train global AI models. We use an 
+            ephemeral inference process that forgets inputs the moment 
+            the briefing is generated.
           </Section>
 
           <Section title="Payments and security">
-            Payments are securely processed through Stripe.
+            Payments are securely processed through Stripe. 
             <br /><br />
-            WealthyAI does not store credit card information
-            or sensitive payment data.
+            WealthyAI does not store credit card information 
+            or sensitive payment data. Stripe handles the transaction, 
+            and we only receive a success signal to unlock your intelligence cycle.
           </Section>
 
           <Section title="User responsibility">
             Users remain fully responsible for how insights are interpreted
-            and applied.
+            and applied. 
             <br /><br />
-            WealthyAI supports awareness and perspective —
-            not autonomous decision-making.
+            WealthyAI supports awareness and perspective — 
+            not autonomous decision-making. We provide the frame; 
+            you make the choice.
           </Section>
 
           <p style={footer}>
             Transparency over promises. Understanding over control.
+            <br />
+            © 2026 WealthyAI — Decentralized Intelligence.
           </p>
         </div>
       </div>
@@ -177,4 +199,5 @@ const footer = {
   fontSize: 14,
   color: "#e5e7eb",
   maxWidth: 720,
+  lineHeight: 2,
 };
