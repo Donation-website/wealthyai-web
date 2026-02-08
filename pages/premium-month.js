@@ -113,6 +113,11 @@ export default function PremiumMonth() {
   const [loading, setLoading] = useState(false);
   const [emailSending, setEmailSending] = useState(false);
 
+  // === SMART IMPORT ADDITION: States ===
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importText, setImportText] = useState("");
+  const [smartLoading, setSmartLoading] = useState(false);
+
   /* ================= AI PANEL STATE ================= */
 
   const [aiVisible, setAiVisible] = useState(false);
@@ -193,6 +198,37 @@ export default function PremiumMonth() {
     unexpected: 200,
     other: 300,
   });
+
+  // === SMART IMPORT ADDITION: Logic ===
+  const handleSmartParse = async () => {
+    if (!importText.trim()) return;
+    setSmartLoading(true);
+    try {
+      const res = await fetch("/api/get-ai-briefing", { // Ugyanazt az API-t használjuk, de más prompttal
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: "parse_statement", // Jelezzük a backendnek, hogy ez import
+          rawText: importText,
+          region
+        }),
+      });
+
+      const data = await res.json();
+      if (data?.parsedInputs) {
+        setInputs(prev => ({ ...prev, ...data.parsedInputs }));
+        setShowImportModal(false);
+        setImportText("");
+      } else {
+        alert("Could not interpret the data. Please try a cleaner copy-paste.");
+      }
+    } catch (err) {
+      console.error("Smart Parse Error:", err);
+    } finally {
+      setSmartLoading(false);
+    }
+  };
+
   const update = (key, value) => {
     setInputs({ ...inputs, [key]: Number(value) });
 
@@ -576,7 +612,16 @@ export default function PremiumMonth() {
 
         {/* LEFT COLUMN */}
         <div style={card}>
-          <h3>Monthly Financial Structure</h3>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 15 }}>
+            <h3 style={{ margin: 0 }}>Financial Structure</h3>
+            {/* === SMART IMPORT BUTTON === */}
+            <button 
+              onClick={() => setShowImportModal(true)}
+              style={{ ...exportBtn, maxWidth: "fit-content", fontSize: 12, padding: "6px 12px" }}
+            >
+              ⚡ Smart Sync
+            </button>
+          </div>
 
           <Label>Income</Label>
           <Input
@@ -784,6 +829,39 @@ export default function PremiumMonth() {
         </div>
       </div>
 
+      {/* === SMART IMPORT MODAL === */}
+      {showImportModal && (
+        <div style={modalOverlay}>
+          <div style={modalContent}>
+            <h3>⚡ AI Smart Sync</h3>
+            <p style={{ fontSize: 13, opacity: 0.8, marginBottom: 15 }}>
+              Paste your raw bank statement text below. Our AI extracts the values into your structure. No data is stored.
+            </p>
+            <textarea
+              value={importText}
+              onChange={(e) => setImportText(e.target.value)}
+              placeholder="Paste transaction history here (e.g. 2024.02.08 Rent payment -1200 USD...)"
+              style={modalTextarea}
+            />
+            <div style={{ display: "flex", gap: 10, marginTop: 15 }}>
+              <button 
+                onClick={handleSmartParse} 
+                disabled={smartLoading}
+                style={aiButton}
+              >
+                {smartLoading ? "AI Analyzing..." : "Extract Data"}
+              </button>
+              <button 
+                onClick={() => setShowImportModal(false)}
+                style={{ ...exportBtn, marginTop: 20 }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div style={footer}>© 2026 WealthyAI · Monthly Intelligence</div>
     </div>
   );
@@ -824,6 +902,41 @@ const Divider = () => (
 );
 
 /* ================= STYLES ================= */
+
+const modalOverlay = {
+  position: "fixed",
+  top: 0, left: 0, right: 0, bottom: 0,
+  backgroundColor: "rgba(2, 6, 23, 0.85)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  zIndex: 1000,
+  backdropFilter: "blur(8px)"
+};
+
+const modalContent = {
+  background: "#0f172a",
+  padding: 24,
+  borderRadius: 20,
+  border: "1px solid #1e293b",
+  maxWidth: 500,
+  width: "90%",
+  boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
+};
+
+const modalTextarea = {
+  width: "100%",
+  height: 200,
+  background: "rgba(255, 255, 255, 0.05)",
+  border: "1px solid #1e293b",
+  borderRadius: 12,
+  padding: 12,
+  color: "#e5e7eb",
+  fontSize: 13,
+  fontFamily: "monospace",
+  resize: "none",
+  outline: "none"
+};
 
 const page = {
   minHeight: "100vh",
@@ -939,6 +1052,7 @@ const aiButton = {
   border: "none",
   borderRadius: 10,
   fontWeight: "bold",
+  color: "#020617",
   cursor: "pointer",
 };
 
