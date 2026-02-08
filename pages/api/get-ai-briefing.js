@@ -10,7 +10,7 @@ export default async function handler(req, res) {
       analysisMode, // backward compatibility
       previousSignals,
       weeklyFocus,
-      isReturningCustomer, // 🆕 CSAK HOZZÁADVA
+      isReturningCustomer,
       income,
       housing,
       electricity,
@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     } = req.body;
 
     /* ================================
-       INPUT SANITIZATION (HARD)
+        INPUT SANITIZATION (HARD)
     ================================= */
 
     const safe = (v) => Math.max(0, Number(v || 0));
@@ -47,7 +47,7 @@ export default async function handler(req, res) {
     };
 
     /* ================================
-       STRUCTURAL DERIVATION (CRITICAL)
+        STRUCTURAL DERIVATION (CRITICAL)
     ================================= */
 
     const totalEnergy = S.electricity + S.gas;
@@ -58,7 +58,7 @@ export default async function handler(req, res) {
     const irregularPressure = S.unexpected + S.other;
 
     /* ================================
-       SYSTEM PROMPT — BASE
+        SYSTEM PROMPT — BASE (HUMANIZED TONE)
     ================================= */
 
     let systemPrompt = `
@@ -67,11 +67,15 @@ You are WealthyAI — a PAID financial intelligence system.
 ROLE:
 MONTHLY STRATEGIC FINANCIAL BRIEFING AUTHOR
 
-ABSOLUTE RULE:
-- ALWAYS write in second person.
+TONE & STYLE (CRITICAL):
+- ALWAYS write in second person ("Your income", "You are facing").
 - NEVER refer to "the user".
+- AVOID robotic list-making (e.g., "Fact: Present"). 
+- USE integrated, professional narrative flow. 
+- BE observational and analytical, like a high-level private intelligence report.
+- DO NOT use generic filler sentences.
 
-CRITICAL VISIBILITY RULE:
+ABSOLUTE RULE:
 - ANY content after the marker "--- INTERNAL SIGNALS ---" is FOR INTERNAL USE ONLY.
 - It MUST NOT appear in the visible briefing.
 
@@ -88,7 +92,7 @@ STRUCTURE DEFINITIONS:
 - Water is NOT energy.
 
 STRICT CONSTRAINTS:
-- NEVER restate inputs.
+- NEVER restate inputs (Do not say "Your rent is 1200").
 - NEVER invent exposure.
 - NEVER infer missing sectors.
 
@@ -118,38 +122,37 @@ STRUCTURAL FACTS:
 - Irregular pressure present: ${irregularPressure > 0 ? "YES" : "NO"}
 
 CRITICAL LENS RULE:
-- Select EXACTLY ONE dominant pressure.
+- Select EXACTLY ONE dominant pressure based on the active weekly focus.
 `;
 
     if (weeklyFocus) {
       systemPrompt += `
-WEEKLY INTERPRETATION LENS:
-- stability → emphasize predictability, fixed costs, and structural pressure
-- spending → emphasize behavioral patterns and discretionary control
-- resilience → emphasize buffers, risk tolerance, and fragility
-- direction → emphasize forward signals within the next 90 days
+WEEKLY INTERPRETATION LENS (DOMINANT):
+- stability → emphasize predictability, fixed costs, and structural pressure.
+- spending → prioritize analyzing behavioral patterns, discretionary flow, and non-fixed categories.
+- resilience → emphasize buffers, risk tolerance, and structural fragility.
+- direction → emphasize forward-looking signals and upcoming 90-day shifts.
 
 ACTIVE WEEKLY FOCUS:
-- ${weeklyFocus}
+- ${weeklyFocus} (The entire briefing must be viewed through this specific lens).
 `;
     } else {
       systemPrompt += `
 WEEKLY INTERPRETATION:
-- Neutral structural interpretation
+- Neutral structural interpretation.
 `;
     }
 
     if (region === "HU") {
       systemPrompt += `
 REGION: Hungary
-- Limited flexibility
-- High sensitivity
+- Limited flexibility.
+- High sensitivity to localized economic shifts.
 `;
     }
 
     /* ================================
-       🆕 RETURNING CUSTOMER CONTEXT
-       (INTERNAL ONLY — NO OUTPUT CHANGE)
+        RETURNING CUSTOMER CONTEXT
     ================================= */
 
     systemPrompt += `
@@ -158,9 +161,8 @@ RETURNING CONTEXT:
 
 NARRATIVE CONTINUITY RULE:
 - If returning subscriber = YES:
-  - Do NOT frame insights as first-time exposure
-  - Maintain structural continuity across cycles
-  - Preserve tone maturity without altering structure
+  - Do NOT frame insights as first-time discovery.
+  - Maintain maturity in tone, assuming the recipient is already familiar with their core structure.
 `;
 
     const baseUserPrompt = `
@@ -171,28 +173,23 @@ Previous signals:
 ${previousSignals || "None"}
 
 TASK:
-Write the monthly briefing strictly from structure.
+Write the monthly briefing strictly from structure, prioritizing the active lens of ${weeklyFocus || "general balance"}.
 `;
 
     const executivePrompt = `
 MODE: EXECUTIVE
-- Calm
-- Observational
-- No urgency
-
+- Calm, Observational, No urgency.
 ${baseUserPrompt}
 `;
 
     const directivePrompt = `
 MODE: DIRECTIVE
-- Firm
-- Decisive
-
+- Firm, Decisive, Strategic.
 ${baseUserPrompt}
 `;
 
     /* ================================
-       GROQ CALL
+        GROQ CALL
     ================================= */
 
     const callGroq = async (prompt, temperature) => {
@@ -229,14 +226,14 @@ ${baseUserPrompt}
     };
 
     /* ================================
-       EXECUTION
+        EXECUTION
     ================================= */
 
-    const executive = await callGroq(executivePrompt, 0.15);
+    const executive = await callGroq(executivePrompt, 0.25); // Kicsit emelt hőmérséklet a természetesebb nyelvért
     const directive = await callGroq(directivePrompt, 0.1);
 
     /* ================================
-       RESPONSE
+        RESPONSE
     ================================= */
 
     return res.status(200).json({
