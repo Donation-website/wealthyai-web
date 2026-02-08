@@ -75,7 +75,7 @@ export default function UserDashboard() {
   const handleCheckout = async (priceId) => {
     localStorage.setItem("userFinancials", JSON.stringify(data));
 
-    // 🔐 ONLY FOR MONTH PLAN
+    // 🔐 ONLY FOR MONTH PLAN - UPDATED TO NEW ID
     if (priceId === "price_1Sya6GDyLtejYlZiCb8oLqga") {
       const hasHadMonth = localStorage.getItem("hadMonthSubscription");
       if (hasHadMonth) {
