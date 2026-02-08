@@ -57,6 +57,11 @@ export default async function handler(req, res) {
     const recurringServices = S.internet + S.mobile + S.tv;
     const irregularPressure = S.unexpected + S.other;
 
+    // MATH CHECK FOR AI TRUTH (NEW)
+    const totalOut = fixedCore + recurringServices + irregularPressure + totalEnergy + S.water;
+    const isDeficit = S.income < totalOut;
+    const fragilityIndex = S.income > 0 ? ((totalOut / S.income) * 100).toFixed(1) : "INFINITE";
+
     /* ================================
         SYSTEM PROMPT — BASE (RE-STRENGTHENED)
     ================================= */
@@ -100,8 +105,9 @@ STRUCTURE DEFINITIONS:
 
 STRICT CONSTRAINTS:
 - NEVER restate inputs (Do not say "Your rent is 1200").
-- NEVER invent exposure.
+- NEVER invent exposure (Do not mention dining or travel if not in inputs).
 - NEVER infer missing sectors.
+- INCOME TRUTH: If income is 0, the structure is objectively "unsupported". Do not hallucinate stability.
 
 SCOPE:
 - NEXT 90 DAYS
@@ -123,6 +129,10 @@ INTERNAL SIGNALS:
 
     systemPrompt += `
 STRUCTURAL FACTS:
+- Income: ${S.income}
+- Total Outflow: ${totalOut}
+- State: ${isDeficit ? "DEFICIT" : "SURPLUS"}
+- Structural Fragility: ${fragilityIndex}%
 - Energy exposure present: ${hasEnergyExposure ? "YES" : "NO"}
 - Fixed cost gravity present: ${fixedCore > 0 ? "YES" : "NO"}
 - Recurring rigidity present: ${recurringServices > 0 ? "YES" : "NO"}
@@ -150,11 +160,22 @@ WEEKLY INTERPRETATION:
 `;
     }
 
+    // DINAMIKUS RÉGIÓ FIGYELŐ (Javítva)
     if (region === "HU") {
       systemPrompt += `
 REGION: Hungary
-- Limited flexibility.
-- High sensitivity to localized economic shifts.
+- High sensitivity to localized economic shifts (Utility rigidity, currency volatility).
+- Interpretation must reflect the local overhead-heavy cost structure.
+`;
+    } else if (region === "US") {
+      systemPrompt += `
+REGION: United States
+- Exposure to broader market trends and credit-driven consumption patterns.
+`;
+    } else {
+      systemPrompt += `
+REGION: ${region || "International"}
+- Standard structural interpretation for this region.
 `;
     }
 
@@ -175,12 +196,14 @@ NARRATIVE CONTINUITY RULE:
     const baseUserPrompt = `
 Region: ${region}
 Cycle day: ${cycleDay}
+Fragility Index: ${fragilityIndex}%
 
 Previous signals:
 ${previousSignals || "None"}
 
 TASK:
 Write the monthly briefing strictly from structure, providing a clearer frame through the lens of ${weeklyFocus || "general balance"}.
+If income is 0 or less than outflow, interpret the structural gap immediately.
 `;
 
     const executivePrompt = `
@@ -209,7 +232,7 @@ ${baseUserPrompt}
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "llama-3.1-8b-instant",
+            model: "llama-3.1-70b-versatile", // Nagyobb modellre váltva a pontosságért
             messages: [
               { role: "system", content: systemPrompt },
               { role: "user", content: prompt },
