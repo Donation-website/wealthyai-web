@@ -113,11 +113,6 @@ export default function PremiumMonth() {
   const [loading, setLoading] = useState(false);
   const [emailSending, setEmailSending] = useState(false);
 
-  // === SMART IMPORT ADDITION: States ===
-  const [showImportModal, setShowImportModal] = useState(false);
-  const [importText, setImportText] = useState("");
-  const [smartLoading, setSmartLoading] = useState(false);
-
   /* ================= AI PANEL STATE ================= */
 
   const [aiVisible, setAiVisible] = useState(false);
@@ -198,37 +193,6 @@ export default function PremiumMonth() {
     unexpected: 200,
     other: 300,
   });
-
-  // === SMART IMPORT ADDITION: Logic ===
-  const handleSmartParse = async () => {
-    if (!importText.trim()) return;
-    setSmartLoading(true);
-    try {
-      const res = await fetch("/api/get-ai-briefing", { // Ugyanazt az API-t használjuk, de más prompttal
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          mode: "parse_statement", // Jelezzük a backendnek, hogy ez import
-          rawText: importText,
-          region
-        }),
-      });
-
-      const data = await res.json();
-      if (data?.parsedInputs) {
-        setInputs(prev => ({ ...prev, ...data.parsedInputs }));
-        setShowImportModal(false);
-        setImportText("");
-      } else {
-        alert("Could not interpret the data. Please try a cleaner copy-paste.");
-      }
-    } catch (err) {
-      console.error("Smart Parse Error:", err);
-    } finally {
-      setSmartLoading(false);
-    }
-  };
-
   const update = (key, value) => {
     setInputs({ ...inputs, [key]: Number(value) });
 
@@ -491,35 +455,14 @@ export default function PremiumMonth() {
     } catch {}
     setEmailSending(false);
   };
-/* ================= RENDER ================= */
-
-  // === SMART ICON COMPONENT (Emerald Notebook) ===
-  const SmartIcon = () => (
-    <svg 
-      width="16" 
-      height="16" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="#10b981" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
-      style={{ marginRight: 8, verticalAlign: 'middle' }}
-    >
-      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-      <line x1="8" y1="6" x2="16" y2="6"></line>
-      <line x1="8" y1="10" x2="16" y2="10"></line>
-      <line x1="8" y1="14" x2="16" y2="14"></line>
-    </svg>
-  );
+   /* ================= RENDER ================= */
 
   return (
     <div
       style={{
         ...page,
         overflowX: isMobile ? "hidden" : undefined,
-        backgroundAttachment: "fixed",
+        backgroundAttachment: "fixed", // FIXÁLT HÁTTÉR
       }}
     >
 
@@ -633,23 +576,7 @@ export default function PremiumMonth() {
 
         {/* LEFT COLUMN */}
         <div style={card}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 15 }}>
-            <h3 style={{ margin: 0 }}>Financial Structure</h3>
-            
-            <button 
-              onClick={() => setShowImportModal(true)}
-              style={{ 
-                ...exportBtn, 
-                maxWidth: "fit-content", 
-                fontSize: 12, 
-                padding: "6px 12px",
-                borderColor: "#10b981",
-                color: "#10b981"
-              }}
-            >
-              <SmartIcon /> Smart Sync
-            </button>
-          </div>
+          <h3>Monthly Financial Structure</h3>
 
           <Label>Income</Label>
           <Input
@@ -857,41 +784,6 @@ export default function PremiumMonth() {
         </div>
       </div>
 
-      {/* === SMART IMPORT MODAL === */}
-      {showImportModal && (
-        <div style={modalOverlay}>
-          <div style={modalContent}>
-            <h3 style={{ color: "#10b981", display: "flex", alignItems: "center" }}>
-              <SmartIcon /> AI Smart Sync
-            </h3>
-            <p style={{ fontSize: 13, opacity: 0.8, marginBottom: 15 }}>
-              Paste your raw bank statement text below. Our AI extracts the values into your structure. No data is stored.
-            </p>
-            <textarea
-              value={importText}
-              onChange={(e) => setImportText(e.target.value)}
-              placeholder="Paste transaction history here..."
-              style={modalTextarea}
-            />
-            <div style={{ display: "flex", gap: 10, marginTop: 15 }}>
-              <button 
-                onClick={handleSmartParse} 
-                disabled={smartLoading}
-                style={{ ...aiButton, background: "#10b981", color: "#020617", marginTop: 0 }}
-              >
-                {smartLoading ? "AI Analyzing..." : "Extract Data"}
-              </button>
-              <button 
-                onClick={() => setShowImportModal(false)}
-                style={{ ...exportBtn, borderColor: "#1e293b" }}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div style={footer}>© 2026 WealthyAI · Monthly Intelligence</div>
     </div>
   );
@@ -933,39 +825,6 @@ const Divider = () => (
 
 /* ================= STYLES ================= */
 
-const modalOverlay = {
-  position: "fixed",
-  top: 0, left: 0, right: 0, bottom: 0,
-  backgroundColor: "rgba(2, 6, 23, 0.9)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  zIndex: 1000,
-  backdropFilter: "blur(10px)"
-};
-
-const modalContent = {
-  background: "#020617",
-  padding: 24,
-  borderRadius: 20,
-  border: "1px solid #1e293b",
-  maxWidth: 500,
-  width: "90%",
-};
-
-const modalTextarea = {
-  width: "100%",
-  height: 200,
-  background: "rgba(255, 255, 255, 0.05)",
-  border: "1px solid #1e293b",
-  borderRadius: 12,
-  padding: 12,
-  color: "#e5e7eb",
-  fontSize: 13,
-  outline: "none",
-  resize: "none"
-};
-
 const page = {
   minHeight: "100vh",
   position: "relative",
@@ -973,7 +832,7 @@ const page = {
   color: "#e5e7eb",
   fontFamily: "Inter, system-ui",
   backgroundColor: "#020617",
-  backgroundAttachment: "fixed",
+  backgroundAttachment: "fixed", // FIXÁLT HÁTTÉR
   backgroundImage: `
     repeating-linear-gradient(-25deg, rgba(56,189,248,0.04) 0px, rgba(56,189,248,0.04) 1px, transparent 1px, transparent 180px),
     repeating-linear-gradient(35deg, rgba(167,139,250,0.04) 0px, rgba(167,139,250,0.04) 1px, transparent 1px, transparent 260px),
@@ -982,8 +841,10 @@ const page = {
     radial-gradient(circle at 45% 85%, rgba(34,211,238,0.10), transparent 45%),
     url("/wealthyai/icons/generated.png")
   `,
-  backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
-  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
+  backgroundRepeat:
+    "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
+  backgroundSize:
+    "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
 };
 
 const header = { textAlign: "center", marginBottom: 20 };
@@ -1004,9 +865,22 @@ const helpButton = {
   backdropFilter: "blur(6px)",
 };
 
-const regionRow = { display: "flex", justifyContent: "center", gap: 10, marginBottom: 20 };
+const regionRow = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 10,
+  marginBottom: 20,
+};
+
 const regionLabel = { color: "#7dd3fc" };
-const regionSelect = { background: "#020617", color: "#e5e7eb", border: "1px solid #1e293b", padding: "6px 10px", borderRadius: 6 };
+
+const regionSelect = {
+  background: "#020617",
+  color: "#e5e7eb",
+  border: "1px solid #1e293b",
+  padding: "6px 10px",
+  borderRadius: 6,
+};
 
 const signalBox = {
   maxWidth: 800,
@@ -1025,10 +899,37 @@ const layout = {
   margin: "0 auto",
 };
 
-const card = { padding: 22, borderRadius: 16, border: "1px solid #1e293b", background: "rgba(2,6,23,0.78)" };
-const input = { width: "100%", padding: 10, marginTop: 6, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, color: "white" };
-const row = { display: "flex", justifyContent: "space-between", marginTop: 8 };
-const rowInput = { width: 100, background: "transparent", border: "none", borderBottom: "1px solid #38bdf8", color: "#38bdf8", textAlign: "right" };
+const card = {
+  padding: 22,
+  borderRadius: 16,
+  border: "1px solid #1e293b",
+  background: "rgba(2,6,23,0.78)",
+};
+
+const input = {
+  width: "100%",
+  padding: 10,
+  marginTop: 6,
+  background: "rgba(255,255,255,0.08)",
+  border: "none",
+  borderRadius: 8,
+  color: "white",
+};
+
+const row = {
+  display: "flex",
+  justifyContent: "space-between",
+  marginTop: 8,
+};
+
+const rowInput = {
+  width: 100,
+  background: "transparent",
+  border: "none",
+  borderBottom: "1px solid #38bdf8",
+  color: "#38bdf8",
+  textAlign: "right",
+};
 
 const aiButton = {
   marginTop: 20,
@@ -1039,10 +940,36 @@ const aiButton = {
   borderRadius: 10,
   fontWeight: "bold",
   cursor: "pointer",
-  color: "#020617"
 };
 
-const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap", color: "#cbd5f5" };
-const exportBtn = { padding: "10px", borderRadius: 8, border: "1px solid #1e293b", background: "transparent", color: "#38bdf8", cursor: "pointer" };
-const exportSelect = { background: "transparent", color: "#e5e7eb", border: "1px solid #1e293b", padding: "8px", borderRadius: 8 };
-const footer = { marginTop: 60, textAlign: "center", fontSize: 13, color: "#64748b" };
+const aiTextStyle = {
+  marginTop: 10,
+  whiteSpace: "pre-wrap",
+  color: "#cbd5f5",
+};
+
+const exportBtn = {
+  flex: 1,
+  padding: "10px",
+  borderRadius: 8,
+  border: "1px solid #1e293b",
+  background: "transparent",
+  color: "#38bdf8",
+  cursor: "pointer",
+};
+
+const exportSelect = {
+  flex: 1,
+  background: "transparent",
+  color: "#e5e7eb",
+  border: "1px solid #1e293b",
+  padding: "8px",
+  borderRadius: 8,
+};
+
+const footer = {
+  marginTop: 60,
+  textAlign: "center",
+  fontSize: 13,
+  color: "#64748b",
+};
