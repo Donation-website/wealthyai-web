@@ -22,14 +22,14 @@ export default function DayPremium() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  /* ===== MOUSE TRACKING FOR THE BLOB ===== */
+  /* ===== MOUSE TRACKING ===== */
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   useEffect(() => {
     if (isMobile) return;
     const handleMove = (e) => {
       setMousePos({
-        x: (e.clientX / window.innerWidth - 0.5) * 50,
-        y: (e.clientY / window.innerHeight - 0.5) * 50,
+        x: (e.clientX / window.innerWidth - 0.5) * 40,
+        y: (e.clientY / window.innerHeight - 0.5) * 40,
       });
     };
     window.addEventListener("mousemove", handleMove);
@@ -137,7 +137,7 @@ export default function DayPremium() {
             fontSize: isMobile ? "1.6rem" : "2.6rem"
           }}>WEALTHYAI · PRO INTELLIGENCE</h1>
           <p style={subtitle}>
-            Thank you for choosing the 1-Day Professional Access.
+            Thank you for choosing the <strong>1-Day Professional Access</strong>.
           </p>
         </div>
 
@@ -147,7 +147,7 @@ export default function DayPremium() {
           gap: isMobile ? "20px" : "40px",
           position: "relative"
         }}>
-          <div style={{ position: "relative", zIndex: 10 }}>
+          <div>
             <Metric label="MONTHLY SURPLUS" value={`$${surplus.toLocaleString()}`} isMobile={isMobile} />
             <Metric label="SAVINGS RATE" value={`${savingsRate.toFixed(1)}%`} isMobile={isMobile} />
             <Metric
@@ -172,19 +172,31 @@ export default function DayPremium() {
           </div>
 
           <div style={{ position: "relative" }}>
-            {/* Vizuális elem, ha az AI nyitva van */}
             {aiOpen && (
               <div style={{
-                ...blobContainer,
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                zIndex: 1,
+                pointerEvents: "none",
                 transform: isMobile 
                   ? "translate(-50%, -50%)" 
                   : `translate(calc(-50% + ${mousePos.x}px), calc(-50% + ${mousePos.y}px))`
               }}>
-                <div style={blob}></div>
+                <div style={{
+                  width: "300px",
+                  height: "300px",
+                  background: "radial-gradient(circle, rgba(56,189,248,0.2) 0%, transparent 70%)",
+                  animation: "morph 12s ease-in-out infinite, spin 20s linear infinite",
+                  filter: "blur(40px)",
+                  position: "absolute",
+                  top: "-150px",
+                  left: "-150px",
+                }}></div>
               </div>
             )}
 
-            <div style={{ ...inputPanel, position: "relative", zIndex: 5 }}>
+            <div style={{...inputPanel, position: "relative", zIndex: 5}}>
               {["income", "fixed", "variable"].map((k) => (
                 <div key={k} style={inputRow}>
                   <span>{k.toUpperCase()}</span>
@@ -236,7 +248,7 @@ export default function DayPremium() {
   );
 }
 
-/* ===== COMPONENTS (VÁLTOZATLAN) ===== */
+/* ===== COMPONENTS ===== */
 
 function Metric({ label, value, isMobile }) {
   return (
@@ -308,27 +320,6 @@ const page = {
   overflowX: "hidden"
 };
 
-const blobContainer = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  zIndex: 1,
-  pointerEvents: "none",
-  transition: "transform 0.1s ease-out"
-};
-
-const blob = {
-  width: "300px",
-  height: "300px",
-  background: "radial-gradient(circle, rgba(56,189,248,0.15) 0%, transparent 70%)",
-  border: "1px solid rgba(56,189,248,0.1)",
-  animation: "morph 12s ease-in-out infinite, spin 20s linear infinite",
-  filter: "blur(40px)",
-  position: "absolute",
-  top: "-150px",
-  left: "-150px",
-};
-
 const contentWrap = { width: "100%", boxSizing: "border-box" };
 const header = { marginBottom: "30px", textAlign: "center" };
 const title = { margin: 0, fontWeight: "bold" };
@@ -354,7 +345,7 @@ const metricValue = { fontWeight: "bold" };
 
 const aiBox = {
   marginTop: "20px",
-  background: "rgba(2,6,23,0.85)",
+  background: "rgba(2,6,23,0.8)",
   border: "1px solid #1e293b",
   borderRadius: "12px",
   padding: "16px",
