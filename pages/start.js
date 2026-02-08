@@ -76,7 +76,7 @@ export default function UserDashboard() {
     localStorage.setItem("userFinancials", JSON.stringify(data));
 
     // 🔐 ONLY FOR MONTH PLAN
-    if (priceId === "price_1SscbeDyLtejYlZixJcT3B4o") {
+    if (priceId === "price_1Sya6GDyLtejYlZiCb8oLqga") {
       const hasHadMonth = localStorage.getItem("hadMonthSubscription");
       if (hasHadMonth) {
         localStorage.setItem("isReturningMonthCustomer", "true");
@@ -454,7 +454,7 @@ export default function UserDashboard() {
             <div
               style={priceCard}
               onClick={() =>
-                handleCheckout("price_1SscbeDyLtejYlZixJcT3B4o")
+                handleCheckout("price_1Sya6GDyLtejYlZiCb8oLqga")
               }
             >
               <h3>1 Month · $49.99</h3>
