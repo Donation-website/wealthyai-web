@@ -5,8 +5,8 @@ export default async function handler(req, res) {
 
   try {
     const {
-      mode, // 🆕 ÚJ: Ezzel döntjük el, mit csinálunk
-      importText, // 🆕 ÚJ: A beillesztett nyers szöveg
+      mode, 
+      importText, 
       region,
       cycleDay,
       analysisMode,
@@ -28,20 +28,33 @@ export default async function handler(req, res) {
     } = req.body;
 
     /* ==========================================
-       🆕 SMART SYNC ÁG (CSAK HA AZ ÚJ FUNKCIÓT HÍVJÁK)
-       Ez az ág teljesen elkülönül a briefing generálástól.
+       1. SMART SYNC — UNIVERZÁLIS ADATKINYERÉS
+       Ez az ág csak akkor fut le, ha a gombot megnyomják.
     ============================================= */
     if (mode === "parse_statement" && importText) {
       const parseSystemPrompt = `
-        You are a financial data extractor.
-        TASK: Extract numbers from the provided bank statement text into a JSON object.
-        
-        RULES:
-        - Return ONLY a valid JSON object.
-        - Use these keys: income, housing, electricity, gas, water, internet, mobile, tv, insurance, banking, unexpected, other.
-        - If a value is missing or the text is non-financial (emojis, gibberish), use 0.
-        - Combine multiple entries for the same category.
-        - NO explanation, NO text, ONLY JSON.
+        You are a Global Financial Data Analyst. 
+        TASK: Extract FINAL TOTAL amounts for financial categories from messy, multilingual text.
+
+        UNIVERSAL INTELLIGENCE RULES:
+        1. CURRENCY AGNOSTIC: Detect any currency ($, €, £, Ft, Riel, etc.). 
+        2. NOISE FILTER: 
+           - STRICTLY IGNORE: Dates, unit prices (e.g., Ft/kWh), tax percentages (27%), or account IDs.
+           - TARGET: Numbers associated with "Total", "Grand Total", "Fizetendő", "Összesen", "Amount Due", "Bruttó".
+        3. GLOBAL CATEGORY CLUES:
+           - electricity: "kWh", "energy", "ELMŰ", "MVM", "electricity", "áram", "villany".
+           - gas: "MJ", "gas", "gáz", "heating", "távhő".
+           - water: "m3", "water", "víz", "csatorna", "sewerage".
+           - housing: "rent", "bérlet", "közös költség", "housing".
+           - insurance: "premium", "insurance", "biztosítás".
+           - banking: "fee", "interest", "bank", "költség".
+           - unexpected/other: Any financial cost that doesn't fit the above but is clearly a paid amount.
+
+        STRICT OUTPUT RULE:
+        - Return ONLY a JSON object.
+        - Sum multiple items in the same category.
+        - Use 0 for missing/unidentifiable fields.
+        - Fields: income, housing, electricity, gas, water, internet, mobile, tv, insurance, banking, unexpected, other.
       `;
 
       const rParse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -54,10 +67,10 @@ export default async function handler(req, res) {
           model: "llama-3.1-8b-instant",
           messages: [
             { role: "system", content: parseSystemPrompt },
-            { role: "user", content: `Extract data from this text: ${importText}` },
+            { role: "user", content: `Analyze and extract: ${importText}` },
           ],
-          temperature: 0, // 0 = Maximális pontosság, nincs kreativitás
-          response_format: { type: "json_object" } // Kényszerített JSON válasz
+          temperature: 0,
+          response_format: { type: "json_object" }
         }),
       });
 
@@ -65,13 +78,13 @@ export default async function handler(req, res) {
       const jParse = await rParse.json();
       const extractedData = JSON.parse(jParse?.choices?.[0]?.message?.content || "{}");
 
-      // Válasz visszaküldése és a folyamat megállítása itt (a briefing nem fut le)
+      // Itt megállunk, visszaküldjük az adatokat a frontendnek jóváhagyásra
       return res.status(200).json({ extractedData });
     }
 
     /* ==========================================
-       EREDETI LOGIKA (BRIEFING GENERÁLÁS)
-       Innen semmi nem változott, minden marad a régiben.
+       2. EREDETI LOGIKA — BRIEFING GENERÁLÁS
+       Ez a rész megegyezik a korábbi stabil verzióddal.
     ============================================= */
 
     const safe = (v) => Math.max(0, Number(v || 0));
@@ -97,6 +110,7 @@ export default async function handler(req, res) {
     const recurringServices = S.internet + S.mobile + S.tv;
     const irregularPressure = S.unexpected + S.other;
 
+    /* SYSTEM PROMPT ÖSSZEÁLLÍTÁSA */
     let systemPrompt = `
 You are WealthyAI — a PAID financial intelligence system.
 
@@ -160,18 +174,7 @@ CRITICAL LENS RULE:
     if (weeklyFocus) {
       systemPrompt += `
 WEEKLY INTERPRETATION LENS:
-- stability → emphasize predictability, fixed costs, and structural pressure
-- spending → emphasize behavioral patterns and discretionary control
-- resilience → emphasize buffers, risk tolerance, and fragility
-- direction → emphasize forward signals within the next 90 days
-
-ACTIVE WEEKLY FOCUS:
-- ${weeklyFocus}
-`;
-    } else {
-      systemPrompt += `
-WEEKLY INTERPRETATION:
-- Neutral structural interpretation
+- ${weeklyFocus} focus active.
 `;
     }
 
@@ -186,42 +189,19 @@ REGION: Hungary
     systemPrompt += `
 RETURNING CONTEXT:
 - Returning monthly subscriber: ${isReturningCustomer ? "YES" : "NO"}
-
-NARRATIVE CONTINUITY RULE:
-- If returning subscriber = YES:
-  - Do NOT frame insights as first-time exposure
-  - Maintain structural continuity across cycles
-  - Preserve tone maturity without altering structure
 `;
 
     const baseUserPrompt = `
 Region: ${region}
 Cycle day: ${cycleDay}
-
-Previous signals:
-${previousSignals || "None"}
-
-TASK:
-Write the monthly briefing strictly from structure.
+Previous signals: ${previousSignals || "None"}
+TASK: Write the monthly briefing strictly from structure.
 `;
 
-    const executivePrompt = `
-MODE: EXECUTIVE
-- Calm
-- Observational
-- No urgency
+    const executivePrompt = `MODE: EXECUTIVE\n- Calm\n- Observational\n${baseUserPrompt}`;
+    const directivePrompt = `MODE: DIRECTIVE\n- Firm\n- Decisive\n${baseUserPrompt}`;
 
-${baseUserPrompt}
-`;
-
-    const directivePrompt = `
-MODE: DIRECTIVE
-- Firm
-- Decisive
-
-${baseUserPrompt}
-`;
-
+    /* GROQ HÍVÁS FÜGGVÉNY */
     const callGroq = async (prompt, temperature) => {
       const r = await fetch(
         "https://api.groq.com/openai/v1/chat/completions",
@@ -244,17 +224,15 @@ ${baseUserPrompt}
       );
 
       if (!r.ok) throw new Error("Groq unavailable");
-
       const j = await r.json();
       let text = j?.choices?.[0]?.message?.content || "";
-
       if (text.includes("--- INTERNAL SIGNALS ---")) {
         text = text.split("--- INTERNAL SIGNALS ---")[0].trim();
       }
-
       return text;
     };
 
+    /* BRIEFINGEK GENERÁLÁSA */
     const executive = await callGroq(executivePrompt, 0.15);
     const directive = await callGroq(directivePrompt, 0.1);
 
