@@ -457,7 +457,7 @@ export default function UserDashboard() {
                 handleCheckout("price_1SscbeDyLtejYlZixJcT3B4o")
               }
             >
-              <h3>1 Month · $24.99</h3>
+              <h3>1 Month · $49.99</h3>
               <small>Full intelligence engine</small>
             </div>
           </div>
