@@ -22,20 +22,6 @@ export default function DayPremium() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  /* ===== MOUSE TRACKING ===== */
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  useEffect(() => {
-    if (isMobile) return;
-    const handleMove = (e) => {
-      setMousePos({
-        x: (e.clientX / window.innerWidth - 0.5) * 40,
-        y: (e.clientY / window.innerHeight - 0.5) * 40,
-      });
-    };
-    window.addEventListener("mousemove", handleMove);
-    return () => window.removeEventListener("mousemove", handleMove);
-  }, [isMobile]);
-
   /* ===== SUBSCRIPTION CHECK ===== */
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -111,16 +97,6 @@ export default function DayPremium() {
 
   return (
     <div style={page}>
-      <style>{`
-        @keyframes morph {
-          0% { border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%; }
-          34% { border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%; }
-          67% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 40%; }
-          100% { border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%; }
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-      `}</style>
-
       <a href="/day/help" style={{
         ...helpButton,
         top: isMobile ? 12 : 24,
@@ -144,8 +120,7 @@ export default function DayPremium() {
         <div style={{
           ...layout,
           gridTemplateColumns: isMobile ? "1fr" : "1fr 1.3fr",
-          gap: isMobile ? "20px" : "40px",
-          position: "relative"
+          gap: isMobile ? "20px" : "40px"
         }}>
           <div>
             <Metric label="MONTHLY SURPLUS" value={`$${surplus.toLocaleString()}`} isMobile={isMobile} />
@@ -171,32 +146,8 @@ export default function DayPremium() {
             )}
           </div>
 
-          <div style={{ position: "relative" }}>
-            {aiOpen && (
-              <div style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                zIndex: 1,
-                pointerEvents: "none",
-                transform: isMobile 
-                  ? "translate(-50%, -50%)" 
-                  : `translate(calc(-50% + ${mousePos.x}px), calc(-50% + ${mousePos.y}px))`
-              }}>
-                <div style={{
-                  width: "300px",
-                  height: "300px",
-                  background: "radial-gradient(circle, rgba(56,189,248,0.2) 0%, transparent 70%)",
-                  animation: "morph 12s ease-in-out infinite, spin 20s linear infinite",
-                  filter: "blur(40px)",
-                  position: "absolute",
-                  top: "-150px",
-                  left: "-150px",
-                }}></div>
-              </div>
-            )}
-
-            <div style={{...inputPanel, position: "relative", zIndex: 5}}>
+          <div>
+            <div style={inputPanel}>
               {["income", "fixed", "variable"].map((k) => (
                 <div key={k} style={inputRow}>
                   <span>{k.toUpperCase()}</span>
@@ -214,9 +165,7 @@ export default function DayPremium() {
 
             <div style={{
               ...chartGrid,
-              gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-              position: "relative",
-              zIndex: 5
+              gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr"
             }}>
               <MiniChart title="Cash Flow Projection" data={chartData} />
               <MiniBar title="Expense Distribution" value={data.fixed + data.variable} />
@@ -306,6 +255,7 @@ const page = {
   color: "#e5e7eb",
   fontFamily: "Inter, system-ui, sans-serif",
   backgroundColor: "#020617",
+  backgroundAttachment: "fixed", // FIXÁLT HÁTTÉR
   backgroundImage: `
     repeating-linear-gradient(-25deg, rgba(56,189,248,0.06) 0px, rgba(56,189,248,0.06) 1px, transparent 1px, transparent 180px),
     repeating-linear-gradient(35deg, rgba(167,139,250,0.05) 0px, rgba(167,139,250,0.05) 1px, transparent 1px, transparent 260px),
@@ -335,7 +285,7 @@ const helpButton = {
   border: "1px solid #1e293b",
   background: "rgba(2,6,23,0.6)",
   backdropFilter: "blur(6px)",
-  zIndex: 100,
+  zIndex: 10,
 };
 
 const layout = { display: "grid", maxWidth: "1200px", margin: "0 auto" };
@@ -410,4 +360,4 @@ const upsellFixed = {
   zIndex: 5,
 };
 
-const footerLeft = { position: "fixed", bottom: 20, left: 20, fontSize: "12px", opacity: 0.5 };
+const footerLeft = { position: "fixed", bottom: 16, left: 20, fontSize: 12, colo
