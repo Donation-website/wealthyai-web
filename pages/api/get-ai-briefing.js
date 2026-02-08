@@ -57,7 +57,7 @@ export default async function handler(req, res) {
     const recurringServices = S.internet + S.mobile + S.tv;
     const irregularPressure = S.unexpected + S.other;
 
-    // MATH CHECK FOR AI TRUTH (NEW)
+    // MATH CHECK FOR AI TRUTH
     const totalOut = fixedCore + recurringServices + irregularPressure + totalEnergy + S.water;
     const isDeficit = S.income < totalOut;
     const fragilityIndex = S.income > 0 ? ((totalOut / S.income) * 100).toFixed(1) : "INFINITE";
@@ -75,39 +75,23 @@ MONTHLY STRATEGIC FINANCIAL BRIEFING AUTHOR
 PHILOSOPHY & CONSTITUTION:
 - WealthyAI DOES NOT advise. It INTERPRETS.
 - It provides a "clearer frame", not a better plan.
-- It is NOT for everyone. It is for those who value continuity over instant output.
 - The goal is "Clearer thinking", not "Faster decisions".
 
 TONE & STYLE (CRITICAL):
 - ALWAYS write in second person ("Your income", "You are facing").
 - NEVER refer to "the user".
-- AVOID robotic list-making (e.g., "Fact: Present"). 
-- USE integrated, professional narrative flow. 
-- BE observational and analytical, like a high-level private intelligence report.
+- AVOID robotic list-making. USE integrated, professional narrative flow. 
+- BE observational and analytical.
 - DO NOT use generic filler sentences.
 
 ABSOLUTE RULE:
 - ANY content after the marker "--- INTERNAL SIGNALS ---" is FOR INTERNAL USE ONLY.
 - It MUST NOT appear in the visible briefing.
 
-WHAT THIS IS:
-- Structural financial briefing.
-
-WHAT THIS IS NOT (ZERO TOLERANCE):
-- NOT Financial Advice.
-- NOT Forecasting or Optimization.
-- NEVER suggest budgeting frameworks (e.g., NO 50/30/20 rule, NO 70/20/10).
-- NEVER use advisory verbs: "should", "must", "recommend", "suggest".
-
-STRUCTURE DEFINITIONS:
-- Energy exposure = electricity + gas ONLY.
-- Water is NOT energy.
-
 STRICT CONSTRAINTS:
 - NEVER restate inputs (Do not say "Your rent is 1200").
-- NEVER invent exposure (Do not mention dining or travel if not in inputs).
-- NEVER infer missing sectors.
-- INCOME TRUTH: If income is 0, the structure is objectively "unsupported". Do not hallucinate stability.
+- NEVER invent exposure.
+- INCOME TRUTH: If income is 0, the structure is "unsupported". Do not hallucinate stability.
 
 SCOPE:
 - NEXT 90 DAYS
@@ -118,10 +102,7 @@ OUTPUT STRUCTURE:
 3. What You Can Safely Ignore
 4. Regional Perspective
 5. 90-Day Direction
-6. Closing Signal
-
-CLOSING SIGNAL:
-- EXACTLY one sentence.
+6. Closing Signal (EXACTLY one sentence).
 
 INTERNAL SIGNALS:
 --- INTERNAL SIGNALS ---
@@ -129,17 +110,12 @@ INTERNAL SIGNALS:
 
     systemPrompt += `
 STRUCTURAL FACTS:
-- Income: ${S.income}
-- Total Outflow: ${totalOut}
-- State: ${isDeficit ? "DEFICIT" : "SURPLUS"}
-- Structural Fragility: ${fragilityIndex}%
-- Energy exposure present: ${hasEnergyExposure ? "YES" : "NO"}
-- Fixed cost gravity present: ${fixedCore > 0 ? "YES" : "NO"}
-- Recurring rigidity present: ${recurringServices > 0 ? "YES" : "NO"}
-- Irregular pressure present: ${irregularPressure > 0 ? "YES" : "NO"}
-
-CRITICAL LENS RULE:
-- Select EXACTLY ONE dominant pressure based on the active weekly focus.
+- Income: ${S.income} | Outflow: ${totalOut}
+- State: ${isDeficit ? "DEFICIT" : "SURPLUS"} | Fragility: ${fragilityIndex}%
+- Energy exposure: ${hasEnergyExposure ? "YES" : "NO"}
+- Fixed cost gravity: ${fixedCore > 0 ? "YES" : "NO"}
+- Recurring rigidity: ${recurringServices > 0 ? "YES" : "NO"}
+- Irregular pressure: ${irregularPressure > 0 ? "YES" : "NO"}
 `;
 
     if (weeklyFocus) {
@@ -148,78 +124,33 @@ WEEKLY INTERPRETATION LENS (DOMINANT):
 - stability → describe predictability, fixed costs, and structural pressure.
 - spending → analyze behavioral patterns, discretionary flow, and non-fixed categories.
 - resilience → analyze buffers, risk tolerance, and structural fragility.
-- direction → observe forward signals within the next 90 days (no forecasting).
+- direction → observe forward signals (no forecasting).
 
 ACTIVE WEEKLY FOCUS:
-- ${weeklyFocus} (The entire briefing must be viewed through this specific lens).
-`;
-    } else {
-      systemPrompt += `
-WEEKLY INTERPRETATION:
-- Neutral structural interpretation.
+- ${weeklyFocus}
 `;
     }
 
-    // DINAMIKUS RÉGIÓ FIGYELŐ (Javítva)
     if (region === "HU") {
-      systemPrompt += `
-REGION: Hungary
-- High sensitivity to localized economic shifts (Utility rigidity, currency volatility).
-- Interpretation must reflect the local overhead-heavy cost structure.
-`;
-    } else if (region === "US") {
-      systemPrompt += `
-REGION: United States
-- Exposure to broader market trends and credit-driven consumption patterns.
-`;
+      systemPrompt += `\nREGION: Hungary (High utility sensitivity, currency volatility).`;
     } else {
-      systemPrompt += `
-REGION: ${region || "International"}
-- Standard structural interpretation for this region.
-`;
+      systemPrompt += `\nREGION: ${region || "International"}.`;
     }
 
-    /* ================================
-        RETURNING CUSTOMER CONTEXT
-    ================================= */
-
-    systemPrompt += `
-RETURNING CONTEXT:
-- Returning monthly subscriber: ${isReturningCustomer ? "YES" : "NO"}
-
-NARRATIVE CONTINUITY RULE:
-- If returning subscriber = YES:
-  - Do NOT frame insights as first-time discovery.
-  - Maintain maturity in tone, assuming the recipient is already familiar with their core structure.
-`;
+    systemPrompt += `\nRETURNING CONTEXT: ${isReturningCustomer ? "YES" : "NO"}`;
 
     const baseUserPrompt = `
-Region: ${region}
-Cycle day: ${cycleDay}
-Fragility Index: ${fragilityIndex}%
+Region: ${region} | Cycle day: ${cycleDay} | Fragility: ${fragilityIndex}%
+Previous signals: ${previousSignals || "None"}
 
-Previous signals:
-${previousSignals || "None"}
-
-TASK:
-Write the monthly briefing strictly from structure, providing a clearer frame through the lens of ${weeklyFocus || "general balance"}.
-If income is 0 or less than outflow, interpret the structural gap immediately.
+TASK: Write the briefing strictly from structure through the lens of ${weeklyFocus || "general balance"}.
 `;
 
-    const executivePrompt = `
-MODE: EXECUTIVE
-- Calm, Observational, No urgency.
-${baseUserPrompt}
-`;
-
-    const directivePrompt = `
-MODE: DIRECTIVE
-- Firm, Decisive, Strategic.
-${baseUserPrompt}
-`;
+    const executivePrompt = `MODE: EXECUTIVE\n- Calm, Observational.\n${baseUserPrompt}`;
+    const directivePrompt = `MODE: DIRECTIVE\n- Firm, Strategic.\n${baseUserPrompt}`;
 
     /* ================================
-        GROQ CALL
+        GROQ CALL (RESTORED TO INSTANT)
     ================================= */
 
     const callGroq = async (prompt, temperature) => {
@@ -232,7 +163,7 @@ ${baseUserPrompt}
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "llama-3.1-70b-versatile", // Nagyobb modellre váltva a pontosságért
+            model: "llama-3.1-8b-instant", // VISSZAÁLLÍTVA AZ EREDETI MODELLRE
             messages: [
               { role: "system", content: systemPrompt },
               { role: "user", content: prompt },
@@ -244,14 +175,12 @@ ${baseUserPrompt}
       );
 
       if (!r.ok) throw new Error("Groq unavailable");
-
       const j = await r.json();
       let text = j?.choices?.[0]?.message?.content || "";
 
       if (text.includes("--- INTERNAL SIGNALS ---")) {
         text = text.split("--- INTERNAL SIGNALS ---")[0].trim();
       }
-
       return text;
     };
 
@@ -262,13 +191,8 @@ ${baseUserPrompt}
     const executive = await callGroq(executivePrompt, 0.25);
     const directive = await callGroq(directivePrompt, 0.1);
 
-    /* ================================
-        RESPONSE
-    ================================= */
-
     return res.status(200).json({
       briefing: executive,
-
       snapshot: {
         date: new Date().toISOString().slice(0, 10),
         cycleDay,
