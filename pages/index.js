@@ -5,12 +5,10 @@ export default function Home() {
   const SITE_URL = "https://wealthyai-web.vercel.app";
   const SHARE_TEXT = "AI-powered financial clarity with WealthyAI";
 
-  // 👇 AUDIO STATE ÉS REF (HOZZÁADVA)
   const audioRef = useRef(null);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true); // Alapértelmezetten true, hogy a Chrome engedje elindulni
   const [isPlaying, setIsPlaying] = useState(false);
 
-  // 👇 MOBIL FIGYELŐ (EREDETI)
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -19,13 +17,18 @@ export default function Home() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // 👇 HANG KEZELÉSE (HOZZÁADVA)
   useEffect(() => {
     const playTimeout = setTimeout(() => {
       if (audioRef.current) {
+        // Chrome trükk: némítva indítjuk, így a böngésző nem blokkolja
+        audioRef.current.muted = true;
         audioRef.current.play()
-          .then(() => setIsPlaying(true))
-          .catch(err => console.log("Autoplay context needed", err));
+          .then(() => {
+            setIsPlaying(true);
+          })
+          .catch(err => {
+            console.log("Autoplay blocked, waiting for user interaction", err);
+          });
       }
     }, 3500);
 
@@ -45,12 +48,18 @@ export default function Home() {
 
   const toggleMute = () => {
     if (audioRef.current) {
-      audioRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
+      // Az első kattintásnál levesszük a némítást és elindítjuk ha állna
+      const newMuteState = !isMuted;
+      audioRef.current.muted = newMuteState;
+      setIsMuted(newMuteState);
+      
+      if (!isPlaying) {
+        audioRef.current.play();
+        setIsPlaying(true);
+      }
     }
   };
 
-  // 👇 KIJELÖLÉS TÖRLÉSE (EREDETI)
   const clearSelectionIfNeeded = (e) => {
     const tag = e.target.tagName.toLowerCase();
     const interactive = ["a", "button", "input", "textarea", "select", "label"];
@@ -93,10 +102,9 @@ export default function Home() {
           padding: isMobile ? "80px 0 60px 0" : 0,
         }}
       >
-        {/* LÁTHATATLAN AUDIO ELEM */}
         <audio ref={audioRef} src="/wealthyai/icons/nyitobeszed.mp3" preload="auto" />
 
-        {/* NARRATOR IKON - JOBB SZÉLEN, A NAVIGÁCIÓ ALATT */}
+        {/* NARRATOR IKON */}
         <div 
           onClick={toggleMute}
           className="narrator-toggle"
@@ -109,7 +117,7 @@ export default function Home() {
             display: "flex",
             alignItems: "center",
             gap: "10px",
-            opacity: isPlaying ? 0.7 : 0,
+            opacity: isPlaying ? 0.9 : 0.5, // Láthatóvá tettük alaphelyzetben is
             transition: "opacity 0.5s ease",
             background: "rgba(255,255,255,0.05)",
             padding: "5px 12px",
@@ -128,11 +136,10 @@ export default function Home() {
             ))}
           </div>
           <span style={{ fontSize: "9px", fontWeight: "700", letterSpacing: "1px", color: "#38bdf8", textTransform: "uppercase" }}>
-            {isMuted ? "Muted" : "Narrator"}
+            {isMuted ? "Unmute Narrator" : "Muted"}
           </span>
         </div>
 
-        {/* TOP NAV (EREDETI) */}
         <div
           style={{
             position: isMobile ? "fixed" : "absolute",
@@ -152,7 +159,6 @@ export default function Home() {
           <a href="/terms" onClick={stopAudio} className="nav-link">Terms</a>
         </div>
 
-        {/* CENTER BRAND & TEXT (EREDETI) */}
         <div
           style={{
             textAlign: "center",
@@ -223,7 +229,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* START (EREDETI) */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
@@ -269,7 +274,6 @@ export default function Home() {
             Start with a simple financial snapshot. Takes less than a minute.
           </div>
 
-          {/* SMARAGD JELZÉS (EREDETI) */}
           <div style={{
             display: "flex",
             alignItems: "center",
@@ -287,7 +291,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* BOTTOM BAR (EREDETI) */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
@@ -303,11 +306,11 @@ export default function Home() {
             boxSizing: "border-box",
             gap: isMobile ? "30px" : "0",
             background: isMobile
-              ? "linear-gradient(to top, rgba(6,11,19,0.95) 0%, rgba(6,11,19,0.8) 50%, rgba(6,11,19,0.0) 100%)"
+              ? "linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)"
               : "transparent",
           }}
         >
-          <div style={{ fontSize: "0.85rem", opacity: 0.6, paddingBottom: isMobile ? "0" : "6px" }}>
+          <div style={{ fontSize: "0.85rem", opacity: 0.6 }}>
             © 2026 WealthyAI — All rights reserved.
           </div>
 
