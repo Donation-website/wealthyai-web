@@ -5,12 +5,12 @@ export default function Home() {
   const SITE_URL = "https://wealthyai-web.vercel.app";
   const SHARE_TEXT = "AI-powered financial clarity with WealthyAI";
 
-  // 👇 AUDIO STATE ÉS REF
+  // 👇 AUDIO STATE ÉS REF (HOZZÁADVA)
   const audioRef = useRef(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  // 👇 MOBIL FIGYELŐ
+  // 👇 MOBIL FIGYELŐ (EREDETI)
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -19,26 +19,22 @@ export default function Home() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // 👇 HANG INDÍTÁSA KÉSLELTETÉSSEL
+  // 👇 HANG KEZELÉSE (HOZZÁADVA)
   useEffect(() => {
-    // Audio példány létrehozása
-    audioRef.current = new Audio("/wealthyai/icons/nyitobeszed.mp3");
-    
     const playTimeout = setTimeout(() => {
-      // Böngésző korlátozás miatt csak akkor szólal meg, ha már volt interakció, 
-      // vagy ha a böngésző engedi (play() ígéret kezelése)
-      audioRef.current.play()
-        .then(() => setIsPlaying(true))
-        .catch(err => console.log("Autoplay blocked or failed", err));
+      if (audioRef.current) {
+        audioRef.current.play()
+          .then(() => setIsPlaying(true))
+          .catch(err => console.log("Autoplay context needed", err));
+      }
     }, 3500);
 
     return () => {
       clearTimeout(playTimeout);
-      stopAudio();
+      if (audioRef.current) audioRef.current.pause();
     };
   }, []);
 
-  // 👇 HANG LEÁLLÍTÁSA (LINK KATTINTÁSKOR)
   const stopAudio = () => {
     if (audioRef.current) {
       audioRef.current.pause();
@@ -54,7 +50,7 @@ export default function Home() {
     }
   };
 
-  // 👇 KIJELÖLÉS TÖRLÉSE NEM FUNKCIONÁLIS KATTINTÁSNÁL
+  // 👇 KIJELÖLÉS TÖRLÉSE (EREDETI)
   const clearSelectionIfNeeded = (e) => {
     const tag = e.target.tagName.toLowerCase();
     const interactive = ["a", "button", "input", "textarea", "select", "label"];
@@ -97,43 +93,46 @@ export default function Home() {
           padding: isMobile ? "80px 0 60px 0" : 0,
         }}
       >
-        {/* AUDIO CONTROL (DISZKRÉT) */}
+        {/* LÁTHATATLAN AUDIO ELEM */}
+        <audio ref={audioRef} src="/wealthyai/icons/nyitobeszed.mp3" preload="auto" />
+
+        {/* NARRATOR IKON - JOBB SZÉLEN, A NAVIGÁCIÓ ALATT */}
         <div 
           onClick={toggleMute}
+          className="narrator-toggle"
           style={{
             position: "fixed",
-            top: isMobile ? "20px" : "32px",
-            left: isMobile ? "20px" : "40px",
-            zIndex: 10,
+            top: isMobile ? "60px" : "80px",
+            right: isMobile ? "20px" : "40px",
+            zIndex: 100,
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
-            gap: "8px",
-            opacity: isPlaying ? 0.8 : 0,
+            gap: "10px",
+            opacity: isPlaying ? 0.7 : 0,
             transition: "opacity 0.5s ease",
-            pointerEvents: isPlaying ? "auto" : "none"
+            background: "rgba(255,255,255,0.05)",
+            padding: "5px 12px",
+            borderRadius: "15px",
+            border: "1px solid rgba(255,255,255,0.1)"
           }}
         >
-          <div style={{ display: "flex", gap: "2px", alignItems: "center", height: "16px" }}>
+          <div style={{ display: "flex", gap: "2px", alignItems: "flex-end", height: "12px" }}>
             {[1, 2, 3].map(i => (
-              <div 
-                key={i}
-                style={{
-                  width: "2px",
-                  height: isMuted ? "2px" : "100%",
-                  backgroundColor: "#38bdf8",
-                  animation: !isMuted ? `audioBar 0.8s ease-in-out infinite alternate ${i * 0.2}s` : "none",
-                  borderRadius: "1px"
-                }}
-              />
+              <div key={i} style={{
+                width: "2px",
+                height: isMuted ? "2px" : "100%",
+                backgroundColor: "#38bdf8",
+                animation: !isMuted ? `audioBar 0.8s ease-in-out infinite alternate ${i * 0.2}s` : "none"
+              }} />
             ))}
           </div>
-          <span style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", fontWeight: "600", color: "#38bdf8" }}>
-            {isMuted ? "Muted" : "Audio On"}
+          <span style={{ fontSize: "9px", fontWeight: "700", letterSpacing: "1px", color: "#38bdf8", textTransform: "uppercase" }}>
+            {isMuted ? "Muted" : "Narrator"}
           </span>
         </div>
 
-        {/* TOP NAV */}
+        {/* TOP NAV (EREDETI) */}
         <div
           style={{
             position: isMobile ? "fixed" : "absolute",
@@ -153,7 +152,7 @@ export default function Home() {
           <a href="/terms" onClick={stopAudio} className="nav-link">Terms</a>
         </div>
 
-        {/* CENTER BRAND & TEXT */}
+        {/* CENTER BRAND & TEXT (EREDETI) */}
         <div
           style={{
             textAlign: "center",
@@ -224,7 +223,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* START */}
+        {/* START (EREDETI) */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
@@ -270,7 +269,7 @@ export default function Home() {
             Start with a simple financial snapshot. Takes less than a minute.
           </div>
 
-          {/* 👇 SMARAGD LOGO JELZÉS */}
+          {/* SMARAGD JELZÉS (EREDETI) */}
           <div style={{
             display: "flex",
             alignItems: "center",
@@ -288,7 +287,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* BOTTOM BAR */}
+        {/* BOTTOM BAR (EREDETI) */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
@@ -308,41 +307,15 @@ export default function Home() {
               : "transparent",
           }}
         >
-          <div style={{ 
-            fontSize: "0.85rem", 
-            opacity: 0.6, 
-            paddingBottom: isMobile ? "0" : "6px" 
-          }}>
+          <div style={{ fontSize: "0.85rem", opacity: 0.6, paddingBottom: isMobile ? "0" : "6px" }}>
             © 2026 WealthyAI — All rights reserved.
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: isMobile ? "center" : "flex-end",
-              gap: "8px",
-            }}
-          >
-            <a
-              href="mailto:wealthyaiweb@gmail.com"
-              onClick={stopAudio}
-              className="nav-link"
-              style={{
-                fontSize: "0.82rem",
-                textAlign: isMobile ? "center" : "right",
-                lineHeight: "1.4",
-                cursor: "pointer",
-                textDecoration: "none",
-              }}
-            >
+          <div style={{ display: "flex", flexDirection: "column", alignItems: isMobile ? "center" : "flex-end", gap: "8px" }}>
+            <a href="mailto:wealthyaiweb@gmail.com" onClick={stopAudio} className="nav-link" style={{ fontSize: "0.82rem", textAlign: isMobile ? "center" : "right", lineHeight: "1.4", cursor: "pointer", textDecoration: "none" }}>
               <div style={{ fontWeight: 500 }}>Contact & Partnerships</div>
-              <div style={{ opacity: 0.8 }}>
-                Media · Partnerships · Institutional use
-              </div>
-              <div style={{ fontWeight: 600 }}>
-                wealthyaiweb@gmail.com
-              </div>
+              <div style={{ opacity: 0.8 }}>Media · Partnerships · Institutional use</div>
+              <div style={{ fontWeight: 600 }}>wealthyaiweb@gmail.com</div>
             </a>
 
             <div style={{ display: "flex", gap: "18px", alignItems: "center", marginTop: isMobile ? "10px" : "0" }}>
@@ -363,72 +336,25 @@ export default function Home() {
         </div>
 
         <style>{`
-          .brand-logo {
-            animation: logoFloat 9s ease-in-out infinite;
-            transition: filter 0.4s ease;
-          }
-
-          .brand-logo:hover {
-            filter: drop-shadow(0 0 18px rgba(56,189,248,0.55));
-          }
-
+          .brand-logo { animation: logoFloat 9s ease-in-out infinite; transition: filter 0.4s ease; }
+          .brand-logo:hover { filter: drop-shadow(0 0 18px rgba(56,189,248,0.55)); }
           @keyframes logoFloat {
             0% { transform: scale(1) translateY(0); opacity: 0.92; }
             35% { transform: scale(1.035) translateY(-6px); opacity: 1; }
             70% { transform: scale(1.02) translateY(3px); opacity: 0.97; }
             100% { transform: scale(1) translateY(0); opacity: 0.92; }
           }
-
-          @keyframes audioBar {
-            0% { height: 20%; }
-            100% { height: 100%; }
+          @keyframes audioBar { 0% { height: 20%; } 100% { height: 100%; } }
+          .discrete-pulse { animation: discretePulse 3s ease-in-out infinite; }
+          @keyframes discretePulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+          .nav-link, .icon-link { position: relative; color: white; text-decoration: none; opacity: 0.85; }
+          .nav-link::before, .icon-link::before {
+            content: ""; position: absolute; inset: -12px -22px;
+            background: radial-gradient(circle, rgba(56,189,248,0.55) 0%, rgba(56,189,248,0.25) 40%, transparent 70%);
+            filter: blur(16px); opacity: 0; transition: opacity 0.25s ease; pointer-events: none; z-index: -1;
           }
-
-          .discrete-pulse {
-            animation: discretePulse 3s ease-in-out infinite;
-          }
-
-          @keyframes discretePulse {
-            0% { opacity: 0.4; }
-            50% { opacity: 1; }
-            100% { opacity: 0.4; }
-          }
-
-          .nav-link,
-          .icon-link {
-            position: relative;
-            color: white;
-            text-decoration: none;
-            opacity: 0.85;
-          }
-
-          .nav-link::before,
-          .icon-link::before {
-            content: "";
-            position: absolute;
-            inset: -12px -22px;
-            background: radial-gradient(
-              circle,
-               rgba(56,189,248,0.55) 0%,
-               rgba(56,189,248,0.25) 40%,
-               transparent 70%
-            );
-            filter: blur(16px);
-            opacity: 0;
-            transition: opacity 0.25s ease;
-            pointer-events: none;
-            z-index: -1;
-          }
-
-          .nav-link:hover::before,
-          .icon-link:hover::before {
-            opacity: 1;
-          }
-
-          .start-btn:hover {
-            box-shadow: 0 0 35px rgba(56,189,248,0.45);
-            filter: drop-shadow(0 0 18px rgba(56,189,248,0.45));
-          }
+          .nav-link:hover::before, .icon-link:hover::before { opacity: 1; }
+          .start-btn:hover { box-shadow: 0 0 35px rgba(56,189,248,0.45); filter: drop-shadow(0 0 18px rgba(56,189,248,0.45)); }
         `}</style>
       </main>
     </>
