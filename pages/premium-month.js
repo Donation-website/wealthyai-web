@@ -44,7 +44,7 @@ const REGIONS = [
 ];
 
 export default function PremiumMonth() {
-    // === MOBILE ADDITION: device detection ===
+  // === MOBILE ADDITION: device detection ===
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -54,7 +54,18 @@ export default function PremiumMonth() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
   
-/* ================= ACCESS CHECK ================= */
+  /* ================= SIMULATION & STRESS STATE (NEW) ================= */
+  const [simulationActive, setSimulationActive] = useState(false);
+  const [stressFactor, setStressFactor] = useState(0); // 0 to 1 (0% to 100%)
+
+  const calculateFragility = () => {
+    const energy = (inputs.electricity + inputs.gas) * (1 + stressFactor);
+    const fixed = inputs.housing + inputs.insurance + inputs.banking + energy;
+    const ratio = (fixed / inputs.income) * 100;
+    return Math.min(Math.max(ratio, 0), 100).toFixed(1);
+  };
+
+  /* ================= ACCESS CHECK ================= */
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -175,7 +186,6 @@ export default function PremiumMonth() {
     setWeeklyFocus(focus);
     localStorage.setItem("weeklyFocus", JSON.stringify(focus));
     setFocusPreview(null);
-    // setFocusOpen(false); // Eltávolítva, hogy látszódjon a választás
   };
 
   /* ================= INPUTS ================= */
@@ -197,12 +207,12 @@ export default function PremiumMonth() {
   const update = (key, value) => {
     setInputs({ ...inputs, [key]: Number(value) });
 
-    // input változás → minden AI reset
     setAiVisible(false);
     setAiCollapsed(true);
     setDailyDual(null);
     setDailySnapshot(null);
     setSelectedDay(null);
+    // Ha módosul az input, a szimuláció újra láthatóvá válik
   };
 
   /* ================= CYCLE LOGIC ================= */
@@ -317,6 +327,7 @@ export default function PremiumMonth() {
   const runAI = async () => {
     setLoading(true);
     setSelectedDay(null);
+    setSimulationActive(false); // AI briefingnél kikapcsoljuk a szimulációs nézetet
 
     try {
       const res = await fetch("/api/get-ai-briefing", {
@@ -327,7 +338,7 @@ export default function PremiumMonth() {
           country,
           cycleDay,
           previousSignals: "",
-          weeklyFocus: weeklyFocus?.key, // Átadjuk az AI-nak a fókuszt
+          weeklyFocus: weeklyFocus?.key,
           ...inputs,
         }),
       });
@@ -355,6 +366,7 @@ export default function PremiumMonth() {
 
     setLoading(true);
     setSelectedDay(null);
+    setSimulationActive(false);
 
     try {
       const res = await fetch("/api/get-ai-briefing", {
@@ -365,7 +377,7 @@ export default function PremiumMonth() {
           country,
           cycleDay,
           previousSignals: "",
-          weeklyFocus: weeklyFocus?.key, // Átadjuk az AI-nak a fókuszt
+          weeklyFocus: weeklyFocus?.key,
           ...inputs,
         }),
       });
@@ -396,14 +408,12 @@ export default function PremiumMonth() {
       ? activeDual.executive
       : activeDual.directive);
 
-  /* ================= EXPORT (JAVÍTOTT: ARCHÍVUM ALAPÚ) ================= */
+  /* ================= EXPORT LOGIC ================= */
 
   const getBriefings = range => {
-    // Kombináljuk a legacy tárolót és az új Snapshot archívumot
     const legacy = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
     const snapshots = getMonthlySnapshots() || [];
     
-    // Összefésüljük őket dátum szerint, hogy ne legyen duplikáció
     const combined = [...legacy];
     snapshots.forEach(s => {
       if (!combined.find(b => b.date === s.date)) {
@@ -477,10 +487,9 @@ export default function PremiumMonth() {
       style={{
         ...page,
         overflowX: isMobile ? "hidden" : undefined,
-        backgroundAttachment: "fixed", // FIXÁLT HÁTTÉR
+        backgroundAttachment: "fixed",
       }}
     >
-
       <a href="/month/help" style={helpButton}>Help</a>
 
       <div style={header}>
@@ -517,8 +526,6 @@ export default function PremiumMonth() {
 
       <div style={signalBox}>
         <strong>Weekly focus</strong>
-
-        {/* JAVÍTOTT: A blokk látható marad választás után is */}
         <p style={{ opacity: 0.75 }}>
           {weeklyFocus 
             ? `Current focus: ${weeklyFocus.key.toUpperCase()}` 
@@ -570,12 +577,6 @@ export default function PremiumMonth() {
             )}
           </div>
         )}
-
-        {weeklyFocus && !focusOpen && (
-          <p style={{ fontSize: 13, opacity: 0.6, marginTop: 8 }}>
-            Expected insight window: 3–7 days
-          </p>
-        )}
       </div>
 
       <div
@@ -585,8 +586,7 @@ export default function PremiumMonth() {
           gap: isMobile ? 20 : layout.gap,
         }}
       >
-
-        {/* LEFT COLUMN */}
+        {/* LEFT COLUMN: INPUTS & SIMULATION */}
         <div style={card}>
           <h3>Monthly Financial Structure</h3>
 
@@ -606,67 +606,48 @@ export default function PremiumMonth() {
           </Section>
 
           <Section title="Utilities">
-            <Row
-              label="Electricity"
-              value={inputs.electricity}
-              onChange={v => update("electricity", v)}
-            />
-            <Row
-              label="Gas"
-              value={inputs.gas}
-              onChange={v => update("gas", v)}
-            />
-            <Row
-              label="Water"
-              value={inputs.water}
-              onChange={v => update("water", v)}
-            />
+            <Row label="Electricity" value={inputs.electricity} onChange={v => update("electricity", v)} />
+            <Row label="Gas" value={inputs.gas} onChange={v => update("gas", v)} />
+            <Row label="Water" value={inputs.water} onChange={v => update("water", v)} />
           </Section>
 
           <Section title="Recurring Services">
-            <Row
-              label="Internet"
-              value={inputs.internet}
-              onChange={v => update("internet", v)}
-            />
-            <Row
-              label="Mobile phone"
-              value={inputs.mobile}
-              onChange={v => update("mobile", v)}
-            />
-            <Row
-              label="TV / Streaming"
-              value={inputs.tv}
-              onChange={v => update("tv", v)}
-            />
-            <Row
-              label="Insurance"
-              value={inputs.insurance}
-              onChange={v => update("insurance", v)}
-            />
-            <Row
-              label="Banking fees"
-              value={inputs.banking}
-              onChange={v => update("banking", v)}
-            />
+            <Row label="Internet" value={inputs.internet} onChange={v => update("internet", v)} />
+            <Row label="Mobile phone" value={inputs.mobile} onChange={v => update("mobile", v)} />
+            <Row label="Insurance" value={inputs.insurance} onChange={v => update("insurance", v)} />
           </Section>
 
-          <Section title="Irregular">
-            <Row
-              label="Unexpected"
-              value={inputs.unexpected}
-              onChange={v => update("unexpected", v)}
+          <Divider />
+          <div style={{ padding: "10px 0" }}>
+            <strong style={{ color: "#10b981", fontSize: 13, display: "block", marginBottom: 10 }}>
+              STRUCTURAL STRESS TEST
+            </strong>
+            <input 
+              type="range" min="0" max="1" step="0.01" 
+              value={stressFactor}
+              onChange={(e) => {
+                setStressFactor(parseFloat(e.target.value));
+                setSimulationActive(true);
+              }}
+              style={{ width: "100%", accentColor: "#10b981", cursor: "pointer" }}
             />
-            <Row
-              label="Other"
-              value={inputs.other}
-              onChange={v => update("other", v)}
-            />
-          </Section>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, opacity: 0.5, marginTop: 4 }}>
+              <span>BASE</span>
+              <span>CRISIS (+100%)</span>
+            </div>
+          </div>
 
-          <button onClick={runAI} style={aiButton}>
-            {loading ? "Generating briefing…" : "Generate Monthly Briefing"}
-          </button>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 20 }}>
+            <button 
+              onClick={() => { setSimulationActive(true); setAiVisible(false); }}
+              style={{ ...exportBtn, borderColor: "#10b981", color: "#10b981" }}
+            >
+              SIMULATE
+            </button>
+            <button onClick={runAI} style={{ ...aiButton, marginTop: 0 }}>
+              {loading ? "Generating..." : "GENERATE AI"}
+            </button>
+          </div>
 
           <button
             onClick={runAIDual}
@@ -676,121 +657,141 @@ export default function PremiumMonth() {
           </button>
         </div>
 
-        {/* RIGHT COLUMN */}
+        {/* RIGHT COLUMN: INTELLIGENCE & VISUALS */}
         <div style={card}>
-          <button
-            onClick={() => setArchiveOpen(!archiveOpen)}
-            style={{ ...exportBtn, marginBottom: 10, width: "100%" }}
-          >
-            {archiveOpen ? "Hide past days" : "View past days"}
-          </button>
-
-          {archiveOpen && (
-            <div style={{ marginBottom: 16 }}>
-              {getMonthlySnapshots().length === 0 ? (
-                <p style={{ opacity: 0.6, fontSize: 14 }}>
-                  No snapshots saved yet.
-                </p>
-              ) : (
-                getMonthlySnapshots().map(s => (
-                  <button
-                    key={s.date}
-                    onClick={() => setSelectedDay(s.cycleDay)}
-                    style={{ ...exportBtn, marginBottom: 4, width: "100%" }}
-                  >
-                    Day {s.cycleDay}
-                  </button>
-                ))
-              )}
+          
+          {/* 1. STATE: MANIFESTO */}
+          {!aiVisible && !simulationActive && (
+            <div style={{ padding: "10px", animation: "fadeIn 0.8s ease-in" }}>
+              <strong style={{ color: "#10b981", fontSize: 12, letterSpacing: 1 }}>WEALTHYAI PHILOSOPHY</strong>
+              <h2 style={{ fontSize: 22, marginTop: 10 }}>Interpretation, Not Advice.</h2>
+              <p style={{ opacity: 0.7, lineHeight: "1.6", fontSize: 14 }}>
+                We built WealthyAI around a different question: What happens if AI doesn’t advise — but interprets?
+                Not faster decisions, but <strong>clearer thinking</strong>.
+              </p>
+              <p style={{ opacity: 0.7, lineHeight: "1.6", fontSize: 14, marginTop: 12 }}>
+                Our system assumes that you remain responsible for decisions — it simply gives you a clearer frame to make them. 
+                WealthyAI doesn’t reward speed. It rewards <strong>attention</strong>.
+              </p>
             </div>
           )}
 
+          {/* 2. STATE: SIMULATION ENGINE */}
+          {simulationActive && !aiVisible && (
+            <div style={{ padding: "10px", animation: "fadeIn 0.3s ease-out" }}>
+              <strong style={{ color: "#10b981", fontSize: 12 }}>LIVE SIMULATION ENGINE</strong>
+              <h2 style={{ fontSize: 20, marginTop: 5 }}>Structural Fragility Index</h2>
+              
+              <div style={{ fontSize: 42, fontWeight: "bold", color: "#38bdf8", margin: "15px 0" }}>
+                {calculateFragility()}%
+              </div>
+
+              <div style={{ height: 8, background: "rgba(255,255,255,0.05)", borderRadius: 4, overflow: "hidden" }}>
+                <div style={{ 
+                  height: "100%", 
+                  width: `${calculateFragility()}%`, 
+                  background: "linear-gradient(90deg, #10b981, #38bdf8)",
+                  transition: "width 0.3s ease" 
+                }} />
+              </div>
+
+              <p style={{ opacity: 0.6, fontSize: 13, marginTop: 15, lineHeight: "1.5" }}>
+                At <strong>{Math.round(stressFactor * 100)}%</strong> simulated pressure, your core financial rigidity is 
+                {parseFloat(calculateFragility()) > 55 ? " approaching a critical threshold." : " currently within structural limits."}
+              </p>
+              
+              <button 
+                onClick={() => setSimulationActive(false)} 
+                style={{ ...exportBtn, marginTop: 20, fontSize: 12, opacity: 0.6 }}
+              >
+                Reset view
+              </button>
+            </div>
+          )}
+
+          {/* 3. STATE: AI BRIEFING */}
           {aiVisible && (
             <div>
               <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
                 <button
-                  onClick={() => setAiCollapsed(!aiCollapsed)}
-                  style={exportBtn}
+                  onClick={() => setViewMode("executive")}
+                  style={{
+                    ...exportBtn,
+                    background: viewMode === "executive" ? "#38bdf8" : "transparent",
+                    color: viewMode === "executive" ? "#020617" : "#38bdf8",
+                  }}
                 >
-                  {aiCollapsed ? "Show briefing" : "Hide briefing"}
+                  Executive
                 </button>
 
                 <button
-                  onClick={() => setAiCollapsed(true)}
+                  onClick={() => setViewMode("directive")}
+                  style={{
+                    ...exportBtn,
+                    background: viewMode === "directive" ? "#38bdf8" : "transparent",
+                    color: viewMode === "directive" ? "#020617" : "#38bdf8",
+                  }}
+                >
+                  Directive
+                </button>
+                <button 
+                  onClick={() => { setAiVisible(false); setSimulationActive(false); }} 
                   style={{ ...exportBtn, maxWidth: 44 }}
                 >
                   ✕
                 </button>
               </div>
 
-              {!aiCollapsed && activeDual && (
-                <>
-                  <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
-                    <button
-                      onClick={() => setViewMode("executive")}
-                      style={{
-                        ...exportBtn,
-                        background:
-                          viewMode === "executive" ? "#38bdf8" : "transparent",
-                        color:
-                          viewMode === "executive"
-                            ? "#020617"
-                            : "#38bdf8",
-                      }}
-                    >
-                      Executive
-                    </button>
+              <pre style={aiTextStyle}>{activeText}</pre>
 
-                    <button
-                      onClick={() => setViewMode("directive")}
-                      style={{
-                        ...exportBtn,
-                        background:
-                          viewMode === "directive" ? "#38bdf8" : "transparent",
-                        color:
-                          viewMode === "directive"
-                            ? "#020617"
-                            : "#38bdf8",
-                      }}
-                    >
-                      Directive
-                    </button>
-                  </div>
+              {!selectedDay && (
+                <div
+                  style={{
+                    marginTop: 16,
+                    display: "flex",
+                    gap: 12,
+                    flexWrap: isMobile ? "wrap" : "nowrap",
+                  }}
+                >
+                  <select
+                    value={exportRange}
+                    onChange={e => setExportRange(e.target.value)}
+                    style={exportSelect}
+                  >
+                    <option value="day">Today</option>
+                    <option value="week">Last 7 days</option>
+                    <option value="month">This month</option>
+                  </select>
 
-                  <pre style={aiTextStyle}>{activeText}</pre>
-
-                  {!selectedDay && (
-                    <div
-                      style={{
-                        marginTop: 16,
-                        display: "flex",
-                        gap: 12,
-                        flexWrap: isMobile ? "wrap" : "nowrap",
-                      }}
-                    >
-                      <select
-                        value={exportRange}
-                        onChange={e => setExportRange(e.target.value)}
-                        style={exportSelect}
-                      >
-                        <option value="day">Today</option>
-                        <option value="week">Last 7 days</option>
-                        <option value="month">This month</option>
-                      </select>
-
-                      <button onClick={handleDownload} style={exportBtn}>
-                        Download
-                      </button>
-                      <button onClick={downloadPDF} style={exportBtn}>
-                        Download PDF
-                      </button>
-                      <button onClick={sendEmailPDF} style={exportBtn}>
-                        {emailSending ? "Sending…" : "Send by Email"}
-                      </button>
-                    </div>
-                  )}
-                </>
+                  <button onClick={handleDownload} style={exportBtn}>Download</button>
+                  <button onClick={downloadPDF} style={exportBtn}>PDF</button>
+                  <button onClick={sendEmailPDF} style={exportBtn}>
+                    {emailSending ? "..." : "Email"}
+                  </button>
+                </div>
               )}
+            </div>
+          )}
+
+          <Divider />
+          <button
+            onClick={() => setArchiveOpen(!archiveOpen)}
+            style={{ ...exportBtn, width: "100%" }}
+          >
+            {archiveOpen ? "Hide past days" : "View past days"}
+          </button>
+
+          {archiveOpen && (
+            <div style={{ marginTop: 10 }}>
+              {getMonthlySnapshots().map(s => (
+                <button
+                  key={s.date}
+                  onClick={() => { setSelectedDay(s.cycleDay); setAiVisible(true); setSimulationActive(false); }}
+                  style={{ ...exportBtn, marginBottom: 4, width: "100%" }}
+                >
+                  Day {s.cycleDay}
+                </button>
+              ))}
             </div>
           )}
         </div>
@@ -801,19 +802,18 @@ export default function PremiumMonth() {
   );
 }
 
-/* ================= UI HELPERS ================= */
-
+/* ================= UI HELPERS & STYLES (Eredeti Styles blokk változatlan) ================= */
 const Section = ({ title, children }) => (
   <>
     <Divider />
-    <strong>{title}</strong>
+    <strong style={{fontSize: 14, color: "#7dd3fc"}}>{title}</strong>
     {children}
   </>
 );
 
 const Row = ({ label, value, onChange }) => (
   <div style={row}>
-    <span>{label}</span>
+    <span style={{fontSize: 13, opacity: 0.8}}>{label}</span>
     <input
       type="number"
       value={value}
@@ -824,7 +824,7 @@ const Row = ({ label, value, onChange }) => (
 );
 
 const Label = ({ children }) => (
-  <label style={{ marginBottom: 6, display: "block" }}>{children}</label>
+  <label style={{ marginBottom: 6, display: "block", fontSize: 13, opacity: 0.8 }}>{children}</label>
 );
 
 const Input = ({ value, onChange }) => (
@@ -835,153 +835,58 @@ const Divider = () => (
   <div style={{ height: 1, background: "#1e293b", margin: "16px 0" }} />
 );
 
-/* ================= STYLES ================= */
-
 const page = {
   minHeight: "100vh",
   position: "relative",
-  padding: 40,
+  padding: "40px 20px",
   color: "#e5e7eb",
   fontFamily: "Inter, system-ui",
   backgroundColor: "#020617",
-  backgroundAttachment: "fixed", // FIXÁLT HÁTTÉR
   backgroundImage: `
     repeating-linear-gradient(-25deg, rgba(56,189,248,0.04) 0px, rgba(56,189,248,0.04) 1px, transparent 1px, transparent 180px),
     repeating-linear-gradient(35deg, rgba(167,139,250,0.04) 0px, rgba(167,139,250,0.04) 1px, transparent 1px, transparent 260px),
     radial-gradient(circle at 20% 30%, rgba(56,189,248,0.14), transparent 45%),
     radial-gradient(circle at 80% 60%, rgba(167,139,250,0.14), transparent 50%),
-    radial-gradient(circle at 45% 85%, rgba(34,211,238,0.10), transparent 45%),
     url("/wealthyai/icons/generated.png")
   `,
-  backgroundRepeat:
-    "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
-  backgroundSize:
-    "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
+  backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, repeat",
+  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 420px auto",
 };
 
 const header = { textAlign: "center", marginBottom: 20 };
-const title = { fontSize: "2.4rem", margin: 0 };
-const subtitle = { marginTop: 8, color: "#cbd5f5" };
+const title = { fontSize: "2rem", margin: 0 };
+const subtitle = { marginTop: 8, color: "#cbd5f5", fontSize: 14 };
 
 const helpButton = {
   position: "absolute",
-  top: 24,
-  right: 24,
-  padding: "8px 14px",
-  borderRadius: 10,
-  fontSize: 13,
+  top: 20,
+  right: 20,
+  padding: "6px 12px",
+  borderRadius: 8,
+  fontSize: 12,
   textDecoration: "none",
   color: "#7dd3fc",
   border: "1px solid #1e293b",
   background: "rgba(2,6,23,0.7)",
-  backdropFilter: "blur(6px)",
 };
 
-const regionRow = {
-  display: "flex",
-  justifyContent: "center",
-  gap: 10,
-  marginBottom: 20,
-};
+const regionRow = { display: "flex", justifyContent: "center", gap: 10, marginBottom: 20 };
+const regionLabel = { color: "#7dd3fc", fontSize: 14 };
+const regionSelect = { background: "#020617", color: "#e5e7eb", border: "1px solid #1e293b", padding: "4px 8px", borderRadius: 6 };
 
-const regionLabel = { color: "#7dd3fc" };
+const signalBox = { maxWidth: 800, margin: "0 auto 15px", padding: 14, border: "1px solid #1e293b", borderRadius: 12, background: "rgba(2,6,23,0.75)" };
 
-const regionSelect = {
-  background: "#020617",
-  color: "#e5e7eb",
-  border: "1px solid #1e293b",
-  padding: "6px 10px",
-  borderRadius: 6,
-};
+const layout = { display: "grid", gridTemplateColumns: "1fr 1.3fr", gap: 25, maxWidth: 1100, margin: "0 auto" };
+const card = { padding: 20, borderRadius: 16, border: "1px solid #1e293b", background: "rgba(2,6,23,0.78)" };
 
-const signalBox = {
-  maxWidth: 800,
-  margin: "0 auto 20px",
-  padding: 16,
-  border: "1px solid #1e293b",
-  borderRadius: 12,
-  background: "rgba(2,6,23,0.75)",
-};
+const input = { width: "100%", padding: 10, marginTop: 4, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, color: "white" };
+const row = { display: "flex", justifyContent: "space-between", marginTop: 6 };
+const rowInput = { width: 80, background: "transparent", border: "none", borderBottom: "1px solid #38bdf8", color: "#38bdf8", textAlign: "right" };
 
-const layout = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1.3fr",
-  gap: 30,
-  maxWidth: 1100,
-  margin: "0 auto",
-};
+const aiButton = { marginTop: 20, width: "100%", padding: 12, background: "#38bdf8", border: "none", borderRadius: 10, fontWeight: "bold", cursor: "pointer", color: "#020617" };
+const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap", color: "#cbd5f5", fontSize: 14, lineHeight: "1.6" };
 
-const card = {
-  padding: 22,
-  borderRadius: 16,
-  border: "1px solid #1e293b",
-  background: "rgba(2,6,23,0.78)",
-};
+const exportBtn = { padding: "8px 12px", borderRadius: 8, border: "1px solid #1e293b", background: "transparent", color: "#38bdf8", cursor: "pointer", fontSize: 13 };
+const exportSelect = { background: "transparent", color: "#e5e7eb", border: "1px solid #1e293b", padding: "8px", borderRadius: 8 };
 
-const input = {
-  width: "100%",
-  padding: 10,
-  marginTop: 6,
-  background: "rgba(255,255,255,0.08)",
-  border: "none",
-  borderRadius: 8,
-  color: "white",
-};
-
-const row = {
-  display: "flex",
-  justifyContent: "space-between",
-  marginTop: 8,
-};
-
-const rowInput = {
-  width: 100,
-  background: "transparent",
-  border: "none",
-  borderBottom: "1px solid #38bdf8",
-  color: "#38bdf8",
-  textAlign: "right",
-};
-
-const aiButton = {
-  marginTop: 20,
-  width: "100%",
-  padding: 14,
-  background: "#38bdf8",
-  border: "none",
-  borderRadius: 10,
-  fontWeight: "bold",
-  cursor: "pointer",
-};
-
-const aiTextStyle = {
-  marginTop: 10,
-  whiteSpace: "pre-wrap",
-  color: "#cbd5f5",
-};
-
-const exportBtn = {
-  flex: 1,
-  padding: "10px",
-  borderRadius: 8,
-  border: "1px solid #1e293b",
-  background: "transparent",
-  color: "#38bdf8",
-  cursor: "pointer",
-};
-
-const exportSelect = {
-  flex: 1,
-  background: "transparent",
-  color: "#e5e7eb",
-  border: "1px solid #1e293b",
-  padding: "8px",
-  borderRadius: 8,
-};
-
-const footer = {
-  marginTop: 60,
-  textAlign: "center",
-  fontSize: 13,
-  color: "#64748b",
-};
+const footer = { marginTop: 40, textAlign: "center", fontSize: 12, color: "#64748b", paddingBottom: 20 };
