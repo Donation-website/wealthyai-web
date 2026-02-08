@@ -6,7 +6,7 @@ export default function Home() {
   const SHARE_TEXT = "AI-powered financial clarity with WealthyAI";
 
   const audioRef = useRef(null);
-  const [isMuted, setIsMuted] = useState(true); // Alapértelmezetten true, hogy a Chrome engedje elindulni
+  const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
 
   const [isMobile, setIsMobile] = useState(false);
@@ -17,18 +17,16 @@ export default function Home() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Automatikus indítás 3.5 mp után
   useEffect(() => {
     const playTimeout = setTimeout(() => {
       if (audioRef.current) {
-        // Chrome trükk: némítva indítjuk, így a böngésző nem blokkolja
         audioRef.current.muted = true;
         audioRef.current.play()
           .then(() => {
             setIsPlaying(true);
           })
-          .catch(err => {
-            console.log("Autoplay blocked, waiting for user interaction", err);
-          });
+          .catch(err => console.log("Interaction required"));
       }
     }, 3500);
 
@@ -37,6 +35,15 @@ export default function Home() {
       if (audioRef.current) audioRef.current.pause();
     };
   }, []);
+
+  // Eseménykezelő: Ha a hang végére ér
+  const handleAudioEnd = () => {
+    setIsPlaying(false);
+    setIsMuted(true);
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0; // Visszatekerjük az elejére a következő indításhoz
+    }
+  };
 
   const stopAudio = () => {
     if (audioRef.current) {
@@ -48,14 +55,18 @@ export default function Home() {
 
   const toggleMute = () => {
     if (audioRef.current) {
-      // Az első kattintásnál levesszük a némítást és elindítjuk ha állna
-      const newMuteState = !isMuted;
-      audioRef.current.muted = newMuteState;
-      setIsMuted(newMuteState);
-      
+      // Ha épp nem játszik (mert véget ért), akkor elindítjuk elölről
       if (!isPlaying) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.muted = false;
         audioRef.current.play();
         setIsPlaying(true);
+        setIsMuted(false);
+      } else {
+        // Ha fut, akkor csak némítunk/feloldunk
+        const newMuteState = !isMuted;
+        audioRef.current.muted = newMuteState;
+        setIsMuted(newMuteState);
       }
     }
   };
@@ -102,9 +113,15 @@ export default function Home() {
           padding: isMobile ? "80px 0 60px 0" : 0,
         }}
       >
-        <audio ref={audioRef} src="/wealthyai/icons/nyitobeszed.mp3" preload="auto" />
+        {/* AUDIO ELEM AZ ESEMÉNYFIGYELŐVEL */}
+        <audio 
+          ref={audioRef} 
+          src="/wealthyai/icons/nyitobeszed.mp3" 
+          preload="auto" 
+          onEnded={handleAudioEnd}
+        />
 
-        {/* NARRATOR IKON */}
+        {/* NARRATOR IKON - Dinamikusan változó szöveggel és animációval */}
         <div 
           onClick={toggleMute}
           className="narrator-toggle"
@@ -117,8 +134,8 @@ export default function Home() {
             display: "flex",
             alignItems: "center",
             gap: "10px",
-            opacity: isPlaying ? 0.9 : 0.5, // Láthatóvá tettük alaphelyzetben is
-            transition: "opacity 0.5s ease",
+            opacity: isPlaying ? 0.9 : 0.6,
+            transition: "all 0.5s ease",
             background: "rgba(255,255,255,0.05)",
             padding: "5px 12px",
             borderRadius: "15px",
@@ -129,17 +146,19 @@ export default function Home() {
             {[1, 2, 3].map(i => (
               <div key={i} style={{
                 width: "2px",
-                height: isMuted ? "2px" : "100%",
+                // Csak akkor ugrál, ha játszik ÉS nincs némítva
+                height: (isPlaying && !isMuted) ? "100%" : "2px",
                 backgroundColor: "#38bdf8",
-                animation: !isMuted ? `audioBar 0.8s ease-in-out infinite alternate ${i * 0.2}s` : "none"
+                animation: (isPlaying && !isMuted) ? `audioBar 0.8s ease-in-out infinite alternate ${i * 0.2}s` : "none"
               }} />
             ))}
           </div>
           <span style={{ fontSize: "9px", fontWeight: "700", letterSpacing: "1px", color: "#38bdf8", textTransform: "uppercase" }}>
-            {isMuted ? "Unmute Narrator" : "Muted"}
+            {!isPlaying ? "Start Narrator" : isMuted ? "Unmute Narrator" : "Mute"}
           </span>
         </div>
 
+        {/* TOP NAV */}
         <div
           style={{
             position: isMobile ? "fixed" : "absolute",
@@ -159,6 +178,7 @@ export default function Home() {
           <a href="/terms" onClick={stopAudio} className="nav-link">Terms</a>
         </div>
 
+        {/* CENTER BRAND & TEXT */}
         <div
           style={{
             textAlign: "center",
@@ -229,6 +249,7 @@ export default function Home() {
           </div>
         </div>
 
+        {/* START SECTION */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
@@ -291,6 +312,7 @@ export default function Home() {
           </div>
         </div>
 
+        {/* BOTTOM BAR */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
@@ -306,7 +328,7 @@ export default function Home() {
             boxSizing: "border-box",
             gap: isMobile ? "30px" : "0",
             background: isMobile
-              ? "linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)"
+              ? "linear-gradient(to top, rgba(6,11,19,0.95) 0%, rgba(6,11,19,0.8) 50%, rgba(6,11,19,0.0) 100%)"
               : "transparent",
           }}
         >
