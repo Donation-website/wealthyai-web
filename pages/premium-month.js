@@ -491,14 +491,35 @@ export default function PremiumMonth() {
     } catch {}
     setEmailSending(false);
   };
-  /* ================= RENDER ================= */
+/* ================= RENDER ================= */
+
+  // === SMART ICON COMPONENT (Emerald Notebook) ===
+  const SmartIcon = () => (
+    <svg 
+      width="16" 
+      height="16" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="#10b981" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      style={{ marginRight: 8, verticalAlign: 'middle' }}
+    >
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+      <line x1="8" y1="6" x2="16" y2="6"></line>
+      <line x1="8" y1="10" x2="16" y2="10"></line>
+      <line x1="8" y1="14" x2="16" y2="14"></line>
+    </svg>
+  );
 
   return (
     <div
       style={{
         ...page,
         overflowX: isMobile ? "hidden" : undefined,
-        backgroundAttachment: "fixed", // FIXÁLT HÁTTÉR
+        backgroundAttachment: "fixed",
       }}
     >
 
@@ -614,12 +635,19 @@ export default function PremiumMonth() {
         <div style={card}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 15 }}>
             <h3 style={{ margin: 0 }}>Financial Structure</h3>
-            {/* === SMART IMPORT BUTTON === */}
+            
             <button 
               onClick={() => setShowImportModal(true)}
-              style={{ ...exportBtn, maxWidth: "fit-content", fontSize: 12, padding: "6px 12px" }}
+              style={{ 
+                ...exportBtn, 
+                maxWidth: "fit-content", 
+                fontSize: 12, 
+                padding: "6px 12px",
+                borderColor: "#10b981",
+                color: "#10b981"
+              }}
             >
-              ⚡ Smart Sync
+              <SmartIcon /> Smart Sync
             </button>
           </div>
 
@@ -833,27 +861,29 @@ export default function PremiumMonth() {
       {showImportModal && (
         <div style={modalOverlay}>
           <div style={modalContent}>
-            <h3>⚡ AI Smart Sync</h3>
+            <h3 style={{ color: "#10b981", display: "flex", alignItems: "center" }}>
+              <SmartIcon /> AI Smart Sync
+            </h3>
             <p style={{ fontSize: 13, opacity: 0.8, marginBottom: 15 }}>
               Paste your raw bank statement text below. Our AI extracts the values into your structure. No data is stored.
             </p>
             <textarea
               value={importText}
               onChange={(e) => setImportText(e.target.value)}
-              placeholder="Paste transaction history here (e.g. 2024.02.08 Rent payment -1200 USD...)"
+              placeholder="Paste transaction history here..."
               style={modalTextarea}
             />
             <div style={{ display: "flex", gap: 10, marginTop: 15 }}>
               <button 
                 onClick={handleSmartParse} 
                 disabled={smartLoading}
-                style={aiButton}
+                style={{ ...aiButton, background: "#10b981", color: "#020617", marginTop: 0 }}
               >
                 {smartLoading ? "AI Analyzing..." : "Extract Data"}
               </button>
               <button 
                 onClick={() => setShowImportModal(false)}
-                style={{ ...exportBtn, marginTop: 20 }}
+                style={{ ...exportBtn, borderColor: "#1e293b" }}
               >
                 Cancel
               </button>
@@ -906,22 +936,21 @@ const Divider = () => (
 const modalOverlay = {
   position: "fixed",
   top: 0, left: 0, right: 0, bottom: 0,
-  backgroundColor: "rgba(2, 6, 23, 0.85)",
+  backgroundColor: "rgba(2, 6, 23, 0.9)",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
   zIndex: 1000,
-  backdropFilter: "blur(8px)"
+  backdropFilter: "blur(10px)"
 };
 
 const modalContent = {
-  background: "#0f172a",
+  background: "#020617",
   padding: 24,
   borderRadius: 20,
   border: "1px solid #1e293b",
   maxWidth: 500,
   width: "90%",
-  boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
 };
 
 const modalTextarea = {
@@ -933,9 +962,8 @@ const modalTextarea = {
   padding: 12,
   color: "#e5e7eb",
   fontSize: 13,
-  fontFamily: "monospace",
-  resize: "none",
-  outline: "none"
+  outline: "none",
+  resize: "none"
 };
 
 const page = {
@@ -945,7 +973,7 @@ const page = {
   color: "#e5e7eb",
   fontFamily: "Inter, system-ui",
   backgroundColor: "#020617",
-  backgroundAttachment: "fixed", // FIXÁLT HÁTTÉR
+  backgroundAttachment: "fixed",
   backgroundImage: `
     repeating-linear-gradient(-25deg, rgba(56,189,248,0.04) 0px, rgba(56,189,248,0.04) 1px, transparent 1px, transparent 180px),
     repeating-linear-gradient(35deg, rgba(167,139,250,0.04) 0px, rgba(167,139,250,0.04) 1px, transparent 1px, transparent 260px),
@@ -954,10 +982,8 @@ const page = {
     radial-gradient(circle at 45% 85%, rgba(34,211,238,0.10), transparent 45%),
     url("/wealthyai/icons/generated.png")
   `,
-  backgroundRepeat:
-    "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
-  backgroundSize:
-    "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
+  backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
+  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
 };
 
 const header = { textAlign: "center", marginBottom: 20 };
@@ -978,22 +1004,9 @@ const helpButton = {
   backdropFilter: "blur(6px)",
 };
 
-const regionRow = {
-  display: "flex",
-  justifyContent: "center",
-  gap: 10,
-  marginBottom: 20,
-};
-
+const regionRow = { display: "flex", justifyContent: "center", gap: 10, marginBottom: 20 };
 const regionLabel = { color: "#7dd3fc" };
-
-const regionSelect = {
-  background: "#020617",
-  color: "#e5e7eb",
-  border: "1px solid #1e293b",
-  padding: "6px 10px",
-  borderRadius: 6,
-};
+const regionSelect = { background: "#020617", color: "#e5e7eb", border: "1px solid #1e293b", padding: "6px 10px", borderRadius: 6 };
 
 const signalBox = {
   maxWidth: 800,
@@ -1012,37 +1025,10 @@ const layout = {
   margin: "0 auto",
 };
 
-const card = {
-  padding: 22,
-  borderRadius: 16,
-  border: "1px solid #1e293b",
-  background: "rgba(2,6,23,0.78)",
-};
-
-const input = {
-  width: "100%",
-  padding: 10,
-  marginTop: 6,
-  background: "rgba(255,255,255,0.08)",
-  border: "none",
-  borderRadius: 8,
-  color: "white",
-};
-
-const row = {
-  display: "flex",
-  justifyContent: "space-between",
-  marginTop: 8,
-};
-
-const rowInput = {
-  width: 100,
-  background: "transparent",
-  border: "none",
-  borderBottom: "1px solid #38bdf8",
-  color: "#38bdf8",
-  textAlign: "right",
-};
+const card = { padding: 22, borderRadius: 16, border: "1px solid #1e293b", background: "rgba(2,6,23,0.78)" };
+const input = { width: "100%", padding: 10, marginTop: 6, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, color: "white" };
+const row = { display: "flex", justifyContent: "space-between", marginTop: 8 };
+const rowInput = { width: 100, background: "transparent", border: "none", borderBottom: "1px solid #38bdf8", color: "#38bdf8", textAlign: "right" };
 
 const aiButton = {
   marginTop: 20,
@@ -1052,38 +1038,11 @@ const aiButton = {
   border: "none",
   borderRadius: 10,
   fontWeight: "bold",
-  color: "#020617",
   cursor: "pointer",
+  color: "#020617"
 };
 
-const aiTextStyle = {
-  marginTop: 10,
-  whiteSpace: "pre-wrap",
-  color: "#cbd5f5",
-};
-
-const exportBtn = {
-  flex: 1,
-  padding: "10px",
-  borderRadius: 8,
-  border: "1px solid #1e293b",
-  background: "transparent",
-  color: "#38bdf8",
-  cursor: "pointer",
-};
-
-const exportSelect = {
-  flex: 1,
-  background: "transparent",
-  color: "#e5e7eb",
-  border: "1px solid #1e293b",
-  padding: "8px",
-  borderRadius: 8,
-};
-
-const footer = {
-  marginTop: 60,
-  textAlign: "center",
-  fontSize: 13,
-  color: "#64748b",
-};
+const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap", color: "#cbd5f5" };
+const exportBtn = { padding: "10px", borderRadius: 8, border: "1px solid #1e293b", background: "transparent", color: "#38bdf8", cursor: "pointer" };
+const exportSelect = { background: "transparent", color: "#e5e7eb", border: "1px solid #1e293b", padding: "8px", borderRadius: 8 };
+const footer = { marginTop: 60, textAlign: "center", fontSize: 13, color: "#64748b" };
