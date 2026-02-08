@@ -5,12 +5,14 @@ export default async function handler(req, res) {
 
   try {
     const {
+      mode, // 🆕 ÚJ: Ezzel döntjük el, mit csinálunk
+      importText, // 🆕 ÚJ: A beillesztett nyers szöveg
       region,
       cycleDay,
-      analysisMode, // backward compatibility
+      analysisMode,
       previousSignals,
       weeklyFocus,
-      isReturningCustomer, // 🆕 CSAK HOZZÁADVA
+      isReturningCustomer,
       income,
       housing,
       electricity,
@@ -25,9 +27,52 @@ export default async function handler(req, res) {
       other,
     } = req.body;
 
-    /* ================================
-       INPUT SANITIZATION (HARD)
-    ================================= */
+    /* ==========================================
+       🆕 SMART SYNC ÁG (CSAK HA AZ ÚJ FUNKCIÓT HÍVJÁK)
+       Ez az ág teljesen elkülönül a briefing generálástól.
+    ============================================= */
+    if (mode === "parse_statement" && importText) {
+      const parseSystemPrompt = `
+        You are a financial data extractor.
+        TASK: Extract numbers from the provided bank statement text into a JSON object.
+        
+        RULES:
+        - Return ONLY a valid JSON object.
+        - Use these keys: income, housing, electricity, gas, water, internet, mobile, tv, insurance, banking, unexpected, other.
+        - If a value is missing or the text is non-financial (emojis, gibberish), use 0.
+        - Combine multiple entries for the same category.
+        - NO explanation, NO text, ONLY JSON.
+      `;
+
+      const rParse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "llama-3.1-8b-instant",
+          messages: [
+            { role: "system", content: parseSystemPrompt },
+            { role: "user", content: `Extract data from this text: ${importText}` },
+          ],
+          temperature: 0, // 0 = Maximális pontosság, nincs kreativitás
+          response_format: { type: "json_object" } // Kényszerített JSON válasz
+        }),
+      });
+
+      if (!rParse.ok) throw new Error("Groq parse unavailable");
+      const jParse = await rParse.json();
+      const extractedData = JSON.parse(jParse?.choices?.[0]?.message?.content || "{}");
+
+      // Válasz visszaküldése és a folyamat megállítása itt (a briefing nem fut le)
+      return res.status(200).json({ extractedData });
+    }
+
+    /* ==========================================
+       EREDETI LOGIKA (BRIEFING GENERÁLÁS)
+       Innen semmi nem változott, minden marad a régiben.
+    ============================================= */
 
     const safe = (v) => Math.max(0, Number(v || 0));
 
@@ -46,20 +91,11 @@ export default async function handler(req, res) {
       other: safe(other),
     };
 
-    /* ================================
-       STRUCTURAL DERIVATION (CRITICAL)
-    ================================= */
-
     const totalEnergy = S.electricity + S.gas;
     const hasEnergyExposure = totalEnergy > 0;
-
     const fixedCore = S.housing + S.insurance + S.banking;
     const recurringServices = S.internet + S.mobile + S.tv;
     const irregularPressure = S.unexpected + S.other;
-
-    /* ================================
-       SYSTEM PROMPT — BASE
-    ================================= */
 
     let systemPrompt = `
 You are WealthyAI — a PAID financial intelligence system.
@@ -147,11 +183,6 @@ REGION: Hungary
 `;
     }
 
-    /* ================================
-       🆕 RETURNING CUSTOMER CONTEXT
-       (INTERNAL ONLY — NO OUTPUT CHANGE)
-    ================================= */
-
     systemPrompt += `
 RETURNING CONTEXT:
 - Returning monthly subscriber: ${isReturningCustomer ? "YES" : "NO"}
@@ -191,10 +222,6 @@ MODE: DIRECTIVE
 ${baseUserPrompt}
 `;
 
-    /* ================================
-       GROQ CALL
-    ================================= */
-
     const callGroq = async (prompt, temperature) => {
       const r = await fetch(
         "https://api.groq.com/openai/v1/chat/completions",
@@ -228,20 +255,11 @@ ${baseUserPrompt}
       return text;
     };
 
-    /* ================================
-       EXECUTION
-    ================================= */
-
     const executive = await callGroq(executivePrompt, 0.15);
     const directive = await callGroq(directivePrompt, 0.1);
 
-    /* ================================
-       RESPONSE
-    ================================= */
-
     return res.status(200).json({
       briefing: executive,
-
       snapshot: {
         date: new Date().toISOString().slice(0, 10),
         cycleDay,
