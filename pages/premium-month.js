@@ -175,8 +175,9 @@ export default function PremiumMonth() {
     setWeeklyFocus(focus);
     localStorage.setItem("weeklyFocus", JSON.stringify(focus));
     setFocusPreview(null);
-    setFocusOpen(false);
+    // setFocusOpen(false); // Eltávolítva, hogy látszódjon a választás
   };
+
   /* ================= INPUTS ================= */
 
   const [inputs, setInputs] = useState({
@@ -326,6 +327,7 @@ export default function PremiumMonth() {
           country,
           cycleDay,
           previousSignals: "",
+          weeklyFocus: weeklyFocus?.key, // Átadjuk az AI-nak a fókuszt
           ...inputs,
         }),
       });
@@ -363,6 +365,7 @@ export default function PremiumMonth() {
           country,
           cycleDay,
           previousSignals: "",
+          weeklyFocus: weeklyFocus?.key, // Átadjuk az AI-nak a fókuszt
           ...inputs,
         }),
       });
@@ -379,7 +382,6 @@ export default function PremiumMonth() {
 
     setLoading(false);
   };
-
   /* ================= ACTIVE CONTENT ================= */
 
   const activeSnapshot = selectedDay
@@ -394,21 +396,33 @@ export default function PremiumMonth() {
       ? activeDual.executive
       : activeDual.directive);
 
-  /* ================= EXPORT ================= */
+  /* ================= EXPORT (JAVÍTOTT: ARCHÍVUM ALAPÚ) ================= */
 
   const getBriefings = range => {
-    const stored = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
+    // Kombináljuk a legacy tárolót és az új Snapshot archívumot
+    const legacy = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
+    const snapshots = getMonthlySnapshots() || [];
+    
+    // Összefésüljük őket dátum szerint, hogy ne legyen duplikáció
+    const combined = [...legacy];
+    snapshots.forEach(s => {
+      if (!combined.find(b => b.date === s.date)) {
+        combined.push(s);
+      }
+    });
+
     if (range === "day") {
       const today = getTodayKey();
-      return stored.filter(b => b.date === today);
+      return combined.filter(b => b.date === today);
     }
-    if (range === "week") return stored.slice(-7);
-    if (range === "month") return stored;
+    if (range === "week") return combined.slice(-7);
+    if (range === "month") return combined;
     return [];
   };
+
   const handleDownload = () => {
     const data = getBriefings(exportRange);
-    if (!data.length) return alert("No data available.");
+    if (!data.length) return alert("No saved data available for this range.");
 
     const text = data
       .map(
@@ -455,7 +469,8 @@ export default function PremiumMonth() {
     } catch {}
     setEmailSending(false);
   };
-   /* ================= RENDER ================= */
+
+  /* ================= RENDER ================= */
 
   return (
     <div
@@ -503,66 +518,63 @@ export default function PremiumMonth() {
       <div style={signalBox}>
         <strong>Weekly focus</strong>
 
-        {!weeklyFocus && (
-          <>
-            <p style={{ opacity: 0.75 }}>
-              Choose one focus area for this week. This affects how your data is interpreted.
-            </p>
+        {/* JAVÍTOTT: A blokk látható marad választás után is */}
+        <p style={{ opacity: 0.75 }}>
+          {weeklyFocus 
+            ? `Current focus: ${weeklyFocus.key.toUpperCase()}` 
+            : "Choose one focus area for this week. This affects how your data is interpreted."}
+        </p>
 
-            <button onClick={() => setFocusOpen(!focusOpen)} style={exportBtn}>
-              {focusOpen ? "Close" : "What is this?"}
-            </button>
+        <button onClick={() => setFocusOpen(!focusOpen)} style={exportBtn}>
+          {focusOpen ? "Close selection" : (weeklyFocus ? "Change selection" : "What is this?")}
+        </button>
 
-            {focusOpen && (
-              <div style={{ marginTop: 12 }}>
-                {FOCUS_OPTIONS.map((f, i) => {
-                  const disabled = i < getCurrentWeekIndex();
-                  return (
-                    <button
-                      key={f.key}
-                      disabled={disabled}
-                      onClick={() => setFocusPreview(f.key)}
-                      style={{
-                        ...exportBtn,
-                        opacity: disabled ? 0.3 : 1,
-                        cursor: disabled ? "not-allowed" : "pointer",
-                        background:
-                          focusPreview === f.key ? "#38bdf8" : "transparent",
-                        color:
-                          focusPreview === f.key ? "#020617" : "#38bdf8",
-                        marginBottom: 6,
-                      }}
-                    >
-                      {f.label}
-                    </button>
-                  );
-                })}
+        {focusOpen && (
+          <div style={{ marginTop: 12 }}>
+            {FOCUS_OPTIONS.map((f, i) => {
+              const isSelected = weeklyFocus?.key === f.key;
+              const hasSelection = !!weeklyFocus;
+              const disabled = i < getCurrentWeekIndex();
 
-                {focusPreview && (
-                  <div style={{ marginTop: 10 }}>
-                    <p style={{ fontSize: 13, opacity: 0.7 }}>
-                      You selected <strong>{focusPreview}</strong> for this week.
-                      This cannot be changed later.
-                    </p>
-                    <button onClick={confirmWeeklyFocus} style={aiButton}>
-                      Confirm focus
-                    </button>
-                  </div>
-                )}
+              return (
+                <button
+                  key={f.key}
+                  disabled={disabled || (hasSelection && !isSelected)}
+                  onClick={() => setFocusPreview(f.key)}
+                  style={{
+                    ...exportBtn,
+                    opacity: (disabled || (hasSelection && !isSelected)) ? 0.3 : 1,
+                    cursor: (disabled || (hasSelection && !isSelected)) ? "not-allowed" : "pointer",
+                    background: (focusPreview === f.key || isSelected) ? "#38bdf8" : "transparent",
+                    color: (focusPreview === f.key || isSelected) ? "#020617" : "#38bdf8",
+                    marginBottom: 6,
+                    display: "block",
+                    width: "100%"
+                  }}
+                >
+                  {f.label} {isSelected ? "✓" : ""}
+                </button>
+              );
+            })}
+
+            {focusPreview && !weeklyFocus && (
+              <div style={{ marginTop: 10 }}>
+                <p style={{ fontSize: 13, opacity: 0.7 }}>
+                  You selected <strong>{focusPreview}</strong> for this week.
+                  This cannot be changed later.
+                </p>
+                <button onClick={confirmWeeklyFocus} style={aiButton}>
+                  Confirm focus
+                </button>
               </div>
             )}
-          </>
+          </div>
         )}
 
-        {weeklyFocus && (
-          <>
-            <p>
-              This week’s focus: <strong>{weeklyFocus.key}</strong>
-            </p>
-            <p style={{ fontSize: 13, opacity: 0.6 }}>
-              Expected insight window: 3–7 days
-            </p>
-          </>
+        {weeklyFocus && !focusOpen && (
+          <p style={{ fontSize: 13, opacity: 0.6, marginTop: 8 }}>
+            Expected insight window: 3–7 days
+          </p>
         )}
       </div>
 
@@ -658,7 +670,7 @@ export default function PremiumMonth() {
 
           <button
             onClick={runAIDual}
-            style={{ ...exportBtn, marginTop: 12 }}
+            style={{ ...exportBtn, marginTop: 12, width: "100%" }}
           >
             Save Today’s Snapshot
           </button>
@@ -668,7 +680,7 @@ export default function PremiumMonth() {
         <div style={card}>
           <button
             onClick={() => setArchiveOpen(!archiveOpen)}
-            style={{ ...exportBtn, marginBottom: 10 }}
+            style={{ ...exportBtn, marginBottom: 10, width: "100%" }}
           >
             {archiveOpen ? "Hide past days" : "View past days"}
           </button>
@@ -684,7 +696,7 @@ export default function PremiumMonth() {
                   <button
                     key={s.date}
                     onClick={() => setSelectedDay(s.cycleDay)}
-                    style={exportBtn}
+                    style={{ ...exportBtn, marginBottom: 4, width: "100%" }}
                   >
                     Day {s.cycleDay}
                   </button>
