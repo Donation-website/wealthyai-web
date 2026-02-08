@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   saveMonthlySnapshot,
   getMonthlySnapshots,
@@ -19,7 +19,7 @@ function getDailyUnlockTime() {
 
   if (stored.date === today) return stored.unlockAt;
 
-  const hour = Math.floor(Math.random() * 10) + 7; // 07–16
+  const hour = Math.floor(Math.random() * 10) + 7; // 07–16 óra között
   const minute = Math.floor(Math.random() * 60);
 
   const unlockAt = new Date();
@@ -44,7 +44,6 @@ const REGIONS = [
 ];
 
 export default function PremiumMonth() {
-  // === MOBILE ADDITION: device detection ===
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -53,16 +52,23 @@ export default function PremiumMonth() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-  
+
   /* ================= SIMULATION & STRESS STATE (NEW) ================= */
   const [simulationActive, setSimulationActive] = useState(false);
   const [stressFactor, setStressFactor] = useState(0); // 0 to 1 (0% to 100%)
 
+  // Alapvető algoritmus a törékenység mérésére
   const calculateFragility = () => {
     const energy = (inputs.electricity + inputs.gas) * (1 + stressFactor);
     const fixed = inputs.housing + inputs.insurance + inputs.banking + energy;
     const ratio = (fixed / inputs.income) * 100;
     return Math.min(Math.max(ratio, 0), 100).toFixed(1);
+  };
+
+  /* ================= AI PANEL CONTROLS (ENHANCED) ================= */
+  const toggleSimulation = () => {
+    setSimulationActive(true);
+    setAiVisible(false); // Eltünteti a hitvallást, ha aktív a szimuláció
   };
 
   /* ================= ACCESS CHECK ================= */
@@ -80,8 +86,8 @@ export default function PremiumMonth() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ sessionId }),
     })
-      .then(r => r.json())
-      .then(d => {
+      .then((r) => r.json())
+      .then((d) => {
         if (!d.valid) window.location.href = "/start";
       })
       .catch(() => {
@@ -154,7 +160,8 @@ export default function PremiumMonth() {
 
   const [weeklyFocus, setWeeklyFocus] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem("weeklyFocus"));
+      const saved = localStorage.getItem("weeklyFocus");
+      return saved ? JSON.parse(saved) : null;
     } catch {
       return null;
     }
@@ -187,7 +194,6 @@ export default function PremiumMonth() {
     localStorage.setItem("weeklyFocus", JSON.stringify(focus));
     setFocusPreview(null);
   };
-
   /* ================= INPUTS ================= */
 
   const [inputs, setInputs] = useState({
@@ -204,15 +210,16 @@ export default function PremiumMonth() {
     unexpected: 200,
     other: 300,
   });
+
   const update = (key, value) => {
     setInputs({ ...inputs, [key]: Number(value) });
 
+    // Ha módosul az adat, az AI eredményt elrejtjük, hogy frissíteni kelljen
     setAiVisible(false);
     setAiCollapsed(true);
     setDailyDual(null);
     setDailySnapshot(null);
     setSelectedDay(null);
-    // Ha módosul az input, a szimuláció újra láthatóvá válik
   };
 
   /* ================= CYCLE LOGIC ================= */
@@ -231,7 +238,7 @@ export default function PremiumMonth() {
     }
   }, []);
 
-  /* ================= SNAPSHOT AVAILABILITY ================= */
+  /* ================= SNAPSHOT AVAILABILITY EFFECT ================= */
 
   useEffect(() => {
     const today = getTodayKey();
@@ -240,8 +247,7 @@ export default function PremiumMonth() {
     let availableAt = localStorage.getItem(key);
 
     if (!availableAt) {
-      const randomOffsetMs =
-        Math.floor(Math.random() * 6 * 60 * 60 * 1000);
+      const randomOffsetMs = Math.floor(Math.random() * 6 * 60 * 60 * 1000);
       const base = new Date();
       base.setHours(7, 0, 0, 0);
       availableAt = base.getTime() + randomOffsetMs;
@@ -303,11 +309,11 @@ export default function PremiumMonth() {
 
   /* ================= LEGACY DAILY STORAGE ================= */
 
-  const saveBriefing = dual => {
+  const saveBriefing = (dual) => {
     const today = getTodayKey();
     const stored = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
 
-    if (!stored.find(b => b.date === today)) {
+    if (!stored.find((b) => b.date === today)) {
       stored.push({
         id: Date.now(),
         date: today,
@@ -322,12 +328,12 @@ export default function PremiumMonth() {
     }
   };
 
-  /* ================= DAILY AI ================= */
+  /* ================= DAILY AI BRIEFING ================= */
 
   const runAI = async () => {
     setLoading(true);
     setSelectedDay(null);
-    setSimulationActive(false); // AI briefingnél kikapcsoljuk a szimulációs nézetet
+    setSimulationActive(false);
 
     try {
       const res = await fetch("/api/get-ai-briefing", {
@@ -351,16 +357,18 @@ export default function PremiumMonth() {
         setAiCollapsed(false);
         saveBriefing(json.snapshot);
       }
-    } catch {}
+    } catch (err) {
+      console.error(err);
+    }
 
     setLoading(false);
   };
 
-  /* ================= SNAPSHOT AI ================= */
+  /* ================= SNAPSHOT AI BRIEFING ================= */
 
   const runAIDual = async () => {
     if (!isTodayAvailable) {
-      alert("Today's snapshot is not available yet.");
+      alert("Today's snapshot is not available yet. Please check back later.");
       return;
     }
 
@@ -390,10 +398,13 @@ export default function PremiumMonth() {
         setAiVisible(true);
         setAiCollapsed(false);
       }
-    } catch {}
+    } catch (err) {
+      console.error(err);
+    }
 
     setLoading(false);
   };
+
   /* ================= ACTIVE CONTENT ================= */
 
   const activeSnapshot = selectedDay
@@ -410,7 +421,7 @@ export default function PremiumMonth() {
 
   /* ================= EXPORT LOGIC ================= */
 
-  const getBriefings = range => {
+  const getBriefings = (range) => {
     const legacy = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
     const snapshots = getMonthlySnapshots() || [];
     
@@ -423,7 +434,7 @@ export default function PremiumMonth() {
 
     if (range === "day") {
       const today = getTodayKey();
-      return combined.filter(b => b.date === today);
+      return combined.filter((b) => b.date === today);
     }
     if (range === "week") return combined.slice(-7);
     if (range === "month") return combined;
@@ -432,39 +443,50 @@ export default function PremiumMonth() {
 
   const handleDownload = () => {
     const data = getBriefings(exportRange);
-    if (!data.length) return alert("No saved data available for this range.");
+    if (!data.length) {
+      alert("No saved briefing data available for this range.");
+      return;
+    }
 
     const text = data
       .map(
-        b =>
+        (b) =>
           `Day ${b.cycleDay} · ${b.date}\n\n${
             viewMode === "executive" ? b.executive : b.directive
           }`
       )
-      .join("\n\n---------------------\n\n");
+      .join("\n\n----------------------------------\n\n");
 
-    const url = URL.createObjectURL(
-      new Blob([text], { type: "text/plain;charset=utf-8" })
-    );
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `WealthyAI_${exportRange}.txt`;
+    a.download = `WealthyAI_Briefing_${exportRange}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
   const downloadPDF = async () => {
     if (!activeText) return;
-    const res = await fetch("/api/export-month-pdf", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: activeText, cycleDay, region }),
-    });
-    const url = URL.createObjectURL(await res.blob());
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "wealthyai-monthly-briefing.pdf";
-    a.click();
+    try {
+      const res = await fetch("/api/export-month-pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: activeText,
+          cycleDay,
+          region,
+        }),
+      });
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `wealthyai-monthly-briefing-day${cycleDay}.pdf`;
+      a.click();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const sendEmailPDF = async () => {
@@ -474,15 +496,21 @@ export default function PremiumMonth() {
       await fetch("/api/send-month-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: activeText, cycleDay, region }),
+        body: JSON.stringify({
+          text: activeText,
+          cycleDay,
+          region,
+        }),
       });
-    } catch {}
+      alert("Briefing sent to your email.");
+    } catch (err) {
+      console.error(err);
+    }
     setEmailSending(false);
   };
 
   /* ================= RENDER ================= */
-
-  return (
+return (
     <div
       style={{
         ...page,
@@ -501,11 +529,13 @@ export default function PremiumMonth() {
         <span style={regionLabel}>Region</span>
         <select
           value={region}
-          onChange={e => setRegion(e.target.value)}
+          onChange={(e) => setRegion(e.target.value)}
           style={regionSelect}
         >
-          {REGIONS.map(r => (
-            <option key={r.code} value={r.code}>{r.label}</option>
+          {REGIONS.map((r) => (
+            <option key={r.code} value={r.code}>
+              {r.label}
+            </option>
           ))}
         </select>
       </div>
@@ -588,72 +618,87 @@ export default function PremiumMonth() {
       >
         {/* LEFT COLUMN: INPUTS & SIMULATION */}
         <div style={card}>
-          <h3>Monthly Financial Structure</h3>
+          <h3 style={{ fontSize: "18px", marginBottom: "20px", color: "#fff" }}>Monthly Financial Structure</h3>
 
           <Label>Income</Label>
           <Input
             value={inputs.income}
-            onChange={e => update("income", e.target.value)}
+            onChange={(e) => update("income", e.target.value)}
           />
+          
           <Divider />
 
           <Section title="Living">
             <Row
               label="Housing"
               value={inputs.housing}
-              onChange={v => update("housing", v)}
+              onChange={(v) => update("housing", v)}
             />
           </Section>
 
           <Section title="Utilities">
-            <Row label="Electricity" value={inputs.electricity} onChange={v => update("electricity", v)} />
-            <Row label="Gas" value={inputs.gas} onChange={v => update("gas", v)} />
-            <Row label="Water" value={inputs.water} onChange={v => update("water", v)} />
+            <Row label="Electricity" value={inputs.electricity} onChange={(v) => update("electricity", v)} />
+            <Row label="Gas" value={inputs.gas} onChange={(v) => update("gas", v)} />
+            <Row label="Water" value={inputs.water} onChange={(v) => update("water", v)} />
           </Section>
 
           <Section title="Recurring Services">
-            <Row label="Internet" value={inputs.internet} onChange={v => update("internet", v)} />
-            <Row label="Mobile phone" value={inputs.mobile} onChange={v => update("mobile", v)} />
-            <Row label="Insurance" value={inputs.insurance} onChange={v => update("insurance", v)} />
+            <Row label="Internet" value={inputs.internet} onChange={(v) => update("internet", v)} />
+            <Row label="Mobile phone" value={inputs.mobile} onChange={(v) => update("mobile", v)} />
+            <Row label="TV / Streaming" value={inputs.tv} onChange={(v) => update("tv", v)} />
+            <Row label="Insurance" value={inputs.insurance} onChange={(v) => update("insurance", v)} />
+            <Row label="Banking fees" value={inputs.banking} onChange={(v) => update("banking", v)} />
           </Section>
 
+          <Section title="Other">
+            <Row label="Unexpected" value={inputs.unexpected} onChange={(v) => update("unexpected", v)} />
+            <Row label="Miscellaneous" value={inputs.other} onChange={(v) => update("other", v)} />
+          </Section>
+
+          {/* STRESS TEST SECTION */}
           <Divider />
           <div style={{ padding: "10px 0" }}>
-            <strong style={{ color: "#10b981", fontSize: 13, display: "block", marginBottom: 10 }}>
-              STRUCTURAL STRESS TEST
+            <strong style={{ color: "#10b981", fontSize: 13, display: "block", marginBottom: 10, textTransform: "uppercase", letterSpacing: "1px" }}>
+              Structural Stress Test
             </strong>
             <input 
-              type="range" min="0" max="1" step="0.01" 
+              type="range" 
+              min="0" max="1" step="0.01" 
               value={stressFactor}
               onChange={(e) => {
                 setStressFactor(parseFloat(e.target.value));
                 setSimulationActive(true);
               }}
-              style={{ width: "100%", accentColor: "#10b981", cursor: "pointer" }}
+              style={{ width: "100%", cursor: "pointer", accentColor: "#10b981" }}
             />
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, opacity: 0.5, marginTop: 4 }}>
-              <span>BASE</span>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "10px", opacity: 0.5, marginTop: "5px" }}>
+              <span>BASE STATE</span>
               <span>CRISIS (+100%)</span>
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 20 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: "20px" }}>
             <button 
-              onClick={() => { setSimulationActive(true); setAiVisible(false); }}
-              style={{ ...exportBtn, borderColor: "#10b981", color: "#10b981" }}
+              onClick={toggleSimulation}
+              style={{ ...exportBtn, borderColor: "#10b981", color: "#10b981", fontWeight: "bold" }}
             >
               SIMULATE
             </button>
-            <button onClick={runAI} style={{ ...aiButton, marginTop: 0 }}>
-              {loading ? "Generating..." : "GENERATE AI"}
+            <button 
+              onClick={runAI} 
+              disabled={loading}
+              style={{ ...aiButton, marginTop: 0 }}
+            >
+              {loading ? "ANALYZING..." : "SHOW BRIEFING"}
             </button>
           </div>
 
           <button
             onClick={runAIDual}
+            disabled={loading}
             style={{ ...exportBtn, marginTop: 12, width: "100%" }}
           >
-            Save Today’s Snapshot
+            {loading ? "SAVING..." : "Save Today’s Snapshot"}
           </button>
         </div>
 
@@ -663,55 +708,57 @@ export default function PremiumMonth() {
           {/* 1. STATE: MANIFESTO */}
           {!aiVisible && !simulationActive && (
             <div style={{ padding: "10px", animation: "fadeIn 0.8s ease-in" }}>
-              <strong style={{ color: "#10b981", fontSize: 12, letterSpacing: 1 }}>WEALTHYAI PHILOSOPHY</strong>
-              <h2 style={{ fontSize: 22, marginTop: 10 }}>Interpretation, Not Advice.</h2>
-              <p style={{ opacity: 0.7, lineHeight: "1.6", fontSize: 14 }}>
-                We built WealthyAI around a different question: What happens if AI doesn’t advise — but interprets?
-                Not faster decisions, but <strong>clearer thinking</strong>.
-              </p>
-              <p style={{ opacity: 0.7, lineHeight: "1.6", fontSize: 14, marginTop: 12 }}>
-                Our system assumes that you remain responsible for decisions — it simply gives you a clearer frame to make them. 
-                WealthyAI doesn’t reward speed. It rewards <strong>attention</strong>.
-              </p>
+              <strong style={{ color: "#10b981", fontSize: "12px", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "1px", display: "block", marginBottom: "8px" }}>
+                WealthyAI Philosophy
+              </strong>
+              <h2 style={{ fontSize: "24px", marginBottom: "20px", color: "#fff" }}>Interpretation, Not Advice.</h2>
+              <div style={{ color: "rgba(255, 255, 255, 0.7)", fontSize: "14px", lineHeight: "1.6" }}>
+                <p>We built WealthyAI around a different question: What happens if AI doesn’t advise — but interprets? Not faster decisions, but <strong>clearer thinking</strong>.</p>
+                <p style={{ marginTop: "15px" }}>Our system assumes that you remain responsible for decisions — it simply gives you a clearer frame to make them.</p>
+                <p style={{ marginTop: "15px" }}>Financial insight changes when context changes. Context changes with time. WealthyAI doesn’t reward speed. It rewards <strong>attention</strong>.</p>
+              </div>
             </div>
           )}
 
           {/* 2. STATE: SIMULATION ENGINE */}
           {simulationActive && !aiVisible && (
             <div style={{ padding: "10px", animation: "fadeIn 0.3s ease-out" }}>
-              <strong style={{ color: "#10b981", fontSize: 12 }}>LIVE SIMULATION ENGINE</strong>
-              <h2 style={{ fontSize: 20, marginTop: 5 }}>Structural Fragility Index</h2>
+              <strong style={{ color: "#10b981", fontSize: "12px", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "1px", display: "block", marginBottom: "8px" }}>
+                Live Simulation Engine
+              </strong>
+              <h2 style={{ fontSize: "22px", color: "#fff" }}>Structural Fragility Index</h2>
               
-              <div style={{ fontSize: 42, fontWeight: "bold", color: "#38bdf8", margin: "15px 0" }}>
+              <div style={{ fontSize: "48px", fontWeight: "bold", margin: "20px 0", color: "#38bdf8" }}>
                 {calculateFragility()}%
               </div>
 
-              <div style={{ height: 8, background: "rgba(255,255,255,0.05)", borderRadius: 4, overflow: "hidden" }}>
+              <div style={{ height: "8px", borderRadius: "4px", background: "rgba(255,255,255,0.05)", overflow: "hidden", marginTop: "10px" }}>
                 <div style={{ 
                   height: "100%", 
                   width: `${calculateFragility()}%`, 
                   background: "linear-gradient(90deg, #10b981, #38bdf8)",
-                  transition: "width 0.3s ease" 
+                  transition: "width 0.4s ease-out" 
                 }} />
               </div>
 
-              <p style={{ opacity: 0.6, fontSize: 13, marginTop: 15, lineHeight: "1.5" }}>
-                At <strong>{Math.round(stressFactor * 100)}%</strong> simulated pressure, your core financial rigidity is 
-                {parseFloat(calculateFragility()) > 55 ? " approaching a critical threshold." : " currently within structural limits."}
+              <p style={{ color: "rgba(255, 255, 255, 0.7)", fontSize: "14px", lineHeight: "1.6", marginTop: "20px" }}>
+                This metric represents the weight of your non-negotiable costs against your income frame. 
+                At a <strong>{Math.round(stressFactor * 100)}%</strong> simulated pressure, your rigidity index moves into 
+                {parseFloat(calculateFragility()) > 55 ? " a critical zone." : " a manageable range."}
               </p>
               
               <button 
                 onClick={() => setSimulationActive(false)} 
-                style={{ ...exportBtn, marginTop: 20, fontSize: 12, opacity: 0.6 }}
+                style={{ ...exportBtn, marginTop: 25, fontSize: 12, opacity: 0.6 }}
               >
-                Reset view
+                Reset to Philosophy
               </button>
             </div>
           )}
 
           {/* 3. STATE: AI BRIEFING */}
           {aiVisible && (
-            <div>
+            <div style={{ animation: "fadeIn 0.5s ease-in" }}>
               <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
                 <button
                   onClick={() => setViewMode("executive")}
@@ -734,28 +781,33 @@ export default function PremiumMonth() {
                 >
                   Directive
                 </button>
+                
                 <button 
                   onClick={() => { setAiVisible(false); setSimulationActive(false); }} 
-                  style={{ ...exportBtn, maxWidth: 44 }}
+                  style={{ ...exportBtn, maxWidth: 44, borderColor: "rgba(255,255,255,0.2)" }}
                 >
                   ✕
                 </button>
               </div>
 
-              <pre style={aiTextStyle}>{activeText}</pre>
+              <div style={{ whiteSpace: "pre-wrap", lineHeight: "1.8", color: "rgba(255,255,255,0.9)", fontSize: "14px", fontFamily: "inherit" }}>
+                {activeText}
+              </div>
 
               {!selectedDay && (
                 <div
                   style={{
-                    marginTop: 16,
+                    marginTop: 20,
                     display: "flex",
                     gap: 12,
                     flexWrap: isMobile ? "wrap" : "nowrap",
+                    paddingTop: 20,
+                    borderTop: "1px solid rgba(255,255,255,0.1)"
                   }}
                 >
                   <select
                     value={exportRange}
-                    onChange={e => setExportRange(e.target.value)}
+                    onChange={(e) => setExportRange(e.target.value)}
                     style={exportSelect}
                   >
                     <option value="day">Today</option>
@@ -763,7 +815,7 @@ export default function PremiumMonth() {
                     <option value="month">This month</option>
                   </select>
 
-                  <button onClick={handleDownload} style={exportBtn}>Download</button>
+                  <button onClick={handleDownload} style={exportBtn}>Text</button>
                   <button onClick={downloadPDF} style={exportBtn}>PDF</button>
                   <button onClick={sendEmailPDF} style={exportBtn}>
                     {emailSending ? "..." : "Email"}
@@ -776,20 +828,24 @@ export default function PremiumMonth() {
           <Divider />
           <button
             onClick={() => setArchiveOpen(!archiveOpen)}
-            style={{ ...exportBtn, width: "100%" }}
+            style={{ ...exportBtn, width: "100%", borderColor: "rgba(56, 189, 248, 0.2)" }}
           >
-            {archiveOpen ? "Hide past days" : "View past days"}
+            {archiveOpen ? "Hide Intelligence Archive" : "View Intelligence Archive"}
           </button>
 
           {archiveOpen && (
-            <div style={{ marginTop: 10 }}>
-              {getMonthlySnapshots().map(s => (
+            <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              {getMonthlySnapshots().map((s) => (
                 <button
                   key={s.date}
-                  onClick={() => { setSelectedDay(s.cycleDay); setAiVisible(true); setSimulationActive(false); }}
-                  style={{ ...exportBtn, marginBottom: 4, width: "100%" }}
+                  onClick={() => { 
+                    setSelectedDay(s.cycleDay); 
+                    setAiVisible(true); 
+                    setSimulationActive(false); 
+                  }}
+                  style={{ ...exportBtn, fontSize: 11, textAlign: "left" }}
                 >
-                  Day {s.cycleDay}
+                  Day {s.cycleDay} · {s.date}
                 </button>
               ))}
             </div>
@@ -797,96 +853,202 @@ export default function PremiumMonth() {
         </div>
       </div>
 
-      <div style={footer}>© 2026 WealthyAI · Monthly Intelligence</div>
+      <div style={footer}>© 2026 WealthyAI · Monthly Intelligence Framework</div>
     </div>
   );
 }
 
-/* ================= UI HELPERS & STYLES (Eredeti Styles blokk változatlan) ================= */
+/* ================= UI HELPERS & STYLES (NO CHANGES) ================= */
+
 const Section = ({ title, children }) => (
-  <>
+  <div style={{ marginBottom: "15px" }}>
     <Divider />
-    <strong style={{fontSize: 14, color: "#7dd3fc"}}>{title}</strong>
+    <strong style={{ fontSize: "12px", color: "#7dd3fc", textTransform: "uppercase", letterSpacing: "1px", display: "block", marginBottom: "10px" }}>
+      {title}
+    </strong>
     {children}
-  </>
+  </div>
 );
 
 const Row = ({ label, value, onChange }) => (
   <div style={row}>
-    <span style={{fontSize: 13, opacity: 0.8}}>{label}</span>
+    <span style={{ fontSize: "13px", opacity: 0.7 }}>{label}</span>
     <input
       type="number"
       value={value}
-      onChange={e => onChange(e.target.value)}
+      onChange={(e) => onChange(e.target.value)}
       style={rowInput}
     />
   </div>
 );
 
 const Label = ({ children }) => (
-  <label style={{ marginBottom: 6, display: "block", fontSize: 13, opacity: 0.8 }}>{children}</label>
+  <label style={{ marginBottom: "6px", display: "block", fontSize: "12px", opacity: 0.6, textTransform: "uppercase" }}>
+    {children}
+  </label>
 );
 
 const Input = ({ value, onChange }) => (
-  <input type="number" value={value} onChange={onChange} style={input} />
+  <input 
+    type="number" 
+    value={value} 
+    onChange={onChange} 
+    style={{ ...input, outline: "none" }} 
+  />
 );
 
 const Divider = () => (
-  <div style={{ height: 1, background: "#1e293b", margin: "16px 0" }} />
+  <div style={{ height: "1px", background: "rgba(255,255,255,0.05)", margin: "16px 0" }} />
 );
+
+/* ================= STYLE OBJECTS ================= */
 
 const page = {
   minHeight: "100vh",
   position: "relative",
   padding: "40px 20px",
   color: "#e5e7eb",
-  fontFamily: "Inter, system-ui",
-  backgroundColor: "#020617",
+  fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+  backgroundColor: "#05070a",
   backgroundImage: `
-    repeating-linear-gradient(-25deg, rgba(56,189,248,0.04) 0px, rgba(56,189,248,0.04) 1px, transparent 1px, transparent 180px),
-    repeating-linear-gradient(35deg, rgba(167,139,250,0.04) 0px, rgba(167,139,250,0.04) 1px, transparent 1px, transparent 260px),
-    radial-gradient(circle at 20% 30%, rgba(56,189,248,0.14), transparent 45%),
-    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.14), transparent 50%),
-    url("/wealthyai/icons/generated.png")
+    repeating-linear-gradient(-25deg, rgba(56,189,248,0.03) 0px, rgba(56,189,248,0.03) 1px, transparent 1px, transparent 180px),
+    repeating-linear-gradient(35deg, rgba(167,139,250,0.03) 0px, rgba(167,139,250,0.03) 1px, transparent 1px, transparent 260px),
+    radial-gradient(circle at 20% 30%, rgba(56,189,248,0.08), transparent 45%),
+    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.08), transparent 50%)
   `,
-  backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, repeat",
-  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 420px auto",
 };
 
-const header = { textAlign: "center", marginBottom: 20 };
-const title = { fontSize: "2rem", margin: 0 };
-const subtitle = { marginTop: 8, color: "#cbd5f5", fontSize: 14 };
+const header = { textAlign: "center", marginBottom: "40px" };
+const title = { fontSize: "2rem", fontWeight: "800", letterSpacing: "-0.02em", margin: 0, color: "#fff" };
+const subtitle = { marginTop: "10px", color: "#94a3b8", fontSize: "15px" };
 
 const helpButton = {
   position: "absolute",
-  top: 20,
-  right: 20,
-  padding: "6px 12px",
-  borderRadius: 8,
-  fontSize: 12,
+  top: "20px",
+  right: "20px",
+  padding: "8px 16px",
+  borderRadius: "8px",
+  fontSize: "12px",
   textDecoration: "none",
   color: "#7dd3fc",
-  border: "1px solid #1e293b",
-  background: "rgba(2,6,23,0.7)",
+  border: "1px solid rgba(125, 211, 252, 0.2)",
+  background: "rgba(2, 6, 23, 0.4)",
+  backdropFilter: "blur(4px)",
 };
 
-const regionRow = { display: "flex", justifyContent: "center", gap: 10, marginBottom: 20 };
-const regionLabel = { color: "#7dd3fc", fontSize: 14 };
-const regionSelect = { background: "#020617", color: "#e5e7eb", border: "1px solid #1e293b", padding: "4px 8px", borderRadius: 6 };
+const regionRow = { display: "flex", justifyContent: "center", alignItems: "center", gap: "12px", marginBottom: "30px" };
+const regionLabel = { color: "#94a3b8", fontSize: "14px", fontWeight: "500" };
+const regionSelect = { 
+  background: "#0f172a", 
+  color: "#f1f5f9", 
+  border: "1px solid rgba(255,255,255,0.1)", 
+  padding: "6px 12px", 
+  borderRadius: "8px",
+  fontSize: "14px",
+  cursor: "pointer"
+};
 
-const signalBox = { maxWidth: 800, margin: "0 auto 15px", padding: 14, border: "1px solid #1e293b", borderRadius: 12, background: "rgba(2,6,23,0.75)" };
+const signalBox = { 
+  maxWidth: "800px", 
+  margin: "0 auto 15px", 
+  padding: "20px", 
+  border: "1px solid rgba(255,255,255,0.05)", 
+  borderRadius: "16px", 
+  background: "rgba(13, 17, 23, 0.6)",
+  backdropFilter: "blur(10px)"
+};
 
-const layout = { display: "grid", gridTemplateColumns: "1fr 1.3fr", gap: 25, maxWidth: 1100, margin: "0 auto" };
-const card = { padding: 20, borderRadius: 16, border: "1px solid #1e293b", background: "rgba(2,6,23,0.78)" };
+const layout = { 
+  display: "grid", 
+  gridTemplateColumns: "1fr 1.3fr", 
+  gap: "30px", 
+  maxWidth: "1200px", 
+  margin: "0 auto" 
+};
 
-const input = { width: "100%", padding: 10, marginTop: 4, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, color: "white" };
-const row = { display: "flex", justifyContent: "space-between", marginTop: 6 };
-const rowInput = { width: 80, background: "transparent", border: "none", borderBottom: "1px solid #38bdf8", color: "#38bdf8", textAlign: "right" };
+const card = { 
+  padding: "30px", 
+  borderRadius: "20px", 
+  border: "1px solid rgba(255,255,255,0.05)", 
+  background: "rgba(13, 17, 23, 0.8)",
+  backdropFilter: "blur(12px)",
+  height: "fit-content"
+};
 
-const aiButton = { marginTop: 20, width: "100%", padding: 12, background: "#38bdf8", border: "none", borderRadius: 10, fontWeight: "bold", cursor: "pointer", color: "#020617" };
-const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap", color: "#cbd5f5", fontSize: 14, lineHeight: "1.6" };
+const input = { 
+  width: "100%", 
+  padding: "12px", 
+  marginTop: "8px", 
+  background: "rgba(255,255,255,0.05)", 
+  border: "1px solid rgba(255,255,255,0.1)", 
+  borderRadius: "10px", 
+  color: "#fff",
+  fontSize: "15px"
+};
 
-const exportBtn = { padding: "8px 12px", borderRadius: 8, border: "1px solid #1e293b", background: "transparent", color: "#38bdf8", cursor: "pointer", fontSize: 13 };
-const exportSelect = { background: "transparent", color: "#e5e7eb", border: "1px solid #1e293b", padding: "8px", borderRadius: 8 };
+const row = { display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "10px" };
+const rowInput = { 
+  width: "90px", 
+  background: "transparent", 
+  border: "none", 
+  borderBottom: "1px solid rgba(56, 189, 248, 0.3)", 
+  color: "#38bdf8", 
+  textAlign: "right",
+  padding: "4px",
+  fontSize: "14px",
+  fontWeight: "600",
+  outline: "none"
+};
 
-const footer = { marginTop: 40, textAlign: "center", fontSize: 12, color: "#64748b", paddingBottom: 20 };
+const aiButton = { 
+  width: "100%", 
+  padding: "14px", 
+  background: "#38bdf8", 
+  border: "none", 
+  borderRadius: "12px", 
+  fontWeight: "700", 
+  cursor: "pointer", 
+  color: "#020617",
+  transition: "transform 0.2s, opacity 0.2s",
+  textTransform: "uppercase",
+  letterSpacing: "0.5px"
+};
+
+const aiTextStyle = { 
+  marginTop: "15px", 
+  whiteSpace: "pre-wrap", 
+  color: "#cbd5f5", 
+  fontSize: "15px", 
+  lineHeight: "1.7",
+  fontFamily: "inherit"
+};
+
+const exportBtn = { 
+  padding: "10px 18px", 
+  borderRadius: "10px", 
+  border: "1px solid rgba(56, 189, 248, 0.3)", 
+  background: "transparent", 
+  color: "#38bdf8", 
+  cursor: "pointer", 
+  fontSize: "13px",
+  fontWeight: "600",
+  transition: "all 0.2s"
+};
+
+const exportSelect = { 
+  background: "rgba(15, 23, 42, 0.8)", 
+  color: "#f1f5f9", 
+  border: "1px solid rgba(255,255,255,0.1)", 
+  padding: "10px", 
+  borderRadius: "10px",
+  fontSize: "13px"
+};
+
+const footer = { 
+  marginTop: "60px", 
+  textAlign: "center", 
+  fontSize: "13px", 
+  color: "#475569", 
+  paddingBottom: "40px",
+  letterSpacing: "0.5px"
+};
