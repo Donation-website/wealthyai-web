@@ -14,13 +14,15 @@ export default async function handler(req, res) {
 
   let successPath = "/start";
 
-  // ✅ IRÁNYÍTÁS MINDHÁROM TÍPUSHOZ
+  // ✅ PONTOS IRÁNYÍTÁS A TESZT ID-K ALAPJÁN
   if (priceId === "price_1SscYJDyLtejYlZiyDvhdaIx") {
+    // 1 Day Plan
     successPath = "/day";
   } else if (priceId === "price_1SscaYDyLtejYlZiDjSeF5Wm") {
+    // 1 Week Plan
     successPath = "/premium-week";
-  } else if (priceId === "price_1Sya6GDyLtejYlZiCb8oLqga") {
-    // EZ AZ ÚJ 49.99-ES ID
+  } else if (priceId === "price_1SyaeRDyLtejYlZiWo76wuWO") {
+    // 1 Month Plan (AZ ÚJ TESZT ID, AMIT KÜLDTÉL)
     successPath = "/premium-month";
   }
 
@@ -38,6 +40,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ url: session.url });
   } catch (err) {
     console.error("Stripe Error:", err.message);
+    // Visszaküldjük a hibaüzenetet a frontendnek
     return res.status(500).json({ error: err.message });
   }
 }
