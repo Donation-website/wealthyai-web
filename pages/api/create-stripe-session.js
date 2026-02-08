@@ -14,20 +14,23 @@ export default async function handler(req, res) {
 
   let successPath = "/start";
 
+  // ✅ ELLENŐRZÉS MINDHÁROM TÍPUSRA
   if (priceId === "price_1SscYJDyLtejYlZiyDvhdaIx") {
+    // 1 Day Plan
     successPath = "/day";
   } else if (priceId === "price_1SscaYDyLtejYlZiDjSeF5Wm") {
+    // 1 Week Plan
     successPath = "/premium-week";
-  } else if (priceId === "price_1SscbeDyLtejYlZixJcT3B4o") {
+  } else if (priceId === "price_1Sya6GDyLtejYlZiCb8oLqga") {
+    // 1 Month Plan (EZ AZ ÚJ $49.99-ES ID)
     successPath = "/premium-month";
   }
 
   try {
     const session = await stripe.checkout.sessions.create({
-      mode: "subscription", // 🔑 MINDIG
+      mode: "subscription", // Mivel mindhárom havi/heti/napi előfizetésként van kezelve
       line_items: [{ price: priceId, quantity: 1 }],
 
-      // ✅ HIÁNYZÓ METADATA – MOST MÁR OTT VAN
       metadata: {
         priceId,
       },
@@ -38,7 +41,8 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ url: session.url });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Stripe error" });
+    console.error("Stripe Error:", err.message);
+    // Visszaküldjük a hibaüzenetet, hogy a frontend ki tudja jelezni, ha baj van
+    return res.status(500).json({ error: err.message });
   }
 }
