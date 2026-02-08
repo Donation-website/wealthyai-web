@@ -1,9 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import SEO from "../components/SEO";
 
 export default function Home() {
   const SITE_URL = "https://wealthyai-web.vercel.app";
   const SHARE_TEXT = "AI-powered financial clarity with WealthyAI";
+
+  // 👇 AUDIO STATE ÉS REF
+  const audioRef = useRef(null);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   // 👇 MOBIL FIGYELŐ
   const [isMobile, setIsMobile] = useState(false);
@@ -13,6 +18,41 @@ export default function Home() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  // 👇 HANG INDÍTÁSA KÉSLELTETÉSSEL
+  useEffect(() => {
+    // Audio példány létrehozása
+    audioRef.current = new Audio("/wealthyai/icons/nyitobeszed.mp3");
+    
+    const playTimeout = setTimeout(() => {
+      // Böngésző korlátozás miatt csak akkor szólal meg, ha már volt interakció, 
+      // vagy ha a böngésző engedi (play() ígéret kezelése)
+      audioRef.current.play()
+        .then(() => setIsPlaying(true))
+        .catch(err => console.log("Autoplay blocked or failed", err));
+    }, 3500);
+
+    return () => {
+      clearTimeout(playTimeout);
+      stopAudio();
+    };
+  }, []);
+
+  // 👇 HANG LEÁLLÍTÁSA (LINK KATTINTÁSKOR)
+  const stopAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      setIsPlaying(false);
+    }
+  };
+
+  const toggleMute = () => {
+    if (audioRef.current) {
+      audioRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
 
   // 👇 KIJELÖLÉS TÖRLÉSE NEM FUNKCIONÁLIS KATTINTÁSNÁL
   const clearSelectionIfNeeded = (e) => {
@@ -57,6 +97,42 @@ export default function Home() {
           padding: isMobile ? "80px 0 60px 0" : 0,
         }}
       >
+        {/* AUDIO CONTROL (DISZKRÉT) */}
+        <div 
+          onClick={toggleMute}
+          style={{
+            position: "fixed",
+            top: isMobile ? "20px" : "32px",
+            left: isMobile ? "20px" : "40px",
+            zIndex: 10,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            opacity: isPlaying ? 0.8 : 0,
+            transition: "opacity 0.5s ease",
+            pointerEvents: isPlaying ? "auto" : "none"
+          }}
+        >
+          <div style={{ display: "flex", gap: "2px", alignItems: "center", height: "16px" }}>
+            {[1, 2, 3].map(i => (
+              <div 
+                key={i}
+                style={{
+                  width: "2px",
+                  height: isMuted ? "2px" : "100%",
+                  backgroundColor: "#38bdf8",
+                  animation: !isMuted ? `audioBar 0.8s ease-in-out infinite alternate ${i * 0.2}s` : "none",
+                  borderRadius: "1px"
+                }}
+              />
+            ))}
+          </div>
+          <span style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", fontWeight: "600", color: "#38bdf8" }}>
+            {isMuted ? "Muted" : "Audio On"}
+          </span>
+        </div>
+
         {/* TOP NAV */}
         <div
           style={{
@@ -72,9 +148,9 @@ export default function Home() {
             width: isMobile ? "100%" : "auto",
           }}
         >
-          <a href="/how-it-works" className="nav-link">How it works</a>
-          <a href="/how-to-use" className="nav-link">How to use</a>
-          <a href="/terms" className="nav-link">Terms</a>
+          <a href="/how-it-works" onClick={stopAudio} className="nav-link">How it works</a>
+          <a href="/how-to-use" onClick={stopAudio} className="nav-link">How to use</a>
+          <a href="/terms" onClick={stopAudio} className="nav-link">Terms</a>
         </div>
 
         {/* CENTER BRAND & TEXT */}
@@ -167,6 +243,7 @@ export default function Home() {
         >
           <a
             href="/start"
+            onClick={stopAudio}
             className="start-btn"
             style={{
               padding: "14px 40px",
@@ -222,7 +299,7 @@ export default function Home() {
             display: "flex",
             flexDirection: isMobile ? "column-reverse" : "row",
             justifyContent: "space-between",
-            alignItems: isMobile ? "center" : "flex-end", // Align to bottom for desktop
+            alignItems: isMobile ? "center" : "flex-end",
             zIndex: 5,
             boxSizing: "border-box",
             gap: isMobile ? "30px" : "0",
@@ -234,7 +311,7 @@ export default function Home() {
           <div style={{ 
             fontSize: "0.85rem", 
             opacity: 0.6, 
-            paddingBottom: isMobile ? "0" : "6px" // Copyright finomhangolás
+            paddingBottom: isMobile ? "0" : "6px" 
           }}>
             © 2026 WealthyAI — All rights reserved.
           </div>
@@ -249,6 +326,7 @@ export default function Home() {
           >
             <a
               href="mailto:wealthyaiweb@gmail.com"
+              onClick={stopAudio}
               className="nav-link"
               style={{
                 fontSize: "0.82rem",
@@ -268,16 +346,16 @@ export default function Home() {
             </a>
 
             <div style={{ display: "flex", gap: "18px", alignItems: "center", marginTop: isMobile ? "10px" : "0" }}>
-              <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
+              <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" onClick={stopAudio} className="icon-link">
                 <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
               </a>
-              <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
+              <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`} target="_blank" rel="noopener noreferrer" onClick={stopAudio} className="icon-link">
                 <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
               </a>
-              <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
+              <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" onClick={stopAudio} className="icon-link">
                 <img src="/wealthyai/icons/linkedin.png" alt="LinkedIn" style={{ width: 34 }} />
               </a>
-              <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="icon-link">
+              <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" onClick={stopAudio} className="icon-link">
                 <img src="/wealthyai/icons/insta.png" alt="Instagram" style={{ width: 34 }} />
               </a>
             </div>
@@ -299,6 +377,11 @@ export default function Home() {
             35% { transform: scale(1.035) translateY(-6px); opacity: 1; }
             70% { transform: scale(1.02) translateY(3px); opacity: 0.97; }
             100% { transform: scale(1) translateY(0); opacity: 0.92; }
+          }
+
+          @keyframes audioBar {
+            0% { height: 20%; }
+            100% { height: 100%; }
           }
 
           .discrete-pulse {
