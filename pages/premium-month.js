@@ -4,6 +4,8 @@ import {
   getMonthlySnapshots,
   getSnapshotByDay,
 } from "../lib/monthlyArchive";
+// Topography komponens importálása
+import Topography from "./Topography";
 
 /* ================= DAILY SIGNAL UNLOCK ================= */
 
@@ -628,6 +630,8 @@ export default function PremiumMonth() {
               onChange={(e) => {
                 setStressFactor(parseFloat(e.target.value));
                 setSimulationActive(true);
+                // AI ablakot bezárjuk, ha a csúszkát mozgatja
+                setAiVisible(false);
               }}
               style={{ width: "100%", accentColor: "#10b981", cursor: "pointer" }}
             />
@@ -658,11 +662,19 @@ export default function PremiumMonth() {
         </div>
 
         {/* RIGHT COLUMN: INTELLIGENCE & VISUALS */}
-        <div style={card}>
+        <div style={{ ...card, position: "relative", minHeight: 400, overflow: "hidden" }}>
           
-          {/* 1. STATE: MANIFESTO */}
+          {/* Topography meghívása: csak akkor látszik, ha nincs szimuláció és nincs AI briefing */}
+          <Topography 
+            stressFactor={stressFactor} 
+            income={inputs.income} 
+            spawnNumbers={true}
+            isAiOpen={aiVisible || simulationActive} 
+          />
+
+          {/* 1. STATE: MANIFESTO - Csak ha minden inaktív */}
           {!aiVisible && !simulationActive && (
-            <div style={{ padding: "10px", animation: "fadeIn 0.8s ease-in" }}>
+            <div style={{ padding: "10px", animation: "fadeIn 0.8s ease-in", position: "relative", zIndex: 2 }}>
               <strong style={{ color: "#10b981", fontSize: 12, letterSpacing: 1 }}>WEALTHYAI PHILOSOPHY</strong>
               <h2 style={{ fontSize: 22, marginTop: 10 }}>Interpretation, Not Advice.</h2>
               <p style={{ opacity: 0.7, lineHeight: "1.6", fontSize: 14 }}>
@@ -711,7 +723,7 @@ export default function PremiumMonth() {
 
           {/* 3. STATE: AI BRIEFING */}
           {aiVisible && (
-            <div>
+            <div style={{ position: "relative", zIndex: 5, background: "rgba(2,6,23,0.85)", height: "100%" }}>
               <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
                 <button
                   onClick={() => setViewMode("executive")}
@@ -802,7 +814,7 @@ export default function PremiumMonth() {
   );
 }
 
-/* ================= UI HELPERS & STYLES (Eredeti Styles blokk változatlan) ================= */
+/* ================= UI HELPERS & STYLES ================= */
 const Section = ({ title, children }) => (
   <>
     <Divider />
