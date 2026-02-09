@@ -500,8 +500,7 @@ export default function PremiumMonth() {
           </div>
         </div>
       </div>
-
-      <a href="/month/help" style={helpButton}>Help</a>
+  <a href="/month/help" style={helpButton}>Help</a>
 
       <div style={header}>
         <h1 style={title}>WEALTHYAI · MONTHLY BRIEFING</h1>
@@ -673,7 +672,7 @@ export default function PremiumMonth() {
           {/* DYNAMIC TOPOGRAPHY FILLER (LEFT BOTTOM) */}
           {aiVisible && (
             <div style={{ flexGrow: 1, marginTop: 25, borderRadius: 16, border: "1px solid #1e293b", background: "rgba(2,6,23,0.4)", overflow: "hidden", position: "relative" }}>
-               <Topography stressFactor={stressFactor} />
+                <Topography income={inputs.income} spawnNumbers={true} stressFactor={stressFactor} speed={1 + stressFactor * 2} />
             </div>
           )}
         </div>
@@ -687,7 +686,7 @@ export default function PremiumMonth() {
               <div style={{ padding: "10px", animation: "fadeIn 0.8s ease-in", height: "100%", display: "flex", flexDirection: "column" }}>
                 <strong style={{ color: "#10b981", fontSize: 12, letterSpacing: 1 }}>SYSTEM STABILITY TOPOGRAPHY</strong>
                 <div style={{ flexGrow: 1, minHeight: 300 }}>
-                   <Topography stressFactor={stressFactor} />
+                    <Topography income={inputs.income} spawnNumbers={false} stressFactor={stressFactor} speed={1 + stressFactor * 2} />
                 </div>
                 <h2 style={{ fontSize: 22, marginTop: 20 }}>Interpretation, Not Advice.</h2>
                 <p style={{ opacity: 0.7, lineHeight: "1.6", fontSize: 14 }}>
@@ -721,7 +720,7 @@ export default function PremiumMonth() {
                 </p>
 
                 <div style={{ height: 250, marginTop: 20, borderRadius: 12, overflow: "hidden", border: "1px solid rgba(56,189,248,0.1)" }}>
-                  <Topography stressFactor={stressFactor} />
+                  <Topography income={inputs.income} spawnNumbers={true} stressFactor={stressFactor} speed={1 + stressFactor * 2} />
                 </div>
                 
                 <button 
@@ -895,8 +894,8 @@ const tickerContainer = {
   left: 0,
   width: "100%",
   height: 28,
-  background: "rgba(2, 6, 23, 0.9)",
-  borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+  background: "transparent",
+  borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
   backdropFilter: "blur(10px)",
   zIndex: 1000,
   display: "flex",
@@ -906,7 +905,7 @@ const tickerContainer = {
 
 const tickerWrapper = { width: "100%", overflow: "hidden" };
 const tickerTrack = { display: "flex", whiteSpace: "nowrap", animation: "tickerMove 30s linear infinite" };
-const tickerText = { color: "#ffffff", fontSize: 10, fontWeight: "500", letterSpacing: 1, paddingRight: 50, opacity: 0.8 };
+const tickerText = { color: "#ffffff", fontSize: 10, fontWeight: "500", letterSpacing: 1, paddingRight: 50, opacity: 1 };
 
 const header = { textAlign: "center", marginBottom: 20 };
 const title = { fontSize: "2rem", margin: 0 };
@@ -944,4 +943,4 @@ const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap", color: "#cbd5f5", f
 const exportBtn = { padding: "8px 12px", borderRadius: 8, border: "1px solid #1e293b", background: "transparent", color: "#38bdf8", cursor: "pointer", fontSize: 13 };
 const exportSelect = { background: "transparent", color: "#e5e7eb", border: "1px solid #1e293b", padding: "8px", borderRadius: 8 };
 
-const footer = { marginTop: 40, textAlign: "center", fontSize: 12, color: "#64748b", paddingBottom: 20 };
+const footer = { marginTop: 60, textAlign: "center", fontSize: 12, color: "#64748b", paddingBottom: 30 };
