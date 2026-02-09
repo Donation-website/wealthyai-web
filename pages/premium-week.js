@@ -8,17 +8,20 @@ import {
   CartesianGrid
 } from "recharts";
 
-/* ===== HD SPIDERNET COMPONENT ===== */
+/* ===== HD SPIDERNET COMPONENT WITH ESCAPE LOGIC ===== */
 function SpiderNet({ isMobile, height, color = "#38bdf8" }) {
   const canvasRef = useRef(null);
+  const mouseRef = useRef({ x: null, y: null });
+
   useEffect(() => {
     if (isMobile || !height || height < 10) return;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     let animationFrameId;
     let particles = [];
-    const particleCount = 240; 
+    const particleCount = 180; 
     const connectionDistance = 110;
+    const mouseRadius = 80;
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 2;
@@ -30,7 +33,21 @@ function SpiderNet({ isMobile, height, color = "#38bdf8" }) {
       canvas.style.height = `${height}px`;
     };
 
+    const handleMouseMove = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mouseRef.current = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+    };
+
+    const handleMouseLeave = () => {
+      mouseRef.current = { x: null, y: null };
+    };
+
     window.addEventListener("resize", resize);
+    canvas.addEventListener("mousemove", handleMouseMove);
+    canvas.addEventListener("mouseleave", handleMouseLeave);
     resize();
 
     class Particle {
@@ -38,40 +55,59 @@ function SpiderNet({ isMobile, height, color = "#38bdf8" }) {
         const rect = canvas.getBoundingClientRect();
         this.x = Math.random() * rect.width;
         this.y = Math.random() * rect.height;
-        this.vx = (Math.random() - 0.5) * 0.35;
-        this.vy = (Math.random() - 0.5) * 0.35;
+        this.baseX = this.x;
+        this.baseY = this.y;
+        this.vx = (Math.random() - 0.5) * 0.5;
+        this.vy = (Math.random() - 0.5) * 0.5;
       }
       update() {
         const rect = canvas.getBoundingClientRect();
-        this.x += this.vx; this.y += this.vy;
+        
+        // Alap mozgás
+        this.x += this.vx;
+        this.y += this.vy;
         if (this.x < 0 || this.x > rect.width) this.vx *= -1;
         if (this.y < 0 || this.y > rect.height) this.vy *= -1;
+
+        // "Menekülés" az egér elől
+        if (mouseRef.current.x !== null) {
+          let dx = this.x - mouseRef.current.x;
+          let dy = this.y - mouseRef.current.y;
+          let distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < mouseRadius) {
+            let force = (mouseRadius - distance) / mouseRadius;
+            let directionX = dx / distance;
+            let directionY = dy / distance;
+            this.x += directionX * force * 5;
+            this.y += directionY * force * 5;
+          }
+        }
       }
       draw() {
         ctx.fillStyle = color;
         ctx.beginPath();
-        ctx.arc(this.x, this.y, 0.75, 0, Math.PI * 2);
+        ctx.arc(this.x, this.y, 0.8, 0, Math.PI * 2);
         ctx.fill();
       }
     }
 
-    const init = () => {
-      for (let i = 0; i < particleCount; i++) particles.push(new Particle());
-    };
+    for (let i = 0; i < particleCount; i++) particles.push(new Particle());
 
     const animate = () => {
       const rect = canvas.getBoundingClientRect();
       if (!rect.width || !rect.height) return;
       ctx.clearRect(0, 0, rect.width, rect.height);
+      
       particles.forEach(p => { p.update(); p.draw(); });
+      
       for (let a = 0; a < particles.length; a++) {
         for (let b = a; b < particles.length; b++) {
           let dx = particles[a].x - particles[b].x;
           let dy = particles[a].y - particles[b].y;
           let dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < connectionDistance) {
-            ctx.strokeStyle = `rgba(34, 211, 238, ${0.35 * (1 - dist / connectionDistance)})`;
-            ctx.lineWidth = 0.45;
+            ctx.strokeStyle = `rgba(34, 211, 238, ${0.3 * (1 - dist / connectionDistance)})`;
+            ctx.lineWidth = 0.4;
             ctx.beginPath();
             ctx.moveTo(particles[a].x, particles[a].y);
             ctx.lineTo(particles[b].x, particles[b].y);
@@ -82,10 +118,11 @@ function SpiderNet({ isMobile, height, color = "#38bdf8" }) {
       animationFrameId = requestAnimationFrame(animate);
     };
 
-    init();
     animate();
     return () => {
       window.removeEventListener("resize", resize);
+      canvas.removeEventListener("mousemove", handleMouseMove);
+      canvas.removeEventListener("mouseleave", handleMouseLeave);
       cancelAnimationFrame(animationFrameId);
     };
   }, [isMobile, height, color]);
@@ -108,7 +145,6 @@ export default function PremiumWeek() {
   const [incomeValue, setIncomeValue] = useState(3000);
   const [country, setCountry] = useState("US");
 
-  // Refek a pontos méréshez
   const leftColRef = useRef(null);
   const rightColRef = useRef(null);
   const [leftNetHeight, setLeftNetHeight] = useState(0);
@@ -121,7 +157,6 @@ export default function PremiumWeek() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Lokalizáció
   useEffect(() => {
     const lang = navigator.language || "";
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
@@ -131,25 +166,22 @@ export default function PremiumWeek() {
     else setCountry("EU");
   }, []);
 
-  // AMŐBA LOGIKA - PONTOS IGAZÍTÁS JAVÍTÁSA
   useEffect(() => {
     if (isMobile) return;
     const updateHeights = () => {
       const leftH = leftColRef.current?.offsetHeight || 0;
       const rightH = rightColRef.current?.offsetHeight || 0;
       
-      // Mindkét oldal magasságkülönbségét figyeljük
-      const diffLeftToRight = rightH - leftH;
-      const diffRightToLeft = leftH - rightH;
+      // Bal amőba: ha a jobb oldal hosszabb, kitölti a különbséget
+      const diffL = rightH - leftH;
+      setLeftNetHeight(diffL > 0 ? diffL : 0);
 
-      // Bal oldali amőba: akkor jelenik meg, ha a jobb oldal hosszabb (pl. nyitott AI box)
-      setLeftNetHeight(diffLeftToRight > 0 ? diffLeftToRight : 0);
-      
-      // Jobb oldali amőba: akkor jelenik meg, ha a bal oldal hosszabb (pl. kinyitott inputok, zárt AI box)
-      setRightNetHeight(diffRightToLeft > 0 ? diffRightToLeft : 0);
+      // Jobb amőba: ha a bal oldal hosszabb, kitölti a különbséget
+      const diffR = leftH - rightH;
+      setRightNetHeight(diffR > 0 ? diffR : 0);
     };
 
-    const timer = setTimeout(updateHeights, 60); // Kicsit több idő a renderelés befejezéséhez
+    const timer = setTimeout(updateHeights, 100);
     return () => clearTimeout(timer);
   }, [aiOpen, aiText, openDays, isMobile]);
 
@@ -220,7 +252,6 @@ export default function PremiumWeek() {
 
         <div style={{...layout, gridTemplateColumns: isMobile ? "1fr" : "1.2fr 1.3fr", gap: 40, alignItems: 'start'}}>
           
-          {/* BAL OSZLOP */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div ref={leftColRef}>
               <div style={incomeBox}>
@@ -260,15 +291,13 @@ export default function PremiumWeek() {
               ))}
             </div>
             
-            {/* BAL AMŐBA - NINCS KERET, DINAMIKUS MAGASSÁG */}
-            {!isMobile && leftNetHeight > 5 && (
-              <div style={{ marginTop: 10, flex: 1, overflow: 'hidden', border: 'none' }}>
+            {!isMobile && leftNetHeight > 10 && (
+              <div style={{ flex: 1, overflow: 'hidden' }}>
                 <SpiderNet isMobile={isMobile} height={leftNetHeight} />
               </div>
             )}
           </div>
 
-          {/* JOBB OSZLOP */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div ref={rightColRef}>
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16 }}>
@@ -325,7 +354,6 @@ export default function PremiumWeek() {
               </button>
             </div>
 
-            {/* AI BOX ÉS JOBB OLDALI AMŐBA */}
             {aiOpen ? (
               <div style={aiBox}>
                 <div style={aiHeader}>
@@ -335,8 +363,8 @@ export default function PremiumWeek() {
                 <pre style={aiTextStyle}>{aiText}</pre>
               </div>
             ) : (
-              !isMobile && rightNetHeight > 5 && (
-                <div style={{ marginTop: 10, flex: 1, overflow: 'hidden', border: 'none' }}>
+              !isMobile && rightNetHeight > 10 && (
+                <div style={{ flex: 1, overflow: 'hidden' }}>
                   <SpiderNet isMobile={isMobile} height={rightNetHeight} color="#a78bfa" />
                 </div>
               )
@@ -360,54 +388,31 @@ function Chart({ title, children }) {
   );
 }
 
-/* ===== STYLES ===== */
-const tooltipContainer = { 
-  background: "rgba(2, 6, 23, 0.95)", 
-  border: "1px solid #1e293b", 
-  padding: "12px", 
-  borderRadius: "10px", 
-  backdropFilter: "blur(12px)",
-  boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5)"
-};
-
-const page = { 
-  minHeight: "100vh", 
-  position: "relative", 
-  color: "#e5e7eb", 
-  fontFamily: "Inter, sans-serif", 
-  backgroundColor: "#020617", 
-  backgroundImage: `
-    repeating-linear-gradient(-25deg, rgba(56,189,248,0.06) 0px, rgba(56,189,248,0.06) 1px, transparent 1px, transparent 180px), 
-    repeating-linear-gradient(35deg, rgba(167,139,250,0.05) 0px, rgba(167,139,250,0.05) 1px, transparent 1px, transparent 260px), 
-    radial-gradient(circle at 20% 30%, rgba(56,189,248,0.18), transparent 45%), 
-    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.18), transparent 50%)`, 
-  backgroundAttachment: "fixed", 
-  backgroundSize: "auto, auto, 100% 100%, 100% 100%", 
-  overflowX: "hidden" 
-};
-
+/* ===== STYLES - CAREFULLY ADJUSTED FOR SYMMETRY ===== */
+const tooltipContainer = { background: "rgba(2, 6, 23, 0.95)", border: "1px solid #1e293b", padding: "12px", borderRadius: "10px", backdropFilter: "blur(12px)" };
+const page = { minHeight: "100vh", position: "relative", color: "#e5e7eb", fontFamily: "Inter, sans-serif", backgroundColor: "#020617", overflowX: "hidden" };
 const contentWrap = { width: "100%", boxSizing: "border-box" };
 const header = { textAlign: "center", marginBottom: 30 };
 const title = { margin: 0, fontWeight: "bold", letterSpacing: "-1px" };
 const subtitle = { color: "#94a3b8", marginTop: 10 };
 const helpButton = { position: "absolute", top: 24, right: 24, padding: "8px 14px", borderRadius: 10, fontSize: 13, color: "#7dd3fc", border: "1px solid #1e293b", background: "rgba(2,6,23,0.6)", textDecoration: "none", zIndex: 100 };
 const layout = { display: "grid", maxWidth: "1450px", margin: "0 auto" };
-const sectionLabel = { color: "#7dd3fc", fontSize: "0.8rem", marginBottom: 12, fontWeight: "bold", letterSpacing: "1px" };
-const incomeBox = { background: "rgba(30, 41, 59, 0.4)", border: "1px solid rgba(56, 189, 248, 0.3)", borderRadius: 14, padding: 20, marginBottom: 20 };
-const dayBox = { background: "rgba(30, 41, 59, 0.2)", border: "1px solid #1e293b", borderRadius: 12, padding: "14px 16px", marginBottom: 12 }; // Megnövelt padding és margin
-const dayTitle = { display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", color: "#38bdf8", fontWeight: "bold", fontSize: "0.9rem" };
+const sectionLabel = { color: "#7dd3fc", fontSize: "0.8rem", marginBottom: 12, fontWeight: "bold" };
+const incomeBox = { background: "rgba(30, 41, 59, 0.4)", border: "1px solid rgba(56, 189, 248, 0.3)", borderRadius: 14, padding: 20, marginBottom: 24 };
+const regionRow = { marginBottom: 24, display: "flex", alignItems: "center", gap: 10 };
+const regionLabel = { color: "#7dd3fc", fontSize: "0.8rem", fontWeight: "bold" };
+const regionSelect = { background: "#0f172a", color: "#f8fafc", border: "1px solid #1e293b", padding: "6px 12px", borderRadius: 8 };
+const dayBox = { background: "rgba(30, 41, 59, 0.2)", border: "1px solid #1e293b", borderRadius: 12, padding: "12px 16px", marginBottom: 12 };
+const dayTitle = { display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", color: "#38bdf8", fontWeight: "bold" };
 const inputList = { marginTop: 15, borderTop: "1px solid rgba(56,189,248,0.1)", paddingTop: 10 };
 const catLabel = { fontSize: "0.75rem", color: "#94a3b8" };
-const regionRow = { marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }; // Megnövelt margin
-const regionLabel = { color: "#7dd3fc", fontSize: "0.8rem", fontWeight: "bold" };
-const regionSelect = { background: "#0f172a", color: "#f8fafc", border: "1px solid #1e293b", padding: "6px 12px", borderRadius: 8, fontSize: "13px" };
 const row = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 };
-const input = { background: "transparent", border: "none", borderBottom: "1px solid rgba(56, 189, 248, 0.4)", color: "#38bdf8", width: 75, textAlign: "right", padding: "2px 5px", fontSize: "16px", outline: "none" };
+const input = { background: "transparent", border: "none", borderBottom: "1px solid rgba(56, 189, 248, 0.4)", color: "#38bdf8", width: 75, textAlign: "right", outline: "none" };
 const chartBox = { background: "rgba(15, 23, 42, 0.6)", border: "1px solid #1e293b", borderRadius: 14, padding: 15 };
-const chartTitle = { fontSize: 10, color: "#7dd3fc", marginBottom: 15, textTransform: "uppercase", letterSpacing: "1px" };
-const summary = { padding: "18px", background: "rgba(56, 189, 248, 0.08)", border: "1px solid rgba(56, 189, 248, 0.2)", borderRadius: 12, textAlign: "center", marginBottom: 15 };
-const aiButton = { width: "100%", padding: 16, background: "#38bdf8", border: "none", borderRadius: 12, fontWeight: "bold", color: "#020617", cursor: "pointer" }; // Levettem az alsó margót a szintezéshez
-const aiBox = { background: "rgba(15, 23, 42, 0.9)", border: "1px solid #38bdf8", borderRadius: 14, padding: 20, backdropFilter: "blur(12px)", marginTop: 15 };
+const chartTitle = { fontSize: 10, color: "#7dd3fc", marginBottom: 15, textTransform: "uppercase" };
+const summary = { padding: "18px", background: "rgba(56, 189, 248, 0.08)", border: "1px solid rgba(56, 189, 248, 0.2)", borderRadius: 12, textAlign: "center", marginBottom: 16 };
+const aiButton = { width: "100%", padding: 16, background: "#38bdf8", border: "none", borderRadius: 12, fontWeight: "bold", cursor: "pointer" };
+const aiBox = { background: "rgba(15, 23, 42, 0.9)", border: "1px solid #38bdf8", borderRadius: 14, padding: 20, marginTop: 16 };
 const aiHeader = { display: "flex", justifyContent: "space-between", marginBottom: 15, color: "#38bdf8" };
 const aiTextStyle = { whiteSpace: "pre-wrap", lineHeight: 1.6, fontSize: "14px", color: "#cbd5e1", fontFamily: "inherit" };
 const closeBtn = { background: "transparent", border: "none", color: "#64748b", cursor: "pointer", fontSize: 20 };
