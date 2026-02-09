@@ -1,12 +1,157 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   saveMonthlySnapshot,
   getMonthlySnapshots,
   getSnapshotByDay,
 } from "../lib/monthlyArchive";
 
-/* ================= DAILY SIGNAL UNLOCK ================= */
+/* ================= SPIDERNET COMPONENT (HD & ULTRA DENSE) ================= */
+/* Mobilon letiltva a kérésednek megfelelően, hogy ne egyen erőforrást */
+function SpiderNet({ isMobile, height }) {
+  const canvasRef = useRef(null);
 
+  useEffect(() => {
+    // Szigorú tiltás mobilra
+    if (isMobile || !height || height < 10) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let animationFrameId;
+
+    let particles = [];
+    // Ultra dense beállítás: több részecske, komolyabb háló
+    const particleCount = 250; 
+    const connectionDistance = 150; 
+    const mouse = { x: null, y: null, radius: 160 };
+
+    const resize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.parentElement.getBoundingClientRect();
+      if (!rect.width) return;
+      canvas.width = rect.width * dpr;
+      canvas.height = height * dpr;
+      ctx.scale(dpr, dpr);
+      canvas.style.width = `${rect.width}px`;
+      canvas.style.height = `${height}px`;
+    };
+
+    window.addEventListener("resize", resize);
+    resize();
+
+    const handleMouseMove = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+    };
+
+    const handleMouseLeave = () => {
+      mouse.x = null;
+      mouse.y = null;
+    };
+
+    canvas.addEventListener("mousemove", handleMouseMove);
+    canvas.addEventListener("mouseleave", handleMouseLeave);
+
+    class Particle {
+      constructor() {
+        const rect = canvas.getBoundingClientRect();
+        this.x = Math.random() * (rect.width || 500);
+        this.y = Math.random() * height;
+        this.size = Math.random() * 1.5 + 0.5;
+        this.vx = (Math.random() - 0.5) * 0.4;
+        this.vy = (Math.random() - 0.5) * 0.4;
+      }
+      draw() {
+        ctx.fillStyle = "#38bdf8";
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      update() {
+        const rect = canvas.getBoundingClientRect();
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.x < 0 || this.x > rect.width) this.vx *= -1;
+        if (this.y < 0 || this.y > height) this.vy *= -1;
+        
+        if (mouse.x !== null && mouse.y !== null) {
+          let dx = mouse.x - this.x;
+          let dy = mouse.y - this.y;
+          let distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < mouse.radius) {
+            const force = (mouse.radius - distance) / mouse.radius;
+            this.x -= (dx / distance) * force * 2.5;
+            this.y -= (dy / distance) * force * 2.5;
+          }
+        }
+      }
+    }
+
+    const init = () => {
+      particles = [];
+      for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+      }
+    };
+
+    const connect = () => {
+      for (let a = 0; a < particles.length; a++) {
+        for (let b = a; b < particles.length; b++) {
+          let dx = particles[a].x - particles[b].x;
+          let dy = particles[a].y - particles[b].y;
+          let distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < connectionDistance) {
+            let opacity = 1 - (distance / connectionDistance);
+            ctx.strokeStyle = `rgba(56, 189, 248, ${opacity * 0.6})`;
+            ctx.lineWidth = 0.8;
+            ctx.beginPath();
+            ctx.moveTo(particles[a].x, particles[a].y);
+            ctx.lineTo(particles[b].x, particles[b].y);
+            ctx.stroke();
+          }
+        }
+      }
+    };
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      connect();
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    init();
+    animate();
+
+    return () => {
+      window.removeEventListener("resize", resize);
+      canvas.removeEventListener("mousemove", handleMouseMove);
+      canvas.removeEventListener("mouseleave", handleMouseLeave);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [isMobile, height]);
+
+  if (isMobile) return null; // Kérésedre mobilon teljesen kiiktatva
+
+  return (
+    <canvas 
+      ref={canvasRef} 
+      style={{ 
+        display: 'block',
+        width: '100%', 
+        height: `${height}px`,
+        background: 'transparent',
+        pointerEvents: 'none' 
+      }} 
+    />
+  );
+}
+
+/* ================= DAILY SIGNAL UNLOCK LOGIC ================= */
 const DAILY_SIGNAL_KEY = "dailySignalUnlock";
 
 function getTodayKey() {
@@ -33,8 +178,7 @@ function getDailyUnlockTime() {
   return unlockAt.getTime();
 }
 
-/* ================= REGIONS ================= */
-
+/* ================= REGIONS CONSTANT ================= */
 const REGIONS = [
   { code: "US", label: "United States" },
   { code: "EU", label: "European Union" },
@@ -44,8 +188,11 @@ const REGIONS = [
 ];
 
 export default function PremiumMonth() {
-  // === MOBILE ADDITION: device detection ===
+  // Device detection
   const [isMobile, setIsMobile] = useState(false);
+  // Ref az AI dobozhoz a magasság méréséhez
+  const aiBoxRef = useRef(null);
+  const [aiBoxHeight, setAiBoxHeight] = useState(0);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -54,9 +201,9 @@ export default function PremiumMonth() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
   
-  /* ================= SIMULATION & STRESS STATE (NEW) ================= */
+  /* ================= SIMULATION & STRESS STATE ================= */
   const [simulationActive, setSimulationActive] = useState(false);
-  const [stressFactor, setStressFactor] = useState(0); // 0 to 1 (0% to 100%)
+  const [stressFactor, setStressFactor] = useState(0); 
 
   const calculateFragility = () => {
     const energy = (inputs.electricity + inputs.gas) * (1 + stressFactor);
@@ -65,8 +212,7 @@ export default function PremiumMonth() {
     return Math.min(Math.max(ratio, 0), 100).toFixed(1);
   };
 
-  /* ================= ACCESS CHECK ================= */
-
+  /* ================= ACCESS CHECK & VERIFICATION ================= */
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get("session_id");
@@ -88,15 +234,12 @@ export default function PremiumMonth() {
         window.location.href = "/start";
       });
   }, []);
-
   /* ================= REGION AUTO-DETECT ================= */
-
   const [region, setRegion] = useState("EU");
   const [country, setCountry] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
-
     const detect = async () => {
       try {
         const r = await fetch("/api/detect-region");
@@ -109,49 +252,36 @@ export default function PremiumMonth() {
         /* silent fallback */
       }
     };
-
     detect();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   /* ================= CORE STATE ================= */
-
   const [viewMode, setViewMode] = useState("executive");
   const [cycleDay, setCycleDay] = useState(1);
-
   const [loading, setLoading] = useState(false);
   const [emailSending, setEmailSending] = useState(false);
 
   /* ================= AI PANEL STATE ================= */
-
   const [aiVisible, setAiVisible] = useState(false);
   const [aiCollapsed, setAiCollapsed] = useState(true);
 
-  /* ================= DAILY SIGNAL ================= */
-
+  /* ================= DAILY SIGNAL STATE ================= */
   const [dailySignal, setDailySignal] = useState(null);
   const [dailyPending, setDailyPending] = useState(true);
 
-  /* ================= DAILY / SNAPSHOT AI ================= */
-
+  /* ================= DAILY / SNAPSHOT AI STATE ================= */
   const [dailyDual, setDailyDual] = useState(null);
   const [dailySnapshot, setDailySnapshot] = useState(null);
-
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState(null);
-
   const [exportRange, setExportRange] = useState("day");
 
   /* ================= SNAPSHOT AVAILABILITY ================= */
-
   const [isTodayAvailable, setIsTodayAvailable] = useState(false);
 
-  /* ================= WEEKLY FOCUS ================= */
-
+  /* ================= WEEKLY FOCUS LOGIC ================= */
   const WEEK_LENGTH = 7;
-
   const [weeklyFocus, setWeeklyFocus] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("weeklyFocus"));
@@ -176,20 +306,17 @@ export default function PremiumMonth() {
 
   const confirmWeeklyFocus = () => {
     if (!focusPreview) return;
-
     const focus = {
       key: focusPreview,
       weekIndex: getCurrentWeekIndex(),
       setAt: Date.now(),
     };
-
     setWeeklyFocus(focus);
     localStorage.setItem("weeklyFocus", JSON.stringify(focus));
     setFocusPreview(null);
   };
 
-  /* ================= INPUTS ================= */
-
+  /* ================= INPUTS STATE ================= */
   const [inputs, setInputs] = useState({
     income: 4000,
     housing: 1200,
@@ -204,19 +331,17 @@ export default function PremiumMonth() {
     unexpected: 200,
     other: 300,
   });
+
   const update = (key, value) => {
     setInputs({ ...inputs, [key]: Number(value) });
-
     setAiVisible(false);
     setAiCollapsed(true);
     setDailyDual(null);
     setDailySnapshot(null);
     setSelectedDay(null);
-    // Ha módosul az input, a szimuláció újra láthatóvá válik
   };
 
-  /* ================= CYCLE LOGIC ================= */
-
+  /* ================= CYCLE DAY CALCULATION ================= */
   useEffect(() => {
     const start =
       localStorage.getItem("subscriptionPeriodStart") ||
@@ -231,17 +356,14 @@ export default function PremiumMonth() {
     }
   }, []);
 
-  /* ================= SNAPSHOT AVAILABILITY ================= */
-
+  /* ================= SNAPSHOT AVAILABILITY CHECK ================= */
   useEffect(() => {
     const today = getTodayKey();
     const key = `dailyAvailableAt_${today}`;
-
     let availableAt = localStorage.getItem(key);
 
     if (!availableAt) {
-      const randomOffsetMs =
-        Math.floor(Math.random() * 6 * 60 * 60 * 1000);
+      const randomOffsetMs = Math.floor(Math.random() * 6 * 60 * 60 * 1000);
       const base = new Date();
       base.setHours(7, 0, 0, 0);
       availableAt = base.getTime() + randomOffsetMs;
@@ -253,20 +375,16 @@ export default function PremiumMonth() {
         setIsTodayAvailable(true);
       }
     };
-
     check();
     const i = setInterval(check, 60000);
     return () => clearInterval(i);
   }, [cycleDay]);
 
-  /* ================= DAILY SIGNAL EFFECT ================= */
-
+  /* ================= DAILY SIGNAL FETCH EFFECT ================= */
   useEffect(() => {
     const unlockAt = getDailyUnlockTime();
-
     const check = async () => {
       if (Date.now() < unlockAt) return;
-
       const seenKey = "dailySignalSeen_" + getTodayKey();
       const cached = localStorage.getItem(seenKey);
 
@@ -279,11 +397,7 @@ export default function PremiumMonth() {
       const r = await fetch("/api/get-daily-signal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          region,
-          country,
-          cycleDay,
-        }),
+        body: JSON.stringify({ region, country, cycleDay }),
       });
 
       const j = await r.json();
@@ -291,22 +405,18 @@ export default function PremiumMonth() {
         localStorage.setItem(seenKey, j.signal);
         setDailySignal(j.signal);
       }
-
       setDailyPending(false);
     };
 
     const t = setInterval(check, 30000);
     check();
-
     return () => clearInterval(t);
   }, [region, country, cycleDay]);
 
-  /* ================= LEGACY DAILY STORAGE ================= */
-
+  /* ================= BRIEFING STORAGE ================= */
   const saveBriefing = dual => {
     const today = getTodayKey();
     const stored = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
-
     if (!stored.find(b => b.date === today)) {
       stored.push({
         id: Date.now(),
@@ -315,19 +425,15 @@ export default function PremiumMonth() {
         executive: dual.executive,
         directive: dual.directive,
       });
-      localStorage.setItem(
-        "monthlyBriefings",
-        JSON.stringify(stored.slice(-30))
-      );
+      localStorage.setItem("monthlyBriefings", JSON.stringify(stored.slice(-30)));
     }
   };
 
-  /* ================= DAILY AI ================= */
-
+  /* ================= AI RUNNERS ================= */
   const runAI = async () => {
     setLoading(true);
     setSelectedDay(null);
-    setSimulationActive(false); // AI briefingnél kikapcsoljuk a szimulációs nézetet
+    setSimulationActive(false);
 
     try {
       const res = await fetch("/api/get-ai-briefing", {
@@ -352,18 +458,14 @@ export default function PremiumMonth() {
         saveBriefing(json.snapshot);
       }
     } catch {}
-
     setLoading(false);
   };
-
-  /* ================= SNAPSHOT AI ================= */
 
   const runAIDual = async () => {
     if (!isTodayAvailable) {
       alert("Today's snapshot is not available yet.");
       return;
     }
-
     setLoading(true);
     setSelectedDay(null);
     setSimulationActive(false);
@@ -391,11 +493,9 @@ export default function PremiumMonth() {
         setAiCollapsed(false);
       }
     } catch {}
-
     setLoading(false);
   };
-  /* ================= ACTIVE CONTENT ================= */
-
+  /* ================= ACTIVE CONTENT RESOLUTION ================= */
   const activeSnapshot = selectedDay
     ? getSnapshotByDay(selectedDay)
     : dailySnapshot;
@@ -408,8 +508,15 @@ export default function PremiumMonth() {
       ? activeDual.executive
       : activeDual.directive);
 
-  /* ================= EXPORT LOGIC ================= */
+  /* AI Box magasságának követése az amőbához */
+  useEffect(() => {
+    if (aiVisible && aiBoxRef.current) {
+      // Egy kis puffer hozzáadása a stabilabb látványért
+      setAiBoxHeight(aiBoxRef.current.offsetHeight + 20);
+    }
+  }, [aiVisible, activeText, viewMode, archiveOpen]);
 
+  /* ================= EXPORT & PERSISTENCE LOGIC ================= */
   const getBriefings = range => {
     const legacy = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
     const snapshots = getMonthlySnapshots() || [];
@@ -476,12 +583,13 @@ export default function PremiumMonth() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: activeText, cycleDay, region }),
       });
-    } catch {}
+    } catch (err) {
+      console.error("Email failed", err);
+    }
     setEmailSending(false);
   };
 
-  /* ================= RENDER ================= */
-
+  /* ================= RENDER LOGIC ================= */
   return (
     <div
       style={{
@@ -490,6 +598,42 @@ export default function PremiumMonth() {
         backgroundAttachment: "fixed",
       }}
     >
+      <style>{`
+        .ticker-container {
+          width: 100%;
+          overflow: hidden;
+          background: transparent;
+          padding: 5px 0;
+          margin-bottom: 15px;
+        }
+        .ticker-text {
+          display: inline-block;
+          white-space: nowrap;
+          font-family: 'Inter', sans-serif;
+          font-size: 9px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          color: rgba(255, 255, 255, 0.4);
+          animation: marquee 25s linear infinite;
+        }
+        .ticker-text span { margin-right: 50px; }
+        @keyframes marquee {
+          0% { transform: translateX(100%); }
+          100% { transform: translateX(-100%); }
+        }
+      `}</style>
+
+      <div className="ticker-container">
+        <div className="ticker-text">
+          <span>Wealthy AI: We don’t advise, we interpret</span>
+          <span>Clearer thinking, not just faster decisions</span>
+          <span>Rewarding attention over speed</span>
+          <span>Supporting your judgment, quietly</span>
+          <span>Wealthy AI: We don’t advise, we interpret</span>
+          <span>Clearer thinking, not just faster decisions</span>
+        </div>
+      </div>
+
       <a href="/month/help" style={helpButton}>Help</a>
 
       <div style={header}>
@@ -586,81 +730,84 @@ export default function PremiumMonth() {
           gap: isMobile ? 20 : layout.gap,
         }}
       >
-        {/* LEFT COLUMN: INPUTS & SIMULATION */}
-        <div style={card}>
-          <h3>Monthly Financial Structure</h3>
+        {/* LEFT COLUMN */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div style={card}>
+            <h3>Monthly Financial Structure</h3>
+            <Label>Income</Label>
+            <Input value={inputs.income} onChange={e => update("income", e.target.value)} />
+            
+            <Section title="Living">
+              <Row label="Housing" value={inputs.housing} onChange={v => update("housing", v)} />
+            </Section>
 
-          <Label>Income</Label>
-          <Input
-            value={inputs.income}
-            onChange={e => update("income", e.target.value)}
-          />
-          <Divider />
+            <Section title="Utilities">
+              <Row label="Electricity" value={inputs.electricity} onChange={v => update("electricity", v)} />
+              <Row label="Gas" value={inputs.gas} onChange={v => update("gas", v)} />
+              <Row label="Water" value={inputs.water} onChange={v => update("water", v)} />
+            </Section>
 
-          <Section title="Living">
-            <Row
-              label="Housing"
-              value={inputs.housing}
-              onChange={v => update("housing", v)}
-            />
-          </Section>
+            <Section title="Recurring Services">
+              <Row label="Internet" value={inputs.internet} onChange={v => update("internet", v)} />
+              <Row label="Mobile phone" value={inputs.mobile} onChange={v => update("mobile", v)} />
+              <Row label="Insurance" value={inputs.insurance} onChange={v => update("insurance", v)} />
+            </Section>
 
-          <Section title="Utilities">
-            <Row label="Electricity" value={inputs.electricity} onChange={v => update("electricity", v)} />
-            <Row label="Gas" value={inputs.gas} onChange={v => update("gas", v)} />
-            <Row label="Water" value={inputs.water} onChange={v => update("water", v)} />
-          </Section>
-
-          <Section title="Recurring Services">
-            <Row label="Internet" value={inputs.internet} onChange={v => update("internet", v)} />
-            <Row label="Mobile phone" value={inputs.mobile} onChange={v => update("mobile", v)} />
-            <Row label="Insurance" value={inputs.insurance} onChange={v => update("insurance", v)} />
-          </Section>
-
-          <Divider />
-          <div style={{ padding: "10px 0" }}>
-            <strong style={{ color: "#10b981", fontSize: 13, display: "block", marginBottom: 10 }}>
-              STRUCTURAL STRESS TEST
-            </strong>
-            <input 
-              type="range" min="0" max="1" step="0.01" 
-              value={stressFactor}
-              onChange={(e) => {
-                setStressFactor(parseFloat(e.target.value));
-                setSimulationActive(true);
-              }}
-              style={{ width: "100%", accentColor: "#10b981", cursor: "pointer" }}
-            />
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, opacity: 0.5, marginTop: 4 }}>
-              <span>BASE</span>
-              <span>CRISIS (+100%)</span>
+            <Divider />
+            <div style={{ padding: "10px 0" }}>
+              <strong style={{ color: "#10b981", fontSize: 13, display: "block", marginBottom: 10 }}>
+                STRUCTURAL STRESS TEST
+              </strong>
+              <input 
+                type="range" min="0" max="1" step="0.01" 
+                value={stressFactor}
+                onChange={(e) => {
+                  setStressFactor(parseFloat(e.target.value));
+                  setSimulationActive(true);
+                }}
+                style={{ width: "100%", accentColor: "#10b981", cursor: "pointer" }}
+              />
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, opacity: 0.5, marginTop: 4 }}>
+                <span>BASE</span>
+                <span>CRISIS (+100%)</span>
+              </div>
             </div>
-          </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 20 }}>
-            <button 
-              onClick={() => { setSimulationActive(true); setAiVisible(false); }}
-              style={{ ...exportBtn, borderColor: "#10b981", color: "#10b981" }}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 20 }}>
+              <button 
+                onClick={() => { setSimulationActive(true); setAiVisible(false); }}
+                style={{ ...exportBtn, borderColor: "#10b981", color: "#10b981" }}
+              >
+                SIMULATE
+              </button>
+              <button onClick={runAI} style={{ ...aiButton, marginTop: 0 }}>
+                {loading ? "Generating..." : "GENERATE AI"}
+              </button>
+            </div>
+
+            <button
+              onClick={runAIDual}
+              style={{ ...exportBtn, marginTop: 12, width: "100%" }}
             >
-              SIMULATE
-            </button>
-            <button onClick={runAI} style={{ ...aiButton, marginTop: 0 }}>
-              {loading ? "Generating..." : "GENERATE AI"}
+              Save Today’s Snapshot
             </button>
           </div>
 
-          <button
-            onClick={runAIDual}
-            style={{ ...exportBtn, marginTop: 12, width: "100%" }}
-          >
-            Save Today’s Snapshot
-          </button>
+          {/* SPIDERNET CONTAINER - CSATORNA AZ AI DOBOZHOZ */}
+          {aiVisible && !selectedDay && !isMobile && (
+            <div style={{ 
+              borderRadius: 16, 
+              border: "1px solid rgba(56,189,248,0.2)", 
+              overflow: 'hidden',
+              background: "rgba(2,6,23,0.4)"
+            }}>
+              <SpiderNet isMobile={isMobile} height={aiBoxHeight} />
+            </div>
+          )}
         </div>
 
-        {/* RIGHT COLUMN: INTELLIGENCE & VISUALS */}
-        <div style={card}>
-          
-          {/* 1. STATE: MANIFESTO */}
+        {/* RIGHT COLUMN */}
+        <div style={card} ref={aiBoxRef}>
           {!aiVisible && !simulationActive && (
             <div style={{ padding: "10px", animation: "fadeIn 0.8s ease-in" }}>
               <strong style={{ color: "#10b981", fontSize: 12, letterSpacing: 1 }}>WEALTHYAI PHILOSOPHY</strong>
@@ -676,16 +823,13 @@ export default function PremiumMonth() {
             </div>
           )}
 
-          {/* 2. STATE: SIMULATION ENGINE */}
           {simulationActive && !aiVisible && (
             <div style={{ padding: "10px", animation: "fadeIn 0.3s ease-out" }}>
               <strong style={{ color: "#10b981", fontSize: 12 }}>LIVE SIMULATION ENGINE</strong>
               <h2 style={{ fontSize: 20, marginTop: 5 }}>Structural Fragility Index</h2>
-              
               <div style={{ fontSize: 42, fontWeight: "bold", color: "#38bdf8", margin: "15px 0" }}>
                 {calculateFragility()}%
               </div>
-
               <div style={{ height: 8, background: "rgba(255,255,255,0.05)", borderRadius: 4, overflow: "hidden" }}>
                 <div style={{ 
                   height: "100%", 
@@ -694,24 +838,16 @@ export default function PremiumMonth() {
                   transition: "width 0.3s ease" 
                 }} />
               </div>
-
               <p style={{ opacity: 0.6, fontSize: 13, marginTop: 15, lineHeight: "1.5" }}>
                 At <strong>{Math.round(stressFactor * 100)}%</strong> simulated pressure, your core financial rigidity is 
                 {parseFloat(calculateFragility()) > 55 ? " approaching a critical threshold." : " currently within structural limits."}
               </p>
-              
-              <button 
-                onClick={() => setSimulationActive(false)} 
-                style={{ ...exportBtn, marginTop: 20, fontSize: 12, opacity: 0.6 }}
-              >
-                Reset view
-              </button>
+              <button onClick={() => setSimulationActive(false)} style={{ ...exportBtn, marginTop: 20, fontSize: 12, opacity: 0.6 }}>Reset view</button>
             </div>
           )}
 
-          {/* 3. STATE: AI BRIEFING */}
           {aiVisible && (
-            <div>
+            <div style={{ animation: "fadeIn 0.4s ease-out" }}>
               <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
                 <button
                   onClick={() => setViewMode("executive")}
@@ -723,7 +859,6 @@ export default function PremiumMonth() {
                 >
                   Executive
                 </button>
-
                 <button
                   onClick={() => setViewMode("directive")}
                   style={{
@@ -734,92 +869,60 @@ export default function PremiumMonth() {
                 >
                   Directive
                 </button>
-                <button 
-                  onClick={() => { setAiVisible(false); setSimulationActive(false); }} 
-                  style={{ ...exportBtn, maxWidth: 44 }}
-                >
-                  ✕
-                </button>
+                <button onClick={() => { setAiVisible(false); setSimulationActive(false); }} style={{ ...exportBtn, maxWidth: 44 }}>✕</button>
               </div>
 
               <pre style={aiTextStyle}>{activeText}</pre>
 
               {!selectedDay && (
-                <div
-                  style={{
-                    marginTop: 16,
-                    display: "flex",
-                    gap: 12,
-                    flexWrap: isMobile ? "wrap" : "nowrap",
-                  }}
-                >
-                  <select
-                    value={exportRange}
-                    onChange={e => setExportRange(e.target.value)}
-                    style={exportSelect}
-                  >
+                <div style={{ marginTop: 16, display: "flex", gap: 12, flexWrap: isMobile ? "wrap" : "nowrap" }}>
+                  <select value={exportRange} onChange={e => setExportRange(e.target.value)} style={exportSelect}>
                     <option value="day">Today</option>
                     <option value="week">Last 7 days</option>
                     <option value="month">This month</option>
                   </select>
-
                   <button onClick={handleDownload} style={exportBtn}>Download</button>
                   <button onClick={downloadPDF} style={exportBtn}>PDF</button>
-                  <button onClick={sendEmailPDF} style={exportBtn}>
-                    {emailSending ? "..." : "Email"}
-                  </button>
+                  <button onClick={sendEmailPDF} style={exportBtn}>{emailSending ? "..." : "Email"}</button>
                 </div>
               )}
             </div>
           )}
 
           <Divider />
-          <button
-            onClick={() => setArchiveOpen(!archiveOpen)}
-            style={{ ...exportBtn, width: "100%" }}
-          >
+          <button onClick={() => setArchiveOpen(!archiveOpen)} style={{ ...exportBtn, width: "100%" }}>
             {archiveOpen ? "Hide past days" : "View past days"}
           </button>
-
+          
           {archiveOpen && (
-            <div style={{ marginTop: 10 }}>
+            <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 4 }}>
               {getMonthlySnapshots().map(s => (
                 <button
                   key={s.date}
                   onClick={() => { setSelectedDay(s.cycleDay); setAiVisible(true); setSimulationActive(false); }}
-                  style={{ ...exportBtn, marginBottom: 4, width: "100%" }}
+                  style={{ ...exportBtn, textAlign: "left" }}
                 >
-                  Day {s.cycleDay}
+                  Day {s.cycleDay} — {s.date}
                 </button>
               ))}
             </div>
           )}
         </div>
       </div>
-
       <div style={footer}>© 2026 WealthyAI · Monthly Intelligence</div>
     </div>
   );
 }
 
-/* ================= UI HELPERS & STYLES (Eredeti Styles blokk változatlan) ================= */
+/* ================= STYLES & HELPERS ================= */
 const Section = ({ title, children }) => (
-  <>
-    <Divider />
-    <strong style={{fontSize: 14, color: "#7dd3fc"}}>{title}</strong>
-    {children}
-  </>
+  <><Divider /><strong style={{fontSize: 14, color: "#7dd3fc", display: "block", marginBottom: 8}}>{title}</strong>{children}</>
 );
 
 const Row = ({ label, value, onChange }) => (
   <div style={row}>
     <span style={{fontSize: 13, opacity: 0.8}}>{label}</span>
-    <input
-      type="number"
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      style={rowInput}
-    />
+    <input type="number" value={value} onChange={e => onChange(e.target.value)} style={rowInput} />
   </div>
 );
 
@@ -836,57 +939,34 @@ const Divider = () => (
 );
 
 const page = {
-  minHeight: "100vh",
-  position: "relative",
-  padding: "40px 20px",
-  color: "#e5e7eb",
-  fontFamily: "Inter, system-ui",
-  backgroundColor: "#020617",
-  backgroundImage: `
-    repeating-linear-gradient(-25deg, rgba(56,189,248,0.04) 0px, rgba(56,189,248,0.04) 1px, transparent 1px, transparent 180px),
-    repeating-linear-gradient(35deg, rgba(167,139,250,0.04) 0px, rgba(167,139,250,0.04) 1px, transparent 1px, transparent 260px),
-    radial-gradient(circle at 20% 30%, rgba(56,189,248,0.14), transparent 45%),
-    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.14), transparent 50%),
-    url("/wealthyai/icons/generated.png")
-  `,
-  backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, repeat",
-  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 420px auto",
+  minHeight: "100vh", position: "relative", padding: "40px 20px", color: "#e5e7eb", fontFamily: "Inter, system-ui", backgroundColor: "#020617",
+  backgroundImage: `repeating-linear-gradient(-25deg, rgba(56,189,248,0.04) 0px, rgba(56,189,248,0.04) 1px, transparent 1px, transparent 180px), repeating-linear-gradient(35deg, rgba(167,139,250,0.04) 0px, rgba(167,139,250,0.04) 1px, transparent 1px, transparent 260px), radial-gradient(circle at 20% 30%, rgba(56,189,248,0.14), transparent 45%), radial-gradient(circle at 80% 60%, rgba(167,139,250,0.14), transparent 50%), url("/wealthyai/icons/generated.png")`,
+  backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, repeat", backgroundSize: "auto, auto, 100% 100%, 100% 100%, 420px auto",
 };
 
 const header = { textAlign: "center", marginBottom: 20 };
-const title = { fontSize: "2rem", margin: 0 };
+const title = { fontSize: "2rem", margin: 0, fontWeight: "800", letterSpacing: "-0.02em" };
 const subtitle = { marginTop: 8, color: "#cbd5f5", fontSize: 14 };
 
-const helpButton = {
-  position: "absolute",
-  top: 20,
-  right: 20,
-  padding: "6px 12px",
-  borderRadius: 8,
-  fontSize: 12,
-  textDecoration: "none",
-  color: "#7dd3fc",
-  border: "1px solid #1e293b",
-  background: "rgba(2,6,23,0.7)",
-};
+const helpButton = { position: "absolute", top: 20, right: 20, padding: "6px 12px", borderRadius: 8, fontSize: 12, textDecoration: "none", color: "#7dd3fc", border: "1px solid #1e293b", background: "rgba(2,6,23,0.7)" };
 
 const regionRow = { display: "flex", justifyContent: "center", gap: 10, marginBottom: 20 };
-const regionLabel = { color: "#7dd3fc", fontSize: 14 };
+const regionLabel = { color: "#7dd3fc", fontSize: 14, alignSelf: "center" };
 const regionSelect = { background: "#020617", color: "#e5e7eb", border: "1px solid #1e293b", padding: "4px 8px", borderRadius: 6 };
 
 const signalBox = { maxWidth: 800, margin: "0 auto 15px", padding: 14, border: "1px solid #1e293b", borderRadius: 12, background: "rgba(2,6,23,0.75)" };
 
 const layout = { display: "grid", gridTemplateColumns: "1fr 1.3fr", gap: 25, maxWidth: 1100, margin: "0 auto" };
-const card = { padding: 20, borderRadius: 16, border: "1px solid #1e293b", background: "rgba(2,6,23,0.78)" };
+const card = { padding: 20, borderRadius: 16, border: "1px solid #1e293b", background: "rgba(2,6,23,0.78)", height: "fit-content" };
 
-const input = { width: "100%", padding: 10, marginTop: 4, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, color: "white" };
-const row = { display: "flex", justifyContent: "space-between", marginTop: 6 };
-const rowInput = { width: 80, background: "transparent", border: "none", borderBottom: "1px solid #38bdf8", color: "#38bdf8", textAlign: "right" };
+const input = { width: "100%", padding: 10, marginTop: 4, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, color: "white", outline: "none" };
+const row = { display: "flex", justifyContent: "space-between", marginTop: 8 };
+const rowInput = { width: 85, background: "transparent", border: "none", borderBottom: "1px solid #38bdf8", color: "#38bdf8", textAlign: "right", outline: "none" };
 
 const aiButton = { marginTop: 20, width: "100%", padding: 12, background: "#38bdf8", border: "none", borderRadius: 10, fontWeight: "bold", cursor: "pointer", color: "#020617" };
-const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap", color: "#cbd5f5", fontSize: 14, lineHeight: "1.6" };
+const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap", color: "#cbd5f5", fontSize: 14, lineHeight: "1.7", fontFamily: "Inter, sans-serif" };
 
-const exportBtn = { padding: "8px 12px", borderRadius: 8, border: "1px solid #1e293b", background: "transparent", color: "#38bdf8", cursor: "pointer", fontSize: 13 };
-const exportSelect = { background: "transparent", color: "#e5e7eb", border: "1px solid #1e293b", padding: "8px", borderRadius: 8 };
+const exportBtn = { padding: "8px 14px", borderRadius: 8, border: "1px solid #1e293b", background: "transparent", color: "#38bdf8", cursor: "pointer", fontSize: 13, transition: "all 0.2s" };
+const exportSelect = { background: "transparent", color: "#e5e7eb", border: "1px solid #1e293b", padding: "8px", borderRadius: 8, outline: "none" };
 
 const footer = { marginTop: 40, textAlign: "center", fontSize: 12, color: "#64748b", paddingBottom: 20 };
