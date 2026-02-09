@@ -111,7 +111,6 @@ export default function PremiumWeek() {
   // Refek a pontos méréshez
   const leftColRef = useRef(null);
   const rightColRef = useRef(null);
-  const aiButtonRef = useRef(null);
   const [leftNetHeight, setLeftNetHeight] = useState(0);
   const [rightNetHeight, setRightNetHeight] = useState(0);
 
@@ -132,30 +131,25 @@ export default function PremiumWeek() {
     else setCountry("EU");
   }, []);
 
-  // AMŐBA LOGIKA - PONTOS IGAZÍTÁS
+  // AMŐBA LOGIKA - PONTOS IGAZÍTÁS JAVÍTÁSA
   useEffect(() => {
     if (isMobile) return;
     const updateHeights = () => {
       const leftH = leftColRef.current?.offsetHeight || 0;
       const rightH = rightColRef.current?.offsetHeight || 0;
-      const anyInputOpen = Object.values(openDays).some(v => v);
+      
+      // Mindkét oldal magasságkülönbségét figyeljük
+      const diffLeftToRight = rightH - leftH;
+      const diffRightToLeft = leftH - rightH;
 
-      if (aiOpen) {
-        // Ha nyitva az AI, a bal amőba a jobb oldal teljes hosszához igazodik
-        const diff = rightH - leftH;
-        setLeftNetHeight(diff > 0 ? diff : 0);
-        setRightNetHeight(0);
-      } else if (anyInputOpen) {
-        // Ha csak inputok vannak nyitva, a jobb amőba a bal oldal aljáig ér
-        const diff = leftH - rightH;
-        setRightNetHeight(diff > 0 ? diff : 0);
-        setLeftNetHeight(0);
-      } else {
-        setLeftNetHeight(0);
-        setRightNetHeight(0);
-      }
+      // Bal oldali amőba: akkor jelenik meg, ha a jobb oldal hosszabb (pl. nyitott AI box)
+      setLeftNetHeight(diffLeftToRight > 0 ? diffLeftToRight : 0);
+      
+      // Jobb oldali amőba: akkor jelenik meg, ha a bal oldal hosszabb (pl. kinyitott inputok, zárt AI box)
+      setRightNetHeight(diffRightToLeft > 0 ? diffRightToLeft : 0);
     };
-    const timer = setTimeout(updateHeights, 50);
+
+    const timer = setTimeout(updateHeights, 60); // Kicsit több idő a renderelés befejezéséhez
     return () => clearTimeout(timer);
   }, [aiOpen, aiText, openDays, isMobile]);
 
@@ -175,7 +169,7 @@ export default function PremiumWeek() {
     day: d, 
     total: dailyTotals[i], 
     balance: (weeklyIncome / 7) - dailyTotals[i], 
-    x: i + 1, // Dispersion X tengelyhez
+    x: i + 1, 
     ...week[d] 
   }));
 
@@ -224,7 +218,7 @@ export default function PremiumWeek() {
           <p style={subtitle}>Precise behavioral mapping and country-aware AI insights.</p>
         </div>
 
-        <div style={{...layout, gridTemplateColumns: isMobile ? "1fr" : "1.2fr 1.3fr", gap: 40}}>
+        <div style={{...layout, gridTemplateColumns: isMobile ? "1fr" : "1.2fr 1.3fr", gap: 40, alignItems: 'start'}}>
           
           {/* BAL OSZLOP */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -266,9 +260,9 @@ export default function PremiumWeek() {
               ))}
             </div>
             
-            {/* AMŐBA A BAL OLDALON (Ha az AI nyitva van) */}
-            {!isMobile && aiOpen && leftNetHeight > 10 && (
-              <div style={{ marginTop: 20, flex: 1, borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(56,189,248,0.1)' }}>
+            {/* BAL AMŐBA - NINCS KERET, DINAMIKUS MAGASSÁG */}
+            {!isMobile && leftNetHeight > 5 && (
+              <div style={{ marginTop: 10, flex: 1, overflow: 'hidden', border: 'none' }}>
                 <SpiderNet isMobile={isMobile} height={leftNetHeight} />
               </div>
             )}
@@ -326,7 +320,7 @@ export default function PremiumWeek() {
                 SURPLUS: <strong style={{color: "#34d399"}}>${Math.round(weeklyIncome - weeklySpend).toLocaleString()}</strong>
               </div>
 
-              <button ref={aiButtonRef} onClick={runAI} style={aiButton}>
+              <button onClick={runAI} style={aiButton}>
                 {loading ? "ANALYZING BEHAVIOR…" : "RUN WEEKLY AI ANALYSIS"}
               </button>
             </div>
@@ -341,8 +335,8 @@ export default function PremiumWeek() {
                 <pre style={aiTextStyle}>{aiText}</pre>
               </div>
             ) : (
-              !isMobile && rightNetHeight > 10 && (
-                <div style={{ marginTop: 20, flex: 1, borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(167,139,250,0.1)' }}>
+              !isMobile && rightNetHeight > 5 && (
+                <div style={{ marginTop: 10, flex: 1, overflow: 'hidden', border: 'none' }}>
                   <SpiderNet isMobile={isMobile} height={rightNetHeight} color="#a78bfa" />
                 </div>
               )
@@ -366,7 +360,7 @@ function Chart({ title, children }) {
   );
 }
 
-/* ===== STYLES - NO TRIMMING ===== */
+/* ===== STYLES ===== */
 const tooltipContainer = { 
   background: "rgba(2, 6, 23, 0.95)", 
   border: "1px solid #1e293b", 
@@ -386,10 +380,9 @@ const page = {
     repeating-linear-gradient(-25deg, rgba(56,189,248,0.06) 0px, rgba(56,189,248,0.06) 1px, transparent 1px, transparent 180px), 
     repeating-linear-gradient(35deg, rgba(167,139,250,0.05) 0px, rgba(167,139,250,0.05) 1px, transparent 1px, transparent 260px), 
     radial-gradient(circle at 20% 30%, rgba(56,189,248,0.18), transparent 45%), 
-    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.18), transparent 50%), 
-    url("/wealthyai/icons/generated.png")`, 
+    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.18), transparent 50%)`, 
   backgroundAttachment: "fixed", 
-  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 280px auto", 
+  backgroundSize: "auto, auto, 100% 100%, 100% 100%", 
   overflowX: "hidden" 
 };
 
@@ -401,11 +394,11 @@ const helpButton = { position: "absolute", top: 24, right: 24, padding: "8px 14p
 const layout = { display: "grid", maxWidth: "1450px", margin: "0 auto" };
 const sectionLabel = { color: "#7dd3fc", fontSize: "0.8rem", marginBottom: 12, fontWeight: "bold", letterSpacing: "1px" };
 const incomeBox = { background: "rgba(30, 41, 59, 0.4)", border: "1px solid rgba(56, 189, 248, 0.3)", borderRadius: 14, padding: 20, marginBottom: 20 };
-const dayBox = { background: "rgba(30, 41, 59, 0.2)", border: "1px solid #1e293b", borderRadius: 12, padding: "12px 16px", marginBottom: 10 };
+const dayBox = { background: "rgba(30, 41, 59, 0.2)", border: "1px solid #1e293b", borderRadius: 12, padding: "14px 16px", marginBottom: 12 }; // Megnövelt padding és margin
 const dayTitle = { display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", color: "#38bdf8", fontWeight: "bold", fontSize: "0.9rem" };
 const inputList = { marginTop: 15, borderTop: "1px solid rgba(56,189,248,0.1)", paddingTop: 10 };
 const catLabel = { fontSize: "0.75rem", color: "#94a3b8" };
-const regionRow = { marginBottom: 15, display: "flex", alignItems: "center", gap: 10 };
+const regionRow = { marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }; // Megnövelt margin
 const regionLabel = { color: "#7dd3fc", fontSize: "0.8rem", fontWeight: "bold" };
 const regionSelect = { background: "#0f172a", color: "#f8fafc", border: "1px solid #1e293b", padding: "6px 12px", borderRadius: 8, fontSize: "13px" };
 const row = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 };
@@ -413,8 +406,8 @@ const input = { background: "transparent", border: "none", borderBottom: "1px so
 const chartBox = { background: "rgba(15, 23, 42, 0.6)", border: "1px solid #1e293b", borderRadius: 14, padding: 15 };
 const chartTitle = { fontSize: 10, color: "#7dd3fc", marginBottom: 15, textTransform: "uppercase", letterSpacing: "1px" };
 const summary = { padding: "18px", background: "rgba(56, 189, 248, 0.08)", border: "1px solid rgba(56, 189, 248, 0.2)", borderRadius: 12, textAlign: "center", marginBottom: 15 };
-const aiButton = { width: "100%", padding: 16, background: "#38bdf8", border: "none", borderRadius: 12, fontWeight: "bold", color: "#020617", cursor: "pointer", marginBottom: 15 };
-const aiBox = { background: "rgba(15, 23, 42, 0.9)", border: "1px solid #38bdf8", borderRadius: 14, padding: 20, backdropFilter: "blur(12px)", marginTop: 0 };
+const aiButton = { width: "100%", padding: 16, background: "#38bdf8", border: "none", borderRadius: 12, fontWeight: "bold", color: "#020617", cursor: "pointer" }; // Levettem az alsó margót a szintezéshez
+const aiBox = { background: "rgba(15, 23, 42, 0.9)", border: "1px solid #38bdf8", borderRadius: 14, padding: 20, backdropFilter: "blur(12px)", marginTop: 15 };
 const aiHeader = { display: "flex", justifyContent: "space-between", marginBottom: 15, color: "#38bdf8" };
 const aiTextStyle = { whiteSpace: "pre-wrap", lineHeight: 1.6, fontSize: "14px", color: "#cbd5e1", fontFamily: "inherit" };
 const closeBtn = { background: "transparent", border: "none", color: "#64748b", cursor: "pointer", fontSize: 20 };
