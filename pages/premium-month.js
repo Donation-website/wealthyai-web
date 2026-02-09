@@ -147,7 +147,7 @@ function SpiderNet({ isMobile, height }) {
     };
   }, [isMobile, height, isHovered]);
 
-  if (isMobile) return null; // Kérésedre mobilon teljesen kiiktatva
+  if (isMobile) return null;
 
   return (
     <canvas 
@@ -157,8 +157,8 @@ function SpiderNet({ isMobile, height }) {
         width: '100%', 
         height: `${height}px`,
         background: 'transparent',
-        pointerEvents: 'auto', // Aktiváljuk az eseményeket a hoverhez
-        border: 'none',        // Keret eltüntetve
+        pointerEvents: 'auto',
+        border: 'none',
         outline: 'none'
       }} 
     />
@@ -225,113 +225,26 @@ export default function PremiumMonth() {
     const ratio = (fixed / inputs.income) * 100;
     return Math.min(Math.max(ratio, 0), 100).toFixed(1);
   };
-
-  /* ================= ACCESS CHECK & VERIFICATION ================= */
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const sessionId = params.get("session_id");
-    if (!sessionId) {
-      window.location.href = "/start";
-      return;
-    }
-
-    fetch("/api/verify-active-subscription", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sessionId }),
-    })
-      .then(r => r.json())
-      .then(d => {
-        if (!d.valid) window.location.href = "/start";
-      })
-      .catch(() => {
-        window.location.href = "/start";
-      });
-  }, []);
-
-  /* ================= REGION AUTO-DETECT ================= */
+  /* ================= CORE CONFIG & UI STATE ================= */
   const [region, setRegion] = useState("EU");
   const [country, setCountry] = useState(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    const detect = async () => {
-      try {
-        const r = await fetch("/api/detect-region");
-        if (!r.ok) return;
-        const j = await r.json();
-        if (cancelled) return;
-        if (j?.region) setRegion(j.region);
-        if (j?.country) setCountry(j.country);
-      } catch {
-        /* silent fallback */
-      }
-    };
-    detect();
-    return () => { cancelled = true; };
-  }, []);
-
-  /* ================= CORE STATE ================= */
-  const [viewMode, setViewMode] = useState("executive");
+  const [viewMode, setViewMode] = useState("executive"); // executive | directive
   const [cycleDay, setCycleDay] = useState(1);
   const [loading, setLoading] = useState(false);
   const [emailSending, setEmailSending] = useState(false);
-
-  /* ================= AI PANEL STATE ================= */
   const [aiVisible, setAiVisible] = useState(false);
   const [aiCollapsed, setAiCollapsed] = useState(true);
-
-  /* ================= DAILY SIGNAL STATE ================= */
+  
   const [dailySignal, setDailySignal] = useState(null);
   const [dailyPending, setDailyPending] = useState(true);
-
-  /* ================= DAILY / SNAPSHOT AI STATE ================= */
   const [dailyDual, setDailyDual] = useState(null);
   const [dailySnapshot, setDailySnapshot] = useState(null);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState(null);
-  const [exportRange, setExportRange] = useState("day");
-
-  /* ================= SNAPSHOT AVAILABILITY ================= */
+  const [exportRange, setExportRange] = useState("day"); // day | week | month
   const [isTodayAvailable, setIsTodayAvailable] = useState(false);
 
-  /* ================= WEEKLY FOCUS LOGIC ================= */
-  const WEEK_LENGTH = 7;
-  const [weeklyFocus, setWeeklyFocus] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("weeklyFocus"));
-    } catch {
-      return null;
-    }
-  });
-
-  const [focusOpen, setFocusOpen] = useState(false);
-  const [focusPreview, setFocusPreview] = useState(null);
-
-  const getCurrentWeekIndex = () => {
-    return Math.floor((cycleDay - 1) / WEEK_LENGTH);
-  };
-
-  const FOCUS_OPTIONS = [
-    { key: "stability", label: "Stability" },
-    { key: "spending", label: "Spending behavior" },
-    { key: "resilience", label: "Resilience" },
-    { key: "direction", label: "Direction" },
-  ];
-
-  const confirmWeeklyFocus = () => {
-    if (!focusPreview) return;
-    const focus = {
-      key: focusPreview,
-      weekIndex: getCurrentWeekIndex(),
-      setAt: Date.now(),
-    };
-    setWeeklyFocus(focus);
-    localStorage.setItem("weeklyFocus", JSON.stringify(focus));
-    setFocusPreview(null);
-  };
-
-  /* ================= INPUTS STATE ================= */
+  /* ================= FINANCIAL INPUTS ================= */
   const [inputs, setInputs] = useState({
     income: 4000,
     housing: 1200,
@@ -347,103 +260,108 @@ export default function PremiumMonth() {
     other: 300,
   });
 
-  const update = (key, value) => {
-    setInputs({ ...inputs, [key]: Number(value) });
-    setAiVisible(false);
-    setAiCollapsed(true);
-    setDailyDual(null);
-    setDailySnapshot(null);
-    setSelectedDay(null);
-  };
+  /* ================= WEEKLY FOCUS LOGIC ================= */
+  const FOCUS_OPTIONS = [
+    { key: "resilience", label: "Structural Resilience" },
+    { key: "efficiency", label: "Capital Efficiency" },
+    { key: "growth", label: "Long-term Growth" },
+    { key: "liquidity", label: "Liquidity Buffer" },
+  ];
 
-  /* ================= CYCLE DAY CALCULATION ================= */
+  const [weeklyFocus, setWeeklyFocus] = useState(null);
+  const [focusOpen, setFocusOpen] = useState(false);
+  const [focusPreview, setFocusPreview] = useState(null);
+
   useEffect(() => {
-    const start =
-      localStorage.getItem("subscriptionPeriodStart") ||
-      localStorage.getItem("monthCycleStart");
-
-    if (!start) {
-      localStorage.setItem("monthCycleStart", Date.now().toString());
-      setCycleDay(1);
-    } else {
-      const diff = Math.floor((Date.now() - Number(start)) / 86400000);
-      setCycleDay(Math.min(diff + 1, 30));
+    const saved = localStorage.getItem("wealthy_weekly_focus");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      const today = new Date();
+      const savedDate = new Date(parsed.timestamp);
+      const diff = (today - savedDate) / (1000 * 60 * 60 * 24);
+      if (diff < 7) setWeeklyFocus(parsed);
     }
   }, []);
 
-  /* ================= SNAPSHOT AVAILABILITY CHECK ================= */
-  useEffect(() => {
-    const today = getTodayKey();
-    const key = `dailyAvailableAt_${today}`;
-    let availableAt = localStorage.getItem(key);
-
-    if (!availableAt) {
-      const randomOffsetMs = Math.floor(Math.random() * 6 * 60 * 60 * 1000);
-      const base = new Date();
-      base.setHours(7, 0, 0, 0);
-      availableAt = base.getTime() + randomOffsetMs;
-      localStorage.setItem(key, availableAt.toString());
-    }
-
-    const check = () => {
-      if (Date.now() >= Number(availableAt)) {
-        setIsTodayAvailable(true);
-      }
-    };
-    check();
-    const i = setInterval(check, 60000);
-    return () => clearInterval(i);
-  }, [cycleDay]);
-
-  /* ================= DAILY SIGNAL FETCH EFFECT ================= */
-  useEffect(() => {
-    const unlockAt = getDailyUnlockTime();
-    const check = async () => {
-      if (Date.now() < unlockAt) return;
-      const seenKey = "dailySignalSeen_" + getTodayKey();
-      const cached = localStorage.getItem(seenKey);
-
-      if (cached) {
-        setDailySignal(cached);
-        setDailyPending(false);
-        return;
-      }
-
-      const r = await fetch("/api/get-daily-signal", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ region, country, cycleDay }),
-      });
-
-      const j = await r.json();
-      if (j?.signal) {
-        localStorage.setItem(seenKey, j.signal);
-        setDailySignal(j.signal);
-      }
-      setDailyPending(false);
-    };
-
-    const t = setInterval(check, 30000);
-    check();
-    return () => clearInterval(t);
-  }, [region, country, cycleDay]);
-
-  /* ================= BRIEFING STORAGE ================= */
-  const saveBriefing = dual => {
-    const today = getTodayKey();
-    const stored = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
-    if (!stored.find(b => b.date === today)) {
-      stored.push({
-        id: Date.now(),
-        date: today,
-        cycleDay,
-        executive: dual.executive,
-        directive: dual.directive,
-      });
-      localStorage.setItem("monthlyBriefings", JSON.stringify(stored.slice(-30)));
-    }
+  const getCurrentWeekIndex = () => {
+    const day = new Date().getDate();
+    return Math.floor((day - 1) / 7);
   };
 
+  const confirmWeeklyFocus = () => {
+    const data = { key: focusPreview, timestamp: new Date().getTime() };
+    setWeeklyFocus(data);
+    localStorage.setItem("wealthy_weekly_focus", JSON.stringify(data));
+    setFocusOpen(false);
+  };
+
+  /* ================= DYNAMIC HEIGHT OBSERVER ================= */
+  // Ez figyeli az AI doboz magasságát, hogy a SpiderNet pontosan kövesse
+  useEffect(() => {
+    if (!isMobile && aiVisible && aiBoxRef.current) {
+      const observer = new ResizeObserver((entries) => {
+        for (let entry of entries) {
+          setAiBoxHeight(entry.contentRect.height);
+        }
+      });
+
+      observer.observe(aiBoxRef.current);
+      return () => observer.disconnect();
+    }
+  }, [aiVisible, isMobile]);
+
+  /* ================= INITIALIZATION & SIGNALS ================= */
+  useEffect(() => {
+    const day = Math.min(new Date().getDate(), 30);
+    setCycleDay(day);
+
+    const unlockAt = getDailyUnlockTime();
+    const checkSignal = () => {
+      const now = new Date().getTime();
+      if (now >= unlockAt) {
+        setDailyPending(false);
+        const signals = [
+          "Structural integrity remains stable. Monitoring energy volatility.",
+          "Defensive posture recommended. Global indices showing friction.",
+          "Liquidity consolidation phase. Watch for service inflation.",
+          "Optimization window opening. Core structural costs are primary.",
+          "Standard cycle movement. No immediate divergence detected."
+        ];
+        setDailySignal(signals[day % signals.length]);
+      } else {
+        setDailyPending(true);
+      }
+    };
+
+    checkSignal();
+    const timer = setInterval(checkSignal, 60000);
+
+    const today = getTodayKey();
+    const snapshots = getMonthlySnapshots() || [];
+    const todaySnap = snapshots.find((s) => s.date === today);
+    if (todaySnap) {
+      setDailySnapshot(todaySnap);
+      setIsTodayAvailable(true);
+    }
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const update = (key, value) => {
+    setInputs({ ...inputs, [key]: Number(value) });
+    setAiVisible(false);
+    setDailyDual(null);
+  };
+
+  const saveBriefing = (snapshot) => {
+    const today = getTodayKey();
+    const entry = { ...snapshot, date: today, cycleDay };
+    const existing = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
+    if (!existing.find((b) => b.date === today)) {
+      existing.push(entry);
+      localStorage.setItem("monthlyBriefings", JSON.stringify(existing));
+    }
+  };
   /* ================= AI RUNNERS ================= */
   const runAI = async () => {
     setLoading(true);
@@ -472,13 +390,16 @@ export default function PremiumMonth() {
         setAiCollapsed(false);
         saveBriefing(json.snapshot);
       }
-    } catch {}
+    } catch (err) {
+      console.error("AI Briefing failed", err);
+    }
     setLoading(false);
   };
 
   const runAIDual = async () => {
-    if (!isTodayAvailable) {
-      alert("Today's snapshot is not available yet.");
+    // Csak akkor mentünk napi snapshotot, ha a szignál már elérhető
+    if (dailyPending) {
+      alert("Today's signal is still forming. Please wait until it unlocks.");
       return;
     }
     setLoading(true);
@@ -503,15 +424,19 @@ export default function PremiumMonth() {
       if (data?.snapshot) {
         saveMonthlySnapshot(data.snapshot);
         setDailySnapshot(data.snapshot);
+        setIsTodayAvailable(true);
         setViewMode("executive");
         setAiVisible(true);
         setAiCollapsed(false);
       }
-    } catch {}
+    } catch (err) {
+      console.error("Snapshot save failed", err);
+    }
     setLoading(false);
   };
 
   /* ================= ACTIVE CONTENT RESOLUTION ================= */
+  // Kiválasztja, hogy az aktuális AI szöveg, vagy egy korábbi archív elem jelenjen meg
   const activeSnapshot = selectedDay
     ? getSnapshotByDay(selectedDay)
     : dailySnapshot;
@@ -525,10 +450,11 @@ export default function PremiumMonth() {
       : activeDual.directive);
 
    /* ================= EXPORT & PERSISTENCE LOGIC ================= */
-  const getBriefings = range => {
+  const getBriefings = (range) => {
     const legacy = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
     const snapshots = getMonthlySnapshots() || [];
     
+    // Összefésülés duplikáció nélkül
     const combined = [...legacy];
     snapshots.forEach(s => {
       if (!combined.find(b => b.date === s.date)) {
@@ -570,16 +496,21 @@ export default function PremiumMonth() {
 
   const downloadPDF = async () => {
     if (!activeText) return;
-    const res = await fetch("/api/export-month-pdf", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: activeText, cycleDay, region }),
-    });
-    const url = URL.createObjectURL(await res.blob());
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "wealthyai-monthly-briefing.pdf";
-    a.click();
+    try {
+      const res = await fetch("/api/export-month-pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: activeText, cycleDay, region }),
+      });
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `wealthyai-briefing-day${cycleDay}.pdf`;
+      a.click();
+    } catch (err) {
+      console.error("PDF export failed", err);
+    }
   };
 
   const sendEmailPDF = async () => {
@@ -591,12 +522,12 @@ export default function PremiumMonth() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: activeText, cycleDay, region }),
       });
+      alert("Briefing sent to your registered email.");
     } catch (err) {
       console.error("Email failed", err);
     }
     setEmailSending(false);
   };
-
   /* ================= RENDER LOGIC ================= */
   return (
     <div
@@ -628,6 +559,10 @@ export default function PremiumMonth() {
         @keyframes marquee {
           0% { transform: translateX(100%); }
           100% { transform: translateX(-100%); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
 
@@ -670,7 +605,7 @@ export default function PremiumMonth() {
       <div style={signalBox}>
         <strong>Today’s Signal</strong>
         {dailyPending ? (
-          <p style={{ opacity: 0.7 }}>Today’s signal is still forming.</p>
+          <p style={{ opacity: 0.7 }}>Today’s signal is still forming...</p>
         ) : (
           <p>{dailySignal}</p>
         )}
@@ -738,7 +673,7 @@ export default function PremiumMonth() {
           gap: isMobile ? 20 : layout.gap,
         }}
       >
-        {/* LEFT COLUMN */}
+        {/* LEFT COLUMN: INPUTS & SIMULATION */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <div style={card}>
             <h3>Monthly Financial Structure</h3>
@@ -747,6 +682,7 @@ export default function PremiumMonth() {
             
             <Section title="Living">
               <Row label="Housing" value={inputs.housing} onChange={v => update("housing", v)} />
+              <Row label="Unexpected" value={inputs.unexpected} onChange={v => update("unexpected", v)} />
             </Section>
 
             <Section title="Utilities">
@@ -758,10 +694,14 @@ export default function PremiumMonth() {
             <Section title="Recurring Services">
               <Row label="Internet" value={inputs.internet} onChange={v => update("internet", v)} />
               <Row label="Mobile phone" value={inputs.mobile} onChange={v => update("mobile", v)} />
+              <Row label="TV / Streaming" value={inputs.tv} onChange={v => update("tv", v)} />
               <Row label="Insurance" value={inputs.insurance} onChange={v => update("insurance", v)} />
+              <Row label="Banking fees" value={inputs.banking} onChange={v => update("banking", v)} />
+              <Row label="Other" value={inputs.other} onChange={v => update("other", v)} />
             </Section>
 
             <Divider />
+            
             <div style={{ padding: "10px 0" }}>
               <strong style={{ color: "#10b981", fontSize: 13, display: "block", marginBottom: 10 }}>
                 STRUCTURAL STRESS TEST
@@ -772,6 +712,7 @@ export default function PremiumMonth() {
                 onChange={(e) => {
                   setStressFactor(parseFloat(e.target.value));
                   setSimulationActive(true);
+                  setAiVisible(false);
                 }}
                 style={{ width: "100%", accentColor: "#10b981", cursor: "pointer" }}
               />
@@ -801,21 +742,22 @@ export default function PremiumMonth() {
             </button>
           </div>
 
-          {/* SPIDERNET CONTAINER - DINAMIKUSAN KÖVETI AZ AI DOBOZ MAGASSÁGÁT */}
-          {aiVisible && !selectedDay && !isMobile && (
+          {/* SPIDERNET CONTAINER - DINAMIKUS MAGASSÁG */}
+          {aiVisible && !isMobile && (
             <div style={{ 
               borderRadius: 16, 
-              border: "none", // Keret eltávolítva
               overflow: 'hidden',
-              background: "rgba(2,6,23,0.4)"
+              background: "rgba(2,6,23,0.4)",
+              transition: "all 0.3s ease"
             }}>
               <SpiderNet isMobile={isMobile} height={aiBoxHeight} />
             </div>
           )}
         </div>
 
-        {/* RIGHT COLUMN */}
+        {/* RIGHT COLUMN: AI OUTPUT & ARCHIVE */}
         <div style={card} ref={aiBoxRef}>
+          {/* Üres állapot / Filozófia */}
           {!aiVisible && !simulationActive && (
             <div style={{ padding: "10px", animation: "fadeIn 0.8s ease-in" }}>
               <strong style={{ color: "#10b981", fontSize: 12, letterSpacing: 1 }}>WEALTHYAI PHILOSOPHY</strong>
@@ -831,6 +773,7 @@ export default function PremiumMonth() {
             </div>
           )}
 
+          {/* Szimulációs motor nézete */}
           {simulationActive && !aiVisible && (
             <div style={{ padding: "10px", animation: "fadeIn 0.3s ease-out" }}>
               <strong style={{ color: "#10b981", fontSize: 12 }}>LIVE SIMULATION ENGINE</strong>
@@ -854,6 +797,7 @@ export default function PremiumMonth() {
             </div>
           )}
 
+          {/* AI Briefing nézete */}
           {aiVisible && (
             <div style={{ animation: "fadeIn 0.4s ease-out" }}>
               <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
@@ -898,6 +842,8 @@ export default function PremiumMonth() {
           )}
 
           <Divider />
+          
+          {/* Archívum kezelés */}
           <button onClick={() => setArchiveOpen(!archiveOpen)} style={{ ...exportBtn, width: "100%" }}>
             {archiveOpen ? "Hide past days" : "View past days"}
           </button>
@@ -908,7 +854,11 @@ export default function PremiumMonth() {
                 <button
                   key={s.date}
                   onClick={() => { setSelectedDay(s.cycleDay); setAiVisible(true); setSimulationActive(false); }}
-                  style={{ ...exportBtn, textAlign: "left" }}
+                  style={{ 
+                    ...exportBtn, 
+                    textAlign: "left",
+                    background: selectedDay === s.cycleDay ? "rgba(56,189,248,0.1)" : "transparent"
+                  }}
                 >
                   Day {s.cycleDay} — {s.date}
                 </button>
@@ -922,9 +872,13 @@ export default function PremiumMonth() {
   );
 }
 
-/* ================= STYLES & HELPERS ================= */
+/* ================= HELPER COMPONENTS & STYLES ================= */
 const Section = ({ title, children }) => (
-  <><Divider /><strong style={{fontSize: 14, color: "#7dd3fc", display: "block", marginBottom: 8}}>{title}</strong>{children}</>
+  <>
+    <Divider />
+    <strong style={{fontSize: 14, color: "#7dd3fc", display: "block", marginBottom: 8}}>{title}</strong>
+    {children}
+  </>
 );
 
 const Row = ({ label, value, onChange }) => (
@@ -946,6 +900,7 @@ const Divider = () => (
   <div style={{ height: 1, background: "#1e293b", margin: "16px 0" }} />
 );
 
+/* STYLES OBJECTS */
 const page = {
   minHeight: "100vh", position: "relative", padding: "40px 20px", color: "#e5e7eb", fontFamily: "Inter, system-ui", backgroundColor: "#020617",
   backgroundImage: `repeating-linear-gradient(-25deg, rgba(56,189,248,0.04) 0px, rgba(56,189,248,0.04) 1px, transparent 1px, transparent 180px), repeating-linear-gradient(35deg, rgba(167,139,250,0.04) 0px, rgba(167,139,250,0.04) 1px, transparent 1px, transparent 260px), radial-gradient(circle at 20% 30%, rgba(56,189,248,0.14), transparent 45%), radial-gradient(circle at 80% 60%, rgba(167,139,250,0.14), transparent 50%), url("/wealthyai/icons/generated.png")`,
