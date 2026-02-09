@@ -23,7 +23,7 @@ function SpiderNet({ isMobile }) {
     let animationFrameId;
 
     let particles = [];
-    const particleCount = 220; // Még sűrűbb amőba
+    const particleCount = 220; 
     const connectionDistance = 140; 
     const mouse = { x: null, y: null, radius: 150 };
 
@@ -265,10 +265,10 @@ export default function DayPremium() {
           ...layout,
           gridTemplateColumns: isMobile ? "1fr" : "1fr 1.3fr",
           gap: isMobile ? "20px" : "40px",
-          alignItems: 'stretch' // Kifeszíti az oszlopokat, hogy a magasság egyezzen
+          alignItems: 'stretch'
         }}>
           {/* BAL OSZLOP */}
-          <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
             <Metric label="MONTHLY SURPLUS" value={`$${surplus.toLocaleString()}`} isMobile={isMobile} />
             <Metric label="SAVINGS RATE" value={`${savingsRate.toFixed(1)}%`} isMobile={isMobile} />
             <Metric
@@ -277,8 +277,7 @@ export default function DayPremium() {
               isMobile={isMobile}
             />
 
-            {/* AI Box és alatta az animáció */}
-            <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ flex: 1 }}>
               {aiOpen && (
                 <div style={aiBox}>
                   <div style={aiHeader}>
@@ -288,17 +287,9 @@ export default function DayPremium() {
                   <pre style={aiTextStyle}>{aiText}</pre>
                 </div>
               )}
-              
-              {/* Animáció az üres térben az AI box mellett/alatt */}
-              {aiOpen && !isMobile && (
-                <div style={{ flex: 1, marginTop: '20px', minHeight: '150px' }}>
-                  <SpiderNet isMobile={isMobile} />
-                </div>
-              )}
             </div>
 
-            {/* GOMB - Mindig az oszlop alján marad, igazodva a grafikonokhoz */}
-            <div style={{ marginTop: 'auto', paddingTop: '20px' }}>
+            <div style={{ marginTop: '20px' }}>
               <button onClick={askAI} style={aiButton}>
                 {loading ? "ANALYZING…" : "GENERATE AI STRATEGY"}
               </button>
@@ -306,7 +297,7 @@ export default function DayPremium() {
           </div>
 
           {/* JOBB OSZLOP */}
-          <div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div style={inputPanel}>
               {["income", "fixed", "variable"].map((k) => (
                 <div key={k} style={inputRow}>
@@ -330,6 +321,13 @@ export default function DayPremium() {
               <MiniChart title="Cash Flow Projection" data={chartData} />
               <MiniBar title="Expense Distribution" value={data.fixed + data.variable} />
             </div>
+
+            {/* AZ AMŐBA HELYE: Diagramok alatt, kitöltve a maradék helyet */}
+            {!isMobile && aiOpen && (
+              <div style={{ flex: 1, marginTop: '20px', minHeight: '200px' }}>
+                <SpiderNet isMobile={isMobile} />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -460,7 +458,6 @@ const aiBox = {
   borderRadius: "12px",
   padding: "16px",
   backdropFilter: "blur(10px)",
-  zIndex: 2
 };
 
 const aiHeader = { display: "flex", justifyContent: "space-between", marginBottom: 10 };
