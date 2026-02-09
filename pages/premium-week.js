@@ -214,6 +214,19 @@ export default function PremiumWeek() {
     setLoading(false);
   };
 
+  /* ===== TICKER COMPONENT ===== */
+  const WealthyTicker = () => {
+    if (isMobile) return null;
+    const tickerText = "WealthyAI interprets your financial state over time — not advice, not prediction, just clarity • Interpretation over advice • Clarity over certainty • Insight unfolds over time • Financial understanding isn’t instant • Context changes • Insight follows time • Clarity over certainty • Built on time, not urgency • ";
+    return (
+      <div style={{ position: "absolute", top: 10, left: 0, width: "100%", height: 18, overflow: "hidden", zIndex: 20, pointerEvents: "none" }}>
+        <div style={{ display: "inline-block", whiteSpace: "nowrap", fontSize: 11, letterSpacing: "0.08em", color: "rgba(255,255,255,0.75)", animation: "waiScroll 45s linear infinite" }}>
+          <span>{tickerText}</span><span>{tickerText}</span>
+        </div>
+      </div>
+    );
+  };
+
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
@@ -232,6 +245,7 @@ export default function PremiumWeek() {
 
   return (
     <div style={page}>
+      <WealthyTicker />
       <a href="/help" style={helpButton}>Help</a>
 
       <div style={{...contentWrap, padding: isMobile ? "60px 15px 120px 15px" : "40px"}}>
@@ -289,7 +303,6 @@ export default function PremiumWeek() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {/* A ref most már a teljes tartalmat tartalmazza, beleértve az AI gombot/boxot is */}
             <div ref={rightColRef} style={{ display: 'flex', flexDirection: 'column' }}>
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16 }}>
                 <Chart title="Daily spending vs Income">
@@ -355,7 +368,6 @@ export default function PremiumWeek() {
               )}
             </div>
 
-            {/* Az amőba csak akkor jelenik meg, ha a jobb oldal rövidebb, mint a kinyitott bal oldal */}
             {!isMobile && !aiOpen && rightNetHeight > 0 && (
               <div style={{ flex: 1, overflow: 'hidden' }}>
                 <SpiderNet isMobile={isMobile} height={rightNetHeight} color="#a78bfa" />
@@ -367,6 +379,13 @@ export default function PremiumWeek() {
 
       <div style={footerText}>© 2026 WealthyAI — All rights reserved.</div>
       <div style={upsellText}>Active Intelligence: {country} Database</div>
+
+      <style>{`
+        @keyframes waiScroll {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-50%); }
+        }
+      `}</style>
     </div>
   );
 }
