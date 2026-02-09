@@ -743,16 +743,18 @@ export default function PremiumMonth() {
           </div>
 
           {/* SPIDERNET CONTAINER - DINAMIKUS MAGASSÁG */}
-          {aiVisible && !isMobile && (
-            <div style={{ 
-              borderRadius: 16, 
-              overflow: 'hidden',
-              background: "rgba(2,6,23,0.4)",
-              transition: "all 0.3s ease"
-            }}>
-              <SpiderNet isMobile={isMobile} height={aiBoxHeight} />
-            </div>
-          )}
+        {aiVisible && !isMobile && (
+  <div style={{ 
+    borderRadius: 16, 
+    overflow: 'hidden',
+    background: "rgba(2,6,23,0.4)",
+    transition: "all 0.3s ease",
+    height: aiBoxHeight
+  }}>
+    <SpiderNet isMobile={isMobile} height={aiBoxHeight} />
+  </div>
+)}
+
         </div>
 
         {/* RIGHT COLUMN: AI OUTPUT & ARCHIVE */}
