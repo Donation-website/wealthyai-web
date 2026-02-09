@@ -6,7 +6,7 @@ import {
   getSnapshotByDay,
 } from "../lib/monthlyArchive";
 
-/* ================= DAILY SIGNAL UNLOCK ================= */
+/* ================= DAILY SIGNAL UNLOCK LOGIC ================= */
 
 const DAILY_SIGNAL_KEY = "dailySignalUnlock";
 
@@ -20,7 +20,8 @@ function getDailyUnlockTime() {
 
   if (stored.date === today) return stored.unlockAt;
 
-  const hour = Math.floor(Math.random() * 10) + 7; // 07–16
+  // Random unlock between 07:00 and 16:59
+  const hour = Math.floor(Math.random() * 10) + 7;
   const minute = Math.floor(Math.random() * 60);
 
   const unlockAt = new Date();
@@ -34,7 +35,7 @@ function getDailyUnlockTime() {
   return unlockAt.getTime();
 }
 
-/* ================= REGIONS ================= */
+/* ================= REGIONS & CONSTANTS ================= */
 
 const REGIONS = [
   { code: "US", label: "United States" },
@@ -57,11 +58,18 @@ export default function PremiumMonth() {
 
   /* ================= SIMULATION & STRESS STATE ================= */
   const [simulationActive, setSimulationActive] = useState(false);
-  const [stressFactor, setStressFactor] = useState(0); // 0 to 1 (0% to 100%)
+  const [stressFactor, setStressFactor] = useState(0); // 0 to 1
 
   const calculateFragility = () => {
     const energy = (inputs.electricity + inputs.gas) * (1 + stressFactor);
-    const fixed = inputs.housing + inputs.insurance + inputs.banking + energy;
+    const fixed = 
+      inputs.housing + 
+      inputs.insurance + 
+      inputs.banking + 
+      inputs.internet + 
+      inputs.mobile + 
+      inputs.tv + 
+      energy;
     const ratio = (fixed / inputs.income) * 100;
     return Math.min(Math.max(ratio, 0), 100).toFixed(1);
   };
@@ -97,7 +105,6 @@ export default function PremiumMonth() {
 
   useEffect(() => {
     let cancelled = false;
-
     const detect = async () => {
       try {
         const r = await fetch("/api/detect-region");
@@ -110,18 +117,14 @@ export default function PremiumMonth() {
         /* silent fallback */
       }
     };
-
     detect();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   /* ================= CORE STATE ================= */
 
   const [viewMode, setViewMode] = useState("executive");
   const [cycleDay, setCycleDay] = useState(1);
-
   const [loading, setLoading] = useState(false);
   const [emailSending, setEmailSending] = useState(false);
 
@@ -139,10 +142,8 @@ export default function PremiumMonth() {
 
   const [dailyDual, setDailyDual] = useState(null);
   const [dailySnapshot, setDailySnapshot] = useState(null);
-
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState(null);
-
   const [exportRange, setExportRange] = useState("day");
 
   /* ================= SNAPSHOT AVAILABILITY ================= */
@@ -152,10 +153,10 @@ export default function PremiumMonth() {
   /* ================= WEEKLY FOCUS ================= */
 
   const WEEK_LENGTH = 7;
-
   const [weeklyFocus, setWeeklyFocus] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem("weeklyFocus"));
+      const saved = localStorage.getItem("weeklyFocus");
+      return saved ? JSON.parse(saved) : null;
     } catch {
       return null;
     }
@@ -177,13 +178,11 @@ export default function PremiumMonth() {
 
   const confirmWeeklyFocus = () => {
     if (!focusPreview) return;
-
     const focus = {
       key: focusPreview,
       weekIndex: getCurrentWeekIndex(),
       setAt: Date.now(),
     };
-
     setWeeklyFocus(focus);
     localStorage.setItem("weeklyFocus", JSON.stringify(focus));
     setFocusPreview(null);
@@ -208,7 +207,6 @@ export default function PremiumMonth() {
 
   const update = (key, value) => {
     setInputs({ ...inputs, [key]: Number(value) });
-
     setAiVisible(false);
     setAiCollapsed(true);
     setDailyDual(null);
@@ -219,10 +217,7 @@ export default function PremiumMonth() {
   /* ================= CYCLE LOGIC ================= */
 
   useEffect(() => {
-    const start =
-      localStorage.getItem("subscriptionPeriodStart") ||
-      localStorage.getItem("monthCycleStart");
-
+    const start = localStorage.getItem("subscriptionPeriodStart") || localStorage.getItem("monthCycleStart");
     if (!start) {
       localStorage.setItem("monthCycleStart", Date.now().toString());
       setCycleDay(1);
@@ -237,12 +232,10 @@ export default function PremiumMonth() {
   useEffect(() => {
     const today = getTodayKey();
     const key = `dailyAvailableAt_${today}`;
-
     let availableAt = localStorage.getItem(key);
 
     if (!availableAt) {
-      const randomOffsetMs =
-        Math.floor(Math.random() * 6 * 60 * 60 * 1000);
+      const randomOffsetMs = Math.floor(Math.random() * 6 * 60 * 60 * 1000);
       const base = new Date();
       base.setHours(7, 0, 0, 0);
       availableAt = base.getTime() + randomOffsetMs;
@@ -254,7 +247,6 @@ export default function PremiumMonth() {
         setIsTodayAvailable(true);
       }
     };
-
     check();
     const i = setInterval(check, 60000);
     return () => clearInterval(i);
@@ -264,10 +256,8 @@ export default function PremiumMonth() {
 
   useEffect(() => {
     const unlockAt = getDailyUnlockTime();
-
     const check = async () => {
       if (Date.now() < unlockAt) return;
-
       const seenKey = "dailySignalSeen_" + getTodayKey();
       const cached = localStorage.getItem(seenKey);
 
@@ -280,11 +270,7 @@ export default function PremiumMonth() {
       const r = await fetch("/api/get-daily-signal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          region,
-          country,
-          cycleDay,
-        }),
+        body: JSON.stringify({ region, country, cycleDay }),
       });
 
       const j = await r.json();
@@ -292,22 +278,18 @@ export default function PremiumMonth() {
         localStorage.setItem(seenKey, j.signal);
         setDailySignal(j.signal);
       }
-
       setDailyPending(false);
     };
-
     const t = setInterval(check, 30000);
     check();
-
     return () => clearInterval(t);
   }, [region, country, cycleDay]);
 
-  /* ================= LEGACY DAILY STORAGE ================= */
+  /* ================= LEGACY STORAGE ================= */
 
-  const saveBriefing = dual => {
+  const saveBriefing = (dual) => {
     const today = getTodayKey();
     const stored = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
-
     if (!stored.find(b => b.date === today)) {
       stored.push({
         id: Date.now(),
@@ -316,14 +298,11 @@ export default function PremiumMonth() {
         executive: dual.executive,
         directive: dual.directive,
       });
-      localStorage.setItem(
-        "monthlyBriefings",
-        JSON.stringify(stored.slice(-30))
-      );
+      localStorage.setItem("monthlyBriefings", JSON.stringify(stored.slice(-30)));
     }
   };
 
-  /* ================= DAILY AI ================= */
+  /* ================= RUN AI ================= */
 
   const runAI = async () => {
     setLoading(true);
@@ -352,8 +331,9 @@ export default function PremiumMonth() {
         setAiCollapsed(false);
         saveBriefing(json.snapshot);
       }
-    } catch {}
-
+    } catch (err) {
+      console.error("AI Error:", err);
+    }
     setLoading(false);
   };
   /* ================= SNAPSHOT AI ================= */
@@ -390,12 +370,14 @@ export default function PremiumMonth() {
         setAiVisible(true);
         setAiCollapsed(false);
       }
-    } catch {}
+    } catch (err) {
+      console.error("Snapshot AI Error:", err);
+    }
 
     setLoading(false);
   };
 
-  /* ================= ACTIVE CONTENT ================= */
+  /* ================= ACTIVE CONTENT LOGIC ================= */
 
   const activeSnapshot = selectedDay
     ? getSnapshotByDay(selectedDay)
@@ -409,9 +391,9 @@ export default function PremiumMonth() {
       ? activeDual.executive
       : activeDual.directive);
 
-  /* ================= EXPORT LOGIC ================= */
+  /* ================= EXPORT & DOWNLOAD LOGIC ================= */
 
-  const getBriefings = range => {
+  const getBriefings = (range) => {
     const legacy = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
     const snapshots = getMonthlySnapshots() || [];
     
@@ -461,10 +443,11 @@ export default function PremiumMonth() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text: activeText, cycleDay, region }),
     });
-    const url = URL.createObjectURL(await res.blob());
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "wealthyai-monthly-briefing.pdf";
+    a.download = `wealthyai-briefing-day-${cycleDay}.pdf`;
     a.click();
   };
 
@@ -477,22 +460,25 @@ export default function PremiumMonth() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: activeText, cycleDay, region }),
       });
-    } catch {}
+      alert("Email sent successfully.");
+    } catch (err) {
+      alert("Error sending email.");
+    }
     setEmailSending(false);
   };
 
-  /* ================= RENDER ================= */
+  /* ================= RENDER START ================= */
 
   return (
     <div
       style={{
-        ...page,
+        ...pageStyle,
         overflowX: "hidden",
         width: "100%",
         boxSizing: "border-box"
       }}
     >
-      {/* TICKER SECTION - ÁTLÁTSZÓ ÉS FEHÉR BETŰS */}
+      {/* TICKER - ÁTLÁTSZÓ HÁTTÉR, TISZTA FEHÉR SZÖVEG */}
       <div style={tickerContainer}>
         <div style={tickerWrapper}>
           <div style={tickerTrack}>
@@ -509,6 +495,7 @@ export default function PremiumMonth() {
         <p style={subtitle}>Strategic financial outlook · Next 90 days</p>
       </div>
 
+      {/* REGION SELECTION */}
       <div style={regionRow}>
         <span style={regionLabel}>Region</span>
         <select
@@ -522,6 +509,7 @@ export default function PremiumMonth() {
         </select>
       </div>
 
+      {/* STATUS BOXES */}
       <div style={signalBox}>
         <strong>Cycle Status</strong>
         <p>Day {cycleDay} of your current monthly cycle.</p>
@@ -530,22 +518,23 @@ export default function PremiumMonth() {
       <div style={signalBox}>
         <strong>Today’s Signal</strong>
         {dailyPending ? (
-          <p style={{ opacity: 0.7 }}>Today’s signal is still forming.</p>
+          <p style={{ opacity: 0.7 }}>Today’s signal is still forming...</p>
         ) : (
           <p>{dailySignal}</p>
         )}
       </div>
 
+      {/* WEEKLY FOCUS UI */}
       <div style={signalBox}>
         <strong>Weekly focus</strong>
-        <p style={{ opacity: 0.75 }}>
+        <p style={{ opacity: 0.75, fontSize: 13, marginTop: 4 }}>
           {weeklyFocus 
             ? `Current focus: ${weeklyFocus.key.toUpperCase()}` 
-            : "Choose one focus area for this week. This affects how your data is interpreted."}
+            : "Choose one focus area for this week to guide AI interpretation."}
         </p>
 
         <button onClick={() => setFocusOpen(!focusOpen)} style={exportBtn}>
-          {focusOpen ? "Close selection" : (weeklyFocus ? "Change selection" : "What is this?")}
+          {focusOpen ? "Close" : (weeklyFocus ? "Change selection" : "Select Focus")}
         </button>
 
         {focusOpen && (
@@ -568,112 +557,95 @@ export default function PremiumMonth() {
                     color: (focusPreview === f.key || isSelected) ? "#020617" : "#38bdf8",
                     marginBottom: 6,
                     display: "block",
-                    width: "100%"
+                    width: "100%",
+                    textAlign: "left"
                   }}
                 >
                   {f.label} {isSelected ? "✓" : ""}
                 </button>
               );
             })}
-
+            
             {focusPreview && !weeklyFocus && (
-              <div style={{ marginTop: 10 }}>
-                <p style={{ fontSize: 13, opacity: 0.7 }}>
-                  You selected <strong>{focusPreview}</strong> for this week.
-                  This cannot be changed later.
-                </p>
-                <button onClick={confirmWeeklyFocus} style={aiButton}>
-                  Confirm focus
-                </button>
-              </div>
+              <button onClick={confirmWeeklyFocus} style={{...aiButton, marginTop: 10}}>
+                Confirm {focusPreview.toUpperCase()}
+              </button>
             )}
           </div>
         )}
       </div>
 
+      {/* MAIN GRID LAYOUT */}
       <div
         style={{
           ...layout,
           gridTemplateColumns: isMobile ? "1fr" : layout.gridTemplateColumns,
           gap: isMobile ? 20 : layout.gap,
-          alignItems: "stretch",
           width: "100%",
           boxSizing: "border-box"
         }}
       >
-        {/* LEFT COLUMN: INPUTS & SIMULATION */}
+        {/* LEFT COLUMN: ALL INPUTS */}
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div style={card}>
-            <h3>Monthly Financial Structure</h3>
-
-            <Label>Income</Label>
-            <Input
-              value={inputs.income}
-              onChange={e => update("income", e.target.value)}
-            />
+            <h3 style={{fontSize: 16, marginBottom: 15}}>Financial Structure</h3>
+            
+            <Label>Monthly Income</Label>
+            <Input value={inputs.income} onChange={e => update("income", e.target.value)} />
+            
             <Divider />
 
-            <Section title="Living">
-              <Row
-                label="Housing"
-                value={inputs.housing}
-                onChange={v => update("housing", v)}
-              />
+            <Section title="Fixed Living">
+              <Row label="Housing / Rent" value={inputs.housing} onChange={v => update("housing", v)} />
+              <Row label="Insurance" value={inputs.insurance} onChange={v => update("insurance", v)} />
+              <Row label="Banking Fees" value={inputs.banking} onChange={v => update("banking", v)} />
             </Section>
 
-            <Section title="Utilities">
+            <Section title="Utilities & Energy">
               <Row label="Electricity" value={inputs.electricity} onChange={v => update("electricity", v)} />
               <Row label="Gas" value={inputs.gas} onChange={v => update("gas", v)} />
               <Row label="Water" value={inputs.water} onChange={v => update("water", v)} />
             </Section>
 
-            <Section title="Recurring Services">
+            <Section title="Digital & Services">
               <Row label="Internet" value={inputs.internet} onChange={v => update("internet", v)} />
-              <Row label="Mobile phone" value={inputs.mobile} onChange={v => update("mobile", v)} />
-              <Row label="Insurance" value={inputs.insurance} onChange={v => update("insurance", v)} />
+              <Row label="Mobile Plan" value={inputs.mobile} onChange={v => update("mobile", v)} />
+              <Row label="TV / Streaming" value={inputs.tv} onChange={v => update("tv", v)} />
+            </Section>
+
+            <Section title="Safety Buffer">
+              <Row label="Unexpected" value={inputs.unexpected} onChange={v => update("unexpected", v)} />
+              <Row label="Other" value={inputs.other} onChange={v => update("other", v)} />
             </Section>
 
             <Divider />
+
+            {/* STRESS TEST SLIDER */}
             <div style={{ padding: "10px 0" }}>
-              <strong style={{ color: "#10b981", fontSize: 13, display: "block", marginBottom: 10 }}>
-                STRUCTURAL STRESS TEST
-              </strong>
+              <strong style={{ color: "#10b981", fontSize: 13, display: "block", marginBottom: 10 }}>STRUCTURAL STRESS TEST</strong>
               <input 
-                type="range" min="0" max="1" step="0.01" 
-                value={stressFactor}
-                onChange={(e) => {
-                  setStressFactor(parseFloat(e.target.value));
-                  setSimulationActive(true);
-                }}
+                type="range" min="0" max="1" step="0.01" value={stressFactor}
+                onChange={(e) => { setStressFactor(parseFloat(e.target.value)); setSimulationActive(true); }}
                 style={{ width: "100%", accentColor: "#10b981", cursor: "pointer" }}
               />
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, opacity: 0.5, marginTop: 4 }}>
-                <span>BASE</span>
+              <div style={{display: "flex", justifyContent: "space-between", fontSize: 10, opacity: 0.5, marginTop: 5}}>
+                <span>NORMAL</span>
                 <span>CRISIS (+100%)</span>
               </div>
             </div>
 
+            {/* ACTION BUTTONS */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 20 }}>
-              <button 
-                onClick={() => { setSimulationActive(true); setAiVisible(false); }}
-                style={{ ...exportBtn, borderColor: "#10b981", color: "#10b981" }}
-              >
-                SIMULATE
-              </button>
-              <button onClick={runAI} style={{ ...aiButton, marginTop: 0 }}>
-                {loading ? "Generating..." : "GENERATE AI"}
-              </button>
+              <button onClick={() => { setSimulationActive(true); setAiVisible(false); }} style={{ ...exportBtn, borderColor: "#10b981", color: "#10b981" }}>SIMULATE</button>
+              <button onClick={runAI} style={{ ...aiButton, marginTop: 0 }}>{loading ? "PROCESSING..." : "GENERATE AI"}</button>
             </div>
-
-            <button
-              onClick={runAIDual}
-              style={{ ...exportBtn, marginTop: 12, width: "100%" }}
-            >
-              Save Today’s Snapshot
+            
+            <button onClick={runAIDual} style={{ ...exportBtn, width: "100%", marginTop: 12 }}>
+              {isTodayAvailable ? "Save Today's Snapshot" : "Snapshot Locked"}
             </button>
           </div>
 
-          {/* DYNAMIC TOPOGRAPHY FILLER - MAX MAGASSÁG ÉS AUTOMATIKUS ELTŰNÉS */}
+          {/* DYNAMIC TOPOGRAPHY - MAX MAGASSÁG KORLÁTTAL ÉS BEZÁRULÁSSAL */}
           {aiVisible && (
             <div style={{ 
               marginTop: 25, 
@@ -690,121 +662,66 @@ export default function PremiumMonth() {
           )}
         </div>
 
-        {/* RIGHT COLUMN: INTELLIGENCE & VISUALS */}
+        {/* RIGHT COLUMN: AI RESULTS & VISUALS */}
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ ...card, flexGrow: 1 }}>
+          <div style={{ ...card, flexGrow: 1, minHeight: 500 }}>
             
             {!aiVisible && !simulationActive && (
-              <div style={{ padding: "10px", animation: "fadeIn 0.8s ease-in", height: "100%", display: "flex", flexDirection: "column" }}>
-                <strong style={{ color: "#10b981", fontSize: 12, letterSpacing: 1 }}>SYSTEM STABILITY TOPOGRAPHY</strong>
+              <div style={{ padding: "10px", height: "100%", display: "flex", flexDirection: "column" }}>
+                <strong style={{ color: "#10b981", fontSize: 12 }}>SYSTEM STABILITY TOPOGRAPHY</strong>
                 <div style={{ flexGrow: 1, minHeight: 300 }}>
                     <Topography income={inputs.income} spawnNumbers={false} stressFactor={stressFactor} speed={1 + stressFactor * 2} />
                 </div>
-                <h2 style={{ fontSize: 22, marginTop: 20 }}>Interpretation, Not Advice.</h2>
-                <p style={{ opacity: 0.7, lineHeight: "1.6", fontSize: 14 }}>
-                  Our system assumes responsibility remains yours — we simply give you a clearer frame. Move the stress test to visualize structural fragility.
-                </p>
+                <h2 style={{fontSize: 22, marginTop: 20}}>Strategic Interpretation</h2>
+                <p style={{opacity: 0.7, lineHeight: 1.6}}>Modify inputs or run simulation to see structural fragility. AI analysis will appear here after generation.</p>
               </div>
             )}
 
             {simulationActive && !aiVisible && (
-              <div style={{ padding: "10px", animation: "fadeIn 0.3s ease-out" }}>
-                <strong style={{ color: "#10b981", fontSize: 12 }}>LIVE SIMULATION ENGINE</strong>
-                <h2 style={{ fontSize: 20, marginTop: 5 }}>Structural Fragility Index</h2>
-                
-                <div style={{ fontSize: 42, fontWeight: "bold", color: "#38bdf8", margin: "15px 0" }}>
-                  {calculateFragility()}%
+              <div style={{ padding: "10px" }}>
+                <strong style={{ color: "#10b981", fontSize: 12 }}>LIVE SIMULATION</strong>
+                <h2 style={{fontSize: 32, margin: "10px 0"}}>{calculateFragility()}%</h2>
+                <p style={{opacity: 0.6}}>Fragility Index at current stress levels.</p>
+                <div style={{ height: 200, marginTop: 20, borderRadius: 12, overflow: "hidden" }}>
+                  <Topography income={inputs.income} spawnNumbers={true} stressFactor={stressFactor} speed={2} />
                 </div>
-
-                <div style={{ height: 8, background: "rgba(255,255,255,0.05)", borderRadius: 4, overflow: "hidden" }}>
-                  <div style={{ 
-                    height: "100%", 
-                    width: `${calculateFragility()}%`, 
-                    background: "linear-gradient(90deg, #10b981, #38bdf8)",
-                    transition: "width 0.3s ease" 
-                  }} />
-                </div>
-
-                <p style={{ opacity: 0.6, fontSize: 13, marginTop: 15, lineHeight: "1.5" }}>
-                  At <strong>{Math.round(stressFactor * 100)}%</strong> simulated pressure, your core financial rigidity is 
-                  {parseFloat(calculateFragility()) > 55 ? " approaching a critical threshold." : " currently within structural limits."}
-                </p>
-
-                <div style={{ height: 250, marginTop: 20, borderRadius: 12, overflow: "hidden", border: "1px solid rgba(56,189,248,0.1)" }}>
-                  <Topography income={inputs.income} spawnNumbers={true} stressFactor={stressFactor} speed={1 + stressFactor * 2} />
-                </div>
-                
-                <button 
-                  onClick={() => setSimulationActive(false)} 
-                  style={{ ...exportBtn, marginTop: 20, fontSize: 12, opacity: 0.6 }}
-                >
-                  Reset view
-                </button>
+                <button onClick={() => setSimulationActive(false)} style={{...exportBtn, marginTop: 20}}>Reset View</button>
               </div>
             )}
 
             {aiVisible && (
-              <div>
-                <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
-                  <button
-                    onClick={() => setViewMode("executive")}
-                    style={{
-                      ...exportBtn,
-                      background: viewMode === "executive" ? "#38bdf8" : "transparent",
-                      color: viewMode === "executive" ? "#020617" : "#38bdf8",
-                    }}
-                  >
-                    Executive
-                  </button>
-
-                  <button
-                    onClick={() => setViewMode("directive")}
-                    style={{
-                      ...exportBtn,
-                      background: viewMode === "directive" ? "#38bdf8" : "transparent",
-                      color: viewMode === "directive" ? "#020617" : "#38bdf8",
-                    }}
-                  >
-                    Directive
-                  </button>
-                  <button 
-                    onClick={() => { setAiVisible(false); setSimulationActive(false); }} 
-                    style={{ ...exportBtn, maxWidth: 44 }}
-                  >
-                    ✕
-                  </button>
+              <div style={{animation: "fadeIn 0.5s ease"}}>
+                <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
+                  <button onClick={() => setViewMode("executive")} style={{ ...exportBtn, background: viewMode === "executive" ? "#38bdf8" : "transparent", color: viewMode === "executive" ? "#020617" : "#38bdf8" }}>Executive</button>
+                  <button onClick={() => setViewMode("directive")} style={{ ...exportBtn, background: viewMode === "directive" ? "#38bdf8" : "transparent", color: viewMode === "directive" ? "#020617" : "#38bdf8" }}>Directive</button>
+                  <button onClick={() => { setAiVisible(false); setSimulationActive(false); }} style={{ ...exportBtn, marginLeft: "auto" }}>✕</button>
                 </div>
-
+                
                 <pre style={aiTextStyle}>{activeText}</pre>
 
-                {!selectedDay && (
-                  <div style={{ marginTop: 16, display: "flex", gap: 12, flexWrap: "wrap" }}>
-                    <select value={exportRange} onChange={e => setExportRange(e.target.value)} style={exportSelect}>
+                {/* EXPORT TOOLS */}
+                <div style={{ marginTop: 30, display: "flex", gap: 10, flexWrap: "wrap", borderTop: "1px solid #1e293b", paddingTop: 20 }}>
+                   <select value={exportRange} onChange={e => setExportRange(e.target.value)} style={{...regionSelect, padding: 8}}>
                       <option value="day">Today</option>
-                      <option value="week">Last 7 days</option>
-                      <option value="month">This month</option>
-                    </select>
-                    <button onClick={handleDownload} style={exportBtn}>Download</button>
-                    <button onClick={downloadPDF} style={exportBtn}>PDF</button>
-                    <button onClick={sendEmailPDF} style={exportBtn}>{emailSending ? "..." : "Email"}</button>
-                  </div>
-                )}
+                      <option value="week">Week</option>
+                      <option value="month">Month</option>
+                   </select>
+                   <button onClick={handleDownload} style={exportBtn}>TXT</button>
+                   <button onClick={downloadPDF} style={exportBtn}>PDF</button>
+                   <button onClick={sendEmailPDF} style={exportBtn}>{emailSending ? "..." : "Email"}</button>
+                </div>
               </div>
             )}
 
+            {/* ARCHIVE TOGGLE */}
             <Divider />
             <button onClick={() => setArchiveOpen(!archiveOpen)} style={{ ...exportBtn, width: "100%" }}>
-              {archiveOpen ? "Hide past days" : "View past days"}
+              {archiveOpen ? "Hide Archive" : "View Past Days"}
             </button>
-
             {archiveOpen && (
-              <div style={{ marginTop: 10 }}>
+              <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5 }}>
                 {getMonthlySnapshots().map(s => (
-                  <button
-                    key={s.date}
-                    onClick={() => { setSelectedDay(s.cycleDay); setAiVisible(true); setSimulationActive(false); }}
-                    style={{ ...exportBtn, marginBottom: 4, width: "100%" }}
-                  >
+                  <button key={s.date} onClick={() => { setSelectedDay(s.cycleDay); setAiVisible(true); }} style={exportBtn}>
                     Day {s.cycleDay}
                   </button>
                 ))}
@@ -814,131 +731,82 @@ export default function PremiumMonth() {
         </div>
       </div>
 
-      <div style={footer}>© 2026 WealthyAI · Monthly Intelligence</div>
+      <div style={footer}>© 2026 WealthyAI · Proprietary Financial Intelligence System</div>
 
       <style jsx global>{`
-        @keyframes tickerMove {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes tickerMove { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
       `}</style>
     </div>
   );
 }
 
-/* ================= UI HELPERS & STYLES ================= */
+/* ================= COMPONENT HELPERS ================= */
 const Section = ({ title, children }) => (
-  <>
-    <Divider />
-    <strong style={{fontSize: 14, color: "#7dd3fc"}}>{title}</strong>
+  <div style={{marginTop: 15}}>
+    <strong style={{fontSize: 12, color: "#7dd3fc", letterSpacing: 0.5, textTransform: "uppercase"}}>{title}</strong>
     {children}
-  </>
+  </div>
 );
 
 const Row = ({ label, value, onChange }) => (
-  <div style={row}>
-    <span style={{fontSize: 13, opacity: 0.8}}>{label}</span>
-    <input type="number" value={value} onChange={e => onChange(e.target.value)} style={rowInput} />
+  <div style={rowStyle}>
+    <span style={{fontSize: 13, opacity: 0.7}}>{label}</span>
+    <input type="number" value={value} onChange={e => onChange(e.target.value)} style={rowInputStyle} />
   </div>
 );
 
 const Label = ({ children }) => (
-  <label style={{ marginBottom: 6, display: "block", fontSize: 13, opacity: 0.8 }}>{children}</label>
+  <label style={{ marginBottom: 6, display: "block", fontSize: 13, opacity: 0.8, fontWeight: "500" }}>{children}</label>
 );
 
 const Input = ({ value, onChange }) => (
-  <input type="number" value={value} onChange={onChange} style={input} />
+  <input type="number" value={value} onChange={onChange} style={inputStyle} />
 );
 
 const Divider = () => (
-  <div style={{ height: 1, background: "#1e293b", margin: "16px 0" }} />
+  <div style={{ height: 1, background: "#1e293b", margin: "20px 0" }} />
 );
 
-const page = {
+/* ================= STYLES ================= */
+const pageStyle = {
   minHeight: "100vh",
-  width: "100%",
-  position: "relative",
-  padding: "60px 20px 40px",
+  padding: "80px 20px 60px",
   color: "#e5e7eb",
-  fontFamily: "Inter, system-ui",
+  fontFamily: "Inter, system-ui, sans-serif",
   backgroundColor: "#020617",
   backgroundImage: `
     repeating-linear-gradient(-25deg, rgba(56,189,248,0.04) 0px, rgba(56,189,248,0.04) 1px, transparent 1px, transparent 180px),
     repeating-linear-gradient(35deg, rgba(167,139,250,0.04) 0px, rgba(167,139,250,0.04) 1px, transparent 1px, transparent 260px),
-    radial-gradient(circle at 20% 30%, rgba(56,189,248,0.14), transparent 45%),
-    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.14), transparent 50%)
+    radial-gradient(circle at 20% 30%, rgba(56,189,248,0.12), transparent 45%),
+    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.12), transparent 50%)
   `,
-  backgroundRepeat: "repeat",
-  backgroundSize: "auto, auto, 100% 100%, 100% 100%",
   backgroundAttachment: "fixed",
 };
 
-const tickerContainer = {
-  position: "fixed",
-  top: 0,
-  left: 0,
-  width: "100%",
-  height: 28,
-  background: "transparent", // Teljesen átlátszó háttér
-  borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
-  zIndex: 1000,
-  display: "flex",
-  alignItems: "center",
-  overflow: "hidden"
-};
-
+const tickerContainer = { position: "fixed", top: 0, left: 0, width: "100%", height: 32, background: "transparent", borderBottom: "1px solid rgba(255, 255, 255, 0.05)", zIndex: 1000, display: "flex", alignItems: "center", overflow: "hidden" };
 const tickerWrapper = { width: "100%", overflow: "hidden" };
-const tickerTrack = { display: "flex", whiteSpace: "nowrap", animation: "tickerMove 30s linear infinite" };
-const tickerText = { color: "#ffffff", fontSize: 10, fontWeight: "500", letterSpacing: 1, paddingRight: 50, opacity: 1 };
+const tickerTrack = { display: "flex", whiteSpace: "nowrap", animation: "tickerMove 40s linear infinite" };
+const tickerText = { color: "#ffffff", fontSize: 10, fontWeight: "600", letterSpacing: 1.5, paddingRight: 60 };
 
-const header = { textAlign: "center", marginBottom: 20 };
-const title = { fontSize: "2rem", margin: 0 };
-const subtitle = { marginTop: 8, color: "#cbd5f5", fontSize: 14 };
+const header = { textAlign: "center", marginBottom: 40 };
+const title = { fontSize: "2.2rem", fontWeight: "800", letterSpacing: "-0.02em", margin: 0 };
+const subtitle = { marginTop: 10, color: "#94a3b8", fontSize: 15 };
 
-const helpButton = {
-  position: "absolute",
-  top: 60,
-  right: 20,
-  padding: "6px 12px",
-  borderRadius: 8,
-  fontSize: 12,
-  textDecoration: "none",
-  color: "#7dd3fc",
-  border: "1px solid #1e293b",
-  background: "rgba(2,6,23,0.7)",
-};
+const helpButton = { position: "absolute", top: 80, right: 20, padding: "8px 16px", borderRadius: 8, fontSize: 12, textDecoration: "none", color: "#7dd3fc", border: "1px solid #1e293b", background: "rgba(2,6,23,0.6)" };
+const regionRow = { display: "flex", justifyContent: "center", alignItems: "center", gap: 12, marginBottom: 30 };
+const regionLabel = { color: "#7dd3fc", fontSize: 14, fontWeight: "600" };
+const regionSelect = { background: "#0f172a", color: "#f8fafc", border: "1px solid #1e293b", padding: "6px 12px", borderRadius: 8, outline: "none" };
 
-const regionRow = { display: "flex", justifyContent: "center", gap: 10, marginBottom: 20 };
-const regionLabel = { color: "#7dd3fc", fontSize: 14 };
-const regionSelect = { background: "#020617", color: "#e5e7eb", border: "1px solid #1e293b", padding: "4px 8px", borderRadius: 6 };
+const signalBox = { maxWidth: 800, margin: "0 auto 15px", padding: 18, border: "1px solid #1e293b", borderRadius: 14, background: "rgba(15,23,42,0.6)", backdropFilter: "blur(10px)" };
+const layout = { display: "grid", gridTemplateColumns: "400px 1fr", gap: 30, maxWidth: 1200, margin: "0 auto" };
+const card = { padding: 24, borderRadius: 20, border: "1px solid #1e293b", background: "rgba(15,23,42,0.7)", boxShadow: "0 10px 30px -10px rgba(0,0,0,0.5)" };
 
-const signalBox = { maxWidth: 800, margin: "0 auto 15px", padding: 14, border: "1px solid #1e293b", borderRadius: 12, background: "rgba(2,6,23,0.75)" };
+const inputStyle = { width: "100%", padding: "12px", background: "rgba(2,6,23,0.5)", border: "1px solid #1e293b", borderRadius: 10, color: "#fff", fontSize: 15, transition: "border 0.2s" };
+const rowStyle = { display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10 };
+const rowInputStyle = { width: 90, background: "transparent", border: "none", borderBottom: "1px solid #334155", color: "#38bdf8", textAlign: "right", padding: "4px", fontSize: 14, outline: "none" };
 
-const layout = { display: "grid", gridTemplateColumns: "1fr 1.3fr", gap: 25, maxWidth: 1100, margin: "0 auto" };
-const card = { padding: 20, borderRadius: 16, border: "1px solid #1e293b", background: "rgba(2,6,23,0.78)" };
-
-const input = { width: "100%", padding: 10, marginTop: 4, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, color: "white", boxSizing: "border-box" };
-const row = { display: "flex", justifyContent: "space-between", marginTop: 6 };
-const rowInput = { width: 80, background: "transparent", border: "none", borderBottom: "1px solid #38bdf8", color: "#38bdf8", textAlign: "right" };
-
-const aiButton = { marginTop: 20, width: "100%", padding: 12, background: "#38bdf8", border: "none", borderRadius: 10, fontWeight: "bold", cursor: "pointer", color: "#020617" };
-const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap", color: "#cbd5f5", fontSize: 14, lineHeight: "1.6" };
-
-const exportBtn = { padding: "8px 12px", borderRadius: 8, border: "1px solid #1e293b", background: "transparent", color: "#38bdf8", cursor: "pointer", fontSize: 13 };
-const exportSelect = { background: "transparent", color: "#e5e7eb", border: "1px solid #1e293b", padding: "8px", borderRadius: 8 };
-
-const footer = { 
-  position: "relative", 
-  marginTop: 60, 
-  textAlign: "left", 
-  fontSize: 11, 
-  color: "#64748b", 
-  paddingBottom: 20, 
-  maxWidth: 1100, 
-  margin: "60px auto 0", 
-  paddingLeft: 20 
-};
+const aiButton = { width: "100%", padding: "14px", background: "#38bdf8", border: "none", borderRadius: 12, fontWeight: "800", cursor: "pointer", color: "#020617", fontSize: 14, letterSpacing: 0.5, textTransform: "uppercase" };
+const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap", color: "#cbd5f5", fontSize: 15, lineHeight: "1.7", fontFamily: "inherit" };
+const exportBtn = { padding: "10px 16px", borderRadius: 10, border: "1px solid #1e293b", background: "transparent", color: "#38bdf8", cursor: "pointer", fontSize: 13, fontWeight: "600" };
+const footer = { marginTop: 80, textAlign: "center", fontSize: 12, color: "#475569", paddingBottom: 40 };
