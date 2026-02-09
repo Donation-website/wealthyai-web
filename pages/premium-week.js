@@ -173,7 +173,7 @@ export default function PremiumWeek() {
     };
     const timer = setTimeout(updateHeights, 100);
     return () => clearTimeout(timer);
-  }, [aiOpen, aiText, openDays, isMobile]);
+  }, [aiOpen, aiText, openDays, isMobile, incomeType, incomeValue]);
 
   const [week, setWeek] = useState(DAYS.reduce((acc, d) => {
     acc[d] = CATEGORIES.reduce((o, c) => ({ ...o, [c]: 0 }), {});
@@ -288,9 +288,10 @@ export default function PremiumWeek() {
             )}
           </div>
 
-          <div ref={rightColRef} style={{ display: 'flex', flexDirection: 'column' }}>
-            <div>
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? "1fr" : "1.2fr 1.3fr", gap: 16 }}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {/* A ref most már a teljes tartalmat tartalmazza, beleértve az AI gombot/boxot is */}
+            <div ref={rightColRef} style={{ display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16 }}>
                 <Chart title="Daily spending vs Income">
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#0f172a" />
@@ -342,22 +343,23 @@ export default function PremiumWeek() {
               <button onClick={runAI} style={aiButton}>
                 {loading ? "ANALYZING BEHAVIOR…" : "RUN WEEKLY AI ANALYSIS"}
               </button>
+
+              {aiOpen && (
+                <div style={aiBox}>
+                  <div style={aiHeader}>
+                    <strong>Weekly AI Insight</strong>
+                    <button onClick={() => setAiOpen(false)} style={closeBtn}>✕</button>
+                  </div>
+                  <pre style={aiTextStyle}>{aiText}</pre>
+                </div>
+              )}
             </div>
 
-            {aiOpen ? (
-              <div style={aiBox}>
-                <div style={aiHeader}>
-                  <strong>Weekly AI Insight</strong>
-                  <button onClick={() => setAiOpen(false)} style={closeBtn}>✕</button>
-                </div>
-                <pre style={aiTextStyle}>{aiText}</pre>
+            {/* Az amőba csak akkor jelenik meg, ha a jobb oldal rövidebb, mint a kinyitott bal oldal */}
+            {!isMobile && !aiOpen && rightNetHeight > 0 && (
+              <div style={{ flex: 1, overflow: 'hidden' }}>
+                <SpiderNet isMobile={isMobile} height={rightNetHeight} color="#a78bfa" />
               </div>
-            ) : (
-              !isMobile && rightNetHeight > 0 && (
-                <div style={{ flex: 1, overflow: 'hidden' }}>
-                  <SpiderNet isMobile={isMobile} height={rightNetHeight} color="#a78bfa" />
-                </div>
-              )
             )}
           </div>
         </div>
