@@ -11,7 +11,7 @@ import {
   Bar,
 } from "recharts";
 
-/* ===== ANIMATION COMPONENT (SpiderNet - HD & Dense) ===== */
+/* ===== ANIMATION COMPONENT (SpiderNet - HD & Ultra Dense) ===== */
 function SpiderNet({ isMobile }) {
   const canvasRef = useRef(null);
 
@@ -23,9 +23,9 @@ function SpiderNet({ isMobile }) {
     let animationFrameId;
 
     let particles = [];
-    const particleCount = 120; // Sűrűbb háló
-    const connectionDistance = 180; // Több kapcsolódási pont
-    const mouse = { x: null, y: null, radius: 180 };
+    const particleCount = 220; // Még sűrűbb amőba
+    const connectionDistance = 140; 
+    const mouse = { x: null, y: null, radius: 150 };
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
@@ -59,9 +59,9 @@ function SpiderNet({ isMobile }) {
         const rect = canvas.getBoundingClientRect();
         this.x = Math.random() * rect.width;
         this.y = Math.random() * rect.height;
-        this.size = Math.random() * 1.5 + 0.5;
-        this.vx = (Math.random() - 0.5) * 0.4;
-        this.vy = (Math.random() - 0.5) * 0.4;
+        this.size = Math.random() * 1.2 + 0.3;
+        this.vx = (Math.random() - 0.5) * 0.3;
+        this.vy = (Math.random() - 0.5) * 0.3;
       }
 
       draw() {
@@ -85,8 +85,8 @@ function SpiderNet({ isMobile }) {
           let distance = Math.sqrt(dx * dx + dy * dy);
           if (distance < mouse.radius) {
             const force = (mouse.radius - distance) / mouse.radius;
-            this.x -= (dx / distance) * force * 3;
-            this.y -= (dy / distance) * force * 3;
+            this.x -= (dx / distance) * force * 2;
+            this.y -= (dy / distance) * force * 2;
           }
         }
       }
@@ -108,8 +108,8 @@ function SpiderNet({ isMobile }) {
 
           if (distance < connectionDistance) {
             let opacity = 1 - (distance / connectionDistance);
-            ctx.strokeStyle = `rgba(34, 211, 238, ${opacity * 0.4})`;
-            ctx.lineWidth = 0.8; // Élesebb, vékonyabb vonalak
+            ctx.strokeStyle = `rgba(34, 211, 238, ${opacity * 0.5})`;
+            ctx.lineWidth = 0.6;
             ctx.beginPath();
             ctx.moveTo(particles[a].x, particles[a].y);
             ctx.lineTo(particles[b].x, particles[b].y);
@@ -121,6 +121,7 @@ function SpiderNet({ isMobile }) {
 
     const animate = () => {
       const rect = canvas.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
       ctx.clearRect(0, 0, rect.width, rect.height);
       particles.forEach(p => {
         p.update();
@@ -148,7 +149,7 @@ function SpiderNet({ isMobile }) {
         display: 'block',
         width: '100%', 
         height: '100%',
-        cursor: 'crosshair'
+        background: 'transparent'
       }} 
     />
   );
@@ -263,9 +264,11 @@ export default function DayPremium() {
         <div style={{
           ...layout,
           gridTemplateColumns: isMobile ? "1fr" : "1fr 1.3fr",
-          gap: isMobile ? "20px" : "40px"
+          gap: isMobile ? "20px" : "40px",
+          alignItems: 'stretch' // Kifeszíti az oszlopokat, hogy a magasság egyezzen
         }}>
-          <div>
+          {/* BAL OSZLOP */}
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <Metric label="MONTHLY SURPLUS" value={`$${surplus.toLocaleString()}`} isMobile={isMobile} />
             <Metric label="SAVINGS RATE" value={`${savingsRate.toFixed(1)}%`} isMobile={isMobile} />
             <Metric
@@ -274,37 +277,36 @@ export default function DayPremium() {
               isMobile={isMobile}
             />
 
-            <button onClick={askAI} style={aiButton}>
-              {loading ? "ANALYZING…" : "GENERATE AI STRATEGY"}
-            </button>
-
-            {aiOpen && (
-              <div style={aiBox}>
-                <div style={aiHeader}>
-                  <strong>AI Insight</strong>
-                  <button onClick={() => setAiOpen(false)} style={closeBtn}>✕</button>
+            {/* AI Box és alatta az animáció */}
+            <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
+              {aiOpen && (
+                <div style={aiBox}>
+                  <div style={aiHeader}>
+                    <strong>AI Insight</strong>
+                    <button onClick={() => setAiOpen(false)} style={closeBtn}>✕</button>
+                  </div>
+                  <pre style={aiTextStyle}>{aiText}</pre>
                 </div>
-                <pre style={aiTextStyle}>{aiText}</pre>
-              </div>
-            )}
+              )}
+              
+              {/* Animáció az üres térben az AI box mellett/alatt */}
+              {aiOpen && !isMobile && (
+                <div style={{ flex: 1, marginTop: '20px', minHeight: '150px' }}>
+                  <SpiderNet isMobile={isMobile} />
+                </div>
+              )}
+            </div>
+
+            {/* GOMB - Mindig az oszlop alján marad, igazodva a grafikonokhoz */}
+            <div style={{ marginTop: 'auto', paddingTop: '20px' }}>
+              <button onClick={askAI} style={aiButton}>
+                {loading ? "ANALYZING…" : "GENERATE AI STRATEGY"}
+              </button>
+            </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {/* Az animáció konténere: Csak az AI megnyitásakor látszik és csak az üres térben */}
-            {aiOpen && !isMobile && (
-              <div style={{ 
-                flex: 1, 
-                minHeight: '200px', 
-                marginBottom: '20px', 
-                border: '1px solid rgba(56, 189, 248, 0.1)', 
-                borderRadius: '12px',
-                overflow: 'hidden',
-                background: 'rgba(2, 6, 23, 0.3)'
-              }}>
-                <SpiderNet isMobile={isMobile} />
-              </div>
-            )}
-
+          {/* JOBB OSZLOP */}
+          <div>
             <div style={inputPanel}>
               {["income", "fixed", "variable"].map((k) => (
                 <div key={k} style={inputRow}>
@@ -457,7 +459,8 @@ const aiBox = {
   border: "1px solid #1e293b",
   borderRadius: "12px",
   padding: "16px",
-  backdropFilter: "blur(10px)"
+  backdropFilter: "blur(10px)",
+  zIndex: 2
 };
 
 const aiHeader = { display: "flex", justifyContent: "space-between", marginBottom: 10 };
