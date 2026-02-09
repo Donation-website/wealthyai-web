@@ -1,9 +1,110 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   saveMonthlySnapshot,
   getMonthlySnapshots,
   getSnapshotByDay,
 } from "../lib/monthlyArchive";
+
+/* ================= INTERACTIVE SPIDERNET COMPONENT ================= */
+function SpiderNet({ isMobile, height, color = "#38bdf8" }) {
+  const canvasRef = useRef(null);
+  const mouseRef = useRef({ x: null, y: null });
+
+  useEffect(() => {
+    if (isMobile || !height || height < 50) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let animationFrameId;
+    let particles = [];
+    const particleCount = 60;
+
+    const resize = () => {
+      const dpr = window.devicePixelRatio || 2;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = height * dpr;
+      ctx.scale(dpr, dpr);
+    };
+
+    const handleMouseMove = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mouseRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    };
+
+    window.addEventListener("resize", resize);
+    canvas.addEventListener("mousemove", handleMouseMove);
+    resize();
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * canvas.offsetWidth;
+        this.y = Math.random() * height;
+        this.vx = (Math.random() - 0.5) * 0.4;
+        this.vy = (Math.random() - 0.5) * 0.4;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (mouseRef.current.x !== null) {
+          const dx = mouseRef.current.x - this.x;
+          const dy = mouseRef.current.y - this.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 80) {
+            this.x -= dx * 0.02;
+            this.y -= dy * 0.02;
+          }
+        }
+        if (this.x < 0 || this.x > canvas.offsetWidth) this.vx *= -1;
+        if (this.y < 0 || this.y > height) this.vy *= -1;
+      }
+      draw() {
+        ctx.fillStyle = color;
+        ctx.globalAlpha = 0.4;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 1.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push(new Particle());
+    }
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach((p) => {
+        p.update();
+        p.draw();
+      });
+      for (let a = 0; a < particles.length; a++) {
+        for (let b = a; b < particles.length; b++) {
+          let dx = particles[a].x - particles[b].x;
+          let dy = particles[a].y - particles[b].y;
+          let dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 100) {
+            ctx.strokeStyle = color;
+            ctx.globalAlpha = 0.1 * (1 - dist / 100);
+            ctx.lineWidth = 0.8;
+            ctx.beginPath();
+            ctx.moveTo(particles[a].x, particles[a].y);
+            ctx.lineTo(particles[b].x, particles[b].y);
+            ctx.stroke();
+          }
+        }
+      }
+      animationFrameId = requestAnimationFrame(animate);
+    };
+    animate();
+    return () => {
+      window.removeEventListener("resize", resize);
+      canvas.removeEventListener("mousemove", handleMouseMove);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [isMobile, height, color]);
+
+  return <canvas ref={canvasRef} style={{ width: "100%", height, display: "block" }} />;
+}
 
 /* ================= DAILY SIGNAL UNLOCK ================= */
 
@@ -44,8 +145,10 @@ const REGIONS = [
 ];
 
 export default function PremiumMonth() {
-  // === MOBILE ADDITION: device detection ===
   const [isMobile, setIsMobile] = useState(false);
+  const [syncHeight, setSyncHeight] = useState(0);
+  const leftColRef = useRef(null);
+  const rightColRef = useRef(null);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -53,10 +156,10 @@ export default function PremiumMonth() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-  
-  /* ================= SIMULATION & STRESS STATE (NEW) ================= */
+
+  /* ================= SIMULATION & STRESS STATE ================= */
   const [simulationActive, setSimulationActive] = useState(false);
-  const [stressFactor, setStressFactor] = useState(0); // 0 to 1 (0% to 100%)
+  const [stressFactor, setStressFactor] = useState(0);
 
   const calculateFragility = () => {
     const energy = (inputs.electricity + inputs.gas) * (1 + stressFactor);
@@ -80,8 +183,8 @@ export default function PremiumMonth() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ sessionId }),
     })
-      .then(r => r.json())
-      .then(d => {
+      .then((r) => r.json())
+      .then((d) => {
         if (!d.valid) window.location.href = "/start";
       })
       .catch(() => {
@@ -105,9 +208,7 @@ export default function PremiumMonth() {
         if (cancelled) return;
         if (j?.region) setRegion(j.region);
         if (j?.country) setCountry(j.country);
-      } catch {
-        /* silent fallback */
-      }
+      } catch {}
     };
 
     detect();
@@ -120,32 +221,17 @@ export default function PremiumMonth() {
 
   const [viewMode, setViewMode] = useState("executive");
   const [cycleDay, setCycleDay] = useState(1);
-
   const [loading, setLoading] = useState(false);
   const [emailSending, setEmailSending] = useState(false);
-
-  /* ================= AI PANEL STATE ================= */
-
   const [aiVisible, setAiVisible] = useState(false);
   const [aiCollapsed, setAiCollapsed] = useState(true);
-
-  /* ================= DAILY SIGNAL ================= */
-
   const [dailySignal, setDailySignal] = useState(null);
   const [dailyPending, setDailyPending] = useState(true);
-
-  /* ================= DAILY / SNAPSHOT AI ================= */
-
   const [dailyDual, setDailyDual] = useState(null);
   const [dailySnapshot, setDailySnapshot] = useState(null);
-
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState(null);
-
   const [exportRange, setExportRange] = useState("day");
-
-  /* ================= SNAPSHOT AVAILABILITY ================= */
-
   const [isTodayAvailable, setIsTodayAvailable] = useState(false);
 
   /* ================= WEEKLY FOCUS ================= */
@@ -204,15 +290,14 @@ export default function PremiumMonth() {
     unexpected: 200,
     other: 300,
   });
+
   const update = (key, value) => {
     setInputs({ ...inputs, [key]: Number(value) });
-
     setAiVisible(false);
     setAiCollapsed(true);
     setDailyDual(null);
     setDailySnapshot(null);
     setSelectedDay(null);
-    // Ha módosul az input, a szimuláció újra láthatóvá válik
   };
 
   /* ================= CYCLE LOGIC ================= */
@@ -240,8 +325,7 @@ export default function PremiumMonth() {
     let availableAt = localStorage.getItem(key);
 
     if (!availableAt) {
-      const randomOffsetMs =
-        Math.floor(Math.random() * 6 * 60 * 60 * 1000);
+      const randomOffsetMs = Math.floor(Math.random() * 6 * 60 * 60 * 1000);
       const base = new Date();
       base.setHours(7, 0, 0, 0);
       availableAt = base.getTime() + randomOffsetMs;
@@ -303,11 +387,11 @@ export default function PremiumMonth() {
 
   /* ================= LEGACY DAILY STORAGE ================= */
 
-  const saveBriefing = dual => {
+  const saveBriefing = (dual) => {
     const today = getTodayKey();
     const stored = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
 
-    if (!stored.find(b => b.date === today)) {
+    if (!stored.find((b) => b.date === today)) {
       stored.push({
         id: Date.now(),
         date: today,
@@ -327,7 +411,7 @@ export default function PremiumMonth() {
   const runAI = async () => {
     setLoading(true);
     setSelectedDay(null);
-    setSimulationActive(false); // AI briefingnél kikapcsoljuk a szimulációs nézetet
+    setSimulationActive(false);
 
     try {
       const res = await fetch("/api/get-ai-briefing", {
@@ -394,6 +478,23 @@ export default function PremiumMonth() {
 
     setLoading(false);
   };
+
+  /* ================= HEIGHT SYNC LOGIC ================= */
+  useEffect(() => {
+    if (isMobile) return;
+    const updateHeight = () => {
+      const leftH = leftColRef.current?.offsetHeight || 0;
+      const rightH = rightColRef.current?.offsetHeight || 0;
+      setSyncHeight(Math.max(leftH, rightH));
+    };
+    const timeout = setTimeout(updateHeight, 400);
+    window.addEventListener("resize", updateHeight);
+    return () => {
+      clearTimeout(timeout);
+      window.removeEventListener("resize", updateHeight);
+    };
+  }, [aiVisible, simulationActive, archiveOpen, isMobile, inputs]);
+
   /* ================= ACTIVE CONTENT ================= */
 
   const activeSnapshot = selectedDay
@@ -410,20 +511,20 @@ export default function PremiumMonth() {
 
   /* ================= EXPORT LOGIC ================= */
 
-  const getBriefings = range => {
+  const getBriefings = (range) => {
     const legacy = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
     const snapshots = getMonthlySnapshots() || [];
-    
+
     const combined = [...legacy];
-    snapshots.forEach(s => {
-      if (!combined.find(b => b.date === s.date)) {
+    snapshots.forEach((s) => {
+      if (!combined.find((b) => b.date === s.date)) {
         combined.push(s);
       }
     });
 
     if (range === "day") {
       const today = getTodayKey();
-      return combined.filter(b => b.date === today);
+      return combined.filter((b) => b.date === today);
     }
     if (range === "week") return combined.slice(-7);
     if (range === "month") return combined;
@@ -436,7 +537,7 @@ export default function PremiumMonth() {
 
     const text = data
       .map(
-        b =>
+        (b) =>
           `Day ${b.cycleDay} · ${b.date}\n\n${
             viewMode === "executive" ? b.executive : b.directive
           }`
@@ -490,7 +591,22 @@ export default function PremiumMonth() {
         backgroundAttachment: "fixed",
       }}
     >
-      <a href="/month/help" style={helpButton}>Help</a>
+      {/* TICKER ELEMENT */}
+      {!isMobile && (
+        <div style={tickerContainer}>
+          <div style={tickerTrack}>
+            Interpretation over advice • Clarity over certainty • Insight unfolds
+            over time • Context changes • Structure determines outcome • Attention
+            is the currency • Interpretation over advice • Clarity over certainty
+            • Insight unfolds over time • Context changes • Structure determines
+            outcome • Attention is the currency
+          </div>
+        </div>
+      )}
+
+      <a href="/month/help" style={helpButton}>
+        Help
+      </a>
 
       <div style={header}>
         <h1 style={title}>WEALTHYAI · MONTHLY BRIEFING</h1>
@@ -501,11 +617,13 @@ export default function PremiumMonth() {
         <span style={regionLabel}>Region</span>
         <select
           value={region}
-          onChange={e => setRegion(e.target.value)}
+          onChange={(e) => setRegion(e.target.value)}
           style={regionSelect}
         >
-          {REGIONS.map(r => (
-            <option key={r.code} value={r.code}>{r.label}</option>
+          {REGIONS.map((r) => (
+            <option key={r.code} value={r.code}>
+              {r.label}
+            </option>
           ))}
         </select>
       </div>
@@ -527,13 +645,17 @@ export default function PremiumMonth() {
       <div style={signalBox}>
         <strong>Weekly focus</strong>
         <p style={{ opacity: 0.75 }}>
-          {weeklyFocus 
-            ? `Current focus: ${weeklyFocus.key.toUpperCase()}` 
+          {weeklyFocus
+            ? `Current focus: ${weeklyFocus.key.toUpperCase()}`
             : "Choose one focus area for this week. This affects how your data is interpreted."}
         </p>
 
         <button onClick={() => setFocusOpen(!focusOpen)} style={exportBtn}>
-          {focusOpen ? "Close selection" : (weeklyFocus ? "Change selection" : "What is this?")}
+          {focusOpen
+            ? "Close selection"
+            : weeklyFocus
+            ? "Change selection"
+            : "What is this?"}
         </button>
 
         {focusOpen && (
@@ -550,13 +672,22 @@ export default function PremiumMonth() {
                   onClick={() => setFocusPreview(f.key)}
                   style={{
                     ...exportBtn,
-                    opacity: (disabled || (hasSelection && !isSelected)) ? 0.3 : 1,
-                    cursor: (disabled || (hasSelection && !isSelected)) ? "not-allowed" : "pointer",
-                    background: (focusPreview === f.key || isSelected) ? "#38bdf8" : "transparent",
-                    color: (focusPreview === f.key || isSelected) ? "#020617" : "#38bdf8",
+                    opacity: disabled || (hasSelection && !isSelected) ? 0.3 : 1,
+                    cursor:
+                      disabled || (hasSelection && !isSelected)
+                        ? "not-allowed"
+                        : "pointer",
+                    background:
+                      focusPreview === f.key || isSelected
+                        ? "#38bdf8"
+                        : "transparent",
+                    color:
+                      focusPreview === f.key || isSelected
+                        ? "#020617"
+                        : "#38bdf8",
                     marginBottom: 6,
                     display: "block",
-                    width: "100%"
+                    width: "100%",
                   }}
                 >
                   {f.label} {isSelected ? "✓" : ""}
@@ -587,244 +718,398 @@ export default function PremiumMonth() {
         }}
       >
         {/* LEFT COLUMN: INPUTS & SIMULATION */}
-        <div style={card}>
-          <h3>Monthly Financial Structure</h3>
+        <div
+          ref={leftColRef}
+          style={{ display: "flex", flexDirection: "column", gap: 25 }}
+        >
+          <div style={card}>
+            <h3>Monthly Financial Structure</h3>
 
-          <Label>Income</Label>
-          <Input
-            value={inputs.income}
-            onChange={e => update("income", e.target.value)}
-          />
-          <Divider />
-
-          <Section title="Living">
-            <Row
-              label="Housing"
-              value={inputs.housing}
-              onChange={v => update("housing", v)}
+            <Label>Income</Label>
+            <Input
+              value={inputs.income}
+              onChange={(e) => update("income", e.target.value)}
             />
-          </Section>
+            <Divider />
 
-          <Section title="Utilities">
-            <Row label="Electricity" value={inputs.electricity} onChange={v => update("electricity", v)} />
-            <Row label="Gas" value={inputs.gas} onChange={v => update("gas", v)} />
-            <Row label="Water" value={inputs.water} onChange={v => update("water", v)} />
-          </Section>
+            <Section title="Living">
+              <Row
+                label="Housing"
+                value={inputs.housing}
+                onChange={(v) => update("housing", v)}
+              />
+            </Section>
 
-          <Section title="Recurring Services">
-            <Row label="Internet" value={inputs.internet} onChange={v => update("internet", v)} />
-            <Row label="Mobile phone" value={inputs.mobile} onChange={v => update("mobile", v)} />
-            <Row label="Insurance" value={inputs.insurance} onChange={v => update("insurance", v)} />
-          </Section>
+            <Section title="Utilities">
+              <Row
+                label="Electricity"
+                value={inputs.electricity}
+                onChange={(v) => update("electricity", v)}
+              />
+              <Row
+                label="Gas"
+                value={inputs.gas}
+                onChange={(v) => update("gas", v)}
+              />
+              <Row
+                label="Water"
+                value={inputs.water}
+                onChange={(v) => update("water", v)}
+              />
+            </Section>
 
-          <Divider />
-          <div style={{ padding: "10px 0" }}>
-            <strong style={{ color: "#10b981", fontSize: 13, display: "block", marginBottom: 10 }}>
-              STRUCTURAL STRESS TEST
-            </strong>
-            <input 
-              type="range" min="0" max="1" step="0.01" 
-              value={stressFactor}
-              onChange={(e) => {
-                setStressFactor(parseFloat(e.target.value));
-                setSimulationActive(true);
-              }}
-              style={{ width: "100%", accentColor: "#10b981", cursor: "pointer" }}
-            />
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, opacity: 0.5, marginTop: 4 }}>
-              <span>BASE</span>
-              <span>CRISIS (+100%)</span>
+            <Section title="Recurring Services">
+              <Row
+                label="Internet"
+                value={inputs.internet}
+                onChange={(v) => update("internet", v)}
+              />
+              <Row
+                label="Mobile phone"
+                value={inputs.mobile}
+                onChange={(v) => update("mobile", v)}
+              />
+              <Row
+                label="Insurance"
+                value={inputs.insurance}
+                onChange={(v) => update("insurance", v)}
+              />
+            </Section>
+
+            <Divider />
+            <div style={{ padding: "10px 0" }}>
+              <strong
+                style={{
+                  color: "#10b981",
+                  fontSize: 13,
+                  display: "block",
+                  marginBottom: 10,
+                }}
+              >
+                STRUCTURAL STRESS TEST
+              </strong>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={stressFactor}
+                onChange={(e) => {
+                  setStressFactor(parseFloat(e.target.value));
+                  setSimulationActive(true);
+                }}
+                style={{
+                  width: "100%",
+                  accentColor: "#10b981",
+                  cursor: "pointer",
+                }}
+              />
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: 10,
+                  opacity: 0.5,
+                  marginTop: 4,
+                }}
+              >
+                <span>BASE</span>
+                <span>CRISIS (+100%)</span>
+              </div>
             </div>
-          </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 20 }}>
-            <button 
-              onClick={() => { setSimulationActive(true); setAiVisible(false); }}
-              style={{ ...exportBtn, borderColor: "#10b981", color: "#10b981" }}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 10,
+                marginTop: 20,
+              }}
             >
-              SIMULATE
-            </button>
-            <button onClick={runAI} style={{ ...aiButton, marginTop: 0 }}>
-              {loading ? "Generating..." : "GENERATE AI"}
+              <button
+                onClick={() => {
+                  setSimulationActive(true);
+                  setAiVisible(false);
+                }}
+                style={{ ...exportBtn, borderColor: "#10b981", color: "#10b981" }}
+              >
+                SIMULATE
+              </button>
+              <button onClick={runAI} style={{ ...aiButton, marginTop: 0 }}>
+                {loading ? "Generating..." : "GENERATE AI"}
+              </button>
+            </div>
+
+            <button
+              onClick={runAIDual}
+              style={{ ...exportBtn, marginTop: 12, width: "100%" }}
+            >
+              Save Today’s Snapshot
             </button>
           </div>
 
-          <button
-            onClick={runAIDual}
-            style={{ ...exportBtn, marginTop: 12, width: "100%" }}
-          >
-            Save Today’s Snapshot
-          </button>
+          {/* SPIDERNET DYNAMIC FILLER LEFT */}
+          {!isMobile && syncHeight > (leftColRef.current?.offsetHeight || 0) && (
+            <SpiderNet
+              isMobile={isMobile}
+              height={syncHeight - (leftColRef.current?.offsetHeight || 0) - 25}
+            />
+          )}
         </div>
 
         {/* RIGHT COLUMN: INTELLIGENCE & VISUALS */}
-        <div style={card}>
-          
-          {/* 1. STATE: MANIFESTO */}
-          {!aiVisible && !simulationActive && (
-            <div style={{ padding: "10px", animation: "fadeIn 0.8s ease-in" }}>
-              <strong style={{ color: "#10b981", fontSize: 12, letterSpacing: 1 }}>WEALTHYAI PHILOSOPHY</strong>
-              <h2 style={{ fontSize: 22, marginTop: 10 }}>Interpretation, Not Advice.</h2>
-              <p style={{ opacity: 0.7, lineHeight: "1.6", fontSize: 14 }}>
-                We built WealthyAI around a different question: What happens if AI doesn’t advise — but interprets?
-                Not faster decisions, but <strong>clearer thinking</strong>.
-              </p>
-              <p style={{ opacity: 0.7, lineHeight: "1.6", fontSize: 14, marginTop: 12 }}>
-                Our system assumes that you remain responsible for decisions — it simply gives you a clearer frame to make them. 
-                WealthyAI doesn’t reward speed. It rewards <strong>attention</strong>.
-              </p>
-            </div>
-          )}
-
-          {/* 2. STATE: SIMULATION ENGINE */}
-          {simulationActive && !aiVisible && (
-            <div style={{ padding: "10px", animation: "fadeIn 0.3s ease-out" }}>
-              <strong style={{ color: "#10b981", fontSize: 12 }}>LIVE SIMULATION ENGINE</strong>
-              <h2 style={{ fontSize: 20, marginTop: 5 }}>Structural Fragility Index</h2>
-              
-              <div style={{ fontSize: 42, fontWeight: "bold", color: "#38bdf8", margin: "15px 0" }}>
-                {calculateFragility()}%
-              </div>
-
-              <div style={{ height: 8, background: "rgba(255,255,255,0.05)", borderRadius: 4, overflow: "hidden" }}>
-                <div style={{ 
-                  height: "100%", 
-                  width: `${calculateFragility()}%`, 
-                  background: "linear-gradient(90deg, #10b981, #38bdf8)",
-                  transition: "width 0.3s ease" 
-                }} />
-              </div>
-
-              <p style={{ opacity: 0.6, fontSize: 13, marginTop: 15, lineHeight: "1.5" }}>
-                At <strong>{Math.round(stressFactor * 100)}%</strong> simulated pressure, your core financial rigidity is 
-                {parseFloat(calculateFragility()) > 55 ? " approaching a critical threshold." : " currently within structural limits."}
-              </p>
-              
-              <button 
-                onClick={() => setSimulationActive(false)} 
-                style={{ ...exportBtn, marginTop: 20, fontSize: 12, opacity: 0.6 }}
-              >
-                Reset view
-              </button>
-            </div>
-          )}
-
-          {/* 3. STATE: AI BRIEFING */}
-          {aiVisible && (
-            <div>
-              <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
-                <button
-                  onClick={() => setViewMode("executive")}
+        <div
+          ref={rightColRef}
+          style={{ display: "flex", flexDirection: "column", gap: 25 }}
+        >
+          <div style={card}>
+            {/* 1. STATE: MANIFESTO */}
+            {!aiVisible && !simulationActive && (
+              <div style={{ padding: "10px", animation: "fadeIn 0.8s ease-in" }}>
+                <strong
+                  style={{ color: "#10b981", fontSize: 12, letterSpacing: 1 }}
+                >
+                  WEALTHYAI PHILOSOPHY
+                </strong>
+                <h2 style={{ fontSize: 22, marginTop: 10 }}>
+                  Interpretation, Not Advice.
+                </h2>
+                <p style={{ opacity: 0.7, lineHeight: "1.6", fontSize: 14 }}>
+                  We built WealthyAI around a different question: What happens if
+                  AI doesn’t advise — but interprets? Not faster decisions, but{" "}
+                  <strong>clearer thinking</strong>.
+                </p>
+                <p
                   style={{
-                    ...exportBtn,
-                    background: viewMode === "executive" ? "#38bdf8" : "transparent",
-                    color: viewMode === "executive" ? "#020617" : "#38bdf8",
+                    opacity: 0.7,
+                    lineHeight: "1.6",
+                    fontSize: 14,
+                    marginTop: 12,
                   }}
                 >
-                  Executive
-                </button>
-
-                <button
-                  onClick={() => setViewMode("directive")}
-                  style={{
-                    ...exportBtn,
-                    background: viewMode === "directive" ? "#38bdf8" : "transparent",
-                    color: viewMode === "directive" ? "#020617" : "#38bdf8",
-                  }}
-                >
-                  Directive
-                </button>
-                <button 
-                  onClick={() => { setAiVisible(false); setSimulationActive(false); }} 
-                  style={{ ...exportBtn, maxWidth: 44 }}
-                >
-                  ✕
-                </button>
+                  Our system assumes that you remain responsible for decisions —
+                  it simply gives you a clearer frame to make them. WealthyAI
+                  doesn’t reward speed. It rewards <strong>attention</strong>.
+                </p>
               </div>
+            )}
 
-              <pre style={aiTextStyle}>{activeText}</pre>
+            {/* 2. STATE: SIMULATION ENGINE */}
+            {simulationActive && !aiVisible && (
+              <div style={{ padding: "10px", animation: "fadeIn 0.3s ease-out" }}>
+                <strong style={{ color: "#10b981", fontSize: 12 }}>
+                  LIVE SIMULATION ENGINE
+                </strong>
+                <h2 style={{ fontSize: 20, marginTop: 5 }}>
+                  Structural Fragility Index
+                </h2>
 
-              {!selectedDay && (
                 <div
                   style={{
-                    marginTop: 16,
-                    display: "flex",
-                    gap: 12,
-                    flexWrap: isMobile ? "wrap" : "nowrap",
+                    fontSize: 42,
+                    fontWeight: "bold",
+                    color: "#38bdf8",
+                    margin: "15px 0",
                   }}
                 >
-                  <select
-                    value={exportRange}
-                    onChange={e => setExportRange(e.target.value)}
-                    style={exportSelect}
-                  >
-                    <option value="day">Today</option>
-                    <option value="week">Last 7 days</option>
-                    <option value="month">This month</option>
-                  </select>
+                  {calculateFragility()}%
+                </div>
 
-                  <button onClick={handleDownload} style={exportBtn}>Download</button>
-                  <button onClick={downloadPDF} style={exportBtn}>PDF</button>
-                  <button onClick={sendEmailPDF} style={exportBtn}>
-                    {emailSending ? "..." : "Email"}
+                <div
+                  style={{
+                    height: 8,
+                    background: "rgba(255,255,255,0.05)",
+                    borderRadius: 4,
+                    overflow: "hidden",
+                  }}
+                >
+                  <div
+                    style={{
+                      height: "100%",
+                      width: `${calculateFragility()}%`,
+                      background: "linear-gradient(90deg, #10b981, #38bdf8)",
+                      transition: "width 0.3s ease",
+                    }}
+                  />
+                </div>
+
+                <p
+                  style={{
+                    opacity: 0.6,
+                    fontSize: 13,
+                    marginTop: 15,
+                    lineHeight: "1.5",
+                  }}
+                >
+                  At <strong>{Math.round(stressFactor * 100)}%</strong> simulated
+                  pressure, your core financial rigidity is{" "}
+                  {parseFloat(calculateFragility()) > 55
+                    ? " approaching a critical threshold."
+                    : " currently within structural limits."}
+                </p>
+
+                <button
+                  onClick={() => setSimulationActive(false)}
+                  style={{ ...exportBtn, marginTop: 20, fontSize: 12, opacity: 0.6 }}
+                >
+                  Reset view
+                </button>
+              </div>
+            )}
+
+            {/* 3. STATE: AI BRIEFING */}
+            {aiVisible && (
+              <div>
+                <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
+                  <button
+                    onClick={() => setViewMode("executive")}
+                    style={{
+                      ...exportBtn,
+                      background:
+                        viewMode === "executive" ? "#38bdf8" : "transparent",
+                      color: viewMode === "executive" ? "#020617" : "#38bdf8",
+                    }}
+                  >
+                    Executive
+                  </button>
+
+                  <button
+                    onClick={() => setViewMode("directive")}
+                    style={{
+                      ...exportBtn,
+                      background:
+                        viewMode === "directive" ? "#38bdf8" : "transparent",
+                      color: viewMode === "directive" ? "#020617" : "#38bdf8",
+                    }}
+                  >
+                    Directive
+                  </button>
+                  <button
+                    onClick={() => {
+                      setAiVisible(false);
+                      setSimulationActive(false);
+                    }}
+                    style={{ ...exportBtn, maxWidth: 44 }}
+                  >
+                    ✕
                   </button>
                 </div>
-              )}
-            </div>
-          )}
 
-          <Divider />
-          <button
-            onClick={() => setArchiveOpen(!archiveOpen)}
-            style={{ ...exportBtn, width: "100%" }}
-          >
-            {archiveOpen ? "Hide past days" : "View past days"}
-          </button>
+                <pre style={aiTextStyle}>{activeText}</pre>
 
-          {archiveOpen && (
-            <div style={{ marginTop: 10 }}>
-              {getMonthlySnapshots().map(s => (
-                <button
-                  key={s.date}
-                  onClick={() => { setSelectedDay(s.cycleDay); setAiVisible(true); setSimulationActive(false); }}
-                  style={{ ...exportBtn, marginBottom: 4, width: "100%" }}
-                >
-                  Day {s.cycleDay}
-                </button>
-              ))}
-            </div>
+                {!selectedDay && (
+                  <div
+                    style={{
+                      marginTop: 16,
+                      display: "flex",
+                      gap: 12,
+                      flexWrap: isMobile ? "wrap" : "nowrap",
+                    }}
+                  >
+                    <select
+                      value={exportRange}
+                      onChange={(e) => setExportRange(e.target.value)}
+                      style={exportSelect}
+                    >
+                      <option value="day">Today</option>
+                      <option value="week">Last 7 days</option>
+                      <option value="month">This month</option>
+                    </select>
+
+                    <button onClick={handleDownload} style={exportBtn}>
+                      Download
+                    </button>
+                    <button onClick={downloadPDF} style={exportBtn}>
+                      PDF
+                    </button>
+                    <button onClick={sendEmailPDF} style={exportBtn}>
+                      {emailSending ? "..." : "Email"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <Divider />
+            <button
+              onClick={() => setArchiveOpen(!archiveOpen)}
+              style={{ ...exportBtn, width: "100%" }}
+            >
+              {archiveOpen ? "Hide past days" : "View past days"}
+            </button>
+
+            {archiveOpen && (
+              <div style={{ marginTop: 10 }}>
+                {getMonthlySnapshots().map((s) => (
+                  <button
+                    key={s.date}
+                    onClick={() => {
+                      setSelectedDay(s.cycleDay);
+                      setAiVisible(true);
+                      setSimulationActive(false);
+                    }}
+                    style={{ ...exportBtn, marginBottom: 4, width: "100%" }}
+                  >
+                    Day {s.cycleDay}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* SPIDERNET DYNAMIC FILLER RIGHT */}
+          {!isMobile && syncHeight > (rightColRef.current?.offsetHeight || 0) && (
+            <SpiderNet
+              isMobile={isMobile}
+              height={syncHeight - (rightColRef.current?.offsetHeight || 0) - 25}
+            />
           )}
         </div>
       </div>
 
       <div style={footer}>© 2026 WealthyAI · Monthly Intelligence</div>
+
+      <style>{`
+        @keyframes ticker {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }
 
-/* ================= UI HELPERS & STYLES (Eredeti Styles blokk változatlan) ================= */
+/* ================= UI HELPERS & STYLES ================= */
 const Section = ({ title, children }) => (
   <>
     <Divider />
-    <strong style={{fontSize: 14, color: "#7dd3fc"}}>{title}</strong>
+    <strong style={{ fontSize: 14, color: "#7dd3fc" }}>{title}</strong>
     {children}
   </>
 );
 
 const Row = ({ label, value, onChange }) => (
   <div style={row}>
-    <span style={{fontSize: 13, opacity: 0.8}}>{label}</span>
+    <span style={{ fontSize: 13, opacity: 0.8 }}>{label}</span>
     <input
       type="number"
       value={value}
-      onChange={e => onChange(e.target.value)}
+      onChange={(e) => onChange(e.target.value)}
       style={rowInput}
     />
   </div>
 );
 
 const Label = ({ children }) => (
-  <label style={{ marginBottom: 6, display: "block", fontSize: 13, opacity: 0.8 }}>{children}</label>
+  <label
+    style={{ marginBottom: 6, display: "block", fontSize: 13, opacity: 0.8 }}
+  >
+    {children}
+  </label>
 );
 
 const Input = ({ value, onChange }) => (
@@ -838,7 +1123,7 @@ const Divider = () => (
 const page = {
   minHeight: "100vh",
   position: "relative",
-  padding: "40px 20px",
+  padding: "80px 20px 40px",
   color: "#e5e7eb",
   fontFamily: "Inter, system-ui",
   backgroundColor: "#020617",
@@ -853,13 +1138,36 @@ const page = {
   backgroundSize: "auto, auto, 100% 100%, 100% 100%, 420px auto",
 };
 
+const tickerContainer = {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  width: "100%",
+  height: 40,
+  background: "transparent",
+  overflow: "hidden",
+  display: "flex",
+  alignItems: "center",
+  zIndex: 10,
+};
+
+const tickerTrack = {
+  whiteSpace: "nowrap",
+  fontSize: 13,
+  color: "#ffffff",
+  animation: "ticker 35s linear infinite",
+  opacity: 0.8,
+  fontWeight: 300,
+  letterSpacing: "0.03em",
+};
+
 const header = { textAlign: "center", marginBottom: 20 };
 const title = { fontSize: "2rem", margin: 0 };
 const subtitle = { marginTop: 8, color: "#cbd5f5", fontSize: 14 };
 
 const helpButton = {
   position: "absolute",
-  top: 20,
+  top: 50,
   right: 20,
   padding: "6px 12px",
   borderRadius: 8,
@@ -870,23 +1178,104 @@ const helpButton = {
   background: "rgba(2,6,23,0.7)",
 };
 
-const regionRow = { display: "flex", justifyContent: "center", gap: 10, marginBottom: 20 };
+const regionRow = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 10,
+  marginBottom: 20,
+};
 const regionLabel = { color: "#7dd3fc", fontSize: 14 };
-const regionSelect = { background: "#020617", color: "#e5e7eb", border: "1px solid #1e293b", padding: "4px 8px", borderRadius: 6 };
+const regionSelect = {
+  background: "#020617",
+  color: "#e5e7eb",
+  border: "1px solid #1e293b",
+  padding: "4px 8px",
+  borderRadius: 6,
+};
 
-const signalBox = { maxWidth: 800, margin: "0 auto 15px", padding: 14, border: "1px solid #1e293b", borderRadius: 12, background: "rgba(2,6,23,0.75)" };
+const signalBox = {
+  maxWidth: 800,
+  margin: "0 auto 15px",
+  padding: 14,
+  border: "1px solid #1e293b",
+  borderRadius: 12,
+  background: "rgba(2,6,23,0.75)",
+};
 
-const layout = { display: "grid", gridTemplateColumns: "1fr 1.3fr", gap: 25, maxWidth: 1100, margin: "0 auto" };
-const card = { padding: 20, borderRadius: 16, border: "1px solid #1e293b", background: "rgba(2,6,23,0.78)" };
+const layout = {
+  display: "grid",
+  gridTemplateColumns: "1fr 1.3fr",
+  gap: 25,
+  maxWidth: 1100,
+  margin: "0 auto",
+};
+const card = {
+  padding: 20,
+  borderRadius: 16,
+  border: "1px solid #1e293b",
+  background: "rgba(2,6,23,0.78)",
+  backdropFilter: "blur(10px)",
+};
 
-const input = { width: "100%", padding: 10, marginTop: 4, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, color: "white" };
+const input = {
+  width: "100%",
+  padding: 10,
+  marginTop: 4,
+  background: "rgba(255,255,255,0.08)",
+  border: "none",
+  borderRadius: 8,
+  color: "white",
+};
 const row = { display: "flex", justifyContent: "space-between", marginTop: 6 };
-const rowInput = { width: 80, background: "transparent", border: "none", borderBottom: "1px solid #38bdf8", color: "#38bdf8", textAlign: "right" };
+const rowInput = {
+  width: 80,
+  background: "transparent",
+  border: "none",
+  borderBottom: "1px solid #38bdf8",
+  color: "#38bdf8",
+  textAlign: "right",
+};
 
-const aiButton = { marginTop: 20, width: "100%", padding: 12, background: "#38bdf8", border: "none", borderRadius: 10, fontWeight: "bold", cursor: "pointer", color: "#020617" };
-const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap", color: "#cbd5f5", fontSize: 14, lineHeight: "1.6" };
+const aiButton = {
+  marginTop: 20,
+  width: "100%",
+  padding: 12,
+  background: "#38bdf8",
+  border: "none",
+  borderRadius: 10,
+  fontWeight: "bold",
+  cursor: "pointer",
+  color: "#020617",
+};
+const aiTextStyle = {
+  marginTop: 10,
+  whiteSpace: "pre-wrap",
+  color: "#cbd5f5",
+  fontSize: 14,
+  lineHeight: "1.6",
+};
 
-const exportBtn = { padding: "8px 12px", borderRadius: 8, border: "1px solid #1e293b", background: "transparent", color: "#38bdf8", cursor: "pointer", fontSize: 13 };
-const exportSelect = { background: "transparent", color: "#e5e7eb", border: "1px solid #1e293b", padding: "8px", borderRadius: 8 };
+const exportBtn = {
+  padding: "8px 12px",
+  borderRadius: 8,
+  border: "1px solid #1e293b",
+  background: "transparent",
+  color: "#38bdf8",
+  cursor: "pointer",
+  fontSize: 13,
+};
+const exportSelect = {
+  background: "transparent",
+  color: "#e5e7eb",
+  border: "1px solid #1e293b",
+  padding: "8px",
+  borderRadius: 8,
+};
 
-const footer = { marginTop: 40, textAlign: "center", fontSize: 12, color: "#64748b", paddingBottom: 20 
+const footer = {
+  marginTop: 40,
+  textAlign: "center",
+  fontSize: 12,
+  color: "#64748b",
+  paddingBottom: 20,
+};
