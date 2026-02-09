@@ -349,10 +349,10 @@ export default function DayPremium() {
         ...upsellFixed,
         position: isMobile ? "relative" : "fixed",
         padding: isMobile ? "20px" : "20px 0",
-        background: isMobile ? "rgba(2,6,23,0.8)" : "transparent",
-        backdropFilter: isMobile ? "blur(8px)" : "none",
+        background: isMobile ? "transparent" : "transparent",
+        backdropFilter: isMobile ? "none" : "none",
         fontSize: isMobile ? "12px" : "14px",
-        borderTop: isMobile ? "1px solid rgba(255,255,255,0.05)" : "none", 
+        borderTop: isMobile ? "none" : "none", 
       }}>
         Weekly and Monthly plans unlock country-specific tax optimization,
         stress testing and advanced projections.
@@ -525,4 +525,4 @@ const upsellFixed = {
   zIndex: 5,
 };
 
-const footerLeft = { position: "fixed", bottom: 20, left: 20, fontSize: "12px", opacity: 0.5 };
+const footerLeft = { position: "fixed", bottom: 20, left: 20, fontSize: "12px", opacity: 0.6 };
