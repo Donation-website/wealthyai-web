@@ -309,6 +309,7 @@ export default function PremiumMonth() {
       return () => observer.disconnect();
     }
   }, [aiVisible, isMobile]);
+
   /* ================= INITIALIZATION & SIGNALS ================= */
   useEffect(() => {
     const day = Math.min(new Date().getDate(), 30);
@@ -396,6 +397,7 @@ export default function PremiumMonth() {
   };
 
   const runAIDual = async () => {
+    // Csak akkor mentünk napi snapshotot, ha a szignál már elérhető
     if (dailyPending) {
       alert("Today's signal is still forming. Please wait until it unlocks.");
       return;
@@ -434,6 +436,7 @@ export default function PremiumMonth() {
   };
 
   /* ================= ACTIVE CONTENT RESOLUTION ================= */
+  // Kiválasztja, hogy az aktuális AI szöveg, vagy egy korábbi archív elem jelenjen meg
   const activeSnapshot = selectedDay
     ? getSnapshotByDay(selectedDay)
     : dailySnapshot;
@@ -451,6 +454,7 @@ export default function PremiumMonth() {
     const legacy = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
     const snapshots = getMonthlySnapshots() || [];
     
+    // Összefésülés duplikáció nélkül
     const combined = [...legacy];
     snapshots.forEach(s => {
       if (!combined.find(b => b.date === s.date)) {
@@ -524,7 +528,7 @@ export default function PremiumMonth() {
     }
     setEmailSending(false);
   };
-  /* ================= RENDER LOGIC ================= */
+    /* ================= RENDER LOGIC ================= */
   return (
     <div
       style={{
@@ -670,15 +674,7 @@ export default function PremiumMonth() {
         }}
       >
         {/* LEFT COLUMN: INPUTS & SIMULATION */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 20,
-            height: aiBoxHeight,
-            justifyContent: 'space-between'
-          }}
-        >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <div style={card}>
             <h3>Monthly Financial Structure</h3>
             <Label>Income</Label>
@@ -747,21 +743,21 @@ export default function PremiumMonth() {
           </div>
 
           {/* SPIDERNET CONTAINER - DINAMIKUS MAGASSÁG */}
-        {aiVisible && !isMobile && (
-          <div style={{ 
-            borderRadius: 16, 
-            overflow: 'hidden',
-            background: "rgba(2,6,23,0.4)",
-            transition: "all 0.3s ease"
-          }}>
-            <SpiderNet isMobile={isMobile} height={aiBoxHeight} />
-          </div>
-        )}
-
+          {aiVisible && !isMobile && (
+            <div style={{ 
+              borderRadius: 16, 
+              overflow: 'hidden',
+              background: "rgba(2,6,23,0.4)",
+              transition: "all 0.3s ease"
+            }}>
+              <SpiderNet isMobile={isMobile} height={aiBoxHeight} />
+            </div>
+          )}
         </div>
 
         {/* RIGHT COLUMN: AI OUTPUT & ARCHIVE */}
         <div style={card} ref={aiBoxRef}>
+          {/* Üres állapot / Filozófia */}
           {!aiVisible && !simulationActive && (
             <div style={{ padding: "10px", animation: "fadeIn 0.8s ease-in" }}>
               <strong style={{ color: "#10b981", fontSize: 12, letterSpacing: 1 }}>WEALTHYAI PHILOSOPHY</strong>
@@ -777,6 +773,7 @@ export default function PremiumMonth() {
             </div>
           )}
 
+          {/* Szimulációs motor nézete */}
           {simulationActive && !aiVisible && (
             <div style={{ padding: "10px", animation: "fadeIn 0.3s ease-out" }}>
               <strong style={{ color: "#10b981", fontSize: 12 }}>LIVE SIMULATION ENGINE</strong>
@@ -800,6 +797,7 @@ export default function PremiumMonth() {
             </div>
           )}
 
+          {/* AI Briefing nézete */}
           {aiVisible && (
             <div style={{ animation: "fadeIn 0.4s ease-out" }}>
               <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
@@ -845,6 +843,7 @@ export default function PremiumMonth() {
 
           <Divider />
           
+          {/* Archívum kezelés */}
           <button onClick={() => setArchiveOpen(!archiveOpen)} style={{ ...exportBtn, width: "100%" }}>
             {archiveOpen ? "Hide past days" : "View past days"}
           </button>
