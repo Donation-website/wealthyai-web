@@ -492,7 +492,7 @@ export default function PremiumMonth() {
         boxSizing: "border-box"
       }}
     >
-      {/* TICKER SECTION - FIXÁLT HÁTTÉRREL */}
+      {/* TICKER SECTION - ÁTLÁTSZÓ ÉS FEHÉR BETŰS */}
       <div style={tickerContainer}>
         <div style={tickerWrapper}>
           <div style={tickerTrack}>
@@ -673,9 +673,18 @@ export default function PremiumMonth() {
             </button>
           </div>
 
-          {/* DYNAMIC TOPOGRAPHY FILLER - AUTOMATIKUSAN FELZÁRÓDIK HA AI BEZÁRVA */}
+          {/* DYNAMIC TOPOGRAPHY FILLER - MAX MAGASSÁG ÉS AUTOMATIKUS ELTŰNÉS */}
           {aiVisible && (
-            <div style={{ flexGrow: 1, marginTop: 25, borderRadius: 16, border: "1px solid #1e293b", background: "rgba(2,6,23,0.4)", overflow: "hidden", position: "relative", minHeight: 300 }}>
+            <div style={{ 
+              marginTop: 25, 
+              borderRadius: 16, 
+              border: "1px solid #1e293b", 
+              background: "rgba(2,6,23,0.4)", 
+              overflow: "hidden", 
+              position: "relative", 
+              maxHeight: 300, 
+              flexGrow: 0 
+            }}>
                 <Topography income={inputs.income} spawnNumbers={true} stressFactor={stressFactor} speed={1 + stressFactor * 2} />
             </div>
           )}
@@ -874,7 +883,7 @@ const tickerContainer = {
   left: 0,
   width: "100%",
   height: 28,
-  background: "#020617", // Átlátszatlan sötét háttér a szavak eltüntetéséhez
+  background: "transparent", // Teljesen átlátszó háttér
   borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
   zIndex: 1000,
   display: "flex",
