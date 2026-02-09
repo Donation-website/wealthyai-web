@@ -12,11 +12,11 @@ import {
 } from "recharts";
 
 /* ===== ANIMATION COMPONENT (SpiderNet - HD & Ultra Dense) ===== */
-function SpiderNet({ isMobile }) {
+function SpiderNet({ isMobile, height }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
-    if (isMobile) return;
+    if (isMobile || !height) return;
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
@@ -29,12 +29,12 @@ function SpiderNet({ isMobile }) {
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
-      const rect = canvas.getBoundingClientRect();
+      const rect = canvas.parentElement.getBoundingClientRect();
       canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
+      canvas.height = height * dpr;
       ctx.scale(dpr, dpr);
       canvas.style.width = `${rect.width}px`;
-      canvas.style.height = `${rect.height}px`;
+      canvas.style.height = `${height}px`;
     };
 
     window.addEventListener("resize", resize);
@@ -140,7 +140,7 @@ function SpiderNet({ isMobile }) {
       canvas.removeEventListener("mouseleave", handleMouseLeave);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [isMobile]);
+  }, [isMobile, height]);
 
   return (
     <canvas 
@@ -148,7 +148,7 @@ function SpiderNet({ isMobile }) {
       style={{ 
         display: 'block',
         width: '100%', 
-        height: '100%',
+        height: `${height}px`,
         background: 'transparent'
       }} 
     />
@@ -156,15 +156,33 @@ function SpiderNet({ isMobile }) {
 }
 
 export default function DayPremium() {
-
-  /* ===== MOBILE DETECTION ===== */
   const [isMobile, setIsMobile] = useState(false);
+  const aiBoxRef = useRef(null);
+  const [aiBoxHeight, setAiBoxHeight] = useState(0);
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  const [data, setData] = useState({
+    income: 5000,
+    fixed: 2000,
+    variable: 1500,
+  });
+
+  const [aiText, setAiText] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+
+  // Figyeljük a box magasságát
+  useEffect(() => {
+    if (aiOpen && aiBoxRef.current) {
+      setAiBoxHeight(aiBoxRef.current.offsetHeight);
+    }
+  }, [aiOpen, aiText]);
 
   /* ===== SUBSCRIPTION CHECK ===== */
   useEffect(() => {
@@ -190,24 +208,13 @@ export default function DayPremium() {
       });
   }, []);
 
-  const [data, setData] = useState({
-    income: 5000,
-    fixed: 2000,
-    variable: 1500,
-  });
-
-  const [aiText, setAiText] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [aiOpen, setAiOpen] = useState(false);
-
   useEffect(() => {
     const saved = localStorage.getItem("userFinancials");
     if (saved) setData(JSON.parse(saved));
   }, []);
 
   const surplus = data.income - (data.fixed + data.variable);
-  const savingsRate =
-    data.income > 0 ? (surplus / data.income) * 100 : 0;
+  const savingsRate = data.income > 0 ? (surplus / data.income) * 100 : 0;
   const fiveYearProjection = surplus * 60 * 1.45;
 
   const chartData = [
@@ -279,7 +286,7 @@ export default function DayPremium() {
 
             <div style={{ flex: 1 }}>
               {aiOpen && (
-                <div style={aiBox}>
+                <div ref={aiBoxRef} style={aiBox}>
                   <div style={aiHeader}>
                     <strong>AI Insight</strong>
                     <button onClick={() => setAiOpen(false)} style={closeBtn}>✕</button>
@@ -322,10 +329,10 @@ export default function DayPremium() {
               <MiniBar title="Expense Distribution" value={data.fixed + data.variable} />
             </div>
 
-            {/* AZ AMŐBA HELYE: Diagramok alatt, kitöltve a maradék helyet */}
+            {/* AZ AMŐBA HELYE: Dinamikusan igazítva az AI boxhoz */}
             {!isMobile && aiOpen && (
-              <div style={{ flex: 1, marginTop: '20px', minHeight: '200px' }}>
-                <SpiderNet isMobile={isMobile} />
+              <div style={{ flex: 0, marginTop: '20px', width: '100%' }}>
+                <SpiderNet isMobile={isMobile} height={aiBoxHeight} />
               </div>
             )}
           </div>
