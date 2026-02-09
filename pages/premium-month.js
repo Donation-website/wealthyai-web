@@ -524,15 +524,7 @@ export default function PremiumMonth() {
       ? activeDual.executive
       : activeDual.directive);
 
-  /* AI Box magasságának követése az amőbához */
-  useEffect(() => {
-    if (aiVisible && aiBoxRef.current) {
-      // Dinamikus magasságállítás, hogy az amőba vége az ablak alján legyen
-      setAiBoxHeight(aiBoxRef.current.offsetHeight);
-    }
-  }, [aiVisible, activeText, viewMode, archiveOpen]);
-
-  /* ================= EXPORT & PERSISTENCE LOGIC ================= */
+   /* ================= EXPORT & PERSISTENCE LOGIC ================= */
   const getBriefings = range => {
     const legacy = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
     const snapshots = getMonthlySnapshots() || [];
