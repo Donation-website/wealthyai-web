@@ -12,7 +12,7 @@ import {
 function SpiderNet({ isMobile, height, color = "#38bdf8" }) {
   const canvasRef = useRef(null);
   useEffect(() => {
-    if (isMobile || !height || height < 20) return;
+    if (isMobile || !height || height < 10) return;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     let animationFrameId;
@@ -56,7 +56,6 @@ function SpiderNet({ isMobile, height, color = "#38bdf8" }) {
     }
 
     const init = () => {
-      particles = [];
       for (let i = 0; i < particleCount; i++) particles.push(new Particle());
     };
 
@@ -101,7 +100,7 @@ const COLORS = { rent: "#38bdf8", food: "#22d3ee", transport: "#34d399", enterta
 
 export default function PremiumWeek() {
   const [isMobile, setIsMobile] = useState(false);
-  const [openDays, setOpenDays] = useState({}); // Minden zárva alapból
+  const [openDays, setOpenDays] = useState({});
   const [aiOpen, setAiOpen] = useState(false);
   const [aiText, setAiText] = useState("");
   const [loading, setLoading] = useState(false);
@@ -109,9 +108,10 @@ export default function PremiumWeek() {
   const [incomeValue, setIncomeValue] = useState(3000);
   const [country, setCountry] = useState("US");
 
+  // Refek a pontos méréshez
   const leftColRef = useRef(null);
   const rightColRef = useRef(null);
-  const aiBoxRef = useRef(null);
+  const aiButtonRef = useRef(null);
   const [leftNetHeight, setLeftNetHeight] = useState(0);
   const [rightNetHeight, setRightNetHeight] = useState(0);
 
@@ -122,7 +122,7 @@ export default function PremiumWeek() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // LOKALIZÁCIÓ VISSZAÁLLÍTÁSA
+  // Lokalizáció
   useEffect(() => {
     const lang = navigator.language || "";
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
@@ -132,7 +132,7 @@ export default function PremiumWeek() {
     else setCountry("EU");
   }, []);
 
-  // DINAMIKUS MAGASSÁG KALKULÁCIÓ
+  // AMŐBA LOGIKA - PONTOS IGAZÍTÁS
   useEffect(() => {
     if (isMobile) return;
     const updateHeights = () => {
@@ -141,19 +141,21 @@ export default function PremiumWeek() {
       const anyInputOpen = Object.values(openDays).some(v => v);
 
       if (aiOpen) {
+        // Ha nyitva az AI, a bal amőba a jobb oldal teljes hosszához igazodik
         const diff = rightH - leftH;
-        setLeftNetHeight(diff > 30 ? diff : 0);
+        setLeftNetHeight(diff > 0 ? diff : 0);
         setRightNetHeight(0);
       } else if (anyInputOpen) {
+        // Ha csak inputok vannak nyitva, a jobb amőba a bal oldal aljáig ér
         const diff = leftH - rightH;
-        setRightNetHeight(diff > 30 ? diff : 0);
+        setRightNetHeight(diff > 0 ? diff : 0);
         setLeftNetHeight(0);
       } else {
         setLeftNetHeight(0);
         setRightNetHeight(0);
       }
     };
-    const timer = setTimeout(updateHeights, 100);
+    const timer = setTimeout(updateHeights, 50);
     return () => clearTimeout(timer);
   }, [aiOpen, aiText, openDays, isMobile]);
 
@@ -169,7 +171,14 @@ export default function PremiumWeek() {
   const weeklySpend = dailyTotals.reduce((a, b) => a + b, 0);
   const weeklyIncome = incomeType === "daily" ? incomeValue * 7 : incomeType === "weekly" ? incomeValue : incomeValue / 4.333;
 
-  const chartData = DAYS.map((d, i) => ({ day: d, total: dailyTotals[i], balance: (weeklyIncome / 7) - dailyTotals[i], ...week[d] }));
+  const chartData = DAYS.map((d, i) => ({ 
+    day: d, 
+    total: dailyTotals[i], 
+    balance: (weeklyIncome / 7) - dailyTotals[i], 
+    x: i + 1, // Dispersion X tengelyhez
+    ...week[d] 
+  }));
+
   const pieData = CATEGORIES.map(c => ({ name: c, value: DAYS.reduce((s, d) => s + week[d][c], 0), fill: COLORS[c] }));
 
   const runAI = async () => {
@@ -196,7 +205,7 @@ export default function PremiumWeek() {
           <p style={{ margin: "0 0 5px 0", fontWeight: "bold", color: "#7dd3fc" }}>{label}</p>
           {payload.map((entry, index) => (
             <div key={index} style={{ color: entry.color || entry.payload.fill, fontSize: "12px", padding: "2px 0" }}>
-              {entry.name}: <span style={{ color: "#fff" }}>${entry.value.toLocaleString()}</span>
+              {entry.name.toUpperCase()}: <span style={{ color: "#fff" }}>${entry.value.toLocaleString()}</span>
             </div>
           ))}
         </div>
@@ -212,11 +221,12 @@ export default function PremiumWeek() {
       <div style={{...contentWrap, padding: isMobile ? "60px 15px 120px 15px" : "40px"}}>
         <div style={header}>
           <h1 style={{...title, fontSize: isMobile ? "1.6rem" : "2.6rem"}}>WEALTHYAI · WEEKLY INTELLIGENCE</h1>
-          <p style={subtitle}>Dynamic localization and country-aware AI insights.</p>
+          <p style={subtitle}>Precise behavioral mapping and country-aware AI insights.</p>
         </div>
 
         <div style={{...layout, gridTemplateColumns: isMobile ? "1fr" : "1.2fr 1.3fr", gap: 40}}>
           
+          {/* BAL OSZLOP */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div ref={leftColRef}>
               <div style={incomeBox}>
@@ -256,6 +266,7 @@ export default function PremiumWeek() {
               ))}
             </div>
             
+            {/* AMŐBA A BAL OLDALON (Ha az AI nyitva van) */}
             {!isMobile && aiOpen && leftNetHeight > 10 && (
               <div style={{ marginTop: 20, flex: 1, borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(56,189,248,0.1)' }}>
                 <SpiderNet isMobile={isMobile} height={leftNetHeight} />
@@ -263,62 +274,70 @@ export default function PremiumWeek() {
             )}
           </div>
 
+          {/* JOBB OSZLOP */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div ref={rightColRef} style={{ display: 'grid', gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16 }}>
-              <Chart title="Daily spending vs Income">
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#0f172a" />
-                  <XAxis dataKey="day" fontSize={10} stroke="#64748b" />
-                  <YAxis fontSize={10} stroke="#64748b" />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Line dataKey="total" name="Spending" stroke="#38bdf8" strokeWidth={3} dot={{r: 4}} />
-                  <Line dataKey="balance" name="Net Balance" stroke="#facc15" strokeDasharray="5 5" />
-                </LineChart>
-              </Chart>
+            <div ref={rightColRef}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16 }}>
+                <Chart title="Daily spending vs Income">
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#0f172a" />
+                    <XAxis dataKey="day" fontSize={10} stroke="#64748b" />
+                    <YAxis fontSize={10} stroke="#64748b" />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Line dataKey="total" name="Spending" stroke="#38bdf8" strokeWidth={3} dot={{r: 4}} />
+                    <Line dataKey="balance" name="Net Balance" stroke="#facc15" strokeDasharray="5 5" />
+                  </LineChart>
+                </Chart>
 
-              <Chart title="Category trends">
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#0f172a" />
-                  <XAxis dataKey="day" fontSize={10} stroke="#64748b" />
-                  <YAxis fontSize={10} stroke="#64748b" />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend wrapperStyle={{fontSize: 10}} />
-                  {CATEGORIES.map(c => <Line key={c} dataKey={c} name={c.toUpperCase()} stroke={COLORS[c]} dot={false} strokeWidth={2} />)}
-                </LineChart>
-              </Chart>
+                <Chart title="Category trends">
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#0f172a" />
+                    <XAxis dataKey="day" fontSize={10} stroke="#64748b" />
+                    <YAxis fontSize={10} stroke="#64748b" />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend wrapperStyle={{fontSize: 10}} />
+                    {CATEGORIES.map(c => <Line key={c} dataKey={c} name={c} stroke={COLORS[c]} dot={false} strokeWidth={2} />)}
+                  </LineChart>
+                </Chart>
 
-              <Chart title="Weekly distribution">
-                <PieChart>
-                  <Pie data={pieData} dataKey="value" outerRadius={70} stroke="none">
-                    {pieData.map((p, i) => <Cell key={i} fill={p.fill} />)}
-                  </Pie>
-                  <Tooltip content={<CustomTooltip />} />
-                </PieChart>
-              </Chart>
+                <Chart title="Weekly distribution">
+                  <PieChart>
+                    <Pie data={pieData} dataKey="value" outerRadius={70} stroke="none">
+                      {pieData.map((p, i) => <Cell key={i} fill={p.fill} />)}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                  </PieChart>
+                </Chart>
 
-              <Chart title="Daily dispersion">
-                <ScatterChart>
-                  <CartesianGrid stroke="#0f172a" />
-                  <XAxis dataKey="x" name="Day" fontSize={10} stroke="#64748b" />
-                  <YAxis dataKey="y" name="Spending" fontSize={10} stroke="#64748b" />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Scatter data={chartData} dataKey="total" name="Daily" fill="#a78bfa" />
-                </ScatterChart>
-              </Chart>
+                <Chart title="Daily dispersion">
+                  <ScatterChart>
+                    <CartesianGrid stroke="#0f172a" strokeDasharray="3 3" />
+                    <XAxis type="number" dataKey="x" name="Day Index" hide />
+                    <XAxis type="category" dataKey="day" name="Day" fontSize={10} stroke="#64748b" />
+                    <YAxis type="number" dataKey="total" name="Spending" fontSize={10} stroke="#64748b" />
+                    <Tooltip content={<CustomTooltip />} cursor={{ strokeDasharray: '3 3' }} />
+                    <Scatter name="Spending" data={chartData} fill="#a78bfa" />
+                  </ScatterChart>
+                </Chart>
+              </div>
+
+              <div style={summary}>
+                WEEKLY SPEND: <strong style={{color: "#fb7185"}}>${Math.round(weeklySpend).toLocaleString()}</strong> · 
+                SURPLUS: <strong style={{color: "#34d399"}}>${Math.round(weeklyIncome - weeklySpend).toLocaleString()}</strong>
+              </div>
+
+              <button ref={aiButtonRef} onClick={runAI} style={aiButton}>
+                {loading ? "ANALYZING BEHAVIOR…" : "RUN WEEKLY AI ANALYSIS"}
+              </button>
             </div>
 
-            <div style={summary}>
-              WEEKLY SPEND: <strong style={{color: "#fb7185"}}>${Math.round(weeklySpend).toLocaleString()}</strong> · 
-              SURPLUS: <strong style={{color: "#34d399"}}>${Math.round(weeklyIncome - weeklySpend).toLocaleString()}</strong>
-            </div>
-
-            <button onClick={runAI} style={aiButton}>
-              {loading ? "ANALYZING BEHAVIOR…" : "RUN WEEKLY AI ANALYSIS"}
-            </button>
-
+            {/* AI BOX ÉS JOBB OLDALI AMŐBA */}
             {aiOpen ? (
-              <div ref={aiBoxRef} style={aiBox}>
-                <div style={aiHeader}><strong>Weekly AI Insight</strong><button onClick={() => setAiOpen(false)} style={closeBtn}>✕</button></div>
+              <div style={aiBox}>
+                <div style={aiHeader}>
+                  <strong>Weekly AI Insight</strong>
+                  <button onClick={() => setAiOpen(false)} style={closeBtn}>✕</button>
+                </div>
                 <pre style={aiTextStyle}>{aiText}</pre>
               </div>
             ) : (
@@ -331,8 +350,9 @@ export default function PremiumWeek() {
           </div>
         </div>
       </div>
+
       <div style={footerText}>© 2026 WealthyAI — All rights reserved.</div>
-      <div style={upsellText}>Localization active: {country} Intelligence</div>
+      <div style={upsellText}>Active Intelligence: {country} Database</div>
     </div>
   );
 }
@@ -346,8 +366,33 @@ function Chart({ title, children }) {
   );
 }
 
-const tooltipContainer = { background: "rgba(2, 6, 23, 0.95)", border: "1px solid #1e293b", padding: "10px", borderRadius: "8px", backdropFilter: "blur(8px)" };
-const page = { minHeight: "100vh", position: "relative", color: "#e5e7eb", fontFamily: "Inter, sans-serif", backgroundColor: "#020617", backgroundImage: `repeating-linear-gradient(-25deg, rgba(56,189,248,0.06) 0px, rgba(56,189,248,0.06) 1px, transparent 1px, transparent 180px), repeating-linear-gradient(35deg, rgba(167,139,250,0.05) 0px, rgba(167,139,250,0.05) 1px, transparent 1px, transparent 260px), radial-gradient(circle at 20% 30%, rgba(56,189,248,0.18), transparent 45%), radial-gradient(circle at 80% 60%, rgba(167,139,250,0.18), transparent 50%), url("/wealthyai/icons/generated.png")`, backgroundAttachment: "fixed", backgroundSize: "auto, auto, 100% 100%, 100% 100%, 280px auto", overflowX: "hidden" };
+/* ===== STYLES - NO TRIMMING ===== */
+const tooltipContainer = { 
+  background: "rgba(2, 6, 23, 0.95)", 
+  border: "1px solid #1e293b", 
+  padding: "12px", 
+  borderRadius: "10px", 
+  backdropFilter: "blur(12px)",
+  boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5)"
+};
+
+const page = { 
+  minHeight: "100vh", 
+  position: "relative", 
+  color: "#e5e7eb", 
+  fontFamily: "Inter, sans-serif", 
+  backgroundColor: "#020617", 
+  backgroundImage: `
+    repeating-linear-gradient(-25deg, rgba(56,189,248,0.06) 0px, rgba(56,189,248,0.06) 1px, transparent 1px, transparent 180px), 
+    repeating-linear-gradient(35deg, rgba(167,139,250,0.05) 0px, rgba(167,139,250,0.05) 1px, transparent 1px, transparent 260px), 
+    radial-gradient(circle at 20% 30%, rgba(56,189,248,0.18), transparent 45%), 
+    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.18), transparent 50%), 
+    url("/wealthyai/icons/generated.png")`, 
+  backgroundAttachment: "fixed", 
+  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 280px auto", 
+  overflowX: "hidden" 
+};
+
 const contentWrap = { width: "100%", boxSizing: "border-box" };
 const header = { textAlign: "center", marginBottom: 30 };
 const title = { margin: 0, fontWeight: "bold", letterSpacing: "-1px" };
@@ -369,7 +414,7 @@ const chartBox = { background: "rgba(15, 23, 42, 0.6)", border: "1px solid #1e29
 const chartTitle = { fontSize: 10, color: "#7dd3fc", marginBottom: 15, textTransform: "uppercase", letterSpacing: "1px" };
 const summary = { padding: "18px", background: "rgba(56, 189, 248, 0.08)", border: "1px solid rgba(56, 189, 248, 0.2)", borderRadius: 12, textAlign: "center", marginBottom: 15 };
 const aiButton = { width: "100%", padding: 16, background: "#38bdf8", border: "none", borderRadius: 12, fontWeight: "bold", color: "#020617", cursor: "pointer", marginBottom: 15 };
-const aiBox = { background: "rgba(15, 23, 42, 0.9)", border: "1px solid #38bdf8", borderRadius: 14, padding: 20, backdropFilter: "blur(12px)" };
+const aiBox = { background: "rgba(15, 23, 42, 0.9)", border: "1px solid #38bdf8", borderRadius: 14, padding: 20, backdropFilter: "blur(12px)", marginTop: 0 };
 const aiHeader = { display: "flex", justifyContent: "space-between", marginBottom: 15, color: "#38bdf8" };
 const aiTextStyle = { whiteSpace: "pre-wrap", lineHeight: 1.6, fontSize: "14px", color: "#cbd5e1", fontFamily: "inherit" };
 const closeBtn = { background: "transparent", border: "none", color: "#64748b", cursor: "pointer", fontSize: 20 };
