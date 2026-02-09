@@ -11,7 +11,7 @@ import {
   Bar,
 } from "recharts";
 
-/* ===== ANIMATION COMPONENT (SpiderNet) ===== */
+/* ===== ANIMATION COMPONENT (SpiderNet - HD & Dense) ===== */
 function SpiderNet({ isMobile }) {
   const canvasRef = useRef(null);
 
@@ -23,12 +23,18 @@ function SpiderNet({ isMobile }) {
     let animationFrameId;
 
     let particles = [];
-    const particleCount = 60;
-    const mouse = { x: null, y: null, radius: 150 };
+    const particleCount = 120; // Sűrűbb háló
+    const connectionDistance = 180; // Több kapcsolódási pont
+    const mouse = { x: null, y: null, radius: 180 };
 
     const resize = () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+      canvas.style.width = `${rect.width}px`;
+      canvas.style.height = `${rect.height}px`;
     };
 
     window.addEventListener("resize", resize);
@@ -50,30 +56,28 @@ function SpiderNet({ isMobile }) {
 
     class Particle {
       constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 2 + 1;
-        this.baseX = this.x;
-        this.baseY = this.y;
-        this.density = (Math.random() * 30) + 1;
-        this.vx = (Math.random() - 0.5) * 0.5;
-        this.vy = (Math.random() - 0.5) * 0.5;
+        const rect = canvas.getBoundingClientRect();
+        this.x = Math.random() * rect.width;
+        this.y = Math.random() * rect.height;
+        this.size = Math.random() * 1.5 + 0.5;
+        this.vx = (Math.random() - 0.5) * 0.4;
+        this.vy = (Math.random() - 0.5) * 0.4;
       }
 
       draw() {
-        ctx.fillStyle = "rgba(56, 189, 248, 0.8)";
+        ctx.fillStyle = "#38bdf8";
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.closePath();
         ctx.fill();
       }
 
       update() {
+        const rect = canvas.getBoundingClientRect();
         this.x += this.vx;
         this.y += this.vy;
 
-        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+        if (this.x < 0 || this.x > rect.width) this.vx *= -1;
+        if (this.y < 0 || this.y > rect.height) this.vy *= -1;
 
         if (mouse.x !== null && mouse.y !== null) {
           let dx = mouse.x - this.x;
@@ -81,10 +85,8 @@ function SpiderNet({ isMobile }) {
           let distance = Math.sqrt(dx * dx + dy * dy);
           if (distance < mouse.radius) {
             const force = (mouse.radius - distance) / mouse.radius;
-            const directionX = dx / distance;
-            const directionY = dy / distance;
-            this.x -= directionX * force * 2;
-            this.y -= directionY * force * 2;
+            this.x -= (dx / distance) * force * 3;
+            this.y -= (dy / distance) * force * 3;
           }
         }
       }
@@ -104,10 +106,10 @@ function SpiderNet({ isMobile }) {
           let dy = particles[a].y - particles[b].y;
           let distance = Math.sqrt(dx * dx + dy * dy);
 
-          if (distance < 150) {
-            let opacity = 1 - (distance / 150);
-            ctx.strokeStyle = `rgba(34, 211, 238, ${opacity * 0.2})`;
-            ctx.lineWidth = 1;
+          if (distance < connectionDistance) {
+            let opacity = 1 - (distance / connectionDistance);
+            ctx.strokeStyle = `rgba(34, 211, 238, ${opacity * 0.4})`;
+            ctx.lineWidth = 0.8; // Élesebb, vékonyabb vonalak
             ctx.beginPath();
             ctx.moveTo(particles[a].x, particles[a].y);
             ctx.lineTo(particles[b].x, particles[b].y);
@@ -118,7 +120,8 @@ function SpiderNet({ isMobile }) {
     };
 
     const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const rect = canvas.getBoundingClientRect();
+      ctx.clearRect(0, 0, rect.width, rect.height);
       particles.forEach(p => {
         p.update();
         p.draw();
@@ -138,19 +141,14 @@ function SpiderNet({ isMobile }) {
     };
   }, [isMobile]);
 
-  if (isMobile) return null;
-
   return (
     <canvas 
       ref={canvasRef} 
       style={{ 
-        position: 'absolute', 
-        top: 0, 
-        left: 0, 
+        display: 'block',
         width: '100%', 
-        height: '100%', 
-        pointerEvents: 'all',
-        zIndex: 0 
+        height: '100%',
+        cursor: 'crosshair'
       }} 
     />
   );
@@ -291,34 +289,44 @@ export default function DayPremium() {
             )}
           </div>
 
-          <div style={{ position: 'relative' }}>
-            {/* Az animáció csak desktopon és csak ha nyitva az AI box */}
-            {aiOpen && !isMobile && <SpiderNet isMobile={isMobile} />}
-            
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <div style={inputPanel}>
-                {["income", "fixed", "variable"].map((k) => (
-                  <div key={k} style={inputRow}>
-                    <span>{k.toUpperCase()}</span>
-                    <input
-                      type="number"
-                      value={data[k]}
-                      onChange={(e) =>
-                        setData({ ...data, [k]: Number(e.target.value) })
-                      }
-                      style={input}
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <div style={{
-                ...chartGrid,
-                gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr"
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {/* Az animáció konténere: Csak az AI megnyitásakor látszik és csak az üres térben */}
+            {aiOpen && !isMobile && (
+              <div style={{ 
+                flex: 1, 
+                minHeight: '200px', 
+                marginBottom: '20px', 
+                border: '1px solid rgba(56, 189, 248, 0.1)', 
+                borderRadius: '12px',
+                overflow: 'hidden',
+                background: 'rgba(2, 6, 23, 0.3)'
               }}>
-                <MiniChart title="Cash Flow Projection" data={chartData} />
-                <MiniBar title="Expense Distribution" value={data.fixed + data.variable} />
+                <SpiderNet isMobile={isMobile} />
               </div>
+            )}
+
+            <div style={inputPanel}>
+              {["income", "fixed", "variable"].map((k) => (
+                <div key={k} style={inputRow}>
+                  <span>{k.toUpperCase()}</span>
+                  <input
+                    type="number"
+                    value={data[k]}
+                    onChange={(e) =>
+                      setData({ ...data, [k]: Number(e.target.value) })
+                    }
+                    style={input}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div style={{
+              ...chartGrid,
+              gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr"
+            }}>
+              <MiniChart title="Cash Flow Projection" data={chartData} />
+              <MiniBar title="Expense Distribution" value={data.fixed + data.variable} />
             </div>
           </div>
         </div>
