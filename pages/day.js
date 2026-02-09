@@ -246,8 +246,46 @@ export default function DayPremium() {
     setLoading(false);
   };
 
+  /* ===== TICKER COMPONENT ===== */
+  const WealthyTicker = () => {
+    if (isMobile) return null;
+
+    const tickerText = "WealthyAI interprets your financial state over time — not advice, not prediction, just clarity • Interpretation over advice • Clarity over certainty • Insight unfolds over time • Financial understanding isn’t instant • Context changes • Insight follows time • Clarity over certainty • Built on time, not urgency • ";
+
+    return (
+      <div
+        style={{
+          position: "absolute",
+          top: 10,
+          left: 0,
+          width: "100%",
+          height: 18,
+          overflow: "hidden",
+          zIndex: 20,
+          pointerEvents: "none",
+        }}
+      >
+        <div
+          style={{
+            display: "inline-block",
+            whiteSpace: "nowrap",
+            fontSize: 11,
+            letterSpacing: "0.08em",
+            color: "rgba(255,255,255,0.75)",
+            animation: "waiScroll 45s linear infinite",
+          }}
+        >
+          <span>{tickerText}</span>
+          <span>{tickerText}</span>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div style={page}>
+      <WealthyTicker />
+      
       <a href="/day/help" style={{
         ...helpButton,
         top: isMobile ? 12 : 24,
@@ -358,6 +396,13 @@ export default function DayPremium() {
         stress testing and advanced projections.
         {isMobile && <div style={{marginTop: 10, fontSize: 10, opacity: 0.6}}>© 2026 WealthyAI</div>}
       </div>
+
+      <style>{`
+        @keyframes waiScroll {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-50%); }
+        }
+      `}</style>
     </div>
   );
 }
