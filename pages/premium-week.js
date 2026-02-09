@@ -245,7 +245,7 @@ export default function PremiumWeek() {
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div ref={leftColRef}>
               <div style={incomeBox}>
-                <div style={sectionLabel}>WEEKLY INCOME SETUP</div>
+                <div style={sectionLabel}>INCOME SETUP</div>
                 <div style={row}>
                   <select value={incomeType} onChange={(e) => setIncomeType(e.target.value)} style={regionSelect}>
                     <option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option>
