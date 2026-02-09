@@ -4,7 +4,6 @@ export default function Topography({ stressFactor, income, spawnNumbers, isAiOpe
   const canvasRef = useRef(null);
   const [isVisible, setIsVisible] = useState(true);
   
-  // Refs az animáció folytonosságához (nem nullázódnak újrarenderelésnél)
   const stateRef = useRef({
     time: 0,
     floatingNumbers: [],
@@ -12,7 +11,6 @@ export default function Topography({ stressFactor, income, spawnNumbers, isAiOpe
   });
 
   useEffect(() => {
-    // Ha az AI ablak nyitva van vagy a felhasználó bezárta az X-szel, ne rajzoljunk
     if (isAiOpen || !isVisible) return;
 
     const canvas = canvasRef.current;
@@ -30,10 +28,13 @@ export default function Topography({ stressFactor, income, spawnNumbers, isAiOpe
     window.addEventListener("resize", resize);
     resize();
 
+    // Erősebb 3D perspektíva (mátrix szerűbb hatás)
     const project = (x, y, z) => {
+      const perspective = 600;
+      const scale = perspective / (perspective + y); 
       return {
-        x: x - y,
-        y: (x + y) * 0.5 - z
+        x: x * scale,
+        y: (y * 0.5 - z) * scale
       };
     };
 
@@ -41,64 +42,60 @@ export default function Topography({ stressFactor, income, spawnNumbers, isAiOpe
       const state = stateRef.current;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      // A stressFactor befolyásolja a sebességet
-      state.time += 0.015 + (stressFactor * 0.07);
+      state.time += 0.01 + (stressFactor * 0.06);
 
-      const gridSize = 30;
-      const cols = Math.floor(canvas.width / gridSize) + 4;
-      const rows = Math.floor(canvas.height / gridSize) + 4;
-      const heightScale = 15 + (stressFactor * 65);
+      const gridSize = 22; // Kisebb rács a finomabb részletekért
+      const cols = 18;
+      const rows = 18;
+      const heightScale = 10 + (stressFactor * 50);
 
       ctx.save();
-      // Középre igazítás
-      ctx.translate(canvas.width / 2, canvas.height / 4);
+      ctx.translate(canvas.width / 2, canvas.height / 2.2);
 
-      // --- RÁCS RAJZOLÁSA ---
-      ctx.strokeStyle = "rgba(56, 189, 248, 0.25)";
       ctx.lineWidth = 1;
 
-      // Vízszintes vonalak
-      for (let y = 0; y < rows; y++) {
-        ctx.beginPath();
-        for (let x = 0; x < cols; x++) {
-          const h = Math.sin(x * 0.3 + state.time) * Math.cos(y * 0.3 - state.time * 0.5) * heightScale;
-          const p = project((x - cols/2) * gridSize, (y - rows/2) * gridSize, h);
-          if (x === 0) ctx.moveTo(p.x, p.y);
-          else ctx.lineTo(p.x, p.y);
-        }
-        ctx.stroke();
-      }
+      // 3D Háló rajzolása (Vízszintes és függőleges szálak)
+      for (let i = 0; i < 2; i++) {
+        for (let a = 0; a < (i === 0 ? rows : cols); a++) {
+          ctx.beginPath();
+          for (let b = 0; b < (i === 0 ? cols : rows); b++) {
+            const x = i === 0 ? (b - cols / 2) * gridSize : (a - cols / 2) * gridSize;
+            const y = i === 0 ? (a - rows / 2) * gridSize : (b - rows / 2) * gridSize;
+            
+            const dist = Math.sqrt(x*x + y*y) * 0.2;
+            const h = Math.sin(dist - state.time) * heightScale;
+            
+            const p = project(x, y, h);
+            
+            // Színátmenet a magasság alapján (hasonlóan a képhez)
+            const alpha = Math.max(0.1, (h + heightScale) / (heightScale * 2));
+            ctx.strokeStyle = `rgba(56, 189, 248, ${alpha * 0.4})`;
 
-      // Függőleges vonalak
-      for (let x = 0; x < cols; x++) {
-        ctx.beginPath();
-        for (let y = 0; y < rows; y++) {
-          const h = Math.sin(x * 0.3 + state.time) * Math.cos(y * 0.3 - state.time * 0.5) * heightScale;
-          const p = project((x - cols/2) * gridSize, (y - rows/2) * gridSize, h);
-          if (y === 0) ctx.moveTo(p.x, p.y);
-          else ctx.lineTo(p.x, p.y);
+            if (b === 0) ctx.moveTo(p.x, p.y);
+            else ctx.lineTo(p.x, p.y);
+          }
+          ctx.stroke();
         }
-        ctx.stroke();
       }
       ctx.restore();
 
-      // --- FLOATING NUMBERS LOGIKA ---
-      if (spawnNumbers && Math.random() < 0.06) {
+      // Számok spawnolása a háló "hullámaiból"
+      if (spawnNumbers && Math.random() < 0.05) {
         state.floatingNumbers.push({
-          x: Math.random() * canvas.width,
-          y: canvas.height - 50,
-          val: Math.floor((income / 10) * (Math.random() + 0.2)),
+          x: (Math.random() * 0.6 + 0.2) * canvas.width,
+          y: canvas.height / 1.8,
+          val: Math.floor((income / 15) * (Math.random() + 0.5)),
           opacity: 1,
-          speed: 0.5 + Math.random() * 1.5
+          speed: 0.8 + Math.random()
         });
       }
 
       for (let i = state.floatingNumbers.length - 1; i >= 0; i--) {
         const n = state.floatingNumbers[i];
         n.y -= n.speed;
-        n.opacity -= 0.008;
+        n.opacity -= 0.012;
 
-        ctx.font = "bold 13px 'Courier New', monospace";
+        ctx.font = "bold 11px 'Courier New', monospace";
         ctx.fillStyle = `rgba(16, 185, 129, ${n.opacity})`;
         ctx.fillText(`+$${n.val}`, n.x, n.y);
 
@@ -119,39 +116,17 @@ export default function Topography({ stressFactor, income, spawnNumbers, isAiOpe
   if (!isVisible || isAiOpen) return null;
 
   return (
-    <div style={{ width: "100%", height: "100%", position: "relative" }}>
-      {/* Bezáró gomb */}
+    <div style={{ width: "100%", height: "220px", position: "relative", marginBottom: "15px" }}>
       <button 
         onClick={() => setIsVisible(false)}
         style={{
-          position: "absolute",
-          top: "10px",
-          right: "10px",
-          background: "rgba(255,255,255,0.1)",
-          border: "none",
-          color: "white",
-          borderRadius: "50%",
-          width: "24px",
-          height: "24px",
-          cursor: "pointer",
-          zIndex: 10,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "14px"
+          position: "absolute", top: "0px", right: "0px", background: "none",
+          border: "none", color: "#64748b", cursor: "pointer", zIndex: 10, fontSize: "18px"
         }}
       >
         ×
       </button>
-      <canvas
-        ref={canvasRef}
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "block",
-          background: "transparent"
-        }}
-      />
+      <canvas ref={canvasRef} style={{ width: "100%", height: "100%", background: "transparent" }} />
     </div>
   );
 }
