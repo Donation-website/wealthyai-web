@@ -488,7 +488,6 @@ export default function PremiumMonth() {
       style={{
         ...page,
         overflowX: isMobile ? "hidden" : undefined,
-        backgroundAttachment: "fixed",
       }}
     >
       {/* TICKER SECTION */}
@@ -594,7 +593,7 @@ export default function PremiumMonth() {
           ...layout,
           gridTemplateColumns: isMobile ? "1fr" : layout.gridTemplateColumns,
           gap: isMobile ? 20 : layout.gap,
-          alignItems: "stretch", // Magasság szinkronizáció
+          alignItems: "stretch",
         }}
       >
         {/* LEFT COLUMN: INPUTS & SIMULATION */}
@@ -669,9 +668,9 @@ export default function PremiumMonth() {
             </button>
           </div>
 
-          {/* DYNAMIC TOPOGRAPHY FILLER (LEFT BOTTOM) */}
+          {/* DYNAMIC TOPOGRAPHY FILLER - ONLY WHEN AI IS OPEN */}
           {aiVisible && (
-            <div style={{ flexGrow: 1, marginTop: 25, borderRadius: 16, border: "1px solid #1e293b", background: "rgba(2,6,23,0.4)", overflow: "hidden", position: "relative" }}>
+            <div style={{ flexGrow: 1, marginTop: 25, borderRadius: 16, border: "1px solid #1e293b", background: "rgba(2,6,23,0.4)", overflow: "hidden", position: "relative", minHeight: 300 }}>
                 <Topography income={inputs.income} spawnNumbers={true} stressFactor={stressFactor} speed={1 + stressFactor * 2} />
             </div>
           )}
@@ -681,7 +680,6 @@ export default function PremiumMonth() {
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div style={{ ...card, flexGrow: 1 }}>
             
-            {/* 1. STATE: MANIFESTO + INITIAL TOPOGRAPHY */}
             {!aiVisible && !simulationActive && (
               <div style={{ padding: "10px", animation: "fadeIn 0.8s ease-in", height: "100%", display: "flex", flexDirection: "column" }}>
                 <strong style={{ color: "#10b981", fontSize: 12, letterSpacing: 1 }}>SYSTEM STABILITY TOPOGRAPHY</strong>
@@ -695,7 +693,6 @@ export default function PremiumMonth() {
               </div>
             )}
 
-            {/* 2. STATE: SIMULATION ENGINE */}
             {simulationActive && !aiVisible && (
               <div style={{ padding: "10px", animation: "fadeIn 0.3s ease-out" }}>
                 <strong style={{ color: "#10b981", fontSize: 12 }}>LIVE SIMULATION ENGINE</strong>
@@ -732,7 +729,6 @@ export default function PremiumMonth() {
               </div>
             )}
 
-            {/* 3. STATE: AI BRIEFING */}
             {aiVisible && (
               <div>
                 <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
@@ -768,39 +764,22 @@ export default function PremiumMonth() {
                 <pre style={aiTextStyle}>{activeText}</pre>
 
                 {!selectedDay && (
-                  <div
-                    style={{
-                      marginTop: 16,
-                      display: "flex",
-                      gap: 12,
-                      flexWrap: isMobile ? "wrap" : "nowrap",
-                    }}
-                  >
-                    <select
-                      value={exportRange}
-                      onChange={e => setExportRange(e.target.value)}
-                      style={exportSelect}
-                    >
+                  <div style={{ marginTop: 16, display: "flex", gap: 12, flexWrap: isMobile ? "wrap" : "nowrap" }}>
+                    <select value={exportRange} onChange={e => setExportRange(e.target.value)} style={exportSelect}>
                       <option value="day">Today</option>
                       <option value="week">Last 7 days</option>
                       <option value="month">This month</option>
                     </select>
-
                     <button onClick={handleDownload} style={exportBtn}>Download</button>
                     <button onClick={downloadPDF} style={exportBtn}>PDF</button>
-                    <button onClick={sendEmailPDF} style={exportBtn}>
-                      {emailSending ? "..." : "Email"}
-                    </button>
+                    <button onClick={sendEmailPDF} style={exportBtn}>{emailSending ? "..." : "Email"}</button>
                   </div>
                 )}
               </div>
             )}
 
             <Divider />
-            <button
-              onClick={() => setArchiveOpen(!archiveOpen)}
-              style={{ ...exportBtn, width: "100%" }}
-            >
+            <button onClick={() => setArchiveOpen(!archiveOpen)} style={{ ...exportBtn, width: "100%" }}>
               {archiveOpen ? "Hide past days" : "View past days"}
             </button>
 
@@ -849,12 +828,7 @@ const Section = ({ title, children }) => (
 const Row = ({ label, value, onChange }) => (
   <div style={row}>
     <span style={{fontSize: 13, opacity: 0.8}}>{label}</span>
-    <input
-      type="number"
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      style={rowInput}
-    />
+    <input type="number" value={value} onChange={e => onChange(e.target.value)} style={rowInput} />
   </div>
 );
 
@@ -872,6 +846,7 @@ const Divider = () => (
 
 const page = {
   minHeight: "100vh",
+  width: "100%",
   position: "relative",
   padding: "60px 20px 40px",
   color: "#e5e7eb",
@@ -884,8 +859,9 @@ const page = {
     radial-gradient(circle at 80% 60%, rgba(167,139,250,0.14), transparent 50%),
     url("/wealthyai/icons/generated.png")
   `,
-  backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, repeat",
+  backgroundRepeat: "repeat",
   backgroundSize: "auto, auto, 100% 100%, 100% 100%, 420px auto",
+  backgroundAttachment: "fixed",
 };
 
 const tickerContainer = {
@@ -943,4 +919,14 @@ const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap", color: "#cbd5f5", f
 const exportBtn = { padding: "8px 12px", borderRadius: 8, border: "1px solid #1e293b", background: "transparent", color: "#38bdf8", cursor: "pointer", fontSize: 13 };
 const exportSelect = { background: "transparent", color: "#e5e7eb", border: "1px solid #1e293b", padding: "8px", borderRadius: 8 };
 
-const footer = { marginTop: 60, textAlign: "center", fontSize: 12, color: "#64748b", paddingBottom: 30 };
+const footer = { 
+  position: "relative", 
+  marginTop: 60, 
+  textAlign: "left", 
+  fontSize: 11, 
+  color: "#64748b", 
+  paddingBottom: 20, 
+  maxWidth: 1100, 
+  margin: "60px auto 0", 
+  paddingLeft: 20 
+};
