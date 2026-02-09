@@ -165,8 +165,6 @@ export default function PremiumWeek() {
       const leftH = leftColRef.current?.offsetHeight || 0;
       const rightH = rightColRef.current?.offsetHeight || 0;
       
-      // Amőba logika: csak akkor jelenik meg, ha különbség van. 
-      // Ha zárt minden, a magasságok egyezni fognak (0 különbség).
       const diffL = rightH - leftH;
       setLeftNetHeight(diffL > 1 ? diffL : 0);
 
@@ -290,9 +288,9 @@ export default function PremiumWeek() {
             )}
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div ref={rightColRef}>
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16 }}>
+          <div ref={rightColRef} style={{ display: 'flex', flexDirection: 'column' }}>
+            <div>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? "1fr" : "1.2fr 1.3fr", gap: 16 }}>
                 <Chart title="Daily spending vs Income">
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#0f172a" />
@@ -380,7 +378,7 @@ function Chart({ title, children }) {
   );
 }
 
-/* ===== STYLES - RE-ALIGNED TO MATCH BUTTON BOTTOM ===== */
+/* ===== STYLES ===== */
 const tooltipContainer = { background: "rgba(2, 6, 23, 0.95)", border: "1px solid #1e293b", padding: "12px", borderRadius: "10px", backdropFilter: "blur(12px)" };
 const page = { 
   minHeight: "100vh", position: "relative", color: "#e5e7eb", fontFamily: "Inter, sans-serif", backgroundColor: "#020617",
@@ -403,7 +401,7 @@ const incomeBox = { background: "rgba(30, 41, 59, 0.4)", border: "1px solid rgba
 const regionRow = { marginBottom: "22px", display: "flex", alignItems: "center", gap: 10 };
 const regionLabel = { color: "#7dd3fc", fontSize: "0.8rem", fontWeight: "bold" };
 const regionSelect = { background: "#0f172a", color: "#f8fafc", border: "1px solid #1e293b", padding: "6px 12px", borderRadius: 8 };
-const dayBox = { background: "rgba(30, 41, 59, 0.2)", border: "1px solid #1e293b", borderRadius: 12, padding: "10px 16px", marginBottom: "8px" }; // CSÖKKENTETT MAGASSÁG ÉS MARGIN
+const dayBox = { background: "rgba(30, 41, 59, 0.2)", border: "1px solid #1e293b", borderRadius: 12, padding: "10px 16px", marginBottom: "8px" };
 const dayTitle = { display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", color: "#38bdf8", fontWeight: "bold" };
 const inputList = { marginTop: 15, borderTop: "1px solid rgba(56,189,248,0.1)", paddingTop: 10 };
 const catLabel = { fontSize: "0.75rem", color: "#94a3b8" };
