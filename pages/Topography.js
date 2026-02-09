@@ -1,85 +1,105 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from "react";
 
-export default function Topography({ stressFactor }) {
+export default function Topography({ stressFactor, income, spawnNumbers }) {
   const canvasRef = useRef(null);
-  const containerRef = useRef(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    const container = containerRef.current;
-    if (!canvas || !container) return;
-    const ctx = canvas.getContext('2d');
+    const canvas = canvasRef.ref.current; // Hibajavítás: canvasRef.current
+    if (!canvasRef.current) return;
+    const ctx = canvasRef.current.getContext("2d");
+    
     let animationFrameId;
+    let offset = 0;
+    
+    // Számok tárolása a lebegéshez
+    const floatingNumbers = [];
 
     const resize = () => {
-      const dpr = window.devicePixelRatio || 2;
-      canvas.width = container.offsetWidth * dpr;
-      canvas.height = container.offsetHeight * dpr;
-      ctx.scale(dpr, dpr);
+      const rect = canvasRef.current.parentNode.getBoundingClientRect();
+      canvasRef.current.width = rect.width;
+      canvasRef.current.height = rect.height;
     };
 
-    window.addEventListener('resize', resize);
+    window.addEventListener("resize", resize);
     resize();
 
     const draw = () => {
-      if (!container) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.beginPath();
-      ctx.strokeStyle = '#38bdf8';
-      ctx.lineWidth = 0.7;
+      ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
       
-      const time = Date.now() * 0.001;
-      const offset = time * (0.2 + (stressFactor * 0.5));
+      // Dinamikus sebesség: alapsebesség + stressz szorzó
+      const speed = 0.02 + (stressFactor * 0.15);
+      offset += speed;
 
-      // Dinamikus sor-számítás: nem nyúlik, hanem szaporodik a rács
-      const spacingX = 25;
-      const spacingY = 18;
-      const dynamicRows = Math.ceil(container.offsetHeight / spacingY) + 4; 
-      const cols = 22;
+      // Számok generálása, ha a szimuláció aktív
+      if (spawnNumbers && Math.random() < 0.05) {
+        floatingNumbers.push({
+          x: Math.random() * canvasRef.current.width,
+          y: canvasRef.current.height,
+          val: Math.floor((income / 10) * (Math.random() + 0.5)),
+          opacity: 1,
+          speed: 1 + Math.random() * 2
+        });
+      }
 
-      for (let y = 0; y < dynamicRows; y++) {
-        for (let x = 0; x < cols; x++) {
-          const project = (ix, iy) => {
-            // Hullámzás: a stressz növeli az amplitúdót
-            const freq = 0.3;
-            const wave = Math.sin(ix * freq + iy * freq + offset) * (5 + (stressFactor * 45));
-            
-            // Fix perspektíva fentről indítva
-            const px = (ix - cols / 2) * spacingX * (1 + iy * 0.025);
-            const py = (iy * spacingY) + wave + 40; 
-            
-            return { x: px + container.offsetWidth / 2, y: py };
-          };
+      // Hullámok rajzolása (Topográfiai rétegek)
+      const layers = 5;
+      for (let l = 0; l < layers; l++) {
+        ctx.beginPath();
+        const layerOpacity = (l + 1) / layers;
+        // Stressz hatására a színek vörösesbe hajolhatnak (opcionális)
+        ctx.strokeStyle = `rgba(56, 189, 248, ${layerOpacity * 0.4})`;
+        ctx.lineWidth = 1;
 
-          const p1 = project(x, y);
-          const p2 = project(x + 1, y);
-          const p3 = project(x, y + 1);
+        for (let x = 0; x < canvasRef.current.width; x += 2) {
+          // A hullám amplitúdója a stressz faktorral nő
+          const amplitude = (20 + (l * 10)) * (1 + stressFactor * 2);
+          const frequency = 0.005 + (l * 0.001);
+          
+          const y = (canvasRef.current.height / 2) + 
+                    Math.sin(x * frequency + offset + l) * amplitude +
+                    Math.cos(x * 0.01 - offset * 0.5) * (amplitude / 2);
 
-          if (x < cols - 1) {
-            ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(p2.x, p2.y);
-          }
-          if (y < dynamicRows - 1) {
-            ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(p3.x, p3.y);
-          }
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+
+      // Lebegő számok frissítése és rajzolása
+      for (let i = floatingNumbers.length - 1; i >= 0; i--) {
+        const n = floatingNumbers[i];
+        n.y -= n.speed;
+        n.opacity -= 0.005;
+
+        ctx.font = "10px monospace";
+        ctx.fillStyle = `rgba(16, 185, 129, ${n.opacity})`;
+        ctx.fillText(`+${n.val}`, n.x, n.y);
+
+        if (n.opacity <= 0) {
+          floatingNumbers.splice(i, 1);
         }
       }
-      ctx.globalAlpha = 0.2 + (stressFactor * 0.4);
-      ctx.stroke();
+
       animationFrameId = requestAnimationFrame(draw);
     };
 
     draw();
+
     return () => {
-      window.removeEventListener('resize', resize);
+      window.removeEventListener("resize", resize);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [stressFactor]);
+  }, [stressFactor, income, spawnNumbers]);
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
-      <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />
-    </div>
+    <canvas
+      ref={canvasRef}
+      style={{
+        display: "block",
+        width: "100%",
+        height: "100%",
+        background: "radial-gradient(circle at center, #0f172a 0%, #020617 100%)",
+      }}
+    />
   );
 }
