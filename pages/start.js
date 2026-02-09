@@ -230,264 +230,307 @@ export default function UserDashboard() {
     background: "rgba(2,6,23,0.6)",
     zIndex: 15,
   };
-  return (
-    <main
-      style={{
-        minHeight: "100vh",
-        position: "relative",
-        padding: isMobile ? "20px 15px" : "40px",
-        color: "white",
-        fontFamily: "Inter, system-ui, sans-serif",
-        backgroundColor: "#020617",
-        backgroundImage: `
-          repeating-linear-gradient(-25deg, rgba(56,189,248,0.07) 0px, rgba(56,189,248,0.07) 1px, transparent 1px, transparent 160px),
-          repeating-linear-gradient(35deg, rgba(167,139,250,0.06) 0px, rgba(167,139,250,0.06) 1px, transparent 1px, transparent 220px),
-          radial-gradient(circle at 20% 30%, rgba(56,189,248,0.22), transparent 40%),
-          radial-gradient(circle at 80% 60%, rgba(167,139,250,0.22), transparent 45%),
-          radial-gradient(circle at 45% 85%, rgba(34,211,238,0.18), transparent 40%),
-          url("/wealthyai/icons/generated.png")
-        `,
-        backgroundRepeat:
-          "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
-        backgroundSize:
-          isMobile
-            ? "auto, auto, 200% 200%, 200% 200%, 200% 200%, 420px auto"
-            : "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
-        backgroundAttachment: "fixed",
-      }}
-    >
-      {/* ===== HELP BUTTON ===== */}
-      <a href="/start/help" style={helpButton}>Help</a>
 
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: "30px" }}>
-          <h1 style={{ fontSize: isMobile ? "1.8rem" : "2.5rem" }}>
-            Your Financial Overview (Basic)
-          </h1>
-        </div>
+  const WealthyTicker = () => {
+    if (isMobile) return null;
 
+    return (
+      <div
+        style={{
+          position: "fixed",
+          top: 10,
+          left: 20,
+          right: 90,
+          height: 18,
+          overflow: "hidden",
+          zIndex: 20,
+          pointerEvents: "none",
+        }}
+      >
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-            gap: 20,
+            whiteSpace: "nowrap",
+            fontSize: 11,
+            letterSpacing: "0.08em",
+            color: "rgba(255,255,255,0.75)",
+            paddingLeft: "100%",
+            animation: "waiScroll 45s linear infinite",
           }}
         >
-          <div style={card}>
-            <h3>Income & Expenses</h3>
-
-            {[
-              ["Monthly Income ($)", "income"],
-              ["Fixed Expenses", "fixed"],
-              ["Variable Expenses", "variable"],
-            ].map(([label, key]) => (
-              <div key={key} style={{ marginBottom: 15 }}>
-                <label style={{ fontSize: "14px" }}>{label}</label>
-                <input
-                  type="number"
-                  value={data[key]}
-                  style={input}
-                  onChange={(e) =>
-                    setData({ ...data, [key]: Number(e.target.value) })
-                  }
-                />
-              </div>
-            ))}
-          </div>
-
-          <div style={card}>
-            <h3>Insights (Basic)</h3>
-            <Radar data={radar} />
-
-            <p>
-              Risk Level: <strong>{riskLevel}</strong>
-            </p>
-            <p style={{ marginBottom: 15 }}>
-              Savings Score: <strong>{savingsScore}/100</strong>
-            </p>
-
-            <ul style={{ paddingLeft: 20 }}>
-              {insights.map((i, idx) => (
-                <li key={idx} style={{ marginBottom: 12, fontSize: "14px" }}>
-                  {i}
-                </li>
-              ))}
-            </ul>
-
-            <p style={{ opacity: 0.65, marginTop: 18, fontSize: "12px" }}>
-              This view shows a snapshot — not behavior, not direction.
-            </p>
-            <p
-              onClick={() =>
-                document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })
-              }
-              style={{
-                marginTop: 10,
-                fontSize: "12px",
-                opacity: 0.5,
-                textAlign: "center",
-                cursor: "pointer",
-              }}
-            >
-              Daily / Weekly / Monthly intelligence available ↓
-            </p>
-
-
-          </div>
+          WealthyAI interprets your financial state over time — not advice, not prediction, just clarity •
+          Interpretation over advice • Clarity over certainty • Insight unfolds over time •
+          Financial understanding isn’t instant • Context changes • Insight follows time •
+          Clarity over certainty • Built on time, not urgency •
         </div>
+      </div>
+    );
+  };
 
-        <div style={{ marginTop: isMobile ? 40 : 70, textAlign: "center" }}>
-          <h2
-            className="pulse-title"
-            style={{ fontSize: isMobile ? "1.4rem" : "2rem" }}
-          >
-            Choose your depth of financial intelligence
-          </h2>
+  return (
+    <>
+      <WealthyTicker />
+      <main
+        style={{
+          minHeight: "100vh",
+          position: "relative",
+          padding: isMobile ? "20px 15px" : "40px",
+          color: "white",
+          fontFamily: "Inter, system-ui, sans-serif",
+          backgroundColor: "#020617",
+          backgroundImage: `
+            repeating-linear-gradient(-25deg, rgba(56,189,248,0.07) 0px, rgba(56,189,248,0.07) 1px, transparent 1px, transparent 160px),
+            repeating-linear-gradient(35deg, rgba(167,139,250,0.06) 0px, rgba(167,139,250,0.06) 1px, transparent 1px, transparent 220px),
+            radial-gradient(circle at 20% 30%, rgba(56,189,248,0.22), transparent 40%),
+            radial-gradient(circle at 80% 60%, rgba(167,139,250,0.22), transparent 45%),
+            radial-gradient(circle at 45% 85%, rgba(34,211,238,0.18), transparent 40%),
+            url("/wealthyai/icons/generated.png")
+          `,
+          backgroundRepeat:
+            "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
+          backgroundSize:
+            isMobile
+              ? "auto, auto, 200% 200%, 200% 200%, 200% 200%, 420px auto"
+              : "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
+          backgroundAttachment: "fixed",
+        }}
+      >
+        {/* ===== HELP BUTTON ===== */}
+        <a href="/start/help" style={helpButton}>Help</a>
 
-          <p
-            style={{
-              maxWidth: 700,
-              margin: "18px auto",
-              opacity: 0.85,
-              fontSize: isMobile ? "14px" : "16px",
-            }}
-          >
-            Different questions require different levels of context.
-            You can choose the depth that matches what you want to understand right now.
-          </p>
+        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "30px" }}>
+            <h1 style={{ fontSize: isMobile ? "1.8rem" : "2.5rem" }}>
+              Your Financial Overview (Basic)
+            </h1>
+          </div>
 
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: isMobile
-                ? "1fr"
-                : "repeat(auto-fit, minmax(240px, 1fr))",
+              gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
               gap: 20,
-              marginTop: 30,
             }}
           >
             <div style={card}>
-              <h4>Daily Intelligence</h4>
-              <p style={{ fontSize: "14px", opacity: 0.8 }}>
-                Short-term interpretation of your current financial state.
-                Best for immediate clarity.
-              </p>
+              <h3>Income & Expenses</h3>
+
+              {[
+                ["Monthly Income ($)", "income"],
+                ["Fixed Expenses", "fixed"],
+                ["Variable Expenses", "variable"],
+              ].map(([label, key]) => (
+                <div key={key} style={{ marginBottom: 15 }}>
+                  <label style={{ fontSize: "14px" }}>{label}</label>
+                  <input
+                    type="number"
+                    value={data[key]}
+                    style={input}
+                    onChange={(e) =>
+                      setData({ ...data, [key]: Number(e.target.value) })
+                    }
+                  />
+                </div>
+              ))}
             </div>
 
             <div style={card}>
-              <h4>Weekly Intelligence</h4>
-              <p style={{ fontSize: "14px", opacity: 0.8 }}>
-                Behavior patterns across days and categories.
-                Best for understanding habits.
-              </p>
-            </div>
+              <h3>Insights (Basic)</h3>
+              <Radar data={radar} />
 
-            <div style={card}>
-              <h4>Monthly Intelligence</h4>
-              <p style={{ fontSize: "14px", opacity: 0.8 }}>
-                Multi-week context, regional insights, and forward-looking analysis.
-                Best when decisions require direction.
+              <p>
+                Risk Level: <strong>{riskLevel}</strong>
               </p>
+              <p style={{ marginBottom: 15 }}>
+                Savings Score: <strong>{savingsScore}/100</strong>
+              </p>
+
+              <ul style={{ paddingLeft: 20 }}>
+                {insights.map((i, idx) => (
+                  <li key={idx} style={{ marginBottom: 12, fontSize: "14px" }}>
+                    {i}
+                  </li>
+                ))}
+              </ul>
+
+              <p style={{ opacity: 0.65, marginTop: 18, fontSize: "12px" }}>
+                This view shows a snapshot — not behavior, not direction.
+              </p>
+              <p
+                onClick={() =>
+                  document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })
+                }
+                style={{
+                  marginTop: 10,
+                  fontSize: "12px",
+                  opacity: 0.5,
+                  textAlign: "center",
+                  cursor: "pointer",
+                }}
+              >
+                Daily / Weekly / Monthly intelligence available ↓
+              </p>
+
+
             </div>
           </div>
-        </div>
 
-        <div
-          id="pricing"
-          style={{ marginTop: isMobile ? 40 : 60 }}
-        >
+          <div style={{ marginTop: isMobile ? 40 : 70, textAlign: "center" }}>
+            <h2
+              className="pulse-title"
+              style={{ fontSize: isMobile ? "1.4rem" : "2rem" }}
+            >
+              Choose your depth of financial intelligence
+            </h2>
 
-          <h2
-            style={{
-              textAlign: "center",
-              marginBottom: 10,
-              fontSize: isMobile ? "1.4rem" : "2rem",
-            }}
-          >
-            Unlock Advanced AI Intelligence
-          </h2>
+            <p
+              style={{
+                maxWidth: 700,
+                margin: "18px auto",
+                opacity: 0.85,
+                fontSize: isMobile ? "14px" : "16px",
+              }}
+            >
+              Different questions require different levels of context.
+              You can choose the depth that matches what you want to understand right now.
+            </p>
 
-          <div style={{ 
-            display: "flex", 
-            alignItems: "center", 
-            justifyContent: "center", 
-            gap: "12px", 
-            marginBottom: 30,
-            fontSize: isMobile ? "14px" : "16px",
-            opacity: 0.9,
-            flexWrap: "wrap"
-          }}>
-            <span style={{ color: "#10b981", fontWeight: "600" }}>Strict Data Privacy</span>
-            <span style={{ opacity: 0.3 }}>|</span>
-            <span>Secure transaction processed via</span>
-            <img 
-              src="/wealthyai/icons/stripe.png" 
-              alt="Stripe" 
-              style={{ height: "35px", width: "auto", display: "inline-block" }} 
-            />
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: isMobile
+                  ? "1fr"
+                  : "repeat(auto-fit, minmax(240px, 1fr))",
+                gap: 20,
+                marginTop: 30,
+              }}
+            >
+              <div style={card}>
+                <h4>Daily Intelligence</h4>
+                <p style={{ fontSize: "14px", opacity: 0.8 }}>
+                  Short-term interpretation of your current financial state.
+                  Best for immediate clarity.
+                </p>
+              </div>
+
+              <div style={card}>
+                <h4>Weekly Intelligence</h4>
+                <p style={{ fontSize: "14px", opacity: 0.8 }}>
+                  Behavior patterns across days and categories.
+                  Best for understanding habits.
+                </p>
+              </div>
+
+              <div style={card}>
+                <h4>Monthly Intelligence</h4>
+                <p style={{ fontSize: "14px", opacity: 0.8 }}>
+                  Multi-week context, regional insights, and forward-looking analysis.
+                  Best when decisions require direction.
+                </p>
+              </div>
+            </div>
           </div>
 
           <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: 20,
-              flexWrap: "wrap",
-            }}
+            id="pricing"
+            style={{ marginTop: isMobile ? 40 : 60 }}
           >
-            <div
-              style={priceCard}
-              onClick={() =>
-                handleCheckout("price_1SscYJDyLtejYlZiyDvhdaIx")
-              }
+
+            <h2
+              style={{
+                textAlign: "center",
+                marginBottom: 10,
+                fontSize: isMobile ? "1.4rem" : "2rem",
+              }}
             >
-              <h3>1 Day · $9.99</h3>
-              <small>Immediate clarity</small>
+              Unlock Advanced AI Intelligence
+            </h2>
+
+            <div style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              justifyContent: "center", 
+              gap: "12px", 
+              marginBottom: 30,
+              fontSize: isMobile ? "14px" : "16px",
+              opacity: 0.9,
+              flexWrap: "wrap"
+            }}>
+              <span style={{ color: "#10b981", fontWeight: "600" }}>Strict Data Privacy</span>
+              <span style={{ opacity: 0.3 }}>|</span>
+              <span>Secure transaction processed via</span>
+              <img 
+                src="/wealthyai/icons/stripe.png" 
+                alt="Stripe" 
+                style={{ height: "35px", width: "auto", display: "inline-block" }} 
+              />
             </div>
 
             <div
-              style={priceCard}
-              onClick={() =>
-                handleCheckout("price_1SscaYDyLtejYlZiDjSeF5Wm")
-              }
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                gap: 20,
+                flexWrap: "wrap",
+              }}
             >
-              <h3>1 Week · $14.99</h3>
-              <small>Behavior & patterns</small>
-            </div>
+              <div
+                style={priceCard}
+                onClick={() =>
+                  handleCheckout("price_1SscYJDyLtejYlZiyDvhdaIx")
+                }
+              >
+                <h3>1 Day · $9.99</h3>
+                <small>Immediate clarity</small>
+              </div>
 
-            <div
-              style={priceCard}
-              onClick={() =>
-                handleCheckout("price_1SyaeRDyLtejYlZiWo76wuWO")
-              }
-            >
-              <h3>1 Month · $49.99</h3>
-              <small>Full intelligence engine</small>
+              <div
+                style={priceCard}
+                onClick={() =>
+                  handleCheckout("price_1SscaYDyLtejYlZiDjSeF5Wm")
+                }
+              >
+                <h3>1 Week · $14.99</h3>
+                <small>Behavior & patterns</small>
+              </div>
+
+              <div
+                style={priceCard}
+                onClick={() =>
+                  handleCheckout("price_1SyaeRDyLtejYlZiWo76wuWO")
+                }
+              >
+                <h3>1 Month · $49.99</h3>
+                <small>Full intelligence engine</small>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div style={{ 
-        marginTop: "50px", 
-        textAlign: "center", 
-        paddingBottom: "20px" 
-      }}>
-        <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
-          © 2026 WealthyAI — All rights reserved.
+        <div style={{ 
+          marginTop: "50px", 
+          textAlign: "center", 
+          paddingBottom: "20px" 
+        }}>
+          <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
+            © 2026 WealthyAI — All rights reserved.
+          </div>
         </div>
-      </div>
 
-      <style>{`
-        .pulse-title {
-          animation: pulseSoft 3s ease-in-out infinite;
-        }
-        @keyframes pulseSoft {
-          0% { opacity: 0.6; }
-          50% { opacity: 1; }
-          100% { opacity: 0.6; }
-        }
-      `}</style>
-    </main>
+        <style>{`
+          .pulse-title {
+            animation: pulseSoft 3s ease-in-out infinite;
+          }
+          @keyframes pulseSoft {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+          }
+          @keyframes waiScroll {
+            from { transform: translateX(0); }
+            to   { transform: translateX(-100%); }
+          }
+        `}</style>
+      </main>
+    </>
   );
 }
