@@ -17,11 +17,11 @@ function SpiderNet({ isMobile, height, color = "#38bdf8" }) {
     const ctx = canvas.getContext("2d");
     let animationFrameId;
     let particles = [];
-    const particleCount = 220; // Sűrűbb háló
+    const particleCount = 240; 
     const connectionDistance = 110;
 
     const resize = () => {
-      const dpr = window.devicePixelRatio || 2; // Tűéles renderelés
+      const dpr = window.devicePixelRatio || 2;
       const rect = canvas.parentElement.getBoundingClientRect();
       canvas.width = rect.width * dpr;
       canvas.height = height * dpr;
@@ -38,8 +38,8 @@ function SpiderNet({ isMobile, height, color = "#38bdf8" }) {
         const rect = canvas.getBoundingClientRect();
         this.x = Math.random() * rect.width;
         this.y = Math.random() * rect.height;
-        this.vx = (Math.random() - 0.5) * 0.3;
-        this.vy = (Math.random() - 0.5) * 0.3;
+        this.vx = (Math.random() - 0.5) * 0.35;
+        this.vy = (Math.random() - 0.5) * 0.35;
       }
       update() {
         const rect = canvas.getBoundingClientRect();
@@ -50,7 +50,7 @@ function SpiderNet({ isMobile, height, color = "#38bdf8" }) {
       draw() {
         ctx.fillStyle = color;
         ctx.beginPath();
-        ctx.arc(this.x, this.y, 0.7, 0, Math.PI * 2);
+        ctx.arc(this.x, this.y, 0.75, 0, Math.PI * 2);
         ctx.fill();
       }
     }
@@ -71,8 +71,8 @@ function SpiderNet({ isMobile, height, color = "#38bdf8" }) {
           let dy = particles[a].y - particles[b].y;
           let dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < connectionDistance) {
-            ctx.strokeStyle = `rgba(34, 211, 238, ${0.3 * (1 - dist / connectionDistance)})`;
-            ctx.lineWidth = 0.4;
+            ctx.strokeStyle = `rgba(34, 211, 238, ${0.35 * (1 - dist / connectionDistance)})`;
+            ctx.lineWidth = 0.45;
             ctx.beginPath();
             ctx.moveTo(particles[a].x, particles[a].y);
             ctx.lineTo(particles[b].x, particles[b].y);
@@ -101,7 +101,7 @@ const COLORS = { rent: "#38bdf8", food: "#22d3ee", transport: "#34d399", enterta
 
 export default function PremiumWeek() {
   const [isMobile, setIsMobile] = useState(false);
-  const [openDays, setOpenDays] = useState({ Mon: true });
+  const [openDays, setOpenDays] = useState({}); // Minden zárva alapból
   const [aiOpen, setAiOpen] = useState(false);
   const [aiText, setAiText] = useState("");
   const [loading, setLoading] = useState(false);
@@ -109,7 +109,6 @@ export default function PremiumWeek() {
   const [incomeValue, setIncomeValue] = useState(3000);
   const [country, setCountry] = useState("US");
 
-  // Refek a magasságméréshez
   const leftColRef = useRef(null);
   const rightColRef = useRef(null);
   const aiBoxRef = useRef(null);
@@ -123,30 +122,38 @@ export default function PremiumWeek() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // LOKALIZÁCIÓ VISSZAÁLLÍTÁSA
+  useEffect(() => {
+    const lang = navigator.language || "";
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+    if (lang.startsWith("hu") || tz.includes("Budapest")) setCountry("HU");
+    else if (lang.startsWith("en-GB")) setCountry("UK");
+    else if (lang.startsWith("en")) setCountry("US");
+    else setCountry("EU");
+  }, []);
+
   // DINAMIKUS MAGASSÁG KALKULÁCIÓ
   useEffect(() => {
     if (isMobile) return;
-
     const updateHeights = () => {
       const leftH = leftColRef.current?.offsetHeight || 0;
       const rightH = rightColRef.current?.offsetHeight || 0;
-      const aiH = aiBoxRef.current?.offsetHeight || 0;
+      const anyInputOpen = Object.values(openDays).some(v => v);
 
       if (aiOpen) {
-        // Bal oldali amőba: kiegyenlíti a különbséget a jobb oldal aljáig
         const diff = rightH - leftH;
-        setLeftNetHeight(diff > 20 ? diff : 0);
+        setLeftNetHeight(diff > 30 ? diff : 0);
         setRightNetHeight(0);
-      } else {
-        // Jobb oldali amőba: ha az inputok miatt hosszabb a bal oldal
+      } else if (anyInputOpen) {
         const diff = leftH - rightH;
+        setRightNetHeight(diff > 30 ? diff : 0);
         setLeftNetHeight(0);
-        setRightNetHeight(diff > 20 ? diff : 0);
+      } else {
+        setLeftNetHeight(0);
+        setRightNetHeight(0);
       }
     };
-
-    // Kis késleltetés, hogy a DOM renderelés befejeződjön
-    const timer = setTimeout(updateHeights, 50);
+    const timer = setTimeout(updateHeights, 100);
     return () => clearTimeout(timer);
   }, [aiOpen, aiText, openDays, isMobile]);
 
@@ -164,7 +171,6 @@ export default function PremiumWeek() {
 
   const chartData = DAYS.map((d, i) => ({ day: d, total: dailyTotals[i], balance: (weeklyIncome / 7) - dailyTotals[i], ...week[d] }));
   const pieData = CATEGORIES.map(c => ({ name: c, value: DAYS.reduce((s, d) => s + week[d][c], 0), fill: COLORS[c] }));
-  const scatterData = DAYS.map((d, i) => ({ x: i + 1, y: dailyTotals[i], day: d }));
 
   const runAI = async () => {
     setLoading(true);
@@ -183,7 +189,6 @@ export default function PremiumWeek() {
     setLoading(false);
   };
 
-  /* CUSTOM TOOLTIP COMPONENT */
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
@@ -207,30 +212,27 @@ export default function PremiumWeek() {
       <div style={{...contentWrap, padding: isMobile ? "60px 15px 120px 15px" : "40px"}}>
         <div style={header}>
           <h1 style={{...title, fontSize: isMobile ? "1.6rem" : "2.6rem"}}>WEALTHYAI · WEEKLY INTELLIGENCE</h1>
-          <p style={subtitle}>Dynamic behavioral mapping and country-aware AI insights.</p>
+          <p style={subtitle}>Dynamic localization and country-aware AI insights.</p>
         </div>
 
         <div style={{...layout, gridTemplateColumns: isMobile ? "1fr" : "1.2fr 1.3fr", gap: 40}}>
           
-          {/* BAL OSZLOP */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div ref={leftColRef}>
               <div style={incomeBox}>
                 <div style={sectionLabel}>WEEKLY INCOME SETUP</div>
                 <div style={row}>
                   <select value={incomeType} onChange={(e) => setIncomeType(e.target.value)} style={regionSelect}>
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
+                    <option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option>
                   </select>
                   <input type="number" value={incomeValue} onChange={(e) => setIncomeValue(Number(e.target.value))} style={input} />
                 </div>
               </div>
 
               <div style={regionRow}>
-                <span style={regionLabel}>Region Settings</span>
+                <span style={regionLabel}>Region Setting</span>
                 <select value={country} onChange={(e) => setCountry(e.target.value)} style={regionSelect}>
-                  <option value="US">USA</option><option value="EU">EU</option><option value="UK">UK</option><option value="HU">HU</option>
+                  <option value="US">US</option><option value="EU">EU</option><option value="UK">UK</option><option value="HU">HU</option>
                 </select>
               </div>
 
@@ -254,7 +256,6 @@ export default function PremiumWeek() {
               ))}
             </div>
             
-            {/* BAL AMŐBA (Csak ha az AI nyitva van és van hely alul) */}
             {!isMobile && aiOpen && leftNetHeight > 10 && (
               <div style={{ marginTop: 20, flex: 1, borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(56,189,248,0.1)' }}>
                 <SpiderNet isMobile={isMobile} height={leftNetHeight} />
@@ -262,7 +263,6 @@ export default function PremiumWeek() {
             )}
           </div>
 
-          {/* JOBB OSZLOP */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div ref={rightColRef} style={{ display: 'grid', gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16 }}>
               <Chart title="Daily spending vs Income">
@@ -302,7 +302,7 @@ export default function PremiumWeek() {
                   <XAxis dataKey="x" name="Day" fontSize={10} stroke="#64748b" />
                   <YAxis dataKey="y" name="Spending" fontSize={10} stroke="#64748b" />
                   <Tooltip content={<CustomTooltip />} />
-                  <Scatter data={scatterData} name="Daily" fill="#a78bfa" />
+                  <Scatter data={chartData} dataKey="total" name="Daily" fill="#a78bfa" />
                 </ScatterChart>
               </Chart>
             </div>
@@ -318,14 +318,10 @@ export default function PremiumWeek() {
 
             {aiOpen ? (
               <div ref={aiBoxRef} style={aiBox}>
-                <div style={aiHeader}>
-                  <strong>Weekly AI Insight</strong>
-                  <button onClick={() => setAiOpen(false)} style={closeBtn}>✕</button>
-                </div>
+                <div style={aiHeader}><strong>Weekly AI Insight</strong><button onClick={() => setAiOpen(false)} style={closeBtn}>✕</button></div>
                 <pre style={aiTextStyle}>{aiText}</pre>
               </div>
             ) : (
-              /* JOBB AMŐBA (Csak ha az AI zárva van, de a bal oldal hosszabb) */
               !isMobile && rightNetHeight > 10 && (
                 <div style={{ marginTop: 20, flex: 1, borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(167,139,250,0.1)' }}>
                   <SpiderNet isMobile={isMobile} height={rightNetHeight} color="#a78bfa" />
@@ -335,9 +331,8 @@ export default function PremiumWeek() {
           </div>
         </div>
       </div>
-
       <div style={footerText}>© 2026 WealthyAI — All rights reserved.</div>
-      <div style={upsellText}>Weekly and Monthly plans unlock country-specific tax optimization.</div>
+      <div style={upsellText}>Localization active: {country} Intelligence</div>
     </div>
   );
 }
@@ -351,18 +346,8 @@ function Chart({ title, children }) {
   );
 }
 
-/* ===== STYLES ===== */
-const page = {
-  minHeight: "100vh", position: "relative", color: "#e5e7eb", fontFamily: "Inter, sans-serif", backgroundColor: "#020617",
-  backgroundImage: `repeating-linear-gradient(-25deg, rgba(56,189,248,0.06) 0px, rgba(56,189,248,0.06) 1px, transparent 1px, transparent 180px),
-    repeating-linear-gradient(35deg, rgba(167,139,250,0.05) 0px, rgba(167,139,250,0.05) 1px, transparent 1px, transparent 260px),
-    radial-gradient(circle at 20% 30%, rgba(56,189,248,0.18), transparent 45%),
-    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.18), transparent 50%),
-    url("/wealthyai/icons/generated.png")`,
-  backgroundAttachment: "fixed", backgroundSize: "auto, auto, 100% 100%, 100% 100%, 280px auto", overflowX: "hidden"
-};
-
-const tooltipContainer = { background: "rgba(2, 6, 23, 0.9)", border: "1px solid #1e293b", padding: "10px", borderRadius: "8px", backdropFilter: "blur(8px)", boxShadow: "0 10px 15px -3px rgba(0,0,0,0.5)" };
+const tooltipContainer = { background: "rgba(2, 6, 23, 0.95)", border: "1px solid #1e293b", padding: "10px", borderRadius: "8px", backdropFilter: "blur(8px)" };
+const page = { minHeight: "100vh", position: "relative", color: "#e5e7eb", fontFamily: "Inter, sans-serif", backgroundColor: "#020617", backgroundImage: `repeating-linear-gradient(-25deg, rgba(56,189,248,0.06) 0px, rgba(56,189,248,0.06) 1px, transparent 1px, transparent 180px), repeating-linear-gradient(35deg, rgba(167,139,250,0.05) 0px, rgba(167,139,250,0.05) 1px, transparent 1px, transparent 260px), radial-gradient(circle at 20% 30%, rgba(56,189,248,0.18), transparent 45%), radial-gradient(circle at 80% 60%, rgba(167,139,250,0.18), transparent 50%), url("/wealthyai/icons/generated.png")`, backgroundAttachment: "fixed", backgroundSize: "auto, auto, 100% 100%, 100% 100%, 280px auto", overflowX: "hidden" };
 const contentWrap = { width: "100%", boxSizing: "border-box" };
 const header = { textAlign: "center", marginBottom: 30 };
 const title = { margin: 0, fontWeight: "bold", letterSpacing: "-1px" };
