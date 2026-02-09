@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   LineChart,
   Line,
@@ -10,6 +10,151 @@ import {
   BarChart,
   Bar,
 } from "recharts";
+
+/* ===== ANIMATION COMPONENT (SpiderNet) ===== */
+function SpiderNet({ isMobile }) {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    if (isMobile) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    let animationFrameId;
+
+    let particles = [];
+    const particleCount = 60;
+    const mouse = { x: null, y: null, radius: 150 };
+
+    const resize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+
+    window.addEventListener("resize", resize);
+    resize();
+
+    const handleMouseMove = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+    };
+
+    const handleMouseLeave = () => {
+      mouse.x = null;
+      mouse.y = null;
+    };
+
+    canvas.addEventListener("mousemove", handleMouseMove);
+    canvas.addEventListener("mouseleave", handleMouseLeave);
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2 + 1;
+        this.baseX = this.x;
+        this.baseY = this.y;
+        this.density = (Math.random() * 30) + 1;
+        this.vx = (Math.random() - 0.5) * 0.5;
+        this.vy = (Math.random() - 0.5) * 0.5;
+      }
+
+      draw() {
+        ctx.fillStyle = "rgba(56, 189, 248, 0.8)";
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+
+        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+        if (mouse.x !== null && mouse.y !== null) {
+          let dx = mouse.x - this.x;
+          let dy = mouse.y - this.y;
+          let distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < mouse.radius) {
+            const force = (mouse.radius - distance) / mouse.radius;
+            const directionX = dx / distance;
+            const directionY = dy / distance;
+            this.x -= directionX * force * 2;
+            this.y -= directionY * force * 2;
+          }
+        }
+      }
+    }
+
+    const init = () => {
+      particles = [];
+      for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+      }
+    };
+
+    const connect = () => {
+      for (let a = 0; a < particles.length; a++) {
+        for (let b = a; b < particles.length; b++) {
+          let dx = particles[a].x - particles[b].x;
+          let dy = particles[a].y - particles[b].y;
+          let distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < 150) {
+            let opacity = 1 - (distance / 150);
+            ctx.strokeStyle = `rgba(34, 211, 238, ${opacity * 0.2})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(particles[a].x, particles[a].y);
+            ctx.lineTo(particles[b].x, particles[b].y);
+            ctx.stroke();
+          }
+        }
+      }
+    };
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      connect();
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    init();
+    animate();
+
+    return () => {
+      window.removeEventListener("resize", resize);
+      canvas.removeEventListener("mousemove", handleMouseMove);
+      canvas.removeEventListener("mouseleave", handleMouseLeave);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [isMobile]);
+
+  if (isMobile) return null;
+
+  return (
+    <canvas 
+      ref={canvasRef} 
+      style={{ 
+        position: 'absolute', 
+        top: 0, 
+        left: 0, 
+        width: '100%', 
+        height: '100%', 
+        pointerEvents: 'all',
+        zIndex: 0 
+      }} 
+    />
+  );
+}
 
 export default function DayPremium() {
 
@@ -146,29 +291,34 @@ export default function DayPremium() {
             )}
           </div>
 
-          <div>
-            <div style={inputPanel}>
-              {["income", "fixed", "variable"].map((k) => (
-                <div key={k} style={inputRow}>
-                  <span>{k.toUpperCase()}</span>
-                  <input
-                    type="number"
-                    value={data[k]}
-                    onChange={(e) =>
-                      setData({ ...data, [k]: Number(e.target.value) })
-                    }
-                    style={input}
-                  />
-                </div>
-              ))}
-            </div>
+          <div style={{ position: 'relative' }}>
+            {/* Az animáció csak desktopon és csak ha nyitva az AI box */}
+            {aiOpen && !isMobile && <SpiderNet isMobile={isMobile} />}
+            
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <div style={inputPanel}>
+                {["income", "fixed", "variable"].map((k) => (
+                  <div key={k} style={inputRow}>
+                    <span>{k.toUpperCase()}</span>
+                    <input
+                      type="number"
+                      value={data[k]}
+                      onChange={(e) =>
+                        setData({ ...data, [k]: Number(e.target.value) })
+                      }
+                      style={input}
+                    />
+                  </div>
+                ))}
+              </div>
 
-            <div style={{
-              ...chartGrid,
-              gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr"
-            }}>
-              <MiniChart title="Cash Flow Projection" data={chartData} />
-              <MiniBar title="Expense Distribution" value={data.fixed + data.variable} />
+              <div style={{
+                ...chartGrid,
+                gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr"
+              }}>
+                <MiniChart title="Cash Flow Projection" data={chartData} />
+                <MiniBar title="Expense Distribution" value={data.fixed + data.variable} />
+              </div>
             </div>
           </div>
         </div>
