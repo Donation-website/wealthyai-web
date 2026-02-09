@@ -5,40 +5,45 @@ import {
   getSnapshotByDay,
 } from "../lib/monthlyArchive";
 
-/* ================= SPIDERNET COMPONENT (HD & ULTRA DENSE) ================= */
-/* Dinamikusan követi az AI ablak alját, keret nélkül, kurzorra mozdul */
+/* ================= SPIDERNET COMPONENT (UPDATED VERSION) ================= */
 function SpiderNet({ isMobile, height }) {
   const canvasRef = useRef(null);
   const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
-    // Szigorú tiltás mobilra
     if (isMobile || !height || height < 10) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
+
     const ctx = canvas.getContext("2d");
     let animationFrameId;
-
     let particles = [];
-    // Ultra dense beállítás: több részecske, komolyabb háló
-    const particleCount = 250; 
-    const connectionDistance = 150; 
+
+    const particleCount = 250;
+    const connectionDistance = 150;
     const mouse = { x: null, y: null, radius: 160 };
 
     const resize = () => {
+      const parent = canvas.parentElement;
+      if (!parent) return;
+
+      const rect = parent.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
-      const rect = canvas.parentElement.getBoundingClientRect();
-      if (!rect.width) return;
+
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+
       canvas.width = rect.width * dpr;
       canvas.height = height * dpr;
-      ctx.scale(dpr, dpr);
+
       canvas.style.width = `${rect.width}px`;
       canvas.style.height = `${height}px`;
+
+      ctx.scale(dpr, dpr);
     };
 
-    window.addEventListener("resize", resize);
     resize();
+    window.addEventListener("resize", resize);
 
     const handleMouseMove = (e) => {
       const rect = canvas.getBoundingClientRect();
@@ -46,79 +51,71 @@ function SpiderNet({ isMobile, height }) {
       mouse.y = e.clientY - rect.top;
     };
 
-    const handleMouseLeave = () => {
+    const clearMouse = () => {
       mouse.x = null;
       mouse.y = null;
       setIsHovered(false);
     };
 
-    const handleMouseEnter = () => {
-      setIsHovered(true);
-    };
-
     canvas.addEventListener("mousemove", handleMouseMove);
-    canvas.addEventListener("mouseleave", handleMouseLeave);
-    canvas.addEventListener("mouseenter", handleMouseEnter);
+    canvas.addEventListener("mouseenter", () => setIsHovered(true));
+    canvas.addEventListener("mouseleave", clearMouse);
 
     class Particle {
       constructor() {
-        const rect = canvas.getBoundingClientRect();
-        this.x = Math.random() * (rect.width || 500);
+        this.x = Math.random() * canvas.clientWidth;
         this.y = Math.random() * height;
-        this.size = Math.random() * 1.5 + 0.5;
         this.vx = (Math.random() - 0.5) * 0.4;
         this.vy = (Math.random() - 0.5) * 0.4;
+        this.size = Math.random() * 1.5 + 0.5;
       }
+
+      update() {
+        const speed = isHovered ? 2.2 : 1;
+        this.x += this.vx * speed;
+        this.y += this.vy * speed;
+
+        if (this.x < 0) this.x = 0;
+        if (this.x > canvas.clientWidth) this.x = canvas.clientWidth;
+        if (this.y < 0) this.y = 0;
+        if (this.y > height) this.y = height;
+
+        if (mouse.x !== null && mouse.y !== null) {
+          const dx = mouse.x - this.x;
+          const dy = mouse.y - this.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < mouse.radius && dist > 0.01) {
+            const force = (mouse.radius - dist) / mouse.radius;
+            this.x -= (dx / dist) * force * 2.5;
+            this.y -= (dy / dist) * force * 2.5;
+          }
+        }
+      }
+
       draw() {
         ctx.fillStyle = "#38bdf8";
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
       }
-      update() {
-        const rect = canvas.getBoundingClientRect();
-        
-        // Amőba mozgás kurzor rátoláskor (sebesség növelése)
-        const currentSpeed = isHovered ? 2.2 : 1;
-        this.x += this.vx * currentSpeed;
-        this.y += this.vy * currentSpeed;
-
-        if (this.x < 0 || this.x > (rect.width || 500)) this.vx *= -1;
-        if (this.y < 0 || this.y > height) this.vy *= -1;
-        
-        if (mouse.x !== null && mouse.y !== null) {
-          let dx = mouse.x - this.x;
-          let dy = mouse.y - this.y;
-          let distance = Math.sqrt(dx * dx + dy * dy);
-          if (distance < mouse.radius) {
-            const force = (mouse.radius - distance) / mouse.radius;
-            this.x -= (dx / distance) * force * 2.5;
-            this.y -= (dy / distance) * force * 2.5;
-          }
-        }
-      }
     }
 
     const init = () => {
-      particles = [];
-      for (let i = 0; i < particleCount; i++) {
-        particles.push(new Particle());
-      }
+      particles = Array.from({ length: particleCount }, () => new Particle());
     };
 
     const connect = () => {
-      for (let a = 0; a < particles.length; a++) {
-        for (let b = a; b < particles.length; b++) {
-          let dx = particles[a].x - particles[b].x;
-          let dy = particles[a].y - particles[b].y;
-          let distance = Math.sqrt(dx * dx + dy * dy);
-          if (distance < connectionDistance) {
-            let opacity = 1 - (distance / connectionDistance);
-            ctx.strokeStyle = `rgba(56, 189, 248, ${opacity * 0.6})`;
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < connectionDistance) {
+            ctx.strokeStyle = `rgba(56,189,248,${(1 - dist / connectionDistance) * 0.6})`;
             ctx.lineWidth = 0.8;
             ctx.beginPath();
-            ctx.moveTo(particles[a].x, particles[a].y);
-            ctx.lineTo(particles[b].x, particles[b].y);
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
             ctx.stroke();
           }
         }
@@ -126,7 +123,7 @@ function SpiderNet({ isMobile, height }) {
     };
 
     const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, canvas.clientWidth, height);
       particles.forEach(p => {
         p.update();
         p.draw();
@@ -141,8 +138,7 @@ function SpiderNet({ isMobile, height }) {
     return () => {
       window.removeEventListener("resize", resize);
       canvas.removeEventListener("mousemove", handleMouseMove);
-      canvas.removeEventListener("mouseleave", handleMouseLeave);
-      canvas.removeEventListener("mouseenter", handleMouseEnter);
+      canvas.removeEventListener("mouseleave", clearMouse);
       cancelAnimationFrame(animationFrameId);
     };
   }, [isMobile, height, isHovered]);
@@ -150,17 +146,15 @@ function SpiderNet({ isMobile, height }) {
   if (isMobile) return null;
 
   return (
-    <canvas 
-      ref={canvasRef} 
-      style={{ 
-        display: 'block',
-        width: '100%', 
+    <canvas
+      ref={canvasRef}
+      style={{
+        width: "100%",
         height: `${height}px`,
-        background: 'transparent',
-        pointerEvents: 'auto',
-        border: 'none',
-        outline: 'none'
-      }} 
+        display: "block",
+        pointerEvents: "auto",
+        background: "transparent"
+      }}
     />
   );
 }
@@ -175,20 +169,12 @@ function getTodayKey() {
 function getDailyUnlockTime() {
   const stored = JSON.parse(localStorage.getItem(DAILY_SIGNAL_KEY) || "{}");
   const today = getTodayKey();
-
   if (stored.date === today) return stored.unlockAt;
-
-  const hour = Math.floor(Math.random() * 10) + 7; // 07–16
+  const hour = Math.floor(Math.random() * 10) + 7;
   const minute = Math.floor(Math.random() * 60);
-
   const unlockAt = new Date();
   unlockAt.setHours(hour, minute, 0, 0);
-
-  localStorage.setItem(
-    DAILY_SIGNAL_KEY,
-    JSON.stringify({ date: today, unlockAt: unlockAt.getTime() })
-  );
-
+  localStorage.setItem(DAILY_SIGNAL_KEY, JSON.stringify({ date: today, unlockAt: unlockAt.getTime() }));
   return unlockAt.getTime();
 }
 
@@ -202,9 +188,7 @@ const REGIONS = [
 ];
 
 export default function PremiumMonth() {
-  // Device detection
   const [isMobile, setIsMobile] = useState(false);
-  // Ref az AI dobozhoz a magasság méréséhez
   const aiBoxRef = useRef(null);
   const [aiBoxHeight, setAiBoxHeight] = useState(0);
 
@@ -215,7 +199,6 @@ export default function PremiumMonth() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
   
-  /* ================= SIMULATION & STRESS STATE ================= */
   const [simulationActive, setSimulationActive] = useState(false);
   const [stressFactor, setStressFactor] = useState(0); 
 
@@ -225,10 +208,10 @@ export default function PremiumMonth() {
     const ratio = (fixed / inputs.income) * 100;
     return Math.min(Math.max(ratio, 0), 100).toFixed(1);
   };
-  /* ================= CORE CONFIG & UI STATE ================= */
+
   const [region, setRegion] = useState("EU");
   const [country, setCountry] = useState(null);
-  const [viewMode, setViewMode] = useState("executive"); // executive | directive
+  const [viewMode, setViewMode] = useState("executive");
   const [cycleDay, setCycleDay] = useState(1);
   const [loading, setLoading] = useState(false);
   const [emailSending, setEmailSending] = useState(false);
@@ -241,10 +224,9 @@ export default function PremiumMonth() {
   const [dailySnapshot, setDailySnapshot] = useState(null);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState(null);
-  const [exportRange, setExportRange] = useState("day"); // day | week | month
+  const [exportRange, setExportRange] = useState("day");
   const [isTodayAvailable, setIsTodayAvailable] = useState(false);
 
-  /* ================= FINANCIAL INPUTS ================= */
   const [inputs, setInputs] = useState({
     income: 4000,
     housing: 1200,
@@ -260,7 +242,6 @@ export default function PremiumMonth() {
     other: 300,
   });
 
-  /* ================= WEEKLY FOCUS LOGIC ================= */
   const FOCUS_OPTIONS = [
     { key: "resilience", label: "Structural Resilience" },
     { key: "efficiency", label: "Capital Efficiency" },
@@ -295,8 +276,6 @@ export default function PremiumMonth() {
     setFocusOpen(false);
   };
 
-  /* ================= DYNAMIC HEIGHT OBSERVER ================= */
-  // Ez figyeli az AI doboz magasságát, hogy a SpiderNet pontosan kövesse
   useEffect(() => {
     if (!isMobile && aiVisible && aiBoxRef.current) {
       const observer = new ResizeObserver((entries) => {
@@ -304,13 +283,10 @@ export default function PremiumMonth() {
           setAiBoxHeight(entry.contentRect.height);
         }
       });
-
       observer.observe(aiBoxRef.current);
       return () => observer.disconnect();
     }
   }, [aiVisible, isMobile]);
-
-  /* ================= INITIALIZATION & SIGNALS ================= */
   useEffect(() => {
     const day = Math.min(new Date().getDate(), 30);
     setCycleDay(day);
@@ -353,16 +329,6 @@ export default function PremiumMonth() {
     setDailyDual(null);
   };
 
-  const saveBriefing = (snapshot) => {
-    const today = getTodayKey();
-    const entry = { ...snapshot, date: today, cycleDay };
-    const existing = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
-    if (!existing.find((b) => b.date === today)) {
-      existing.push(entry);
-      localStorage.setItem("monthlyBriefings", JSON.stringify(existing));
-    }
-  };
-  /* ================= AI RUNNERS ================= */
   const runAI = async () => {
     setLoading(true);
     setSelectedDay(null);
@@ -373,9 +339,7 @@ export default function PremiumMonth() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          region,
-          country,
-          cycleDay,
+          region, country, cycleDay,
           previousSignals: "",
           weeklyFocus: weeklyFocus?.key,
           ...inputs,
@@ -388,7 +352,6 @@ export default function PremiumMonth() {
         setViewMode("executive");
         setAiVisible(true);
         setAiCollapsed(false);
-        saveBriefing(json.snapshot);
       }
     } catch (err) {
       console.error("AI Briefing failed", err);
@@ -397,7 +360,6 @@ export default function PremiumMonth() {
   };
 
   const runAIDual = async () => {
-    // Csak akkor mentünk napi snapshotot, ha a szignál már elérhető
     if (dailyPending) {
       alert("Today's signal is still forming. Please wait until it unlocks.");
       return;
@@ -411,9 +373,7 @@ export default function PremiumMonth() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          region,
-          country,
-          cycleDay,
+          region, country, cycleDay,
           previousSignals: "",
           weeklyFocus: weeklyFocus?.key,
           ...inputs,
@@ -436,7 +396,6 @@ export default function PremiumMonth() {
   };
 
   /* ================= ACTIVE CONTENT RESOLUTION ================= */
-  // Kiválasztja, hogy az aktuális AI szöveg, vagy egy korábbi archív elem jelenjen meg
   const activeSnapshot = selectedDay
     ? getSnapshotByDay(selectedDay)
     : dailySnapshot;
@@ -449,12 +408,11 @@ export default function PremiumMonth() {
       ? activeDual.executive
       : activeDual.directive);
 
-   /* ================= EXPORT & PERSISTENCE LOGIC ================= */
+  /* ================= EXPORT & PERSISTENCE LOGIC ================= */
   const getBriefings = (range) => {
     const legacy = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
     const snapshots = getMonthlySnapshots() || [];
     
-    // Összefésülés duplikáció nélkül
     const combined = [...legacy];
     snapshots.forEach(s => {
       if (!combined.find(b => b.date === s.date)) {
@@ -528,7 +486,8 @@ export default function PremiumMonth() {
     }
     setEmailSending(false);
   };
-    /* ================= RENDER LOGIC ================= */
+
+  /* ================= RENDER LOGIC ================= */
   return (
     <div
       style={{
@@ -573,7 +532,6 @@ export default function PremiumMonth() {
           <span>Rewarding attention over speed</span>
           <span>Supporting your judgment, quietly</span>
           <span>Wealthy AI: We don’t advise, we interpret</span>
-          <span>Clearer thinking, not just faster decisions</span>
         </div>
       </div>
 
@@ -673,7 +631,6 @@ export default function PremiumMonth() {
           gap: isMobile ? 20 : layout.gap,
         }}
       >
-        {/* LEFT COLUMN: INPUTS & SIMULATION */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <div style={card}>
             <h3>Monthly Financial Structure</h3>
@@ -742,7 +699,6 @@ export default function PremiumMonth() {
             </button>
           </div>
 
-          {/* SPIDERNET CONTAINER - DINAMIKUS MAGASSÁG */}
           {aiVisible && !isMobile && (
             <div style={{ 
               borderRadius: 16, 
@@ -755,9 +711,7 @@ export default function PremiumMonth() {
           )}
         </div>
 
-        {/* RIGHT COLUMN: AI OUTPUT & ARCHIVE */}
         <div style={card} ref={aiBoxRef}>
-          {/* Üres állapot / Filozófia */}
           {!aiVisible && !simulationActive && (
             <div style={{ padding: "10px", animation: "fadeIn 0.8s ease-in" }}>
               <strong style={{ color: "#10b981", fontSize: 12, letterSpacing: 1 }}>WEALTHYAI PHILOSOPHY</strong>
@@ -773,7 +727,6 @@ export default function PremiumMonth() {
             </div>
           )}
 
-          {/* Szimulációs motor nézete */}
           {simulationActive && !aiVisible && (
             <div style={{ padding: "10px", animation: "fadeIn 0.3s ease-out" }}>
               <strong style={{ color: "#10b981", fontSize: 12 }}>LIVE SIMULATION ENGINE</strong>
@@ -797,7 +750,6 @@ export default function PremiumMonth() {
             </div>
           )}
 
-          {/* AI Briefing nézete */}
           {aiVisible && (
             <div style={{ animation: "fadeIn 0.4s ease-out" }}>
               <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
@@ -843,7 +795,6 @@ export default function PremiumMonth() {
 
           <Divider />
           
-          {/* Archívum kezelés */}
           <button onClick={() => setArchiveOpen(!archiveOpen)} style={{ ...exportBtn, width: "100%" }}>
             {archiveOpen ? "Hide past days" : "View past days"}
           </button>
@@ -872,7 +823,6 @@ export default function PremiumMonth() {
   );
 }
 
-/* ================= HELPER COMPONENTS & STYLES ================= */
 const Section = ({ title, children }) => (
   <>
     <Divider />
@@ -900,7 +850,6 @@ const Divider = () => (
   <div style={{ height: 1, background: "#1e293b", margin: "16px 0" }} />
 );
 
-/* STYLES OBJECTS */
 const page = {
   minHeight: "100vh", position: "relative", padding: "40px 20px", color: "#e5e7eb", fontFamily: "Inter, system-ui", backgroundColor: "#020617",
   backgroundImage: `repeating-linear-gradient(-25deg, rgba(56,189,248,0.04) 0px, rgba(56,189,248,0.04) 1px, transparent 1px, transparent 180px), repeating-linear-gradient(35deg, rgba(167,139,250,0.04) 0px, rgba(167,139,250,0.04) 1px, transparent 1px, transparent 260px), radial-gradient(circle at 20% 30%, rgba(56,189,248,0.14), transparent 45%), radial-gradient(circle at 80% 60%, rgba(167,139,250,0.14), transparent 50%), url("/wealthyai/icons/generated.png")`,
@@ -910,26 +859,18 @@ const page = {
 const header = { textAlign: "center", marginBottom: 20 };
 const title = { fontSize: "2rem", margin: 0, fontWeight: "800", letterSpacing: "-0.02em" };
 const subtitle = { marginTop: 8, color: "#cbd5f5", fontSize: 14 };
-
 const helpButton = { position: "absolute", top: 20, right: 20, padding: "6px 12px", borderRadius: 8, fontSize: 12, textDecoration: "none", color: "#7dd3fc", border: "1px solid #1e293b", background: "rgba(2,6,23,0.7)" };
-
 const regionRow = { display: "flex", justifyContent: "center", gap: 10, marginBottom: 20 };
 const regionLabel = { color: "#7dd3fc", fontSize: 14, alignSelf: "center" };
 const regionSelect = { background: "#020617", color: "#e5e7eb", border: "1px solid #1e293b", padding: "4px 8px", borderRadius: 6 };
-
 const signalBox = { maxWidth: 800, margin: "0 auto 15px", padding: 14, border: "1px solid #1e293b", borderRadius: 12, background: "rgba(2,6,23,0.75)" };
-
 const layout = { display: "grid", gridTemplateColumns: "1fr 1.3fr", gap: 25, maxWidth: 1100, margin: "0 auto" };
 const card = { padding: 20, borderRadius: 16, border: "1px solid #1e293b", background: "rgba(2,6,23,0.78)", height: "fit-content" };
-
 const input = { width: "100%", padding: 10, marginTop: 4, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, color: "white", outline: "none" };
 const row = { display: "flex", justifyContent: "space-between", marginTop: 8 };
 const rowInput = { width: 85, background: "transparent", border: "none", borderBottom: "1px solid #38bdf8", color: "#38bdf8", textAlign: "right", outline: "none" };
-
 const aiButton = { marginTop: 20, width: "100%", padding: 12, background: "#38bdf8", border: "none", borderRadius: 10, fontWeight: "bold", cursor: "pointer", color: "#020617" };
 const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap", color: "#cbd5f5", fontSize: 14, lineHeight: "1.7", fontFamily: "Inter, sans-serif" };
-
 const exportBtn = { padding: "8px 14px", borderRadius: 8, border: "1px solid #1e293b", background: "transparent", color: "#38bdf8", cursor: "pointer", fontSize: 13, transition: "all 0.2s" };
 const exportSelect = { background: "transparent", color: "#e5e7eb", border: "1px solid #1e293b", padding: "8px", borderRadius: 8, outline: "none" };
-
 const footer = { marginTop: 40, textAlign: "center", fontSize: 12, color: "#64748b", paddingBottom: 20 };
