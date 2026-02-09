@@ -45,7 +45,7 @@ const REGIONS = [
 ];
 
 export default function PremiumMonth() {
-  // === MOBILE ADDITION: device detection ===
+  // === MOBILE ADAPTATION ===
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -54,8 +54,8 @@ export default function PremiumMonth() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-  
-  /* ================= SIMULATION & STRESS STATE (NEW) ================= */
+
+  /* ================= SIMULATION & STRESS STATE ================= */
   const [simulationActive, setSimulationActive] = useState(false);
   const [stressFactor, setStressFactor] = useState(0); // 0 to 1 (0% to 100%)
 
@@ -205,6 +205,7 @@ export default function PremiumMonth() {
     unexpected: 200,
     other: 300,
   });
+
   const update = (key, value) => {
     setInputs({ ...inputs, [key]: Number(value) });
 
@@ -231,7 +232,7 @@ export default function PremiumMonth() {
     }
   }, []);
 
-  /* ================= SNAPSHOT AVAILABILITY ================= */
+  /* ================= SNAPSHOT AVAILABILITY EFFECT ================= */
 
   useEffect(() => {
     const today = getTodayKey();
@@ -355,7 +356,6 @@ export default function PremiumMonth() {
 
     setLoading(false);
   };
-
   /* ================= SNAPSHOT AI ================= */
 
   const runAIDual = async () => {
@@ -487,10 +487,12 @@ export default function PremiumMonth() {
     <div
       style={{
         ...page,
-        overflowX: isMobile ? "hidden" : undefined,
+        overflowX: "hidden",
+        width: "100%",
+        boxSizing: "border-box"
       }}
     >
-      {/* TICKER SECTION */}
+      {/* TICKER SECTION - FIXÁLT HÁTTÉRREL */}
       <div style={tickerContainer}>
         <div style={tickerWrapper}>
           <div style={tickerTrack}>
@@ -499,7 +501,8 @@ export default function PremiumMonth() {
           </div>
         </div>
       </div>
-  <a href="/month/help" style={helpButton}>Help</a>
+
+      <a href="/month/help" style={helpButton}>Help</a>
 
       <div style={header}>
         <h1 style={title}>WEALTHYAI · MONTHLY BRIEFING</h1>
@@ -594,6 +597,8 @@ export default function PremiumMonth() {
           gridTemplateColumns: isMobile ? "1fr" : layout.gridTemplateColumns,
           gap: isMobile ? 20 : layout.gap,
           alignItems: "stretch",
+          width: "100%",
+          boxSizing: "border-box"
         }}
       >
         {/* LEFT COLUMN: INPUTS & SIMULATION */}
@@ -668,7 +673,7 @@ export default function PremiumMonth() {
             </button>
           </div>
 
-          {/* DYNAMIC TOPOGRAPHY FILLER - ONLY WHEN AI IS OPEN */}
+          {/* DYNAMIC TOPOGRAPHY FILLER - AUTOMATIKUSAN FELZÁRÓDIK HA AI BEZÁRVA */}
           {aiVisible && (
             <div style={{ flexGrow: 1, marginTop: 25, borderRadius: 16, border: "1px solid #1e293b", background: "rgba(2,6,23,0.4)", overflow: "hidden", position: "relative", minHeight: 300 }}>
                 <Topography income={inputs.income} spawnNumbers={true} stressFactor={stressFactor} speed={1 + stressFactor * 2} />
@@ -764,7 +769,7 @@ export default function PremiumMonth() {
                 <pre style={aiTextStyle}>{activeText}</pre>
 
                 {!selectedDay && (
-                  <div style={{ marginTop: 16, display: "flex", gap: 12, flexWrap: isMobile ? "wrap" : "nowrap" }}>
+                  <div style={{ marginTop: 16, display: "flex", gap: 12, flexWrap: "wrap" }}>
                     <select value={exportRange} onChange={e => setExportRange(e.target.value)} style={exportSelect}>
                       <option value="day">Today</option>
                       <option value="week">Last 7 days</option>
@@ -856,11 +861,10 @@ const page = {
     repeating-linear-gradient(-25deg, rgba(56,189,248,0.04) 0px, rgba(56,189,248,0.04) 1px, transparent 1px, transparent 180px),
     repeating-linear-gradient(35deg, rgba(167,139,250,0.04) 0px, rgba(167,139,250,0.04) 1px, transparent 1px, transparent 260px),
     radial-gradient(circle at 20% 30%, rgba(56,189,248,0.14), transparent 45%),
-    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.14), transparent 50%),
-    url("/wealthyai/icons/generated.png")
+    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.14), transparent 50%)
   `,
   backgroundRepeat: "repeat",
-  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 420px auto",
+  backgroundSize: "auto, auto, 100% 100%, 100% 100%",
   backgroundAttachment: "fixed",
 };
 
@@ -870,9 +874,8 @@ const tickerContainer = {
   left: 0,
   width: "100%",
   height: 28,
-  background: "transparent",
+  background: "#020617", // Átlátszatlan sötét háttér a szavak eltüntetéséhez
   borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
-  backdropFilter: "blur(10px)",
   zIndex: 1000,
   display: "flex",
   alignItems: "center",
@@ -909,7 +912,7 @@ const signalBox = { maxWidth: 800, margin: "0 auto 15px", padding: 14, border: "
 const layout = { display: "grid", gridTemplateColumns: "1fr 1.3fr", gap: 25, maxWidth: 1100, margin: "0 auto" };
 const card = { padding: 20, borderRadius: 16, border: "1px solid #1e293b", background: "rgba(2,6,23,0.78)" };
 
-const input = { width: "100%", padding: 10, marginTop: 4, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, color: "white" };
+const input = { width: "100%", padding: 10, marginTop: 4, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, color: "white", boxSizing: "border-box" };
 const row = { display: "flex", justifyContent: "space-between", marginTop: 6 };
 const rowInput = { width: 80, background: "transparent", border: "none", borderBottom: "1px solid #38bdf8", color: "#38bdf8", textAlign: "right" };
 
