@@ -124,11 +124,14 @@ export default function PremiumMonth() {
   const [loading, setLoading] = useState(false);
   const [emailSending, setEmailSending] = useState(false);
 
+  /* ================= EMAIL MODAL STATE (KIEGÉSZÍTÉS) ================= */
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
+
   /* ================= AI PANEL STATE ================= */
 
   const [aiVisible, setAiVisible] = useState(false);
   const [aiCollapsed, setAiCollapsed] = useState(true);
-
   /* ================= DAILY SIGNAL ================= */
 
   const [dailySignal, setDailySignal] = useState(null);
@@ -204,6 +207,7 @@ export default function PremiumMonth() {
     unexpected: 200,
     other: 300,
   });
+
   const update = (key, value) => {
     setInputs({ ...inputs, [key]: Number(value) });
 
@@ -212,7 +216,6 @@ export default function PremiumMonth() {
     setDailyDual(null);
     setDailySnapshot(null);
     setSelectedDay(null);
-    // Ha módosul az input, a szimuláció újra láthatóvá válik
   };
 
   /* ================= CYCLE LOGIC ================= */
@@ -231,7 +234,7 @@ export default function PremiumMonth() {
     }
   }, []);
 
-  /* ================= SNAPSHOT AVAILABILITY ================= */
+  /* ================= SNAPSHOT AVAILABILITY EFFECT ================= */
 
   useEffect(() => {
     const today = getTodayKey();
@@ -240,8 +243,7 @@ export default function PremiumMonth() {
     let availableAt = localStorage.getItem(key);
 
     if (!availableAt) {
-      const randomOffsetMs =
-        Math.floor(Math.random() * 6 * 60 * 60 * 1000);
+      const randomOffsetMs = Math.floor(Math.random() * 6 * 60 * 60 * 1000);
       const base = new Date();
       base.setHours(7, 0, 0, 0);
       availableAt = base.getTime() + randomOffsetMs;
@@ -327,7 +329,7 @@ export default function PremiumMonth() {
   const runAI = async () => {
     setLoading(true);
     setSelectedDay(null);
-    setSimulationActive(false); // AI briefingnél kikapcsoljuk a szimulációs nézetet
+    setSimulationActive(false);
 
     try {
       const res = await fetch("/api/get-ai-briefing", {
@@ -394,6 +396,7 @@ export default function PremiumMonth() {
 
     setLoading(false);
   };
+
   /* ================= ACTIVE CONTENT ================= */
 
   const activeSnapshot = selectedDay
@@ -467,16 +470,42 @@ export default function PremiumMonth() {
     a.click();
   };
 
-  const sendEmailPDF = async () => {
+  /* ================= JAVÍTOTT EMAIL LOGIKA ================= */
+
+  const sendEmailPDF = () => {
     if (!activeText) return;
+    // Megnyitjuk a bekérő ablakot
+    setEmailModalOpen(true);
+  };
+
+  const confirmAndSendEmail = async () => {
+    if (!userEmail || !userEmail.includes("@")) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+    
     setEmailSending(true);
     try {
-      await fetch("/api/send-month-email", {
+      const response = await fetch("/api/send-month-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: activeText, cycleDay, region }),
+        body: JSON.stringify({ 
+          text: activeText, 
+          cycleDay, 
+          region,
+          email: userEmail 
+        }),
       });
-    } catch {}
+      
+      if (response.ok) {
+        alert("Strategy sent successfully to: " + userEmail);
+        setEmailModalOpen(false);
+      } else {
+        alert("Server error. Please check your SendGrid settings.");
+      }
+    } catch (err) {
+      alert("Failed to connect to the server.");
+    }
     setEmailSending(false);
   };
 
@@ -639,7 +668,7 @@ export default function PremiumMonth() {
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 20 }}>
             <button 
-              onClick={() => { setSimulationActive(true); setAiVisible(false); }}
+              onClick={() => { setSimulationActive(true); setAiVisible(false); }} 
               style={{ ...exportBtn, borderColor: "#10b981", color: "#10b981" }}
             >
               SIMULATE
@@ -669,10 +698,6 @@ export default function PremiumMonth() {
                 We built WealthyAI around a different question: What happens if AI doesn’t advise — but interprets?
                 Not faster decisions, but <strong>clearer thinking</strong>.
               </p>
-              <p style={{ opacity: 0.7, lineHeight: "1.6", fontSize: 14, marginTop: 12 }}>
-                Our system assumes that you remain responsible for decisions — it simply gives you a clearer frame to make them. 
-                WealthyAI doesn’t reward speed. It rewards <strong>attention</strong>.
-              </p>
             </div>
           )}
 
@@ -694,11 +719,6 @@ export default function PremiumMonth() {
                   transition: "width 0.3s ease" 
                 }} />
               </div>
-
-              <p style={{ opacity: 0.6, fontSize: 13, marginTop: 15, lineHeight: "1.5" }}>
-                At <strong>{Math.round(stressFactor * 100)}%</strong> simulated pressure, your core financial rigidity is 
-                {parseFloat(calculateFragility()) > 55 ? " approaching a critical threshold." : " currently within structural limits."}
-              </p>
               
               <button 
                 onClick={() => setSimulationActive(false)} 
@@ -797,34 +817,71 @@ export default function PremiumMonth() {
         </div>
       </div>
 
+      {/* ================= FELUGRÓ EMAIL MODAL ================= */}
+      {emailModalOpen && (
+        <div style={modalOverlay}>
+          <div style={{...card, maxWidth: 400, width: "95%", position: "relative", zIndex: 1100}}>
+            <h3 style={{marginTop: 0}}>Send via Email</h3>
+            <p style={{fontSize: 13, opacity: 0.7, marginBottom: 15}}>
+              Enter the recipient address for this strategic briefing.
+            </p>
+            <input 
+              type="email" 
+              placeholder="recipient@example.com"
+              value={userEmail}
+              onChange={(e) => setUserEmail(e.target.value)}
+              style={{...input, marginBottom: 20, border: "1px solid #38bdf8"}}
+            />
+            <div style={{display: "flex", gap: 10}}>
+              <button onClick={() => setEmailModalOpen(false)} style={exportBtn}>Cancel</button>
+              <button onClick={confirmAndSendEmail} style={{...aiButton, marginTop: 0}}>
+                {emailSending ? "Sending..." : "Send Report"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div style={footer}>© 2026 WealthyAI · Monthly Intelligence</div>
     </div>
   );
 }
+/* ================= HELPER COMPONENTS ================= */
 
-/* ================= UI HELPERS & STYLES (Eredeti Styles blokk változatlan) ================= */
 const Section = ({ title, children }) => (
   <>
     <Divider />
-    <strong style={{fontSize: 14, color: "#7dd3fc"}}>{title}</strong>
+    <strong style={{ fontSize: 14, color: "#7dd3fc", letterSpacing: 0.5 }}>
+      {title}
+    </strong>
     {children}
   </>
 );
 
 const Row = ({ label, value, onChange }) => (
   <div style={row}>
-    <span style={{fontSize: 13, opacity: 0.8}}>{label}</span>
+    <span style={{ fontSize: 13, opacity: 0.8 }}>{label}</span>
     <input
       type="number"
       value={value}
-      onChange={e => onChange(e.target.value)}
+      onChange={(e) => onChange(e.target.value)}
       style={rowInput}
     />
   </div>
 );
 
 const Label = ({ children }) => (
-  <label style={{ marginBottom: 6, display: "block", fontSize: 13, opacity: 0.8 }}>{children}</label>
+  <label
+    style={{
+      marginBottom: 6,
+      display: "block",
+      fontSize: 13,
+      opacity: 0.8,
+      fontWeight: 500,
+    }}
+  >
+    {children}
+  </label>
 );
 
 const Input = ({ value, onChange }) => (
@@ -832,61 +889,217 @@ const Input = ({ value, onChange }) => (
 );
 
 const Divider = () => (
-  <div style={{ height: 1, background: "#1e293b", margin: "16px 0" }} />
+  <div
+    style={{
+      height: 1,
+      background: "linear-gradient(90deg, #1e293b, transparent)",
+      margin: "16px 0",
+    }}
+  />
 );
+
+/* ================= DETAILED STYLES ================= */
 
 const page = {
   minHeight: "100vh",
   position: "relative",
   padding: "40px 20px",
   color: "#e5e7eb",
-  fontFamily: "Inter, system-ui",
+  fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
   backgroundColor: "#020617",
   backgroundImage: `
-    repeating-linear-gradient(-25deg, rgba(56,189,248,0.04) 0px, rgba(56,189,248,0.04) 1px, transparent 1px, transparent 180px),
-    repeating-linear-gradient(35deg, rgba(167,139,250,0.04) 0px, rgba(167,139,250,0.04) 1px, transparent 1px, transparent 260px),
-    radial-gradient(circle at 20% 30%, rgba(56,189,248,0.14), transparent 45%),
-    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.14), transparent 50%),
-    url("/wealthyai/icons/generated.png")
+    radial-gradient(circle at 20% 30%, rgba(56, 189, 248, 0.12), transparent 45%),
+    radial-gradient(circle at 80% 60%, rgba(167, 139, 250, 0.12), transparent 50%)
   `,
-  backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, repeat",
-  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 420px auto",
 };
 
-const header = { textAlign: "center", marginBottom: 20 };
-const title = { fontSize: "2rem", margin: 0 };
-const subtitle = { marginTop: 8, color: "#cbd5f5", fontSize: 14 };
+const header = {
+  textAlign: "center",
+  marginBottom: 40,
+};
+
+const title = {
+  fontSize: "1.8rem",
+  fontWeight: "800",
+  letterSpacing: "-0.02em",
+  margin: 0,
+  background: "linear-gradient(to right, #fff, #94a3b8)",
+  WebkitBackgroundClip: "text",
+  WebkitTextFillColor: "transparent",
+};
+
+const subtitle = {
+  marginTop: 8,
+  color: "#94a3b8",
+  fontSize: 14,
+  fontWeight: "400",
+};
 
 const helpButton = {
   position: "absolute",
   top: 20,
   right: 20,
-  padding: "6px 12px",
-  borderRadius: 8,
-  fontSize: 12,
+  padding: "6px 14px",
+  borderRadius: "100px",
+  fontSize: 11,
+  fontWeight: "600",
   textDecoration: "none",
   color: "#7dd3fc",
-  border: "1px solid #1e293b",
-  background: "rgba(2,6,23,0.7)",
+  border: "1px solid rgba(125, 211, 252, 0.2)",
+  background: "rgba(15, 23, 42, 0.6)",
+  backdropFilter: "blur(4px)",
 };
 
-const regionRow = { display: "flex", justifyContent: "center", gap: 10, marginBottom: 20 };
-const regionLabel = { color: "#7dd3fc", fontSize: 14 };
-const regionSelect = { background: "#020617", color: "#e5e7eb", border: "1px solid #1e293b", padding: "4px 8px", borderRadius: 6 };
+const regionRow = {
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  gap: 12,
+  marginBottom: 30,
+};
 
-const signalBox = { maxWidth: 800, margin: "0 auto 15px", padding: 14, border: "1px solid #1e293b", borderRadius: 12, background: "rgba(2,6,23,0.75)" };
+const regionLabel = {
+  color: "#94a3b8",
+  fontSize: 12,
+  fontWeight: "600",
+  textTransform: "uppercase",
+  letterSpacing: 1,
+};
 
-const layout = { display: "grid", gridTemplateColumns: "1fr 1.3fr", gap: 25, maxWidth: 1100, margin: "0 auto" };
-const card = { padding: 20, borderRadius: 16, border: "1px solid #1e293b", background: "rgba(2,6,23,0.78)" };
+const regionSelect = {
+  background: "#0f172a",
+  color: "#e5e7eb",
+  border: "1px solid #1e293b",
+  padding: "6px 12px",
+  borderRadius: 8,
+  fontSize: 13,
+  outline: "none",
+  cursor: "pointer",
+};
 
-const input = { width: "100%", padding: 10, marginTop: 4, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, color: "white" };
-const row = { display: "flex", justifyContent: "space-between", marginTop: 6 };
-const rowInput = { width: 80, background: "transparent", border: "none", borderBottom: "1px solid #38bdf8", color: "#38bdf8", textAlign: "right" };
+const signalBox = {
+  maxWidth: 800,
+  margin: "0 auto 16px",
+  padding: "16px 20px",
+  border: "1px solid rgba(30, 41, 59, 0.5)",
+  borderRadius: 16,
+  background: "rgba(15, 23, 42, 0.4)",
+  backdropFilter: "blur(8px)",
+};
 
-const aiButton = { marginTop: 20, width: "100%", padding: 12, background: "#38bdf8", border: "none", borderRadius: 10, fontWeight: "bold", cursor: "pointer", color: "#020617" };
-const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap", color: "#cbd5f5", fontSize: 14, lineHeight: "1.6" };
+const layout = {
+  display: "grid",
+  gridTemplateColumns: "1fr 1.4fr",
+  gap: 30,
+  maxWidth: 1100,
+  margin: "0 auto",
+};
 
-const exportBtn = { padding: "8px 12px", borderRadius: 8, border: "1px solid #1e293b", background: "transparent", color: "#38bdf8", cursor: "pointer", fontSize: 13 };
-const exportSelect = { background: "transparent", color: "#e5e7eb", border: "1px solid #1e293b", padding: "8px", borderRadius: 8 };
+const card = {
+  padding: 24,
+  borderRadius: 24,
+  border: "1px solid rgba(30, 41, 59, 0.7)",
+  background: "rgba(15, 23, 42, 0.6)",
+  boxShadow: "0 10px 30px -10px rgba(0,0,0,0.5)",
+};
 
-const footer = { marginTop: 40, textAlign: "center", fontSize: 12, color: "#64748b", paddingBottom: 20 };
+const input = {
+  width: "100%",
+  padding: "12px 16px",
+  marginTop: 4,
+  background: "rgba(2, 6, 23, 0.5)",
+  border: "1px solid #1e293b",
+  borderRadius: 12,
+  color: "#fff",
+  fontSize: 15,
+  transition: "border-color 0.2s",
+};
+
+const row = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginTop: 10,
+};
+
+const rowInput = {
+  width: 90,
+  background: "transparent",
+  border: "none",
+  borderBottom: "1px solid rgba(56, 189, 248, 0.3)",
+  color: "#38bdf8",
+  textAlign: "right",
+  fontSize: 14,
+  fontWeight: "600",
+  padding: "2px 4px",
+  outline: "none",
+};
+
+const aiButton = {
+  marginTop: 20,
+  width: "100%",
+  padding: "14px",
+  background: "linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)",
+  border: "none",
+  borderRadius: 14,
+  fontWeight: "700",
+  fontSize: 14,
+  letterSpacing: 0.5,
+  cursor: "pointer",
+  color: "#020617",
+  boxShadow: "0 4px 12px rgba(56, 189, 248, 0.25)",
+};
+
+const aiTextStyle = {
+  marginTop: 20,
+  whiteSpace: "pre-wrap",
+  color: "#cbd5e1",
+  fontSize: 14,
+  lineHeight: "1.7",
+  fontFamily: "inherit",
+};
+
+const exportBtn = {
+  padding: "10px 16px",
+  borderRadius: 10,
+  border: "1px solid #1e293b",
+  background: "rgba(30, 41, 59, 0.2)",
+  color: "#38bdf8",
+  cursor: "pointer",
+  fontSize: 12,
+  fontWeight: "600",
+  transition: "all 0.2s",
+};
+
+const exportSelect = {
+  background: "#0f172a",
+  color: "#e5e7eb",
+  border: "1px solid #1e293b",
+  padding: "10px",
+  borderRadius: 10,
+  fontSize: 12,
+};
+
+const footer = {
+  marginTop: 60,
+  textAlign: "center",
+  fontSize: 11,
+  color: "#475569",
+  letterSpacing: 1,
+  textTransform: "uppercase",
+  paddingBottom: 40,
+};
+
+const modalOverlay = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "rgba(2, 6, 23, 0.9)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  zIndex: 2000,
+  backdropFilter: "blur(10px)",
+};
