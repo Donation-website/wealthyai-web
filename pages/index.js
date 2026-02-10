@@ -337,7 +337,7 @@ export default function Home() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", alignItems: isMobile ? "center" : "flex-end", gap: "8px" }}>
-            <a href="mailto:wealthyaiweb@gmail.com" onClick={stopAudio} className="nav-link" style={{ fontSize: "0.82rem", textAlign: isMobile ? "center" : "right", lineHeight: "1.4", cursor: "pointer", textDecoration: "none" }}>
+            <a href="mailto:info@mywealthyai.com" onClick={stopAudio} className="nav-link" style={{ fontSize: "0.82rem", textAlign: isMobile ? "center" : "right", lineHeight: "1.4", cursor: "pointer", textDecoration: "none" }}>
               <div style={{ fontWeight: 500 }}>Contact & Partnerships</div>
               <div style={{ opacity: 0.8 }}>Media · Partnerships · Institutional use</div>
               <div style={{ fontWeight: 600 }}>wealthyaiweb@gmail.com</div>
