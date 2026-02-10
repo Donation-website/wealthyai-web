@@ -4,6 +4,8 @@ import {
   getMonthlySnapshots,
   getSnapshotByDay,
 } from "../lib/monthlyArchive";
+// A Topography komponenst beimportáljuk a vizualizációhoz
+import Topography from "./Topography";
 
 /* ================= DAILY SIGNAL UNLOCK ================= */
 
@@ -43,8 +45,53 @@ const REGIONS = [
   { code: "OTHER", label: "Other regions" },
 ];
 
+/* ===== WEALTHY TICKER COMPONENT (NEW) ===== */
+const WealthyTicker = ({ isMobile }) => {
+  const tickerText =
+    "WealthyAI interprets your financial state over time — not advice, not prediction, just clarity • Interpretation over advice • Clarity over certainty • Insight unfolds over time • Financial understanding isn’t instant • Context changes • Insight follows time • Clarity over certainty • Built on time, not urgency • ";
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: 10,
+        left: 0,
+        width: "100%",
+        height: 20,
+        overflow: "hidden",
+        zIndex: 20,
+        pointerEvents: "none",
+        background: "rgba(2,6,23,0.4)",
+        display: "flex",
+        alignItems: "center"
+      }}
+    >
+      <style>{`
+        @keyframes waiTickerScroll {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-50%); }
+        }
+      `}</style>
+      <div
+        style={{
+          display: "inline-block",
+          whiteSpace: "nowrap",
+          fontSize: 10,
+          fontWeight: "500",
+          letterSpacing: "0.05em",
+          color: "rgba(255,255,255,0.85)",
+          animation: "waiTickerScroll 40s linear infinite",
+          paddingLeft: "100%"
+        }}
+      >
+        <span>{tickerText}</span>
+        <span>{tickerText}</span>
+      </div>
+    </div>
+  );
+};
+
 export default function PremiumMonth() {
-  // === MOBILE ADDITION: device detection ===
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -54,13 +101,13 @@ export default function PremiumMonth() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
   
-  /* ================= SIMULATION & STRESS STATE (NEW) ================= */
+  /* ================= SIMULATION & STRESS STATE ================= */
   const [simulationActive, setSimulationActive] = useState(false);
-  const [stressFactor, setStressFactor] = useState(0); // 0 to 1 (0% to 100%)
+  const [stressFactor, setStressFactor] = useState(0);
 
   const calculateFragility = () => {
     const energy = (inputs.electricity + inputs.gas) * (1 + stressFactor);
-    const fixed = inputs.housing + inputs.insurance + inputs.banking + energy;
+    const fixed = inputs.housing + inputs.insurance + (inputs.banking || 20) + energy;
     const ratio = (fixed / inputs.income) * 100;
     return Math.min(Math.max(ratio, 0), 100).toFixed(1);
   };
@@ -96,7 +143,6 @@ export default function PremiumMonth() {
 
   useEffect(() => {
     let cancelled = false;
-
     const detect = async () => {
       try {
         const r = await fetch("/api/detect-region");
@@ -105,36 +151,24 @@ export default function PremiumMonth() {
         if (cancelled) return;
         if (j?.region) setRegion(j.region);
         if (j?.country) setCountry(j.country);
-      } catch {
-        /* silent fallback */
-      }
+      } catch {}
     };
-
     detect();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   /* ================= CORE STATE ================= */
 
   const [viewMode, setViewMode] = useState("executive");
   const [cycleDay, setCycleDay] = useState(1);
-
   const [loading, setLoading] = useState(false);
   const [emailSending, setEmailSending] = useState(false);
-
-  /* ================= AI PANEL STATE ================= */
 
   const [aiVisible, setAiVisible] = useState(false);
   const [aiCollapsed, setAiCollapsed] = useState(true);
 
-  /* ================= DAILY SIGNAL ================= */
-
   const [dailySignal, setDailySignal] = useState(null);
   const [dailyPending, setDailyPending] = useState(true);
-
-  /* ================= DAILY / SNAPSHOT AI ================= */
 
   const [dailyDual, setDailyDual] = useState(null);
   const [dailySnapshot, setDailySnapshot] = useState(null);
@@ -143,29 +177,21 @@ export default function PremiumMonth() {
   const [selectedDay, setSelectedDay] = useState(null);
 
   const [exportRange, setExportRange] = useState("day");
-
-  /* ================= SNAPSHOT AVAILABILITY ================= */
-
   const [isTodayAvailable, setIsTodayAvailable] = useState(false);
 
   /* ================= WEEKLY FOCUS ================= */
 
   const WEEK_LENGTH = 7;
-
   const [weeklyFocus, setWeeklyFocus] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("weeklyFocus"));
-    } catch {
-      return null;
-    }
+    } catch { return null; }
   });
 
   const [focusOpen, setFocusOpen] = useState(false);
   const [focusPreview, setFocusPreview] = useState(null);
 
-  const getCurrentWeekIndex = () => {
-    return Math.floor((cycleDay - 1) / WEEK_LENGTH);
-  };
+  const getCurrentWeekIndex = () => Math.floor((cycleDay - 1) / WEEK_LENGTH);
 
   const FOCUS_OPTIONS = [
     { key: "stability", label: "Stability" },
@@ -176,13 +202,7 @@ export default function PremiumMonth() {
 
   const confirmWeeklyFocus = () => {
     if (!focusPreview) return;
-
-    const focus = {
-      key: focusPreview,
-      weekIndex: getCurrentWeekIndex(),
-      setAt: Date.now(),
-    };
-
+    const focus = { key: focusPreview, weekIndex: getCurrentWeekIndex(), setAt: Date.now() };
     setWeeklyFocus(focus);
     localStorage.setItem("weeklyFocus", JSON.stringify(focus));
     setFocusPreview(null);
@@ -204,24 +224,20 @@ export default function PremiumMonth() {
     unexpected: 200,
     other: 300,
   });
+
   const update = (key, value) => {
     setInputs({ ...inputs, [key]: Number(value) });
-
     setAiVisible(false);
     setAiCollapsed(true);
     setDailyDual(null);
     setDailySnapshot(null);
     setSelectedDay(null);
-    // Ha módosul az input, a szimuláció újra láthatóvá válik
   };
 
   /* ================= CYCLE LOGIC ================= */
 
   useEffect(() => {
-    const start =
-      localStorage.getItem("subscriptionPeriodStart") ||
-      localStorage.getItem("monthCycleStart");
-
+    const start = localStorage.getItem("subscriptionPeriodStart") || localStorage.getItem("monthCycleStart");
     if (!start) {
       localStorage.setItem("monthCycleStart", Date.now().toString());
       setCycleDay(1);
@@ -236,24 +252,15 @@ export default function PremiumMonth() {
   useEffect(() => {
     const today = getTodayKey();
     const key = `dailyAvailableAt_${today}`;
-
     let availableAt = localStorage.getItem(key);
-
     if (!availableAt) {
-      const randomOffsetMs =
-        Math.floor(Math.random() * 6 * 60 * 60 * 1000);
+      const randomOffsetMs = Math.floor(Math.random() * 6 * 60 * 60 * 1000);
       const base = new Date();
       base.setHours(7, 0, 0, 0);
       availableAt = base.getTime() + randomOffsetMs;
       localStorage.setItem(key, availableAt.toString());
     }
-
-    const check = () => {
-      if (Date.now() >= Number(availableAt)) {
-        setIsTodayAvailable(true);
-      }
-    };
-
+    const check = () => { if (Date.now() >= Number(availableAt)) setIsTodayAvailable(true); };
     check();
     const i = setInterval(check, 60000);
     return () => clearInterval(i);
@@ -263,62 +270,38 @@ export default function PremiumMonth() {
 
   useEffect(() => {
     const unlockAt = getDailyUnlockTime();
-
     const check = async () => {
       if (Date.now() < unlockAt) return;
-
       const seenKey = "dailySignalSeen_" + getTodayKey();
       const cached = localStorage.getItem(seenKey);
-
       if (cached) {
         setDailySignal(cached);
         setDailyPending(false);
         return;
       }
-
       const r = await fetch("/api/get-daily-signal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          region,
-          country,
-          cycleDay,
-        }),
+        body: JSON.stringify({ region, country, cycleDay }),
       });
-
       const j = await r.json();
       if (j?.signal) {
         localStorage.setItem(seenKey, j.signal);
         setDailySignal(j.signal);
       }
-
       setDailyPending(false);
     };
-
     const t = setInterval(check, 30000);
     check();
-
     return () => clearInterval(t);
   }, [region, country, cycleDay]);
-
-  /* ================= LEGACY DAILY STORAGE ================= */
 
   const saveBriefing = dual => {
     const today = getTodayKey();
     const stored = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
-
     if (!stored.find(b => b.date === today)) {
-      stored.push({
-        id: Date.now(),
-        date: today,
-        cycleDay,
-        executive: dual.executive,
-        directive: dual.directive,
-      });
-      localStorage.setItem(
-        "monthlyBriefings",
-        JSON.stringify(stored.slice(-30))
-      );
+      stored.push({ id: Date.now(), date: today, cycleDay, executive: dual.executive, directive: dual.directive });
+      localStorage.setItem("monthlyBriefings", JSON.stringify(stored.slice(-30)));
     }
   };
 
@@ -327,7 +310,7 @@ export default function PremiumMonth() {
   const runAI = async () => {
     setLoading(true);
     setSelectedDay(null);
-    setSimulationActive(false); // AI briefingnél kikapcsoljuk a szimulációs nézetet
+    setSimulationActive(false);
 
     try {
       const res = await fetch("/api/get-ai-briefing", {
@@ -352,10 +335,8 @@ export default function PremiumMonth() {
         saveBriefing(json.snapshot);
       }
     } catch {}
-
     setLoading(false);
   };
-
   /* ================= SNAPSHOT AI ================= */
 
   const runAIDual = async () => {
@@ -394,6 +375,7 @@ export default function PremiumMonth() {
 
     setLoading(false);
   };
+
   /* ================= ACTIVE CONTENT ================= */
 
   const activeSnapshot = selectedDay
@@ -486,10 +468,12 @@ export default function PremiumMonth() {
     <div
       style={{
         ...page,
-        overflowX: isMobile ? "hidden" : undefined,
+        overflowX: "hidden",
         backgroundAttachment: "fixed",
       }}
     >
+      <WealthyTicker isMobile={isMobile} />
+      
       <a href="/month/help" style={helpButton}>Help</a>
 
       <div style={header}>
@@ -631,10 +615,6 @@ export default function PremiumMonth() {
               }}
               style={{ width: "100%", accentColor: "#10b981", cursor: "pointer" }}
             />
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, opacity: 0.5, marginTop: 4 }}>
-              <span>BASE</span>
-              <span>CRISIS (+100%)</span>
-            </div>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 20 }}>
@@ -658,235 +638,101 @@ export default function PremiumMonth() {
         </div>
 
         {/* RIGHT COLUMN: INTELLIGENCE & VISUALS */}
-        <div style={card}>
+        <div style={{ ...card, position: "relative", overflow: "hidden", minHeight: 400 }}>
           
-          {/* 1. STATE: MANIFESTO */}
-          {!aiVisible && !simulationActive && (
-            <div style={{ padding: "10px", animation: "fadeIn 0.8s ease-in" }}>
-              <strong style={{ color: "#10b981", fontSize: 12, letterSpacing: 1 }}>WEALTHYAI PHILOSOPHY</strong>
-              <h2 style={{ fontSize: 22, marginTop: 10 }}>Interpretation, Not Advice.</h2>
-              <p style={{ opacity: 0.7, lineHeight: "1.6", fontSize: 14 }}>
-                We built WealthyAI around a different question: What happens if AI doesn’t advise — but interprets?
-                Not faster decisions, but <strong>clearer thinking</strong>.
-              </p>
-              <p style={{ opacity: 0.7, lineHeight: "1.6", fontSize: 14, marginTop: 12 }}>
-                Our system assumes that you remain responsible for decisions — it simply gives you a clearer frame to make them. 
-                WealthyAI doesn’t reward speed. It rewards <strong>attention</strong>.
-              </p>
+          {/* TOPOGRAPHY INTEGRATION */}
+          {!aiVisible && (
+            <div style={{ position: "absolute", inset: 0, zIndex: 1 }}>
+              <Topography 
+                stressFactor={stressFactor} 
+                income={inputs.income} 
+                spawnNumbers={true} 
+                isAiOpen={aiVisible} 
+              />
             </div>
           )}
 
-          {/* 2. STATE: SIMULATION ENGINE */}
-          {simulationActive && !aiVisible && (
-            <div style={{ padding: "10px", animation: "fadeIn 0.3s ease-out" }}>
-              <strong style={{ color: "#10b981", fontSize: 12 }}>LIVE SIMULATION ENGINE</strong>
-              <h2 style={{ fontSize: 20, marginTop: 5 }}>Structural Fragility Index</h2>
-              
-              <div style={{ fontSize: 42, fontWeight: "bold", color: "#38bdf8", margin: "15px 0" }}>
-                {calculateFragility()}%
+          {/* CONTENT OVERLAY */}
+          <div style={{ position: "relative", zIndex: 2 }}>
+            {!aiVisible && !simulationActive && (
+              <div style={{ padding: "10px", animation: "fadeIn 0.8s ease-in", background: "rgba(2,6,23,0.4)", borderRadius: 8 }}>
+                <strong style={{ color: "#10b981", fontSize: 12, letterSpacing: 1 }}>WEALTHYAI PHILOSOPHY</strong>
+                <h2 style={{ fontSize: 22, marginTop: 10 }}>Interpretation, Not Advice.</h2>
+                <p style={{ opacity: 0.8, lineHeight: "1.6", fontSize: 14 }}>
+                  WealthyAI doesn’t reward speed. It rewards <strong>attention</strong>.
+                </p>
               </div>
+            )}
 
-              <div style={{ height: 8, background: "rgba(255,255,255,0.05)", borderRadius: 4, overflow: "hidden" }}>
-                <div style={{ 
-                  height: "100%", 
-                  width: `${calculateFragility()}%`, 
-                  background: "linear-gradient(90deg, #10b981, #38bdf8)",
-                  transition: "width 0.3s ease" 
-                }} />
-              </div>
-
-              <p style={{ opacity: 0.6, fontSize: 13, marginTop: 15, lineHeight: "1.5" }}>
-                At <strong>{Math.round(stressFactor * 100)}%</strong> simulated pressure, your core financial rigidity is 
-                {parseFloat(calculateFragility()) > 55 ? " approaching a critical threshold." : " currently within structural limits."}
-              </p>
-              
-              <button 
-                onClick={() => setSimulationActive(false)} 
-                style={{ ...exportBtn, marginTop: 20, fontSize: 12, opacity: 0.6 }}
-              >
-                Reset view
-              </button>
-            </div>
-          )}
-
-          {/* 3. STATE: AI BRIEFING */}
-          {aiVisible && (
-            <div>
-              <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
-                <button
-                  onClick={() => setViewMode("executive")}
-                  style={{
-                    ...exportBtn,
-                    background: viewMode === "executive" ? "#38bdf8" : "transparent",
-                    color: viewMode === "executive" ? "#020617" : "#38bdf8",
-                  }}
-                >
-                  Executive
-                </button>
-
-                <button
-                  onClick={() => setViewMode("directive")}
-                  style={{
-                    ...exportBtn,
-                    background: viewMode === "directive" ? "#38bdf8" : "transparent",
-                    color: viewMode === "directive" ? "#020617" : "#38bdf8",
-                  }}
-                >
-                  Directive
-                </button>
-                <button 
-                  onClick={() => { setAiVisible(false); setSimulationActive(false); }} 
-                  style={{ ...exportBtn, maxWidth: 44 }}
-                >
-                  ✕
-                </button>
-              </div>
-
-              <pre style={aiTextStyle}>{activeText}</pre>
-
-              {!selectedDay && (
-                <div
-                  style={{
-                    marginTop: 16,
-                    display: "flex",
-                    gap: 12,
-                    flexWrap: isMobile ? "wrap" : "nowrap",
-                  }}
-                >
-                  <select
-                    value={exportRange}
-                    onChange={e => setExportRange(e.target.value)}
-                    style={exportSelect}
-                  >
-                    <option value="day">Today</option>
-                    <option value="week">Last 7 days</option>
-                    <option value="month">This month</option>
-                  </select>
-
-                  <button onClick={handleDownload} style={exportBtn}>Download</button>
-                  <button onClick={downloadPDF} style={exportBtn}>PDF</button>
-                  <button onClick={sendEmailPDF} style={exportBtn}>
-                    {emailSending ? "..." : "Email"}
-                  </button>
+            {simulationActive && !aiVisible && (
+              <div style={{ padding: "10px", background: "rgba(2,6,23,0.6)", borderRadius: 12 }}>
+                <strong style={{ color: "#10b981", fontSize: 12 }}>LIVE SIMULATION</strong>
+                <h2 style={{ fontSize: 20, marginTop: 5 }}>Structural Fragility Index</h2>
+                <div style={{ fontSize: 42, fontWeight: "bold", color: "#38bdf8", margin: "10px 0" }}>
+                  {calculateFragility()}%
                 </div>
-              )}
-            </div>
-          )}
-
-          <Divider />
-          <button
-            onClick={() => setArchiveOpen(!archiveOpen)}
-            style={{ ...exportBtn, width: "100%" }}
-          >
-            {archiveOpen ? "Hide past days" : "View past days"}
-          </button>
-
-          {archiveOpen && (
-            <div style={{ marginTop: 10 }}>
-              {getMonthlySnapshots().map(s => (
-                <button
-                  key={s.date}
-                  onClick={() => { setSelectedDay(s.cycleDay); setAiVisible(true); setSimulationActive(false); }}
-                  style={{ ...exportBtn, marginBottom: 4, width: "100%" }}
+                <button 
+                  onClick={() => setSimulationActive(false)} 
+                  style={{ ...exportBtn, fontSize: 11 }}
                 >
-                  Day {s.cycleDay}
+                  Reset view
                 </button>
-              ))}
-            </div>
-          )}
+              </div>
+            )}
+
+            {aiVisible && (
+              <div style={{ background: "rgba(2,6,23,0.9)", padding: 15, borderRadius: 12, minHeight: 370 }}>
+                <div style={{ display: "flex", gap: 10, marginBottom: 15 }}>
+                  <button onClick={() => setViewMode("executive")} style={{ ...exportBtn, background: viewMode === "executive" ? "#38bdf8" : "transparent", color: viewMode === "executive" ? "#020617" : "#38bdf8" }}>Executive</button>
+                  <button onClick={() => setViewMode("directive")} style={{ ...exportBtn, background: viewMode === "directive" ? "#38bdf8" : "transparent", color: viewMode === "directive" ? "#020617" : "#38bdf8" }}>Directive</button>
+                  <button onClick={() => { setAiVisible(false); setSimulationActive(false); }} style={exportBtn}>✕</button>
+                </div>
+                <pre style={aiTextStyle}>{activeText}</pre>
+                {!selectedDay && (
+                  <div style={{ marginTop: 20, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                    <select value={exportRange} onChange={e => setExportRange(e.target.value)} style={exportSelect}>
+                      <option value="day">Today</option>
+                      <option value="week">Last 7 days</option>
+                      <option value="month">This month</option>
+                    </select>
+                    <button onClick={handleDownload} style={exportBtn}>TXT</button>
+                    <button onClick={downloadPDF} style={exportBtn}>PDF</button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <div style={footer}>© 2026 WealthyAI · Monthly Intelligence</div>
+      <div style={{ ...footer, paddingBottom: 20 }}>© 2026 WealthyAI · Monthly Intelligence</div>
     </div>
   );
 }
 
-/* ================= UI HELPERS & STYLES (Eredeti Styles blokk változatlan) ================= */
-const Section = ({ title, children }) => (
-  <>
-    <Divider />
-    <strong style={{fontSize: 14, color: "#7dd3fc"}}>{title}</strong>
-    {children}
-  </>
-);
+/* ================= UI HELPERS & STYLES ================= */
+const Section = ({ title, children }) => (<><Divider /><strong style={{fontSize: 14, color: "#7dd3fc"}}>{title}</strong>{children}</>);
+const Row = ({ label, value, onChange }) => (<div style={row}><span style={{fontSize: 13, opacity: 0.8}}>{label}</span><input type="number" value={value} onChange={e => onChange(e.target.value)} style={rowInput} /></div>);
+const Label = ({ children }) => (<label style={{ marginBottom: 6, display: "block", fontSize: 13, opacity: 0.8 }}>{children}</label>);
+const Input = ({ value, onChange }) => (<input type="number" value={value} onChange={onChange} style={input} />);
+const Divider = () => (<div style={{ height: 1, background: "#1e293b", margin: "16px 0" }} />);
 
-const Row = ({ label, value, onChange }) => (
-  <div style={row}>
-    <span style={{fontSize: 13, opacity: 0.8}}>{label}</span>
-    <input
-      type="number"
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      style={rowInput}
-    />
-  </div>
-);
-
-const Label = ({ children }) => (
-  <label style={{ marginBottom: 6, display: "block", fontSize: 13, opacity: 0.8 }}>{children}</label>
-);
-
-const Input = ({ value, onChange }) => (
-  <input type="number" value={value} onChange={onChange} style={input} />
-);
-
-const Divider = () => (
-  <div style={{ height: 1, background: "#1e293b", margin: "16px 0" }} />
-);
-
-const page = {
-  minHeight: "100vh",
-  position: "relative",
-  padding: "40px 20px",
-  color: "#e5e7eb",
-  fontFamily: "Inter, system-ui",
-  backgroundColor: "#020617",
-  backgroundImage: `
-    repeating-linear-gradient(-25deg, rgba(56,189,248,0.04) 0px, rgba(56,189,248,0.04) 1px, transparent 1px, transparent 180px),
-    repeating-linear-gradient(35deg, rgba(167,139,250,0.04) 0px, rgba(167,139,250,0.04) 1px, transparent 1px, transparent 260px),
-    radial-gradient(circle at 20% 30%, rgba(56,189,248,0.14), transparent 45%),
-    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.14), transparent 50%),
-    url("/wealthyai/icons/generated.png")
-  `,
-  backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, repeat",
-  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 420px auto",
-};
-
+const page = { minHeight: "100vh", position: "relative", padding: "40px 20px", color: "#e5e7eb", fontFamily: "Inter, sans-serif", backgroundColor: "#020617", backgroundImage: "radial-gradient(circle at 20% 30%, rgba(56,189,248,0.1), transparent 45%)" };
 const header = { textAlign: "center", marginBottom: 20 };
 const title = { fontSize: "2rem", margin: 0 };
 const subtitle = { marginTop: 8, color: "#cbd5f5", fontSize: 14 };
-
-const helpButton = {
-  position: "absolute",
-  top: 20,
-  right: 20,
-  padding: "6px 12px",
-  borderRadius: 8,
-  fontSize: 12,
-  textDecoration: "none",
-  color: "#7dd3fc",
-  border: "1px solid #1e293b",
-  background: "rgba(2,6,23,0.7)",
-};
-
+const helpButton = { position: "absolute", top: 20, right: 20, padding: "6px 12px", borderRadius: 8, fontSize: 12, textDecoration: "none", color: "#7dd3fc", border: "1px solid #1e293b", background: "rgba(2,6,23,0.7)" };
 const regionRow = { display: "flex", justifyContent: "center", gap: 10, marginBottom: 20 };
 const regionLabel = { color: "#7dd3fc", fontSize: 14 };
 const regionSelect = { background: "#020617", color: "#e5e7eb", border: "1px solid #1e293b", padding: "4px 8px", borderRadius: 6 };
-
 const signalBox = { maxWidth: 800, margin: "0 auto 15px", padding: 14, border: "1px solid #1e293b", borderRadius: 12, background: "rgba(2,6,23,0.75)" };
-
 const layout = { display: "grid", gridTemplateColumns: "1fr 1.3fr", gap: 25, maxWidth: 1100, margin: "0 auto" };
 const card = { padding: 20, borderRadius: 16, border: "1px solid #1e293b", background: "rgba(2,6,23,0.78)" };
-
 const input = { width: "100%", padding: 10, marginTop: 4, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, color: "white" };
 const row = { display: "flex", justifyContent: "space-between", marginTop: 6 };
 const rowInput = { width: 80, background: "transparent", border: "none", borderBottom: "1px solid #38bdf8", color: "#38bdf8", textAlign: "right" };
-
 const aiButton = { marginTop: 20, width: "100%", padding: 12, background: "#38bdf8", border: "none", borderRadius: 10, fontWeight: "bold", cursor: "pointer", color: "#020617" };
 const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap", color: "#cbd5f5", fontSize: 14, lineHeight: "1.6" };
-
 const exportBtn = { padding: "8px 12px", borderRadius: 8, border: "1px solid #1e293b", background: "transparent", color: "#38bdf8", cursor: "pointer", fontSize: 13 };
 const exportSelect = { background: "transparent", color: "#e5e7eb", border: "1px solid #1e293b", padding: "8px", borderRadius: 8 };
-
-const footer = { marginTop: 40, textAlign: "center", fontSize: 12, color: "#64748b", paddingBottom: 20 };
+const footer = { marginTop: 40, textAlign: "center", fontSize: 12, color: "#64748b" };
