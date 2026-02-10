@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import SEO from "../components/SEO";
 
 export default function Home() {
-  const SITE_URL = "https://wealthyai-web.vercel.app";
+  const SITE_URL = "https://mywealthyai.com"; // Frissítve a végleges domainre
   const SHARE_TEXT = "AI-powered financial clarity with WealthyAI";
 
   const audioRef = useRef(null);
@@ -36,12 +36,11 @@ export default function Home() {
     };
   }, []);
 
-  // Eseménykezelő: Ha a hang végére ér
   const handleAudioEnd = () => {
     setIsPlaying(false);
     setIsMuted(true);
     if (audioRef.current) {
-      audioRef.current.currentTime = 0; // Visszatekerjük az elejére a következő indításhoz
+      audioRef.current.currentTime = 0;
     }
   };
 
@@ -55,7 +54,6 @@ export default function Home() {
 
   const toggleMute = () => {
     if (audioRef.current) {
-      // Ha épp nem játszik (mert véget ért), akkor elindítjuk elölről
       if (!isPlaying) {
         audioRef.current.currentTime = 0;
         audioRef.current.muted = false;
@@ -63,7 +61,6 @@ export default function Home() {
         setIsPlaying(true);
         setIsMuted(false);
       } else {
-        // Ha fut, akkor csak némítunk/feloldunk
         const newMuteState = !isMuted;
         audioRef.current.muted = newMuteState;
         setIsMuted(newMuteState);
@@ -113,7 +110,6 @@ export default function Home() {
           padding: isMobile ? "80px 0 60px 0" : 0,
         }}
       >
-        {/* AUDIO ELEM AZ ESEMÉNYFIGYELŐVEL */}
         <audio 
           ref={audioRef} 
           src="/wealthyai/icons/nyitobeszed.mp3" 
@@ -121,7 +117,6 @@ export default function Home() {
           onEnded={handleAudioEnd}
         />
 
-        {/* NARRATOR IKON - Dinamikusan változó szöveggel és animációval */}
         <div 
           onClick={toggleMute}
           className="narrator-toggle"
@@ -146,7 +141,6 @@ export default function Home() {
             {[1, 2, 3].map(i => (
               <div key={i} style={{
                 width: "2px",
-                // Csak akkor ugrál, ha játszik ÉS nincs némítva
                 height: (isPlaying && !isMuted) ? "100%" : "2px",
                 backgroundColor: "#38bdf8",
                 animation: (isPlaying && !isMuted) ? `audioBar 0.8s ease-in-out infinite alternate ${i * 0.2}s` : "none"
@@ -158,7 +152,6 @@ export default function Home() {
           </span>
         </div>
 
-        {/* TOP NAV */}
         <div
           style={{
             position: isMobile ? "fixed" : "absolute",
@@ -178,7 +171,6 @@ export default function Home() {
           <a href="/terms" onClick={stopAudio} className="nav-link">Terms</a>
         </div>
 
-        {/* CENTER BRAND & TEXT */}
         <div
           style={{
             textAlign: "center",
@@ -249,7 +241,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* START SECTION */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
@@ -312,7 +303,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* BOTTOM BAR */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
@@ -340,7 +330,7 @@ export default function Home() {
             <a href="mailto:info@mywealthyai.com" onClick={stopAudio} className="nav-link" style={{ fontSize: "0.82rem", textAlign: isMobile ? "center" : "right", lineHeight: "1.4", cursor: "pointer", textDecoration: "none" }}>
               <div style={{ fontWeight: 500 }}>Contact & Partnerships</div>
               <div style={{ opacity: 0.8 }}>Media · Partnerships · Institutional use</div>
-              <div style={{ fontWeight: 600 }}>wealthyaiweb@gmail.com</div>
+              <div style={{ fontWeight: 600 }}>info@mywealthyai.com</div>
             </a>
 
             <div style={{ display: "flex", gap: "18px", alignItems: "center", marginTop: isMobile ? "10px" : "0" }}>
