@@ -11,7 +11,7 @@ export default function PremiumHub() {
   }, []);
 
   const navigateTo = (path) => {
-    // 🔐 ELMENTJÜK A MESTER KÓDOT, HOGY A CÉLOLDAL BEENGEDJEN
+    // 🔐 Elmentjük a mester kódot, hogy a céloldal (pl. premium-month) ne dobjon ki
     localStorage.setItem("wai_vip_token", "MASTER-DOMINANCE-2026");
     window.location.href = path;
   };
@@ -87,10 +87,10 @@ export default function PremiumHub() {
       </p>
 
       <div style={styles.grid}>
-        {/* DAILY */}
+        {/* DAILY - Átírva /day-re a listád alapján */}
         <div 
           style={styles.card} 
-          onClick={() => navigateTo("/premium-daily")}
+          onClick={() => navigateTo("/day")}
           onMouseEnter={(e) => Object.assign(e.currentTarget.style, styles.cardHover)}
           onMouseLeave={(e) => Object.assign(e.currentTarget.style, styles.card)}
         >
@@ -99,10 +99,10 @@ export default function PremiumHub() {
           <p style={{ fontSize: "14px", opacity: 0.7 }}>Immediate Snapshots</p>
         </div>
 
-        {/* WEEKLY */}
+        {/* WEEKLY - Átírva /premium-week-re a listád alapján */}
         <div 
           style={styles.card} 
-          onClick={() => navigateTo("/premium-weekly")}
+          onClick={() => navigateTo("/premium-week")}
           onMouseEnter={(e) => Object.assign(e.currentTarget.style, styles.cardHover)}
           onMouseLeave={(e) => Object.assign(e.currentTarget.style, styles.card)}
         >
@@ -111,7 +111,7 @@ export default function PremiumHub() {
           <p style={{ fontSize: "14px", opacity: 0.7 }}>Behavioral Patterns</p>
         </div>
 
-        {/* MONTHLY */}
+        {/* MONTHLY - Ez marad /premium-month, mert ez egyezik */}
         <div 
           style={styles.card} 
           onClick={() => navigateTo("/premium-month")}
@@ -125,7 +125,7 @@ export default function PremiumHub() {
       </div>
 
       <button 
-        onClick={() => navigateTo("/dashboard")}
+        onClick={() => navigateTo("/")}
         style={{
           marginTop: "60px",
           background: "none",
