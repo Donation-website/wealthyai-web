@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import {
-  saveMonthlySnapshot,
-  getMonthlySnapshots,
-  getSnapshotByDay,
+  saveMonthlySnapshot,
+  getMonthlySnapshots,
+  getSnapshotByDay,
 } from "../lib/monthlyArchive";
 
 /* ================= DAILY SIGNAL UNLOCK ================= */
@@ -10,94 +10,95 @@ import {
 const DAILY_SIGNAL_KEY = "dailySignalUnlock";
 
 function getTodayKey() {
-  return new Date().toISOString().slice(0, 10);
+  return new Date().toISOString().slice(0, 10);
 }
 
 function getDailyUnlockTime() {
-  const stored = JSON.parse(localStorage.getItem(DAILY_SIGNAL_KEY) || "{}");
-  const today = getTodayKey();
+  const stored = JSON.parse(localStorage.getItem(DAILY_SIGNAL_KEY) || "{}");
+  const today = getTodayKey();
 
-  if (stored.date === today) return stored.unlockAt;
+  if (stored.date === today) return stored.unlockAt;
 
-  const hour = Math.floor(Math.random() * 10) + 7; // 07–16
-  const minute = Math.floor(Math.random() * 60);
+  const hour = Math.floor(Math.random() * 10) + 7; // 07–16
+  const minute = Math.floor(Math.random() * 60);
 
-  const unlockAt = new Date();
-  unlockAt.setHours(hour, minute, 0, 0);
+  const unlockAt = new Date();
+  unlockAt.setHours(hour, minute, 0, 0);
 
-  localStorage.setItem(
-    DAILY_SIGNAL_KEY,
-    JSON.stringify({ date: today, unlockAt: unlockAt.getTime() })
-  );
+  localStorage.setItem(
+    DAILY_SIGNAL_KEY,
+    JSON.stringify({ date: today, unlockAt: unlockAt.getTime() })
+  );
 
-  return unlockAt.getTime();
+  return unlockAt.getTime();
 }
 
 /* ================= REGIONS ================= */
 
 const REGIONS = [
-  { code: "US", label: "United States" },
-  { code: "EU", label: "European Union" },
-  { code: "UK", label: "United Kingdom" },
-  { code: "HU", label: "Hungary" },
-  { code: "OTHER", label: "Other regions" },
+  { code: "US", label: "United States" },
+  { code: "EU", label: "European Union" },
+  { code: "UK", label: "United Kingdom" },
+  { code: "HU", label: "Hungary" },
+  { code: "OTHER", label: "Other regions" },
 ];
 
-/* ===== TICKER COMPONENT ===== */
+/* ===== TICKER COMPONENT (FIXED WHITE & TRANSPARENT) ===== */
 const WealthyTicker = ({ isMobile }) => {
-  if (isMobile) return null;
+  if (isMobile) return null;
 
-  const tickerText =
-    "WealthyAI interprets your financial state over time — not advice, not prediction, just clarity • Interpretation over advice • Clarity over certainty • Insight unfolds over time • Financial understanding isn’t instant • Context changes • Insight follows time • Clarity over certainty • Built on time, not urgency • ";
+  const tickerText =
+    "WealthyAI interprets your financial state over time — not advice, not prediction, just clarity • Interpretation over advice • Clarity over certainty • Insight unfolds over time • Financial understanding isn’t instant • Context changes • Insight follows time • Clarity over certainty • Built on time, not urgency • ";
 
-  return (
-    <div
-      style={{
-        position: "absolute",
-        top: 10,
-        left: 0,
-        width: "100%",
-        height: 18,
-        overflow: "hidden",
-        zIndex: 20,
-        pointerEvents: "none",
-      }}
-    >
-      <div
-        style={{
-          display: "inline-block",
-          whiteSpace: "nowrap",
-          fontSize: 11,
-          fontWeight: "700",
-          letterSpacing: "0.08em",
-          color: "rgba(255,255,255,0.75)",
-          animation: "waiScroll 45s linear infinite",
-        }}
-      >
-        <span>{tickerText}</span>
-        <span>{tickerText}</span>
-      </div>
-    </div>
-  );
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: 15,
+        left: 0,
+        width: "100%",
+        height: 24,
+        overflow: "hidden",
+        zIndex: 100,
+        pointerEvents: "none",
+        background: "transparent", // Teljesen átlátszó keret
+      }}
+    >
+      <div
+        style={{
+          display: "inline-block",
+          whiteSpace: "nowrap",
+          fontSize: 11,
+          fontWeight: "400", // Szép, szellős betűk mint a feliratnál
+          textTransform: "uppercase",
+          letterSpacing: "0.15em",
+          color: "#ffffff", // Hófehér betűk
+          animation: "waiScroll 50s linear infinite",
+        }}
+      >
+        <span>{tickerText}</span>
+        <span>{tickerText}</span>
+      </div>
+    </div>
+  );
 };
 
 export default function PremiumMonth() {
-  // === MOBILE ADDITION: device detection ===
-  const [isMobile, setIsMobile] = useState(false);
+  // === MOBILE ADDITION: device detection ===
+  const [isMobile, setIsMobile] = useState(false);
 
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-  
-  /* ================= SIMULATION & STRESS STATE (NEW) ================= */
-  const [simulationActive, setSimulationActive] = useState(false);
-  const [stressFactor, setStressFactor] = useState(0); // 0 to 1 (0% to 100%)
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+  
+  /* ================= SIMULATION & STRESS STATE ================= */
+  const [simulationActive, setSimulationActive] = useState(false);
+  const [stressFactor, setStressFactor] = useState(0); 
 
-  const calculateFragility = () => {
-    // Összes fix költség az inputokból
+  const calculateFragility = () => {
     const totalFixed = 
       inputs.housing + 
       inputs.electricity + 
@@ -109,160 +110,158 @@ export default function PremiumMonth() {
       inputs.insurance + 
       inputs.banking;
 
-    // Ha nincs bevétel, 100% a törékenység
     if (!inputs.income || inputs.income <= 0) return "100.0";
 
-    // A stressz faktor az energiát és a váratlan/egyéb költségeket súlyozza
     const energyBase = inputs.electricity + inputs.gas;
     const stressSurplus = (energyBase + inputs.unexpected + inputs.other) * stressFactor;
     
     const finalRatio = ((totalFixed + stressSurplus) / inputs.income) * 100;
     
-    return Math.min(Math.max(finalRatio, 0), 100).toFixed(1);
-  };
+    return Math.min(Math.max(finalRatio, 0), 100).toFixed(1);
+  };
 
-  /* ================= ACCESS CHECK ================= */
+  /* ================= ACCESS CHECK ================= */
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const sessionId = params.get("session_id");
-    if (!sessionId) {
-      window.location.href = "/start";
-      return;
-    }
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get("session_id");
+    if (!sessionId) {
+      window.location.href = "/start";
+      return;
+    }
 
-    fetch("/api/verify-active-subscription", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sessionId }),
-    })
-      .then(r => r.json())
-      .then(d => {
-        if (!d.valid) window.location.href = "/start";
-      })
-      .catch(() => {
-        window.location.href = "/start";
-      });
-  }, []);
+    fetch("/api/verify-active-subscription", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId }),
+    })
+      .then(r => r.json())
+      .then(d => {
+        if (!d.valid) window.location.href = "/start";
+      })
+      .catch(() => {
+        window.location.href = "/start";
+      });
+  }, []);
 
-  /* ================= REGION AUTO-DETECT ================= */
+  /* ================= REGION AUTO-DETECT ================= */
 
-  const [region, setRegion] = useState("EU");
-  const [country, setCountry] = useState(null);
+  const [region, setRegion] = useState("EU");
+  const [country, setCountry] = useState(null);
 
-  useEffect(() => {
-    let cancelled = false;
+  useEffect(() => {
+    let cancelled = false;
 
-    const detect = async () => {
-      try {
-        const r = await fetch("/api/detect-region");
-        if (!r.ok) return;
-        const j = await r.json();
-        if (cancelled) return;
-        if (j?.region) setRegion(j.region);
-        if (j?.country) setCountry(j.country);
-      } catch {
-        /* silent fallback */
-      }
-    };
+    const detect = async () => {
+      try {
+        const r = await fetch("/api/detect-region");
+        if (!r.ok) return;
+        const j = await r.json();
+        if (cancelled) return;
+        if (j?.region) setRegion(j.region);
+        if (j?.country) setCountry(j.country);
+      } catch {
+        /* silent fallback */
+      }
+    };
 
-    detect();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    detect();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-  /* ================= CORE STATE ================= */
+  /* ================= CORE STATE ================= */
 
-  const [viewMode, setViewMode] = useState("executive");
-  const [cycleDay, setCycleDay] = useState(1);
+  const [viewMode, setViewMode] = useState("executive");
+  const [cycleDay, setCycleDay] = useState(1);
 
-  const [loading, setLoading] = useState(false);
-  const [emailSending, setEmailSending] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [emailSending, setEmailSending] = useState(false);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
   const [userEmail, setUserEmail] = useState("");
 
-  /* ================= AI PANEL STATE ================= */
+  /* ================= AI PANEL STATE ================= */
 
-  const [aiVisible, setAiVisible] = useState(false);
-  const [aiCollapsed, setAiCollapsed] = useState(true);
+  const [aiVisible, setAiVisible] = useState(false);
+  const [aiCollapsed, setAiCollapsed] = useState(true);
 
-  /* ================= DAILY SIGNAL ================= */
+  /* ================= DAILY SIGNAL ================= */
 
-  const [dailySignal, setDailySignal] = useState(null);
-  const [dailyPending, setDailyPending] = useState(true);
+  const [dailySignal, setDailySignal] = useState(null);
+  const [dailyPending, setDailyPending] = useState(true);
 
-  /* ================= DAILY / SNAPSHOT AI ================= */
+  /* ================= DAILY / SNAPSHOT AI ================= */
 
-  const [dailyDual, setDailyDual] = useState(null);
-  const [dailySnapshot, setDailySnapshot] = useState(null);
+  const [dailyDual, setDailyDual] = useState(null);
+  const [dailySnapshot, setDailySnapshot] = useState(null);
 
-  const [archiveOpen, setArchiveOpen] = useState(false);
-  const [selectedDay, setSelectedDay] = useState(null);
+  const [archiveOpen, setArchiveOpen] = useState(false);
+  const [selectedDay, setSelectedDay] = useState(null);
 
-  const [exportRange, setExportRange] = useState("day");
+  const [exportRange, setExportRange] = useState("day");
 
-  /* ================= SNAPSHOT AVAILABILITY ================= */
+  /* ================= SNAPSHOT AVAILABILITY ================= */
 
-  const [isTodayAvailable, setIsTodayAvailable] = useState(false);
+  const [isTodayAvailable, setIsTodayAvailable] = useState(false);
 
-  /* ================= WEEKLY FOCUS ================= */
+  /* ================= WEEKLY FOCUS ================= */
 
-  const WEEK_LENGTH = 7;
+  const WEEK_LENGTH = 7;
 
-  const [weeklyFocus, setWeeklyFocus] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("weeklyFocus"));
-    } catch {
-      return null;
-    }
-  });
+  const [weeklyFocus, setWeeklyFocus] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("weeklyFocus"));
+    } catch {
+      return null;
+    }
+  });
 
-  const [focusOpen, setFocusOpen] = useState(false);
-  const [focusPreview, setFocusPreview] = useState(null);
+  const [focusOpen, setFocusOpen] = useState(false);
+  const [focusPreview, setFocusPreview] = useState(null);
 
-  const getCurrentWeekIndex = () => {
-    return Math.floor((cycleDay - 1) / WEEK_LENGTH);
-  };
+  const getCurrentWeekIndex = () => {
+    return Math.floor((cycleDay - 1) / WEEK_LENGTH);
+  };
 
-  const FOCUS_OPTIONS = [
-    { key: "stability", label: "Stability" },
-    { key: "spending", label: "Spending behavior" },
-    { key: "resilience", label: "Resilience" },
-    { key: "direction", label: "Direction" },
-  ];
+  const FOCUS_OPTIONS = [
+    { key: "stability", label: "Stability" },
+    { key: "spending", label: "Spending behavior" },
+    { key: "resilience", label: "Resilience" },
+    { key: "direction", label: "Direction" },
+  ];
 
-  const confirmWeeklyFocus = () => {
-    if (!focusPreview) return;
+  const confirmWeeklyFocus = () => {
+    if (!focusPreview) return;
 
-    const focus = {
-      key: focusPreview,
-      weekIndex: getCurrentWeekIndex(),
-      setAt: Date.now(),
-    };
+    const focus = {
+      key: focusPreview,
+      weekIndex: getCurrentWeekIndex(),
+      setAt: Date.now(),
+    };
 
-    setWeeklyFocus(focus);
-    localStorage.setItem("weeklyFocus", JSON.stringify(focus));
-    setFocusPreview(null);
-  };
+    setWeeklyFocus(focus);
+    localStorage.setItem("weeklyFocus", JSON.stringify(focus));
+    setFocusPreview(null);
+  };
 
-  /* ================= INPUTS ================= */
+  /* ================= INPUTS ================= */
 
-  const [inputs, setInputs] = useState({
-    income: 4000,
-    housing: 1200,
-    electricity: 120,
-    gas: 90,
-    water: 40,
-    internet: 60,
-    mobile: 40,
-    tv: 30,
-    insurance: 150,
-    banking: 20,
-    unexpected: 200,
-    other: 300,
-  });
-  const update = (key, value) => {
+  const [inputs, setInputs] = useState({
+    income: 4000,
+    housing: 1200,
+    electricity: 120,
+    gas: 90,
+    water: 40,
+    internet: 60,
+    mobile: 40,
+    tv: 30,
+    insurance: 150,
+    banking: 20,
+    unexpected: 200,
+    other: 300,
+  });
+       const update = (key, value) => {
     setInputs({ ...inputs, [key]: Number(value) });
     setAiVisible(false);
     setAiCollapsed(true);
@@ -997,7 +996,7 @@ const page = {
 
 const header = { textAlign: "center", marginBottom: 20 };
 const title = { fontSize: "2rem", margin: 0 };
-const subtitle = { marginTop: 8, color: "#cbd5f5", fontSize: 14 };
+const subtitle = { marginTop: 8, color: "#cbd5f5", fontSize: 14, letterSpacing: "0.05em" };
 
 const helpButton = {
   position: "absolute",
@@ -1132,4 +1131,4 @@ const footer = {
   fontSize: 12,
   color: "#64748b",
   paddingBottom: 20,
-};
+};   
