@@ -4,14 +4,13 @@ import { generateAccessConfirmationPDF } from '../../lib/pdf/generateAccessConfi
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// 1. KRITIKUS: A Next.js-nek meg kell tiltani, hogy feldolgozza a body-t
 export const config = {
   api: {
-    bodyParser: false,
+    bodyParser: false, // KRITIKUS a Stripe szignóhoz
   },
 };
 
-// 2. STABILABB BUFFER FÜGGVÉNY: A Stripe szignóhoz ez a legbiztosabb módszer
+// Vercel-kompatibilis nyers adat beolvasó
 async function getRawBody(readable) {
   const chunks = [];
   for await (const chunk of readable) {
@@ -20,13 +19,8 @@ async function getRawBody(readable) {
   return Buffer.concat(chunks);
 }
 
-async function sendPaymentConfirmationEmail({
-  to,
-  priceId, 
-  amount,
-  currency,
-  date,
-}) {
+// 📧 1. FUNKCIÓ: VÁSÁRLÁSI VISSZAIGAZOLÓ (Webhook hívja)
+async function sendPaymentConfirmationEmail({ to, priceId, amount, currency, date }) {
   let productName = "WealthyAI Intelligence Pass";
   let packageType = "Strategic Intelligence Access";
 
@@ -42,10 +36,7 @@ async function sendPaymentConfirmationEmail({
   }
 
   const pdfBuffer = await generateAccessConfirmationPDF({
-    productName,
-    amount,
-    currency,
-    date,
+    productName, amount, currency, date,
   });
 
   const transporter = nodemailer.createTransport({
@@ -59,30 +50,12 @@ async function sendPaymentConfirmationEmail({
   });
 
   const mailText = `
-[CONFIDENTIAL] WealthyAI · Strategy Session Activated
-
+[CONFIDENTIAL] WealthyAI · Access Activated
 STATUS: ACCESS GRANTED
 CLEARANCE: ${packageType.toUpperCase()}
 
-Dear Partner,
-
-Your transaction has been successfully verified. As of this moment, you have been granted full access to the WealthyAI Strategic Intelligence ecosystem for your selected period.
-
-ACCESS DETAILS:
-• Access Type: ${productName}
-• Activation Date: ${date}
-• Protocol: Stripe Secured Payment
-• Intelligence Tier: Professional / High-Net-Worth Logic
-
-YOUR NEXT STEP:
-During your ${productName} period, we suggest focusing not on speed, but on structural connections. WealthyAI is designed not for prediction, but for probability-based, emotionless decision support.
-
-"Strategic superiority begins where emotional reaction ends."
-
-Welcome to the inner circle of disciplined minds.
-
-WealthyAI Operations
-Structured Insights · Probabilistic Thinking · Financial Clarity
+Welcome to the inner circle. Your access is now live.
+Detailed protocol is attached in the PDF.
   `;
 
   await transporter.sendMail({
@@ -90,17 +63,11 @@ Structured Insights · Probabilistic Thinking · Financial Clarity
     to,
     subject: `[CONFIDENTIAL] WealthyAI · ${productName} Activated`,
     text: mailText,
-    attachments: [
-      {
-        filename: 'wealthyai-access-confirmation.pdf',
-        content: pdfBuffer,
-      },
-    ],
+    attachments: [{ filename: 'wealthyai-access.pdf', content: pdfBuffer }],
   });
-
-  console.log(`📧 Access confirmation sent for: ${productName}`);
 }
 
+// 🚀 WEBHOOK HANDLER
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
@@ -110,19 +77,15 @@ export default async function handler(req, res) {
   let event;
 
   try {
-    // Itt a változtatás: az új getRawBody-t használjuk
     const buf = await getRawBody(req);
     event = stripe.webhooks.constructEvent(buf, sig, webhookSecret);
   } catch (err) {
-    // Itt látni fogod a konzolon, ha még mindig rossz a kulcs
-    console.error(`❌ Webhook Error: ${err.message}`);
+    console.error(`❌ Webhook Signature Error: ${err.message}`);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
-    
-    // Ellenőrizzük, hogy a metadata-ban átjön-e a priceId
     const priceId = session.metadata?.priceId;
     const customerEmail = session.customer_details?.email;
 
@@ -136,7 +99,7 @@ export default async function handler(req, res) {
           date: new Date(session.created * 1000).toISOString().split('T')[0],
         });
       } catch (err) {
-        console.error('⚠️ High-level email failed:', err);
+        console.error('⚠️ Webhook Email fail:', err);
       }
     }
   }
