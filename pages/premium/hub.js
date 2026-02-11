@@ -3,16 +3,31 @@ import React, { useState, useEffect } from "react";
 export default function PremiumHub() {
   const [isMobile, setIsMobile] = useState(false);
   const [isMaster, setIsMaster] = useState(false);
+  // ÚJ: Élő adatok állapota
+  const [stats, setStats] = useState({ stripe: "CONNECTING...", sendgrid: "CHECKING..." });
 
   useEffect(() => {
-    // Mobil nézet figyelése
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
     window.addEventListener("resize", handleResize);
     
-    // Master jogosultság ellenőrzése
     if (typeof window !== 'undefined') {
-      setIsMaster(localStorage.getItem("wai_vip_token") === "MASTER-DOMINANCE-2026");
+      const token = localStorage.getItem("wai_vip_token");
+      const masterStatus = token === "MASTER-DOMINANCE-2026";
+      setIsMaster(masterStatus);
+
+      // Ha te vagy a Master, lekérjük az élő adatokat a Vercel API-n keresztül
+      if (masterStatus) {
+        fetch('/api/master-stats', {
+          headers: { 'x-master-token': 'MASTER-DOMINANCE-2026' }
+        })
+        .then(res => res.json())
+        .then(data => setStats({
+          stripe: data.stripe || "ACTIVE",
+          sendgrid: data.sendgrid || "READY"
+        }))
+        .catch(() => setStats({ stripe: "OFFLINE", sendgrid: "ERROR" }));
+      }
     }
 
     return () => window.removeEventListener("resize", handleResize);
@@ -36,7 +51,6 @@ export default function PremiumHub() {
       textAlign: "center",
       backgroundImage: "radial-gradient(circle at center, #1e1b4b 0%, #020617 100%)",
     },
-    // --- ÚJ MASTER DASHBOARD STÍLUSOK ---
     adminBar: {
       width: "100%",
       backgroundColor: "rgba(15, 23, 42, 0.9)",
@@ -68,7 +82,6 @@ export default function PremiumHub() {
       border: "1px solid rgba(255,255,255,0.1)",
       transition: "0.2s",
     },
-    // --- EREDETI STÍLUSOK ---
     masterBadge: {
       background: "linear-gradient(90deg, #fbbf24, #f59e0b)",
       color: "#000",
@@ -82,7 +95,7 @@ export default function PremiumHub() {
       boxShadow: "0 0 20px rgba(251, 191, 36, 0.3)",
     },
     title: {
-      fontSize: isMobile ? "2rem" : "2.8rem",
+      fontSize: isMobile ? "1.8rem" : "2.8rem",
       marginBottom: "10px",
       fontWeight: "800",
     },
@@ -116,22 +129,25 @@ export default function PremiumHub() {
   return (
     <div style={styles.container}>
       
-      {/* 👑 MASTER COMMAND CENTER - Csak neked jelenik meg */}
       {isMaster && (
         <div style={styles.adminBar}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#22c55e", boxShadow: "0 0 10px #22c55e" }}></div>
+            <div style={{ 
+              width: "8px", height: "8px", borderRadius: "50%", 
+              backgroundColor: stats.stripe !== "OFFLINE" ? "#22c55e" : "#ef4444", 
+              boxShadow: stats.stripe !== "OFFLINE" ? "0 0 10px #22c55e" : "0 0 10px #ef4444" 
+            }}></div>
             <span style={{ fontSize: "10px", fontWeight: "bold", color: "#f59e0b", letterSpacing: "1px" }}>WAI MASTER SYSTEM</span>
           </div>
 
           <div style={styles.statusGroup}>
             <div>
-              <div style={{ color: "#64748b" }}>STRIPE STATUS</div>
-              <div style={{ color: "#22c55e" }}>CONNECTED</div>
+              <div style={{ color: "#64748b" }}>STRIPE BALANCE</div>
+              <div style={{ color: stats.stripe.includes('ERROR') ? "#ef4444" : "#22c55e" }}>{stats.stripe}</div>
             </div>
             <div>
               <div style={{ color: "#64748b" }}>SENDGRID RELAY</div>
-              <div style={{ color: "#3b82f6" }}>READY (ACTIVE)</div>
+              <div style={{ color: "#3b82f6" }}>{stats.sendgrid}</div>
             </div>
             {!isMobile && (
                <div>
@@ -151,11 +167,9 @@ export default function PremiumHub() {
 
       <div style={styles.masterBadge}>UNIVERSE MASTER ACCESS</div>
       <h1 style={styles.title}>WealthyAI Control Hub</h1>
-      <p style={{ opacity: 0.6, marginBottom: "50px", maxWidth: "500px" }}>
-        Select the depth of intelligence you wish to occupy. All systems are active.
-      </p>
-
+      
       <div style={styles.grid}>
+        {/* DAILY */}
         <div style={styles.card} onClick={() => navigateTo("/day")}
           onMouseEnter={(e) => Object.assign(e.currentTarget.style, styles.cardHover)}
           onMouseLeave={(e) => Object.assign(e.currentTarget.style, styles.card)}>
@@ -164,6 +178,7 @@ export default function PremiumHub() {
           <p style={{ fontSize: "14px", opacity: 0.7 }}>Immediate Snapshots</p>
         </div>
 
+        {/* WEEKLY */}
         <div style={styles.card} onClick={() => navigateTo("/premium-week")}
           onMouseEnter={(e) => Object.assign(e.currentTarget.style, styles.cardHover)}
           onMouseLeave={(e) => Object.assign(e.currentTarget.style, styles.card)}>
@@ -172,6 +187,7 @@ export default function PremiumHub() {
           <p style={{ fontSize: "14px", opacity: 0.7 }}>Behavioral Patterns</p>
         </div>
 
+        {/* MONTHLY */}
         <div style={styles.card} onClick={() => navigateTo("/premium-month")}
           onMouseEnter={(e) => Object.assign(e.currentTarget.style, styles.cardHover)}
           onMouseLeave={(e) => Object.assign(e.currentTarget.style, styles.card)}>
