@@ -30,7 +30,6 @@ export default function UserDashboard() {
   const totalExpenses = data.fixed + data.variable;
   const balance = data.income - totalExpenses;
 
-  // Javított logika: Ha nincs bevétel, de van kiadás, a százalék legyen 100% (kritikus)
   const usagePercent =
     data.income > 0 
       ? Math.min((totalExpenses / data.income) * 100, 100) 
@@ -44,7 +43,6 @@ export default function UserDashboard() {
     Math.min(100, Math.round((savingsRate / 30) * 100))
   );
 
-  // Javított Risk Level: Ha az egyenleg negatív vagy a bevétel 0 (miközben van kiadás), az mindig High Risk
   const riskLevel =
     (usagePercent > 90 || balance < 0 || (data.income === 0 && totalExpenses > 0))
       ? "High Risk"
@@ -78,13 +76,14 @@ export default function UserDashboard() {
     );
   }
 
-  /* ===== VIP SUBMIT HANDLER ===== */
+  /* ===== VIP SUBMIT HANDLER (JAVÍTOTT ÚTVONAL) ===== */
 
   const handleVipSubmit = async () => {
     if (!vipCode.trim()) return;
     
     try {
-      const res = await fetch("/api/verify-active-subscription", {
+      // Itt az új API fájlt hívjuk meg: verify-priority
+      const res = await fetch("/api/verify-priority", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
@@ -96,7 +95,6 @@ export default function UserDashboard() {
       const result = await res.json();
 
       if (result.active) {
-        // Elmentjük a kódot, hogy a prémium oldal is tudja, bejöhet
         localStorage.setItem("wai_vip_token", vipCode.trim());
         window.location.href = result.redirectPath || "/premium-month";
       } else {
@@ -112,7 +110,6 @@ export default function UserDashboard() {
   const handleCheckout = async (priceId) => {
     localStorage.setItem("userFinancials", JSON.stringify(data));
 
-    // 🔐 ONLY FOR MONTH PLAN - FRISSÍTETT ID (price_1SyaeRDyLtejYlZiWo76wuWO)
     if (priceId === "price_1SyaeRDyLtejYlZiWo76wuWO") {
       const hasHadMonth = localStorage.getItem("hadMonthSubscription");
       if (hasHadMonth) {
@@ -320,15 +317,12 @@ export default function UserDashboard() {
           backgroundRepeat:
             "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
           backgroundSize:
-            isMobile
-              ? "auto, auto, 200% 200%, 200% 200%, 200% 200%, 420px auto"
-              : "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
+            "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
           backgroundAttachment: "fixed",
         }}
       >
         <WealthyTicker />
 
-        {/* ===== HELP BUTTON ===== */}
         <a href="/start/help" style={helpButton}>Help</a>
 
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
@@ -403,8 +397,6 @@ export default function UserDashboard() {
               >
                 Daily / Weekly / Monthly intelligence available ↓
               </p>
-
-
             </div>
           </div>
 
@@ -468,7 +460,6 @@ export default function UserDashboard() {
             id="pricing"
             style={{ marginTop: isMobile ? 40 : 60 }}
           >
-
             <h2
               style={{
                 textAlign: "center",
@@ -527,7 +518,6 @@ export default function UserDashboard() {
                 <small>Behavior & patterns</small>
               </div>
 
-              {/* MONTH CARD WITH DISCRETE VIP ENTRY */}
               <div style={{ ...priceCard, cursor: "default" }}>
                 <div 
                   onClick={() => handleCheckout("price_1SyaeRDyLtejYlZiWo76wuWO")}
@@ -537,7 +527,6 @@ export default function UserDashboard() {
                   <small>Full intelligence engine</small>
                 </div>
 
-                {/* VIP ENTRY SECTION */}
                 <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "12px" }}>
                   <button 
                     onClick={(e) => { e.stopPropagation(); setShowVipInput(!showVipInput); }}
