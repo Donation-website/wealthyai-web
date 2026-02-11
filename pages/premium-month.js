@@ -120,25 +120,44 @@ export default function PremiumMonth() {
     return Math.min(Math.max(finalRatio, 0), 100).toFixed(1);
   };
 
-  /* ================= ACCESS CHECK (MASTER + 3 VIP GUEST CODES) ================= */
+  /* ================= ACCESS CHECK (MASTER + STRIPE + 7-DAY VIP) ================= */
 
   useEffect(() => {
     const vipToken = localStorage.getItem("wai_vip_token");
     
-    // A lista, ami tartalmazza TÉGED és a 3 VENDÉGET is
-    const authorizedCodes = [
-      "MASTER-DOMINANCE-2026", // A Te kódod
-      "WAI-GUEST-7721",        // 1. VIP vendég (1 hétre)
-      "WAI-CLIENT-8832",        // 2. VIP vendég (1 hétre)
-      "WAI-PARTNER-9943"         // 3. VIP vendég (1 hétre)
+    // 1. A Te örökös hozzáférésed
+    if (vipToken === "MASTER-DOMINANCE-2026") return;
+
+    // 2. A 3 speciális VIP kód a Havi modulhoz
+    const monthlyVips = [
+      "WAI-GUEST-7721", 
+      "WAI-CLIENT-8832", 
+      "WAI-PARTNER-9943"
     ];
 
-    if (authorizedCodes.includes(vipToken)) {
-      console.log("Access granted via VIP/Master token.");
-      return; // Átugorja a Stripe-ot, beengedi őket!
+    if (monthlyVips.includes(vipToken)) {
+      const firstUsedKey = `start_time_${vipToken}`;
+      const firstUsedAt = localStorage.getItem(firstUsedKey);
+
+      if (!firstUsedAt) {
+        // Első belépés rögzítése
+        localStorage.setItem(firstUsedKey, Date.now().toString());
+        return; 
+      }
+
+      // 7 napos lejárat ellenőrzése (604.800.000 ms)
+      const limit = 7 * 24 * 60 * 60 * 1000;
+      if (Date.now() - parseInt(firstUsedAt) < limit) {
+        return; 
+      } else {
+        // Ha lejárt, törlés és kidobás
+        localStorage.removeItem("wai_vip_token");
+        window.location.href = "/start";
+        return;
+      }
     }
 
-    // Ha egyik kód sem stimmel, jön a Stripe ellenőrzés...
+    // 3. Ha nincs VIP kód, jön a Stripe ellenőrzés...
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get("session_id");
     
