@@ -143,6 +143,35 @@ export default function PremiumWeek() {
   const [leftNetHeight, setLeftNetHeight] = useState(0);
   const [rightNetHeight, setRightNetHeight] = useState(0);
 
+  /* ================= ACCESS CHECK (MASTER CODE & STRIPE) ================= */
+  useEffect(() => {
+    const vipToken = localStorage.getItem("wai_vip_token");
+    if (vipToken === "MASTER-DOMINANCE-2026") {
+      return; 
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get("session_id");
+    
+    if (!sessionId) {
+      window.location.href = "/start";
+      return;
+    }
+
+    fetch("/api/verify-active-subscription", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId }),
+    })
+      .then(r => r.json())
+      .then(d => {
+        if (!d.valid) window.location.href = "/start";
+      })
+      .catch(() => {
+        window.location.href = "/start";
+      });
+  }, []);
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
     handleResize();
