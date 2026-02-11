@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import {
-  saveMonthlySnapshot,
-  getMonthlySnapshots,
-  getSnapshotByDay,
+  saveMonthlySnapshot,
+  getMonthlySnapshots,
+  getSnapshotByDay,
 } from "../lib/monthlyArchive";
 
 /* ================= DAILY SIGNAL UNLOCK ================= */
@@ -10,209 +10,265 @@ import {
 const DAILY_SIGNAL_KEY = "dailySignalUnlock";
 
 function getTodayKey() {
-  return new Date().toISOString().slice(0, 10);
+  return new Date().toISOString().slice(0, 10);
 }
 
 function getDailyUnlockTime() {
-  const stored = JSON.parse(localStorage.getItem(DAILY_SIGNAL_KEY) || "{}");
-  const today = getTodayKey();
+  const stored = JSON.parse(localStorage.getItem(DAILY_SIGNAL_KEY) || "{}");
+  const today = getTodayKey();
 
-  if (stored.date === today) return stored.unlockAt;
+  if (stored.date === today) return stored.unlockAt;
 
-  const hour = Math.floor(Math.random() * 10) + 7; // 07–16
-  const minute = Math.floor(Math.random() * 60);
+  const hour = Math.floor(Math.random() * 10) + 7; // 07–16
+  const minute = Math.floor(Math.random() * 60);
 
-  const unlockAt = new Date();
-  unlockAt.setHours(hour, minute, 0, 0);
+  const unlockAt = new Date();
+  unlockAt.setHours(hour, minute, 0, 0);
 
-  localStorage.setItem(
-    DAILY_SIGNAL_KEY,
-    JSON.stringify({ date: today, unlockAt: unlockAt.getTime() })
-  );
+  localStorage.setItem(
+    DAILY_SIGNAL_KEY,
+    JSON.stringify({ date: today, unlockAt: unlockAt.getTime() })
+  );
 
-  return unlockAt.getTime();
+  return unlockAt.getTime();
 }
 
 /* ================= REGIONS ================= */
 
 const REGIONS = [
-  { code: "US", label: "United States" },
-  { code: "EU", label: "European Union" },
-  { code: "UK", label: "United Kingdom" },
-  { code: "HU", label: "Hungary" },
-  { code: "OTHER", label: "Other regions" },
+  { code: "US", label: "United States" },
+  { code: "EU", label: "European Union" },
+  { code: "UK", label: "United Kingdom" },
+  { code: "HU", label: "Hungary" },
+  { code: "OTHER", label: "Other regions" },
 ];
 
+/* ===== TICKER COMPONENT ===== */
+const WealthyTicker = ({ isMobile }) => {
+  if (isMobile) return null;
+
+  const tickerText =
+    "WealthyAI interprets your financial state over time — not advice, not prediction, just clarity • Interpretation over advice • Clarity over certainty • Insight unfolds over time • Financial understanding isn’t instant • Context changes • Insight follows time • Clarity over certainty • Built on time, not urgency • ";
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: 10,
+        left: 0,
+        width: "100%",
+        height: 18,
+        overflow: "hidden",
+        zIndex: 20,
+        pointerEvents: "none",
+      }}
+    >
+      <div
+        style={{
+          display: "inline-block",
+          whiteSpace: "nowrap",
+          fontSize: 11,
+          fontWeight: "700",
+          letterSpacing: "0.08em",
+          color: "rgba(255,255,255,0.75)",
+          animation: "waiScroll 45s linear infinite",
+        }}
+      >
+        <span>{tickerText}</span>
+        <span>{tickerText}</span>
+      </div>
+    </div>
+  );
+};
+
 export default function PremiumMonth() {
-  // === MOBILE ADDITION: device detection ===
-  const [isMobile, setIsMobile] = useState(false);
+  // === MOBILE ADDITION: device detection ===
+  const [isMobile, setIsMobile] = useState(false);
 
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-  
-  /* ================= SIMULATION & STRESS STATE (NEW) ================= */
-  const [simulationActive, setSimulationActive] = useState(false);
-  const [stressFactor, setStressFactor] = useState(0); // 0 to 1 (0% to 100%)
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+  
+  /* ================= SIMULATION & STRESS STATE (NEW) ================= */
+  const [simulationActive, setSimulationActive] = useState(false);
+  const [stressFactor, setStressFactor] = useState(0); // 0 to 1 (0% to 100%)
 
-  const calculateFragility = () => {
-    const energy = (inputs.electricity + inputs.gas) * (1 + stressFactor);
-    const fixed = inputs.housing + inputs.insurance + inputs.banking + energy;
-    const ratio = (fixed / inputs.income) * 100;
-    return Math.min(Math.max(ratio, 0), 100).toFixed(1);
-  };
+  const calculateFragility = () => {
+    // Összes fix költség az inputokból
+    const totalFixed = 
+      inputs.housing + 
+      inputs.electricity + 
+      inputs.gas + 
+      inputs.water + 
+      inputs.internet + 
+      inputs.mobile + 
+      inputs.tv + 
+      inputs.insurance + 
+      inputs.banking;
 
-  /* ================= ACCESS CHECK ================= */
+    // Ha nincs bevétel, 100% a törékenység
+    if (!inputs.income || inputs.income <= 0) return "100.0";
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const sessionId = params.get("session_id");
-    if (!sessionId) {
-      window.location.href = "/start";
-      return;
-    }
+    // A stressz faktor az energiát és a váratlan/egyéb költségeket súlyozza
+    const energyBase = inputs.electricity + inputs.gas;
+    const stressSurplus = (energyBase + inputs.unexpected + inputs.other) * stressFactor;
+    
+    const finalRatio = ((totalFixed + stressSurplus) / inputs.income) * 100;
+    
+    return Math.min(Math.max(finalRatio, 0), 100).toFixed(1);
+  };
 
-    fetch("/api/verify-active-subscription", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sessionId }),
-    })
-      .then(r => r.json())
-      .then(d => {
-        if (!d.valid) window.location.href = "/start";
-      })
-      .catch(() => {
-        window.location.href = "/start";
-      });
-  }, []);
+  /* ================= ACCESS CHECK ================= */
 
-  /* ================= REGION AUTO-DETECT ================= */
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get("session_id");
+    if (!sessionId) {
+      window.location.href = "/start";
+      return;
+    }
 
-  const [region, setRegion] = useState("EU");
-  const [country, setCountry] = useState(null);
+    fetch("/api/verify-active-subscription", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId }),
+    })
+      .then(r => r.json())
+      .then(d => {
+        if (!d.valid) window.location.href = "/start";
+      })
+      .catch(() => {
+        window.location.href = "/start";
+      });
+  }, []);
 
-  useEffect(() => {
-    let cancelled = false;
+  /* ================= REGION AUTO-DETECT ================= */
 
-    const detect = async () => {
-      try {
-        const r = await fetch("/api/detect-region");
-        if (!r.ok) return;
-        const j = await r.json();
-        if (cancelled) return;
-        if (j?.region) setRegion(j.region);
-        if (j?.country) setCountry(j.country);
-      } catch {
-        /* silent fallback */
-      }
-    };
+  const [region, setRegion] = useState("EU");
+  const [country, setCountry] = useState(null);
 
-    detect();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  useEffect(() => {
+    let cancelled = false;
 
-  /* ================= CORE STATE ================= */
+    const detect = async () => {
+      try {
+        const r = await fetch("/api/detect-region");
+        if (!r.ok) return;
+        const j = await r.json();
+        if (cancelled) return;
+        if (j?.region) setRegion(j.region);
+        if (j?.country) setCountry(j.country);
+      } catch {
+        /* silent fallback */
+      }
+    };
 
-  const [viewMode, setViewMode] = useState("executive");
-  const [cycleDay, setCycleDay] = useState(1);
+    detect();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-  const [loading, setLoading] = useState(false);
-  const [emailSending, setEmailSending] = useState(false);
+  /* ================= CORE STATE ================= */
 
-  /* ================= AI PANEL STATE ================= */
+  const [viewMode, setViewMode] = useState("executive");
+  const [cycleDay, setCycleDay] = useState(1);
 
-  const [aiVisible, setAiVisible] = useState(false);
-  const [aiCollapsed, setAiCollapsed] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
 
-  /* ================= DAILY SIGNAL ================= */
+  /* ================= AI PANEL STATE ================= */
 
-  const [dailySignal, setDailySignal] = useState(null);
-  const [dailyPending, setDailyPending] = useState(true);
+  const [aiVisible, setAiVisible] = useState(false);
+  const [aiCollapsed, setAiCollapsed] = useState(true);
 
-  /* ================= DAILY / SNAPSHOT AI ================= */
+  /* ================= DAILY SIGNAL ================= */
 
-  const [dailyDual, setDailyDual] = useState(null);
-  const [dailySnapshot, setDailySnapshot] = useState(null);
+  const [dailySignal, setDailySignal] = useState(null);
+  const [dailyPending, setDailyPending] = useState(true);
 
-  const [archiveOpen, setArchiveOpen] = useState(false);
-  const [selectedDay, setSelectedDay] = useState(null);
+  /* ================= DAILY / SNAPSHOT AI ================= */
 
-  const [exportRange, setExportRange] = useState("day");
+  const [dailyDual, setDailyDual] = useState(null);
+  const [dailySnapshot, setDailySnapshot] = useState(null);
 
-  /* ================= SNAPSHOT AVAILABILITY ================= */
+  const [archiveOpen, setArchiveOpen] = useState(false);
+  const [selectedDay, setSelectedDay] = useState(null);
 
-  const [isTodayAvailable, setIsTodayAvailable] = useState(false);
+  const [exportRange, setExportRange] = useState("day");
 
-  /* ================= WEEKLY FOCUS ================= */
+  /* ================= SNAPSHOT AVAILABILITY ================= */
 
-  const WEEK_LENGTH = 7;
+  const [isTodayAvailable, setIsTodayAvailable] = useState(false);
 
-  const [weeklyFocus, setWeeklyFocus] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("weeklyFocus"));
-    } catch {
-      return null;
-    }
-  });
+  /* ================= WEEKLY FOCUS ================= */
 
-  const [focusOpen, setFocusOpen] = useState(false);
-  const [focusPreview, setFocusPreview] = useState(null);
+  const WEEK_LENGTH = 7;
 
-  const getCurrentWeekIndex = () => {
-    return Math.floor((cycleDay - 1) / WEEK_LENGTH);
-  };
+  const [weeklyFocus, setWeeklyFocus] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("weeklyFocus"));
+    } catch {
+      return null;
+    }
+  });
 
-  const FOCUS_OPTIONS = [
-    { key: "stability", label: "Stability" },
-    { key: "spending", label: "Spending behavior" },
-    { key: "resilience", label: "Resilience" },
-    { key: "direction", label: "Direction" },
-  ];
+  const [focusOpen, setFocusOpen] = useState(false);
+  const [focusPreview, setFocusPreview] = useState(null);
 
-  const confirmWeeklyFocus = () => {
-    if (!focusPreview) return;
+  const getCurrentWeekIndex = () => {
+    return Math.floor((cycleDay - 1) / WEEK_LENGTH);
+  };
 
-    const focus = {
-      key: focusPreview,
-      weekIndex: getCurrentWeekIndex(),
-      setAt: Date.now(),
-    };
+  const FOCUS_OPTIONS = [
+    { key: "stability", label: "Stability" },
+    { key: "spending", label: "Spending behavior" },
+    { key: "resilience", label: "Resilience" },
+    { key: "direction", label: "Direction" },
+  ];
 
-    setWeeklyFocus(focus);
-    localStorage.setItem("weeklyFocus", JSON.stringify(focus));
-    setFocusPreview(null);
-  };
+  const confirmWeeklyFocus = () => {
+    if (!focusPreview) return;
 
-  /* ================= INPUTS ================= */
+    const focus = {
+      key: focusPreview,
+      weekIndex: getCurrentWeekIndex(),
+      setAt: Date.now(),
+    };
 
-  const [inputs, setInputs] = useState({
-    income: 4000,
-    housing: 1200,
-    electricity: 120,
-    gas: 90,
-    water: 40,
-    internet: 60,
-    mobile: 40,
-    tv: 30,
-    insurance: 150,
-    banking: 20,
-    unexpected: 200,
-    other: 300,
-  });
+    setWeeklyFocus(focus);
+    localStorage.setItem("weeklyFocus", JSON.stringify(focus));
+    setFocusPreview(null);
+  };
+
+  /* ================= INPUTS ================= */
+
+  const [inputs, setInputs] = useState({
+    income: 4000,
+    housing: 1200,
+    electricity: 120,
+    gas: 90,
+    water: 40,
+    internet: 60,
+    mobile: 40,
+    tv: 30,
+    insurance: 150,
+    banking: 20,
+    unexpected: 200,
+    other: 300,
+  });
   const update = (key, value) => {
     setInputs({ ...inputs, [key]: Number(value) });
-
     setAiVisible(false);
     setAiCollapsed(true);
     setDailyDual(null);
     setDailySnapshot(null);
     setSelectedDay(null);
-    // Ha módosul az input, a szimuláció újra láthatóvá válik
   };
 
   /* ================= CYCLE LOGIC ================= */
@@ -236,12 +292,10 @@ export default function PremiumMonth() {
   useEffect(() => {
     const today = getTodayKey();
     const key = `dailyAvailableAt_${today}`;
-
     let availableAt = localStorage.getItem(key);
 
     if (!availableAt) {
-      const randomOffsetMs =
-        Math.floor(Math.random() * 6 * 60 * 60 * 1000);
+      const randomOffsetMs = Math.floor(Math.random() * 6 * 60 * 60 * 1000);
       const base = new Date();
       base.setHours(7, 0, 0, 0);
       availableAt = base.getTime() + randomOffsetMs;
@@ -279,35 +333,29 @@ export default function PremiumMonth() {
       const r = await fetch("/api/get-daily-signal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          region,
-          country,
-          cycleDay,
-        }),
+        body: JSON.stringify({ region, country, cycleDay }),
       });
-
       const j = await r.json();
+
       if (j?.signal) {
         localStorage.setItem(seenKey, j.signal);
         setDailySignal(j.signal);
       }
-
       setDailyPending(false);
     };
 
     const t = setInterval(check, 30000);
     check();
-
     return () => clearInterval(t);
   }, [region, country, cycleDay]);
 
-  /* ================= LEGACY DAILY STORAGE ================= */
+  /* ================= AI LOGIC ================= */
 
-  const saveBriefing = dual => {
+  const saveBriefing = (dual) => {
     const today = getTodayKey();
     const stored = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
 
-    if (!stored.find(b => b.date === today)) {
+    if (!stored.find((b) => b.date === today)) {
       stored.push({
         id: Date.now(),
         date: today,
@@ -315,19 +363,14 @@ export default function PremiumMonth() {
         executive: dual.executive,
         directive: dual.directive,
       });
-      localStorage.setItem(
-        "monthlyBriefings",
-        JSON.stringify(stored.slice(-30))
-      );
+      localStorage.setItem("monthlyBriefings", JSON.stringify(stored.slice(-30)));
     }
   };
-
-  /* ================= DAILY AI ================= */
 
   const runAI = async () => {
     setLoading(true);
     setSelectedDay(null);
-    setSimulationActive(false); // AI briefingnél kikapcsoljuk a szimulációs nézetet
+    setSimulationActive(false);
 
     try {
       const res = await fetch("/api/get-ai-briefing", {
@@ -342,8 +385,8 @@ export default function PremiumMonth() {
           ...inputs,
         }),
       });
-
       const json = await res.json();
+
       if (json?.snapshot) {
         setDailyDual(json.snapshot);
         setViewMode("executive");
@@ -351,12 +394,11 @@ export default function PremiumMonth() {
         setAiCollapsed(false);
         saveBriefing(json.snapshot);
       }
-    } catch {}
-
+    } catch (e) {
+      console.error(e);
+    }
     setLoading(false);
   };
-
-  /* ================= SNAPSHOT AI ================= */
 
   const runAIDual = async () => {
     if (!isTodayAvailable) {
@@ -381,8 +423,8 @@ export default function PremiumMonth() {
           ...inputs,
         }),
       });
-
       const data = await res.json();
+
       if (data?.snapshot) {
         saveMonthlySnapshot(data.snapshot);
         setDailySnapshot(data.snapshot);
@@ -390,40 +432,32 @@ export default function PremiumMonth() {
         setAiVisible(true);
         setAiCollapsed(false);
       }
-    } catch {}
-
+    } catch (e) {
+      console.error(e);
+    }
     setLoading(false);
   };
-  /* ================= ACTIVE CONTENT ================= */
 
-  const activeSnapshot = selectedDay
-    ? getSnapshotByDay(selectedDay)
-    : dailySnapshot;
-
+  const activeSnapshot = selectedDay ? getSnapshotByDay(selectedDay) : dailySnapshot;
   const activeDual = activeSnapshot || dailyDual;
+  const activeText = activeDual && (viewMode === "executive" ? activeDual.executive : activeDual.directive);
 
-  const activeText =
-    activeDual &&
-    (viewMode === "executive"
-      ? activeDual.executive
-      : activeDual.directive);
+  /* ================= EXPORT & EMAIL ================= */
 
-  /* ================= EXPORT LOGIC ================= */
-
-  const getBriefings = range => {
+  const getBriefings = (range) => {
     const legacy = JSON.parse(localStorage.getItem("monthlyBriefings")) || [];
     const snapshots = getMonthlySnapshots() || [];
-    
+
     const combined = [...legacy];
-    snapshots.forEach(s => {
-      if (!combined.find(b => b.date === s.date)) {
+    snapshots.forEach((s) => {
+      if (!combined.find((b) => b.date === s.date)) {
         combined.push(s);
       }
     });
 
     if (range === "day") {
       const today = getTodayKey();
-      return combined.filter(b => b.date === today);
+      return combined.filter((b) => b.date === today);
     }
     if (range === "week") return combined.slice(-7);
     if (range === "month") return combined;
@@ -432,20 +466,20 @@ export default function PremiumMonth() {
 
   const handleDownload = () => {
     const data = getBriefings(exportRange);
-    if (!data.length) return alert("No saved data available for this range.");
+    if (!data.length) {
+      return alert("No saved data available for this range.");
+    }
 
     const text = data
       .map(
-        b =>
+        (b) =>
           `Day ${b.cycleDay} · ${b.date}\n\n${
             viewMode === "executive" ? b.executive : b.directive
           }`
       )
       .join("\n\n---------------------\n\n");
 
-    const url = URL.createObjectURL(
-      new Blob([text], { type: "text/plain;charset=utf-8" })
-    );
+    const url = URL.createObjectURL(new Blob([text], { type: "text/plain;charset=utf-8" }));
     const a = document.createElement("a");
     a.href = url;
     a.download = `WealthyAI_${exportRange}.txt`;
@@ -455,42 +489,59 @@ export default function PremiumMonth() {
 
   const downloadPDF = async () => {
     if (!activeText) return;
+
     const res = await fetch("/api/export-month-pdf", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text: activeText, cycleDay, region }),
     });
-    const url = URL.createObjectURL(await res.blob());
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = "wealthyai-monthly-briefing.pdf";
     a.click();
   };
 
-  const sendEmailPDF = async () => {
-    if (!activeText) return;
+  const confirmAndSendEmail = async () => {
+    if (!userEmail) return alert("Please enter an email address.");
     setEmailSending(true);
+
     try {
       await fetch("/api/send-month-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: activeText, cycleDay, region }),
+        body: JSON.stringify({ 
+          text: activeText, 
+          cycleDay, 
+          region,
+          email: userEmail 
+        }),
       });
-    } catch {}
+      alert("Email sent successfully!");
+      setEmailModalOpen(false);
+    } catch (err) {
+      alert("Failed to send email.");
+    }
     setEmailSending(false);
+  };
+
+  const sendEmailPDF = async () => {
+    if (!activeText) return;
+    setEmailModalOpen(true);
   };
 
   /* ================= RENDER ================= */
 
   return (
-    <div
-      style={{
-        ...page,
-        overflowX: isMobile ? "hidden" : undefined,
-        backgroundAttachment: "fixed",
-      }}
-    >
-      <a href="/month/help" style={helpButton}>Help</a>
+    <div style={{ ...page, overflowX: isMobile ? "hidden" : undefined, backgroundAttachment: "fixed" }}>
+      
+      <WealthyTicker isMobile={isMobile} />
+
+      <a href="/month/help" style={helpButton}>
+        Help
+      </a>
 
       <div style={header}>
         <h1 style={title}>WEALTHYAI · MONTHLY BRIEFING</h1>
@@ -501,11 +552,13 @@ export default function PremiumMonth() {
         <span style={regionLabel}>Region</span>
         <select
           value={region}
-          onChange={e => setRegion(e.target.value)}
+          onChange={(e) => setRegion(e.target.value)}
           style={regionSelect}
         >
-          {REGIONS.map(r => (
-            <option key={r.code} value={r.code}>{r.label}</option>
+          {REGIONS.map((r) => (
+            <option key={r.code} value={r.code}>
+              {r.label}
+            </option>
           ))}
         </select>
       </div>
@@ -527,13 +580,17 @@ export default function PremiumMonth() {
       <div style={signalBox}>
         <strong>Weekly focus</strong>
         <p style={{ opacity: 0.75 }}>
-          {weeklyFocus 
-            ? `Current focus: ${weeklyFocus.key.toUpperCase()}` 
+          {weeklyFocus
+            ? `Current focus: ${weeklyFocus.key.toUpperCase()}`
             : "Choose one focus area for this week. This affects how your data is interpreted."}
         </p>
 
         <button onClick={() => setFocusOpen(!focusOpen)} style={exportBtn}>
-          {focusOpen ? "Close selection" : (weeklyFocus ? "Change selection" : "What is this?")}
+          {focusOpen
+            ? "Close selection"
+            : weeklyFocus
+            ? "Change selection"
+            : "What is this?"}
         </button>
 
         {focusOpen && (
@@ -550,13 +607,18 @@ export default function PremiumMonth() {
                   onClick={() => setFocusPreview(f.key)}
                   style={{
                     ...exportBtn,
-                    opacity: (disabled || (hasSelection && !isSelected)) ? 0.3 : 1,
-                    cursor: (disabled || (hasSelection && !isSelected)) ? "not-allowed" : "pointer",
-                    background: (focusPreview === f.key || isSelected) ? "#38bdf8" : "transparent",
-                    color: (focusPreview === f.key || isSelected) ? "#020617" : "#38bdf8",
+                    opacity: disabled || (hasSelection && !isSelected) ? 0.3 : 1,
+                    cursor:
+                      disabled || (hasSelection && !isSelected)
+                        ? "not-allowed"
+                        : "pointer",
+                    background:
+                      focusPreview === f.key || isSelected ? "#38bdf8" : "transparent",
+                    color:
+                      focusPreview === f.key || isSelected ? "#020617" : "#38bdf8",
                     marginBottom: 6,
                     display: "block",
-                    width: "100%"
+                    width: "100%",
                   }}
                 >
                   {f.label} {isSelected ? "✓" : ""}
@@ -567,8 +629,8 @@ export default function PremiumMonth() {
             {focusPreview && !weeklyFocus && (
               <div style={{ marginTop: 10 }}>
                 <p style={{ fontSize: 13, opacity: 0.7 }}>
-                  You selected <strong>{focusPreview}</strong> for this week.
-                  This cannot be changed later.
+                  You selected <strong>{focusPreview}</strong> for this week. This
+                  cannot be changed later.
                 </p>
                 <button onClick={confirmWeeklyFocus} style={aiButton}>
                   Confirm focus
@@ -586,50 +648,67 @@ export default function PremiumMonth() {
           gap: isMobile ? 20 : layout.gap,
         }}
       >
-        {/* LEFT COLUMN: INPUTS & SIMULATION */}
         <div style={card}>
           <h3>Monthly Financial Structure</h3>
 
           <Label>Income</Label>
-          <Input
-            value={inputs.income}
-            onChange={e => update("income", e.target.value)}
-          />
+          <Input value={inputs.income} onChange={(e) => update("income", e.target.value)} />
+
           <Divider />
 
           <Section title="Living">
             <Row
               label="Housing"
               value={inputs.housing}
-              onChange={v => update("housing", v)}
+              onChange={(v) => update("housing", v)}
             />
           </Section>
 
           <Section title="Utilities">
-            <Row label="Electricity" value={inputs.electricity} onChange={v => update("electricity", v)} />
-            <Row label="Gas" value={inputs.gas} onChange={v => update("gas", v)} />
-            <Row label="Water" value={inputs.water} onChange={v => update("water", v)} />
+            <Row
+              label="Electricity"
+              value={inputs.electricity}
+              onChange={(v) => update("electricity", v)}
+            />
+            <Row label="Gas" value={inputs.gas} onChange={(v) => update("gas", v)} />
+            <Row label="Water" value={inputs.water} onChange={(v) => update("water", v)} />
           </Section>
 
           <Section title="Recurring Services">
-            <Row label="Internet" value={inputs.internet} onChange={v => update("internet", v)} />
-            <Row label="Mobile phone" value={inputs.mobile} onChange={v => update("mobile", v)} />
-            <Row label="Insurance" value={inputs.insurance} onChange={v => update("insurance", v)} />
+            <Row
+              label="Internet"
+              value={inputs.internet}
+              onChange={(v) => update("internet", v)}
+            />
+            <Row
+              label="Mobile phone"
+              value={inputs.mobile}
+              onChange={(v) => update("mobile", v)}
+            />
+            <Row
+              label="Insurance"
+              value={inputs.insurance}
+              onChange={(v) => update("insurance", v)}
+            />
           </Section>
 
           <Divider />
+
           <div style={{ padding: "10px 0" }}>
             <strong style={{ color: "#10b981", fontSize: 13, display: "block", marginBottom: 10 }}>
-              STRUCTURAL STRESS TEST
+                STRUCTURAL STRESS TEST
             </strong>
             <input 
-              type="range" min="0" max="1" step="0.01" 
-              value={stressFactor}
-              onChange={(e) => {
-                setStressFactor(parseFloat(e.target.value));
-                setSimulationActive(true);
-              }}
-              style={{ width: "100%", accentColor: "#10b981", cursor: "pointer" }}
+                type="range" 
+                min="0" 
+                max="1" 
+                step="0.01" 
+                value={stressFactor} 
+                onChange={(e) => { 
+                    setStressFactor(parseFloat(e.target.value)); 
+                    setSimulationActive(true); 
+                }} 
+                style={{ width: "100%", accentColor: "#10b981", cursor: "pointer" }} 
             />
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, opacity: 0.5, marginTop: 4 }}>
               <span>BASE</span>
@@ -639,13 +718,13 @@ export default function PremiumMonth() {
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 20 }}>
             <button 
-              onClick={() => { setSimulationActive(true); setAiVisible(false); }}
-              style={{ ...exportBtn, borderColor: "#10b981", color: "#10b981" }}
+                onClick={() => { setSimulationActive(true); setAiVisible(false); }} 
+                style={{ ...exportBtn, borderColor: "#10b981", color: "#10b981" }}
             >
-              SIMULATE
+                SIMULATE
             </button>
             <button onClick={runAI} style={{ ...aiButton, marginTop: 0 }}>
-              {loading ? "Generating..." : "GENERATE AI"}
+                {loading ? "Generating..." : "GENERATE AI"}
             </button>
           </div>
 
@@ -657,29 +736,38 @@ export default function PremiumMonth() {
           </button>
         </div>
 
-        {/* RIGHT COLUMN: INTELLIGENCE & VISUALS */}
         <div style={card}>
-          
-          {/* 1. STATE: MANIFESTO */}
           {!aiVisible && !simulationActive && (
             <div style={{ padding: "10px", animation: "fadeIn 0.8s ease-in" }}>
-              <strong style={{ color: "#10b981", fontSize: 12, letterSpacing: 1 }}>WEALTHYAI PHILOSOPHY</strong>
+              <strong style={{ color: "#10b981", fontSize: 12, letterSpacing: 1 }}>
+                WEALTHYAI PHILOSOPHY
+              </strong>
               <h2 style={{ fontSize: 22, marginTop: 10 }}>Interpretation, Not Advice.</h2>
               <p style={{ opacity: 0.7, lineHeight: "1.6", fontSize: 14 }}>
-                We built WealthyAI around a different question: What happens if AI doesn’t advise — but interprets?
-                Not faster decisions, but <strong>clearer thinking</strong>.
+                We built WealthyAI around a different question: What happens if AI doesn’t
+                advise — but interprets? Not faster decisions, but{" "}
+                <strong>clearer thinking</strong>.
               </p>
-              <p style={{ opacity: 0.7, lineHeight: "1.6", fontSize: 14, marginTop: 12 }}>
-                Our system assumes that you remain responsible for decisions — it simply gives you a clearer frame to make them. 
-                WealthyAI doesn’t reward speed. It rewards <strong>attention</strong>.
+              <p
+                style={{
+                  opacity: 0.7,
+                  lineHeight: "1.6",
+                  fontSize: 14,
+                  marginTop: 12,
+                }}
+              >
+                Our system assumes that you remain responsible for decisions — it simply
+                gives you a clearer frame to make them. WealthyAI doesn’t reward speed.
+                It rewards <strong>attention</strong>.
               </p>
             </div>
           )}
 
-          {/* 2. STATE: SIMULATION ENGINE */}
           {simulationActive && !aiVisible && (
             <div style={{ padding: "10px", animation: "fadeIn 0.3s ease-out" }}>
-              <strong style={{ color: "#10b981", fontSize: 12 }}>LIVE SIMULATION ENGINE</strong>
+              <strong style={{ color: "#10b981", fontSize: 12 }}>
+                LIVE SIMULATION ENGINE
+              </strong>
               <h2 style={{ fontSize: 20, marginTop: 5 }}>Structural Fragility Index</h2>
               
               <div style={{ fontSize: 42, fontWeight: "bold", color: "#38bdf8", margin: "15px 0" }}>
@@ -687,19 +775,24 @@ export default function PremiumMonth() {
               </div>
 
               <div style={{ height: 8, background: "rgba(255,255,255,0.05)", borderRadius: 4, overflow: "hidden" }}>
-                <div style={{ 
-                  height: "100%", 
-                  width: `${calculateFragility()}%`, 
-                  background: "linear-gradient(90deg, #10b981, #38bdf8)",
-                  transition: "width 0.3s ease" 
-                }} />
+                <div 
+                    style={{ 
+                        height: "100%", 
+                        width: `${calculateFragility()}%`, 
+                        background: "linear-gradient(90deg, #10b981, #38bdf8)", 
+                        transition: "width 0.3s ease" 
+                    }} 
+                />
               </div>
 
               <p style={{ opacity: 0.6, fontSize: 13, marginTop: 15, lineHeight: "1.5" }}>
-                At <strong>{Math.round(stressFactor * 100)}%</strong> simulated pressure, your core financial rigidity is 
-                {parseFloat(calculateFragility()) > 55 ? " approaching a critical threshold." : " currently within structural limits."}
+                At <strong>{Math.round(stressFactor * 100)}%</strong> simulated pressure, 
+                your core financial rigidity is 
+                {parseFloat(calculateFragility()) > 55 
+                    ? " approaching a critical threshold." 
+                    : " currently within structural limits."}
               </p>
-              
+
               <button 
                 onClick={() => setSimulationActive(false)} 
                 style={{ ...exportBtn, marginTop: 20, fontSize: 12, opacity: 0.6 }}
@@ -709,7 +802,6 @@ export default function PremiumMonth() {
             </div>
           )}
 
-          {/* 3. STATE: AI BRIEFING */}
           {aiVisible && (
             <div>
               <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
@@ -723,7 +815,6 @@ export default function PremiumMonth() {
                 >
                   Executive
                 </button>
-
                 <button
                   onClick={() => setViewMode("directive")}
                   style={{
@@ -734,8 +825,11 @@ export default function PremiumMonth() {
                 >
                   Directive
                 </button>
-                <button 
-                  onClick={() => { setAiVisible(false); setSimulationActive(false); }} 
+                <button
+                  onClick={() => {
+                    setAiVisible(false);
+                    setSimulationActive(false);
+                  }}
                   style={{ ...exportBtn, maxWidth: 44 }}
                 >
                   ✕
@@ -755,16 +849,19 @@ export default function PremiumMonth() {
                 >
                   <select
                     value={exportRange}
-                    onChange={e => setExportRange(e.target.value)}
+                    onChange={(e) => setExportRange(e.target.value)}
                     style={exportSelect}
                   >
                     <option value="day">Today</option>
                     <option value="week">Last 7 days</option>
                     <option value="month">This month</option>
                   </select>
-
-                  <button onClick={handleDownload} style={exportBtn}>Download</button>
-                  <button onClick={downloadPDF} style={exportBtn}>PDF</button>
+                  <button onClick={handleDownload} style={exportBtn}>
+                    Download
+                  </button>
+                  <button onClick={downloadPDF} style={exportBtn}>
+                    PDF
+                  </button>
                   <button onClick={sendEmailPDF} style={exportBtn}>
                     {emailSending ? "..." : "Email"}
                   </button>
@@ -774,6 +871,7 @@ export default function PremiumMonth() {
           )}
 
           <Divider />
+
           <button
             onClick={() => setArchiveOpen(!archiveOpen)}
             style={{ ...exportBtn, width: "100%" }}
@@ -783,10 +881,14 @@ export default function PremiumMonth() {
 
           {archiveOpen && (
             <div style={{ marginTop: 10 }}>
-              {getMonthlySnapshots().map(s => (
+              {getMonthlySnapshots().map((s) => (
                 <button
                   key={s.date}
-                  onClick={() => { setSelectedDay(s.cycleDay); setAiVisible(true); setSimulationActive(false); }}
+                  onClick={() => {
+                    setSelectedDay(s.cycleDay);
+                    setAiVisible(true);
+                    setSimulationActive(false);
+                  }}
                   style={{ ...exportBtn, marginBottom: 4, width: "100%" }}
                 >
                   Day {s.cycleDay}
@@ -797,34 +899,74 @@ export default function PremiumMonth() {
         </div>
       </div>
 
+      {emailModalOpen && (
+        <div style={modalOverlay}>
+          <div style={{ ...card, maxWidth: 400, width: "100%", position: "relative" }}>
+            <h3>Send Briefing via Email</h3>
+            <p style={{ fontSize: 13, opacity: 0.7, marginBottom: 15 }}>
+              Enter the email address where you'd like to receive the PDF report.
+            </p>
+            <input 
+              type="email" 
+              placeholder="your@email.com" 
+              value={userEmail} 
+              onChange={(e) => setUserEmail(e.target.value)} 
+              style={{ ...input, marginBottom: 20, border: "1px solid #38bdf8" }} 
+            />
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => setEmailModalOpen(false)} style={exportBtn}>
+                Cancel
+              </button>
+              <button onClick={confirmAndSendEmail} style={aiButton}>
+                {emailSending ? "Sending..." : "Send Now"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div style={footer}>© 2026 WealthyAI · Monthly Intelligence</div>
+
+      <style>{`
+        @keyframes waiScroll {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-50%); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(5px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }
 
-/* ================= UI HELPERS & STYLES (Eredeti Styles blokk változatlan) ================= */
+/* ================= UI HELPERS & STYLES ================= */
+
 const Section = ({ title, children }) => (
   <>
     <Divider />
-    <strong style={{fontSize: 14, color: "#7dd3fc"}}>{title}</strong>
+    <strong style={{ fontSize: 14, color: "#7dd3fc" }}>{title}</strong>
     {children}
   </>
 );
 
 const Row = ({ label, value, onChange }) => (
   <div style={row}>
-    <span style={{fontSize: 13, opacity: 0.8}}>{label}</span>
+    <span style={{ fontSize: 13, opacity: 0.8 }}>{label}</span>
     <input
       type="number"
       value={value}
-      onChange={e => onChange(e.target.value)}
+      onChange={(e) => onChange(e.target.value)}
       style={rowInput}
     />
   </div>
 );
 
 const Label = ({ children }) => (
-  <label style={{ marginBottom: 6, display: "block", fontSize: 13, opacity: 0.8 }}>{children}</label>
+  <label style={{ marginBottom: 6, display: "block", fontSize: 13, opacity: 0.8 }}>
+    {children}
+  </label>
 );
 
 const Input = ({ value, onChange }) => (
@@ -870,23 +1012,124 @@ const helpButton = {
   background: "rgba(2,6,23,0.7)",
 };
 
-const regionRow = { display: "flex", justifyContent: "center", gap: 10, marginBottom: 20 };
+const regionRow = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 10,
+  marginBottom: 20,
+};
+
 const regionLabel = { color: "#7dd3fc", fontSize: 14 };
-const regionSelect = { background: "#020617", color: "#e5e7eb", border: "1px solid #1e293b", padding: "4px 8px", borderRadius: 6 };
 
-const signalBox = { maxWidth: 800, margin: "0 auto 15px", padding: 14, border: "1px solid #1e293b", borderRadius: 12, background: "rgba(2,6,23,0.75)" };
+const regionSelect = {
+  background: "#020617",
+  color: "#e5e7eb",
+  border: "1px solid #1e293b",
+  padding: "4px 8px",
+  borderRadius: 6,
+};
 
-const layout = { display: "grid", gridTemplateColumns: "1fr 1.3fr", gap: 25, maxWidth: 1100, margin: "0 auto" };
-const card = { padding: 20, borderRadius: 16, border: "1px solid #1e293b", background: "rgba(2,6,23,0.78)" };
+const signalBox = {
+  maxWidth: 800,
+  margin: "0 auto 15px",
+  padding: 14,
+  border: "1px solid #1e293b",
+  borderRadius: 12,
+  background: "rgba(2,6,23,0.75)",
+};
 
-const input = { width: "100%", padding: 10, marginTop: 4, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, color: "white" };
+const layout = {
+  display: "grid",
+  gridTemplateColumns: "1fr 1.3fr",
+  gap: 25,
+  maxWidth: 1100,
+  margin: "0 auto",
+};
+
+const card = {
+  padding: 20,
+  borderRadius: 16,
+  border: "1px solid #1e293b",
+  background: "rgba(2,6,23,0.78)",
+};
+
+const input = {
+  width: "100%",
+  padding: 10,
+  marginTop: 4,
+  background: "rgba(255,255,255,0.08)",
+  border: "none",
+  borderRadius: 8,
+  color: "white",
+};
+
 const row = { display: "flex", justifyContent: "space-between", marginTop: 6 };
-const rowInput = { width: 80, background: "transparent", border: "none", borderBottom: "1px solid #38bdf8", color: "#38bdf8", textAlign: "right" };
 
-const aiButton = { marginTop: 20, width: "100%", padding: 12, background: "#38bdf8", border: "none", borderRadius: 10, fontWeight: "bold", cursor: "pointer", color: "#020617" };
-const aiTextStyle = { marginTop: 10, whiteSpace: "pre-wrap", color: "#cbd5f5", fontSize: 14, lineHeight: "1.6" };
+const rowInput = {
+  width: 80,
+  background: "transparent",
+  border: "none",
+  borderBottom: "1px solid #38bdf8",
+  color: "#38bdf8",
+  textAlign: "right",
+};
 
-const exportBtn = { padding: "8px 12px", borderRadius: 8, border: "1px solid #1e293b", background: "transparent", color: "#38bdf8", cursor: "pointer", fontSize: 13 };
-const exportSelect = { background: "transparent", color: "#e5e7eb", border: "1px solid #1e293b", padding: "8px", borderRadius: 8 };
+const aiButton = {
+  marginTop: 20,
+  width: "100%",
+  padding: 12,
+  background: "#38bdf8",
+  border: "none",
+  borderRadius: 10,
+  fontWeight: "bold",
+  cursor: "pointer",
+  color: "#020617",
+};
 
-const footer = { marginTop: 40, textAlign: "center", fontSize: 12, color: "#64748b", paddingBottom: 20 };
+const aiTextStyle = {
+  marginTop: 10,
+  whiteSpace: "pre-wrap",
+  color: "#cbd5f5",
+  fontSize: 14,
+  lineHeight: "1.6",
+};
+
+const exportBtn = {
+  padding: "8px 12px",
+  borderRadius: 8,
+  border: "1px solid #1e293b",
+  background: "transparent",
+  color: "#38bdf8",
+  cursor: "pointer",
+  fontSize: 13,
+};
+
+const exportSelect = {
+  background: "transparent",
+  color: "#e5e7eb",
+  border: "1px solid #1e293b",
+  padding: "8px",
+  borderRadius: 8,
+};
+
+const modalOverlay = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "rgba(0,0,0,0.85)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  zIndex: 1000,
+  padding: 20,
+};
+
+const footer = {
+  marginTop: 40,
+  textAlign: "center",
+  fontSize: 12,
+  color: "#64748b",
+  paddingBottom: 20,
+};
