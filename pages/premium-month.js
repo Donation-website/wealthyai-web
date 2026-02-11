@@ -120,17 +120,25 @@ export default function PremiumMonth() {
     return Math.min(Math.max(finalRatio, 0), 100).toFixed(1);
   };
 
-  /* ================= ACCESS CHECK (VIP & STRIPE) ================= */
+  /* ================= ACCESS CHECK (MASTER + 3 VIP GUEST CODES) ================= */
 
   useEffect(() => {
-    // 1. VIP Token ellenőrzése
     const vipToken = localStorage.getItem("wai_vip_token");
-    if (vipToken === "MASTER-DOMINANCE-2026") {
-      // Ha VIP, akkor nem futtatjuk a Stripe ellenőrzést
-      return;
+    
+    // A lista, ami tartalmazza TÉGED és a 3 VENDÉGET is
+    const authorizedCodes = [
+      "MASTER-DOMINANCE-2026", // A Te kódod
+      "WAI-GUEST-7721",        // 1. VIP vendég (1 hétre)
+      "WAI-CLIENT-8832",        // 2. VIP vendég (1 hétre)
+      "WAI-PARTNER-9943"         // 3. VIP vendég (1 hétre)
+    ];
+
+    if (authorizedCodes.includes(vipToken)) {
+      console.log("Access granted via VIP/Master token.");
+      return; // Átugorja a Stripe-ot, beengedi őket!
     }
 
-    // 2. Normál Stripe ellenőrzés
+    // Ha egyik kód sem stimmel, jön a Stripe ellenőrzés...
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get("session_id");
     
