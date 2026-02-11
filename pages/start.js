@@ -105,12 +105,13 @@ export default function UserDashboard() {
     }
   };
 
-  /* ===== STRIPE (DO NOT TOUCH) ===== */
+  /* ===== STRIPE (PRICE IDs UPDATED) ===== */
 
   const handleCheckout = async (priceId) => {
     localStorage.setItem("userFinancials", JSON.stringify(data));
 
-    if (priceId === "price_1SyaeRDyLtejYlZiWo76wuWO") {
+    // A Monthly Price ID ellenőrzése a visszatérő vásárlókhoz
+    if (priceId === "price_1Sya6GDyLtejYlZiCb8oLqga") {
       const hasHadMonth = localStorage.getItem("hadMonthSubscription");
       if (hasHadMonth) {
         localStorage.setItem("isReturningMonthCustomer", "true");
@@ -501,7 +502,7 @@ export default function UserDashboard() {
               <div
                 style={priceCard}
                 onClick={() =>
-                  handleCheckout("price_1SscYJDyLtejYlZiyDvhdaIx")
+                  handleCheckout("price_1SsRVyDyLtejYlZi3fEwvTPW")
                 }
               >
                 <h3>1 Day · $9.99</h3>
@@ -511,7 +512,7 @@ export default function UserDashboard() {
               <div
                 style={priceCard}
                 onClick={() =>
-                  handleCheckout("price_1SscaYDyLtejYlZiDjSeF5Wm")
+                  handleCheckout("price_1SsRY1DyLtejYlZiglvFKufA")
                 }
               >
                 <h3>1 Week · $14.99</h3>
@@ -520,7 +521,7 @@ export default function UserDashboard() {
 
               <div style={{ ...priceCard, cursor: "default" }}>
                 <div 
-                  onClick={() => handleCheckout("price_1SyaeRDyLtejYlZiWo76wuWO")}
+                  onClick={() => handleCheckout("price_1Sya6GDyLtejYlZiCb8oLqga")}
                   style={{ cursor: "pointer" }}
                 >
                   <h3>1 Month · $49.99</h3>
