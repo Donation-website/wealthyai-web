@@ -184,8 +184,15 @@ export default function DayPremium() {
     }
   }, [aiOpen, aiText]);
 
-  /* ===== SUBSCRIPTION CHECK ===== */
+  /* ===== SUBSCRIPTION CHECK - FIXED FOR VIP ===== */
   useEffect(() => {
+    // 1. ELŐSZÖR A VIP TOKENT NÉZZÜK
+    const vipToken = localStorage.getItem("wai_vip_token");
+    if (vipToken === "MASTER-DOMINANCE-2026") {
+      return; // Ha mester kód van, megállunk, beengedve.
+    }
+
+    // 2. HA NINCS VIP, AKKOR A STRIPE-OT NÉZZÜK
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get("session_id");
 
