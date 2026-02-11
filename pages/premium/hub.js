@@ -11,6 +11,8 @@ export default function PremiumHub() {
   }, []);
 
   const navigateTo = (path) => {
+    // 🔐 ELMENTJÜK A MESTER KÓDOT, HOGY A CÉLOLDAL BEENGEDJEN
+    localStorage.setItem("wai_vip_token", "MASTER-DOMINANCE-2026");
     window.location.href = path;
   };
 
