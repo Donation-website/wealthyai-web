@@ -54,7 +54,7 @@ const WealthyTicker = ({ isMobile }) => {
     <div
       style={{
         position: "absolute",
-        top: 5, // Feljebb tolva, hogy ne lógjon a Help gombba
+        top: 5,
         left: 0,
         width: "100%",
         height: 20,
@@ -68,7 +68,7 @@ const WealthyTicker = ({ isMobile }) => {
         style={{
           display: "inline-block",
           whiteSpace: "nowrap",
-          fontSize: 10, // Kicsit kisebb, finomabb betűk
+          fontSize: 10,
           fontWeight: "400",
           textTransform: "uppercase",
           letterSpacing: "0.2em",
@@ -120,11 +120,20 @@ export default function PremiumMonth() {
     return Math.min(Math.max(finalRatio, 0), 100).toFixed(1);
   };
 
-  /* ================= ACCESS CHECK ================= */
+  /* ================= ACCESS CHECK (VIP & STRIPE) ================= */
 
   useEffect(() => {
+    // 1. VIP Token ellenőrzése
+    const vipToken = localStorage.getItem("wai_vip_token");
+    if (vipToken === "WAI-6699-VIP") {
+      // Ha VIP, akkor nem futtatjuk a Stripe ellenőrzést
+      return;
+    }
+
+    // 2. Normál Stripe ellenőrzés
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get("session_id");
+    
     if (!sessionId) {
       window.location.href = "/start";
       return;
