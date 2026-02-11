@@ -4,22 +4,22 @@ import { generateAccessConfirmationPDF } from '../../lib/pdf/generateAccessConfi
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+// 1. KRITIKUS: A Next.js-nek meg kell tiltani, hogy feldolgozza a body-t
 export const config = {
   api: {
     bodyParser: false,
   },
 };
 
-function buffer(readable) {
-  return new Promise((resolve, reject) => {
-    const chunks = [];
-    readable.on('data', (chunk) => chunks.push(chunk));
-    readable.on('end', () => resolve(Buffer.concat(chunks)));
-    readable.on('error', reject);
-  });
+// 2. STABILABB BUFFER FÜGGVÉNY: A Stripe szignóhoz ez a legbiztosabb módszer
+async function getRawBody(readable) {
+  const chunks = [];
+  for await (const chunk of readable) {
+    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+  }
+  return Buffer.concat(chunks);
 }
 
-// 📧 DINAMIKUS ÉS PROFESSZIONÁLIS EMAIL KÜLDÉS
 async function sendPaymentConfirmationEmail({
   to,
   priceId, 
@@ -30,7 +30,6 @@ async function sendPaymentConfirmationEmail({
   let productName = "WealthyAI Intelligence Pass";
   let packageType = "Strategic Intelligence Access";
 
-  // ✅ JAVÍTOTT ÉLES (LIVE) ID-K ALAPJÁN TÖRTÉNŐ AZONOSÍTÁS
   if (priceId === "price_1SsRVyDyLtejYlZi3fEwvTPW") {
     productName = "WealthyAI 24h Daily Pass";
     packageType = "Daily Insight Framework";
@@ -107,18 +106,23 @@ export default async function handler(req, res) {
 
   const sig = req.headers['stripe-signature'];
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  
   let event;
 
   try {
-    const buf = await buffer(req);
+    // Itt a változtatás: az új getRawBody-t használjuk
+    const buf = await getRawBody(req);
     event = stripe.webhooks.constructEvent(buf, sig, webhookSecret);
   } catch (err) {
-    console.error(`Webhook Error: ${err.message}`);
+    // Itt látni fogod a konzolon, ha még mindig rossz a kulcs
+    console.error(`❌ Webhook Error: ${err.message}`);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
+    
+    // Ellenőrizzük, hogy a metadata-ban átjön-e a priceId
     const priceId = session.metadata?.priceId;
     const customerEmail = session.customer_details?.email;
 
