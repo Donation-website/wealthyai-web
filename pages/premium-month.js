@@ -43,7 +43,7 @@ const REGIONS = [
   { code: "OTHER", label: "Other regions" },
 ];
 
-/* ===== TICKER COMPONENT (FIXED WHITE & TRANSPARENT) ===== */
+/* ===== TICKER COMPONENT (POSITION FIXED - HIGHER) ===== */
 const WealthyTicker = ({ isMobile }) => {
   if (isMobile) return null;
 
@@ -54,26 +54,26 @@ const WealthyTicker = ({ isMobile }) => {
     <div
       style={{
         position: "absolute",
-        top: 15,
+        top: 5, // Feljebb tolva, hogy ne lógjon a Help gombba
         left: 0,
         width: "100%",
-        height: 24,
+        height: 20,
         overflow: "hidden",
         zIndex: 100,
         pointerEvents: "none",
-        background: "transparent", // Teljesen átlátszó keret
+        background: "transparent",
       }}
     >
       <div
         style={{
           display: "inline-block",
           whiteSpace: "nowrap",
-          fontSize: 11,
-          fontWeight: "400", // Szép, szellős betűk mint a feliratnál
+          fontSize: 10, // Kicsit kisebb, finomabb betűk
+          fontWeight: "400",
           textTransform: "uppercase",
-          letterSpacing: "0.15em",
-          color: "#ffffff", // Hófehér betűk
-          animation: "waiScroll 50s linear infinite",
+          letterSpacing: "0.2em",
+          color: "#ffffff",
+          animation: "waiScroll 60s linear infinite",
         }}
       >
         <span>{tickerText}</span>
@@ -261,7 +261,7 @@ export default function PremiumMonth() {
     unexpected: 200,
     other: 300,
   });
-       const update = (key, value) => {
+  const update = (key, value) => {
     setInputs({ ...inputs, [key]: Number(value) });
     setAiVisible(false);
     setAiCollapsed(true);
@@ -1131,4 +1131,4 @@ const footer = {
   fontSize: 12,
   color: "#64748b",
   paddingBottom: 20,
-};   
+};
