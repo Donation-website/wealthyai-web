@@ -22,27 +22,26 @@ function buffer(readable) {
 // 📧 DINAMIKUS ÉS PROFESSZIONÁLIS EMAIL KÜLDÉS
 async function sendPaymentConfirmationEmail({
   to,
-  priceId, // PriceId-t kapunk a felismeréshez
+  priceId, 
   amount,
   currency,
   date,
 }) {
-  // 1. DINAMIKUS CSOMAG NÉV MEGHATÁROZÁSA
   let productName = "WealthyAI Intelligence Pass";
   let packageType = "Strategic Intelligence Access";
 
-  if (priceId === "price_1SscYJDyLtejYlZiyDvhdaIx") {
+  // ✅ JAVÍTOTT ÉLES (LIVE) ID-K ALAPJÁN TÖRTÉNŐ AZONOSÍTÁS
+  if (priceId === "price_1SsRVyDyLtejYlZi3fEwvTPW") {
     productName = "WealthyAI 24h Daily Pass";
     packageType = "Daily Insight Framework";
-  } else if (priceId === "price_1SscaYDyLtejYlZiDjSeF5Wm") {
+  } else if (priceId === "price_1SsRY1DyLtejYlZiglvFKufA") {
     productName = "WealthyAI Weekly Strategic Pass";
     packageType = "Weekly Strategic Intelligence";
-  } else if (priceId === "price_1SyaeRDyLtejYlZiWo76wuWO" || priceId === "price_1SscbeDyLtejYlZixJcT3B4o") {
+  } else if (priceId === "price_1Sya6GDyLtejYlZiCb8oLqga") {
     productName = "WealthyAI Full Monthly Pass";
     packageType = "Monthly Strategic Intelligence";
   }
 
-  // PDF generálás az eredeti modullal
   const pdfBuffer = await generateAccessConfirmationPDF({
     productName,
     amount,
@@ -60,7 +59,6 @@ async function sendPaymentConfirmationEmail({
     },
   });
 
-  // 📧 A FELTURBÓZOTT ANGOL SZÖVEG
   const mailText = `
 [CONFIDENTIAL] WealthyAI · Strategy Session Activated
 
@@ -70,8 +68,6 @@ CLEARANCE: ${packageType.toUpperCase()}
 Dear Partner,
 
 Your transaction has been successfully verified. As of this moment, you have been granted full access to the WealthyAI Strategic Intelligence ecosystem for your selected period.
-
-You have acquired more than just data; you have secured clarity. While most market participants operate amidst noise, you have chosen structured interpretation. This decision in itself reflects the disciplined mindset upon which the WealthyAI framework was built.
 
 ACCESS DETAILS:
 • Access Type: ${productName}
@@ -83,8 +79,6 @@ YOUR NEXT STEP:
 During your ${productName} period, we suggest focusing not on speed, but on structural connections. WealthyAI is designed not for prediction, but for probability-based, emotionless decision support.
 
 "Strategic superiority begins where emotional reaction ends."
-
-Note: Your access is now live. An official payment receipt is issued separately by Stripe for your accounting records.
 
 Welcome to the inner circle of disciplined minds.
 
@@ -119,6 +113,7 @@ export default async function handler(req, res) {
     const buf = await buffer(req);
     event = stripe.webhooks.constructEvent(buf, sig, webhookSecret);
   } catch (err) {
+    console.error(`Webhook Error: ${err.message}`);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
@@ -131,7 +126,7 @@ export default async function handler(req, res) {
       try {
         await sendPaymentConfirmationEmail({
           to: customerEmail,
-          priceId: priceId, // Átadjuk a felismeréshez
+          priceId: priceId, 
           amount: (session.amount_total / 100).toFixed(2),
           currency: session.currency.toUpperCase(),
           date: new Date(session.created * 1000).toISOString().split('T')[0],
