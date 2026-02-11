@@ -30,6 +30,8 @@ export default async function handler(req, res) {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],
+      // ✅ KUPONKÓD MEZŐ ENGEDÉLYEZÉSE
+      allow_promotion_codes: true, 
       metadata: {
         priceId,
       },
