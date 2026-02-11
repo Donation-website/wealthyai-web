@@ -125,7 +125,7 @@ export default function PremiumMonth() {
   useEffect(() => {
     // 1. VIP Token ellenőrzése
     const vipToken = localStorage.getItem("wai_vip_token");
-    if (vipToken === "WAI-6699-VIP") {
+    if (vipToken === "MASTER-DOMINANCE-2026") {
       // Ha VIP, akkor nem futtatjuk a Stripe ellenőrzést
       return;
     }
