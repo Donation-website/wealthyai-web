@@ -130,7 +130,7 @@ export default function PremiumMonth() {
 
     // 2. A 3 speciális VIP kód a Havi modulhoz
     const monthlyVips = [
-      "WAI-GUEST-7721", 
+      "WAI-GUEST-7725", 
       "WAI-CLIENT-8832", 
       "WAI-PARTNER-9943"
     ];
