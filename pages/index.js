@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import SEO from "../components/SEO";
 
 export default function Home() {
-  const SITE_URL = "https://mywealthyai.com"; // Frissítve a végleges domainre
+  const SITE_URL = "https://mywealthyai.com";
   const SHARE_TEXT = "AI-powered financial clarity with WealthyAI";
 
   const audioRef = useRef(null);
@@ -17,7 +17,6 @@ export default function Home() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Automatikus indítás 3.5 mp után
   useEffect(() => {
     const playTimeout = setTimeout(() => {
       if (audioRef.current) {
@@ -81,7 +80,7 @@ export default function Home() {
     <>
       <SEO
         title="WealthyAI – AI-powered financial clarity | mywealthyai"
-        description="WealthyAI (mywealthyai) offers AI-powered financial planning, structured insights, and clear market perspective for institutional and personal use."
+        description="WealthyAI (mywealthyai) offers AI-powered financial planning, structured insights, and clear market perspective."
         url={SITE_URL}
         keywords="mywealthyai, WealthyAI, AI finance, financial intelligence, structured insights, market perspective, financial clarity"
       />
@@ -118,6 +117,7 @@ export default function Home() {
           onEnded={handleAudioEnd}
         />
 
+        {/* NARRATOR TOGGLE */}
         <div 
           onClick={toggleMute}
           className="narrator-toggle"
@@ -153,6 +153,7 @@ export default function Home() {
           </span>
         </div>
 
+        {/* TOP NAV */}
         <div
           style={{
             position: isMobile ? "fixed" : "absolute",
@@ -172,6 +173,7 @@ export default function Home() {
           <a href="/terms" onClick={stopAudio} className="nav-link">Terms</a>
         </div>
 
+        {/* CENTER LOGO & TEXT */}
         <div
           style={{
             textAlign: "center",
@@ -242,6 +244,7 @@ export default function Home() {
           </div>
         </div>
 
+        {/* START SECTION (LEFT) */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
@@ -304,6 +307,7 @@ export default function Home() {
           </div>
         </div>
 
+        {/* FOOTER */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
@@ -323,26 +327,20 @@ export default function Home() {
               : "transparent",
           }}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: "14px", alignItems: isMobile ? "center" : "flex-start" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", opacity: 0.85 }}>
-              <img 
-                src="/wealthyai/icons/micrologo.png" 
-                alt="Microsoft Logo" 
-                style={{ height: "22px", width: "auto" }} 
-              />
-              <span style={{ 
-                fontSize: "11px", 
-                textTransform: "uppercase", 
-                letterSpacing: "1.4px", 
-                color: "white", 
-                fontWeight: "200",
-                fontFamily: "'Inter', sans-serif" 
-              }}>
-                Microsoft for Startups Founders Hub
-              </span>
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px", alignItems: isMobile ? "center" : "flex-start" }}>
+            <div style={{ 
+              fontSize: "9px", 
+              textTransform: "uppercase", 
+              letterSpacing: "2px", 
+              color: "white", 
+              fontWeight: "200", 
+              opacity: 0.5,
+              fontFamily: "'Inter', sans-serif" 
+            }}>
+              Member of Microsoft for Startups
             </div>
             <div style={{ fontSize: "0.85rem", opacity: 0.6 }}>
-              © 2026 WealthyAI — All rights reserved.
+              © 2026 mywealthyai.com — All rights reserved.
             </div>
           </div>
 
