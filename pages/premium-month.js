@@ -6,14 +6,14 @@ import {
 } from "../lib/monthlyArchive";
 
 /* ==========================================================================
-   WEALTHYAI CORE DESIGN SYSTEM
+   WEALTHYAI CORE DESIGN SYSTEM (THEME DEFINED ONCE)
    ========================================================================== */
 
 const THEME = {
   bg: "#020617",
   surface: "rgba(2, 6, 23, 0.8)",
   glass: "rgba(255, 255, 255, 0.03)",
-  border: "rgba(255, 255, 255, 0.07)",
+  border: "rgba(255, 255, 255, 0.08)",
   accent: "#38bdf8",
   textMain: "#f8fafc",
   textDim: "#64748b",
@@ -22,18 +22,6 @@ const THEME = {
 
 const DAILY_SIGNAL_KEY = "dailySignalUnlock";
 function getTodayKey() { return new Date().toISOString().slice(0, 10); }
-
-function getDailyUnlockTime() {
-  const stored = JSON.parse(localStorage.getItem(DAILY_SIGNAL_KEY) || "{}");
-  const today = getTodayKey();
-  if (stored.date === today) return stored.unlockAt;
-  const hour = Math.floor(Math.random() * 10) + 7;
-  const minute = Math.floor(Math.random() * 60);
-  const unlockAt = new Date();
-  unlockAt.setHours(hour, minute, 0, 0);
-  localStorage.setItem(DAILY_SIGNAL_KEY, JSON.stringify({ date: today, unlockAt: unlockAt.getTime() }));
-  return unlockAt.getTime();
-}
 
 const REGIONS = [
   { code: "US", label: "UNITED STATES" },
@@ -44,7 +32,7 @@ const REGIONS = [
 ];
 
 /* ==========================================================================
-   COMPONENTS: TICKER & UI ELEMENTS
+   COMPONENTS: TICKER
    ========================================================================== */
 
 const WealthyTicker = ({ isMobile }) => {
@@ -61,12 +49,15 @@ const WealthyTicker = ({ isMobile }) => {
   );
 };
 
+/* ==========================================================================
+   MAIN COMPONENT
+   ========================================================================== */
+
 export default function PremiumMonth() {
   const [isMobile, setIsMobile] = useState(false);
   const [simulationActive, setSimulationActive] = useState(false);
   const [stressFactor, setStressFactor] = useState(0); 
   const [region, setRegion] = useState("EU");
-  const [country, setCountry] = useState(null);
   const [viewMode, setViewMode] = useState("executive");
   const [cycleDay, setCycleDay] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -74,16 +65,12 @@ export default function PremiumMonth() {
   const [emailModalOpen, setEmailModalOpen] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [aiVisible, setAiVisible] = useState(false);
-  const [dailySignal, setDailySignal] = useState(null);
   const [dailyPending, setDailyPending] = useState(true);
   const [dailyDual, setDailyDual] = useState(null);
   const [dailySnapshot, setDailySnapshot] = useState(null);
-  const [archiveOpen, setArchiveOpen] = useState(false);
-  const [selectedDay, setSelectedDay] = useState(null);
-  const [exportRange, setExportRange] = useState("day");
-  const [isTodayAvailable, setIsTodayAvailable] = useState(false);
   const [focusOpen, setFocusOpen] = useState(false);
   const [focusPreview, setFocusPreview] = useState(null);
+  const [selectedDay, setSelectedDay] = useState(null);
 
   const [inputs, setInputs] = useState({
     income: 4000, housing: 1200, electricity: 120, gas: 90, water: 40,
@@ -91,10 +78,28 @@ export default function PremiumMonth() {
     unexpected: 200, other: 300,
   });
 
+  const [weeklyFocus, setWeeklyFocus] = useState(() => {
+    if (typeof window !== "undefined") {
+      try { return JSON.parse(localStorage.getItem("weeklyFocus")); } catch { return null; }
+    }
+    return null;
+  });
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize(); window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const start = localStorage.getItem("monthCycleStart");
+    if (!start) {
+      localStorage.setItem("monthCycleStart", Date.now().toString()); setCycleDay(1);
+    } else {
+      const diff = Math.floor((Date.now() - Number(start)) / 86400000);
+      setCycleDay(Math.min(diff + 1, 30));
+    }
+    setDailyPending(false); // Simulating signal ready
   }, []);
 
   const calculateFragility = () => {
@@ -105,63 +110,27 @@ export default function PremiumMonth() {
     return Math.min(Math.max(((totalFixed + stressSurplus) / inputs.income) * 100, 0), 100).toFixed(1);
   };
 
-  /* ACCESS & CYCLE LOGIC */
-  useEffect(() => {
-    const vipToken = localStorage.getItem("wai_vip_token");
-    if (vipToken === "MASTER-DOMINANCE-2026") return;
-    const monthlyVips = ["WAI-GUEST-7725", "WAI-CLIENT-8832", "WAI-PARTNER-9943"];
-    if (monthlyVips.includes(vipToken)) {
-      const firstUsedKey = `start_time_${vipToken}`;
-      const firstUsedAt = localStorage.getItem(firstUsedKey);
-      if (!firstUsedAt) { localStorage.setItem(firstUsedKey, Date.now().toString()); return; }
-      if (Date.now() - parseInt(firstUsedAt) > 7 * 24 * 60 * 60 * 1000) {
-        localStorage.removeItem("wai_vip_token"); window.location.href = "/start";
-      }
-      return;
-    }
-    const params = new URLSearchParams(window.location.search);
-    if (!params.get("session_id")) { window.location.href = "/start"; return; }
-  }, []);
-
-  useEffect(() => {
-    const start = localStorage.getItem("subscriptionPeriodStart") || localStorage.getItem("monthCycleStart");
-    if (!start) {
-      localStorage.setItem("monthCycleStart", Date.now().toString()); setCycleDay(1);
-    } else {
-      const diff = Math.floor((Date.now() - Number(start)) / 86400000);
-      setCycleDay(Math.min(diff + 1, 30));
-    }
-  }, []);
-
   const update = (key, value) => {
     setInputs({ ...inputs, [key]: Number(value) });
-    setAiVisible(false); setDailyDual(null); setDailySnapshot(null);
+    setAiVisible(false); setDailyDual(null);
   };
-
-  const [weeklyFocus, setWeeklyFocus] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("weeklyFocus")); } catch { return null; }
-  });
-
-  const getCurrentWeekIndex = () => Math.floor((cycleDay - 1) / 7);
 
   const confirmWeeklyFocus = () => {
     if (!focusPreview) return;
-    const focus = { key: focusPreview, weekIndex: getCurrentWeekIndex(), setAt: Date.now() };
+    const focus = { key: focusPreview, weekIndex: Math.floor((cycleDay - 1) / 7), setAt: Date.now() };
     setWeeklyFocus(focus);
     localStorage.setItem("weeklyFocus", JSON.stringify(focus));
+    setFocusOpen(false);
     setFocusPreview(null);
   };
-  /* ==========================================================================
-     AI & DATA LOGIC
-     ========================================================================== */
 
   const runAI = async () => {
-    setLoading(true); setSelectedDay(null); setSimulationActive(false);
+    setLoading(true); setSimulationActive(false);
     try {
       const res = await fetch("/api/get-ai-briefing", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ region, country, cycleDay, weeklyFocus: weeklyFocus?.key, ...inputs }),
+        body: JSON.stringify({ region, cycleDay, weeklyFocus: weeklyFocus?.key, ...inputs }),
       });
       const json = await res.json();
       if (json?.snapshot) {
@@ -171,29 +140,8 @@ export default function PremiumMonth() {
     setLoading(false);
   };
 
-  const runAIDual = async () => {
-    if (!isTodayAvailable) return alert("Today's snapshot is not available yet.");
-    setLoading(true); setSelectedDay(null);
-    try {
-      const res = await fetch("/api/get-ai-briefing", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ region, country, cycleDay, weeklyFocus: weeklyFocus?.key, ...inputs }),
-      });
-      const data = await res.json();
-      if (data?.snapshot) {
-        saveMonthlySnapshot(data.snapshot); setDailySnapshot(data.snapshot);
-        setViewMode("executive"); setAiVisible(true);
-      }
-    } catch (e) { console.error(e); }
-    setLoading(false);
-  };
-
-  const activeSnapshot = selectedDay ? getSnapshotByDay(selectedDay) : dailySnapshot;
-  const activeDual = activeSnapshot || dailyDual;
-  const activeText = activeDual && (viewMode === "executive" ? activeDual.executive : activeDual.directive);
-
   const downloadPDF = async () => {
+    const activeText = viewMode === "executive" ? dailyDual?.executive : dailyDual?.directive;
     if (!activeText) return;
     const res = await fetch("/api/export-month-pdf", {
       method: "POST",
@@ -202,11 +150,12 @@ export default function PremiumMonth() {
     });
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = "wealthyai-briefing.pdf"; a.click();
+    const a = document.createElement("a"); a.href = url; a.download = `wealthyai-day${cycleDay}.pdf`; a.click();
   };
 
   const confirmAndSendEmail = async () => {
-    if (!userEmail) return;
+    const activeText = viewMode === "executive" ? dailyDual?.executive : dailyDual?.directive;
+    if (!userEmail || !activeText) return;
     setEmailSending(true);
     try {
       await fetch("/api/send-month-email", {
@@ -215,13 +164,12 @@ export default function PremiumMonth() {
         body: JSON.stringify({ text: activeText, cycleDay, region, email: userEmail }),
       });
       setEmailModalOpen(false);
-    } catch (err) { alert("Error."); }
+      alert("Email sent.");
+    } catch (err) { alert("Error sending email."); }
     setEmailSending(false);
   };
 
-  /* ==========================================================================
-     RENDER ENGINE
-     ========================================================================== */
+  const activeText = dailyDual && (viewMode === "executive" ? dailyDual.executive : dailyDual.directive);
 
   return (
     <div style={styles.page}>
@@ -233,7 +181,6 @@ export default function PremiumMonth() {
       </header>
 
       <main style={styles.container}>
-        {/* TOP STATUS BAR */}
         <div style={styles.statusGrid}>
           <div style={styles.statusCard}>
             <span style={styles.miniLabel}>REGION</span>
@@ -251,7 +198,6 @@ export default function PremiumMonth() {
           </div>
         </div>
 
-        {/* WEEKLY FOCUS SELECTOR */}
         <section style={styles.focusSection}>
           <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
             <span style={styles.miniLabel}>STRATEGIC FOCUS</span>
@@ -264,13 +210,11 @@ export default function PremiumMonth() {
               {["stability", "spending", "resilience", "direction"].map(f => (
                 <button 
                   key={f}
-                  disabled={!!weeklyFocus && weeklyFocus.key !== f}
                   onClick={() => setFocusPreview(f)}
                   style={{
                     ...styles.focusBtn,
                     borderColor: (focusPreview === f || weeklyFocus?.key === f) ? THEME.accent : THEME.border,
                     color: (focusPreview === f || weeklyFocus?.key === f) ? THEME.accent : THEME.textMain,
-                    opacity: (weeklyFocus && weeklyFocus.key !== f) ? 0.3 : 1
                   }}
                 >
                   {f.toUpperCase()}
@@ -278,17 +222,14 @@ export default function PremiumMonth() {
               ))}
             </div>
           ) : (
-            <div style={{marginTop: 10, fontSize: 14}}>{weeklyFocus ? weeklyFocus.key.toUpperCase() : "NO FOCUS DEFINED"}</div>
+            <div style={{marginTop: 10, fontSize: 13, letterSpacing: '0.1em'}}>{weeklyFocus ? weeklyFocus.key.toUpperCase() : "NO FOCUS DEFINED"}</div>
           )}
           {focusPreview && !weeklyFocus && (
             <button onClick={confirmWeeklyFocus} style={styles.confirmBtn}>LOCK FOCUS</button>
           )}
         </section>
 
-        {/* MAIN INTERACTIVE GRID */}
         <div style={{...styles.mainGrid, gridTemplateColumns: isMobile ? "1fr" : "1fr 1.4fr"}}>
-          
-          {/* INPUT PANEL */}
           <div style={styles.panel}>
             <h3 style={styles.panelTitle}>STRUCTURE</h3>
             <div style={styles.inputGroup}>
@@ -303,8 +244,8 @@ export default function PremiumMonth() {
               <input type="number" value={inputs.housing} onChange={(e) => update("housing", e.target.value)} style={styles.ghostInput} />
             </div>
             <div style={styles.inputRow}>
-              <span style={styles.rowLabel}>Fixed Utilities</span>
-              <input type="number" value={inputs.electricity + inputs.gas} onChange={() => {}} style={styles.ghostInput} />
+              <span style={styles.rowLabel}>Essential Utils</span>
+              <input type="number" value={inputs.electricity + inputs.gas + inputs.water} readOnly style={styles.ghostInput} />
             </div>
 
             <div style={styles.stressBox}>
@@ -314,16 +255,15 @@ export default function PremiumMonth() {
 
             <div style={styles.buttonGrid}>
               <button onClick={() => {setSimulationActive(true); setAiVisible(false);}} style={styles.secondaryBtn}>SIMULATE</button>
-              <button onClick={runAI} style={styles.primaryBtn}>{loading ? "..." : "GENERATE"}</button>
+              <button onClick={runAI} style={styles.primaryBtn}>{loading ? "PROCESSING..." : "GENERATE"}</button>
             </div>
           </div>
 
-          {/* INTELLIGENCE PANEL (THE ALTAR) */}
-          <div style={{...styles.panel, border: `1px solid ${aiVisible ? THEME.accent : THEME.border}`, transition: '0.5s'}}>
+          <div style={{...styles.panel, border: `1px solid ${aiVisible ? THEME.accent : THEME.border}`}}>
             {!aiVisible && !simulationActive && (
               <div style={styles.emptyState}>
                 <h2 style={{fontWeight: 300, letterSpacing: 2}}>Interpretation over Advice.</h2>
-                <p style={styles.dimmedText}>The system rewards attention. Enter your parameters to begin the briefing.</p>
+                <p style={styles.dimmedText}>The system rewards attention. Enter your parameters to begin.</p>
               </div>
             )}
 
@@ -352,7 +292,6 @@ export default function PremiumMonth() {
         </div>
       </main>
 
-      {/* EMAIL MODAL */}
       {emailModalOpen && (
         <div style={styles.modal}>
           <div style={styles.modalCard}>
@@ -368,79 +307,60 @@ export default function PremiumMonth() {
 
       <footer style={styles.footer}>© 2026 WEALTHYAI · MEASURING CONTINUITY</footer>
 
-      <style>{`
+      <style jsx global>{`
         @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        body { background-color: #020617; margin: 0; }
       `}</style>
     </div>
   );
 }
 
-/* ==========================================================================
-   THE "ARCHITECTURE" (STYLES)
-   ========================================================================== */
-
-const THEME = {
-  bg: "#020617", accent: "#38bdf8", textMain: "#f8fafc", textDim: "#64748b", border: "rgba(255,255,255,0.08)"
-};
-
 const styles = {
-  page: { minHeight: "100vh", backgroundColor: THEME.bg, color: THEME.textMain, fontFamily: "'Inter', sans-serif", padding: "60px 20px" },
-  header: { textAlign: "center", marginBottom: 50 },
-  title: { fontSize: 16, letterSpacing: "0.6em", fontWeight: 300, margin: 0 },
-  subtitle: { fontSize: 9, letterSpacing: "0.3em", color: THEME.textDim, marginTop: 10 },
+  page: { minHeight: "100vh", backgroundColor: THEME.bg, color: THEME.textMain, fontFamily: "'Inter', sans-serif", padding: "80px 20px 40px" },
+  header: { textAlign: "center", marginBottom: 60 },
+  title: { fontSize: 18, letterSpacing: "0.5em", fontWeight: 300, margin: 0 },
+  subtitle: { fontSize: 9, letterSpacing: "0.2em", color: THEME.textDim, marginTop: 12 },
   container: { maxWidth: 1100, margin: "0 auto" },
-  
-  tickerWrapper: { position: "fixed", top: 0, left: 0, width: "100%", height: 30, background: "rgba(0,0,0,0.4)", backdropFilter: "blur(10px)", borderBottom: `1px solid ${THEME.border}`, zIndex: 1000, overflow: "hidden", display: 'flex', alignItems: 'center' },
+  tickerWrapper: { position: "fixed", top: 0, left: 0, width: "100%", height: 35, background: "rgba(2,6,23,0.8)", backdropFilter: "blur(10px)", borderBottom: `1px solid ${THEME.border}`, zIndex: 1000, overflow: "hidden", display: 'flex', alignItems: 'center' },
   tickerContent: { whiteSpace: "nowrap", fontSize: 8, letterSpacing: "0.2em", color: THEME.textDim, animation: "ticker 60s linear infinite" },
-  
-  statusGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 1, background: THEME.border, border: `1px solid ${THEME.border}`, marginBottom: 30 },
-  statusCard: { background: THEME.bg, padding: 20 },
-  miniLabel: { fontSize: 9, letterSpacing: "0.2em", color: THEME.textDim, display: "block", marginBottom: 8 },
-  statusValue: { fontSize: 14, fontWeight: 500 },
+  statusGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 1, background: THEME.border, border: `1px solid ${THEME.border}`, marginBottom: 40 },
+  statusCard: { background: THEME.bg, padding: 25 },
+  miniLabel: { fontSize: 9, letterSpacing: "0.2em", color: THEME.textDim, display: "block", marginBottom: 10, fontWeight: 600 },
+  statusValue: { fontSize: 15, fontWeight: 500, letterSpacing: '0.05em' },
   dimText: { color: THEME.textDim, fontSize: 12 },
-  
-  ghostSelect: { background: "none", border: "none", color: THEME.accent, fontSize: 13, letterSpacing: "0.1em", cursor: "pointer", outline: "none" },
-  
-  focusSection: { padding: 25, border: `1px solid ${THEME.border}`, marginBottom: 30 },
-  focusGrid: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginTop: 20 },
-  focusBtn: { background: "none", border: "1px solid", padding: "10px", fontSize: 10, letterSpacing: "0.1em", cursor: "pointer" },
-  confirmBtn: { width: "100%", marginTop: 15, padding: 12, background: THEME.accent, border: "none", color: "#000", fontWeight: 700, fontSize: 11, cursor: "pointer" },
-  actionLink: { background: "none", border: "none", color: THEME.accent, fontSize: 10, letterSpacing: "0.1em", cursor: "pointer" },
-
-  mainGrid: { display: "grid", gap: 30 },
-  panel: { background: "rgba(255,255,255,0.02)", padding: 30, border: `1px solid ${THEME.border}` },
-  panelTitle: { fontSize: 12, letterSpacing: "0.3em", fontWeight: 400, marginBottom: 25, color: THEME.textDim },
-  
-  mainInput: { width: "100%", background: "none", border: "none", borderBottom: `1px solid ${THEME.border}`, color: THEME.textMain, fontSize: 24, padding: "10px 0", outline: "none" },
-  inputRow: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 15 },
-  rowLabel: { fontSize: 13, color: THEME.textDim },
-  ghostInput: { background: "none", border: "none", color: THEME.textMain, textAlign: "right", fontSize: 14, width: 80, borderBottom: "1px solid transparent" },
-  
-  stressBox: { marginTop: 30, padding: 20, background: "rgba(255,255,255,0.02)" },
-  slider: { width: "100%", accentColor: THEME.accent, cursor: "pointer" },
-  
-  buttonGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 15, marginTop: 30 },
-  primaryBtn: { background: THEME.textMain, color: THEME.bg, border: "none", padding: 15, fontWeight: 700, fontSize: 11, letterSpacing: "0.1em", cursor: "pointer" },
-  secondaryBtn: { background: "none", border: `1px solid ${THEME.border}`, color: THEME.textMain, padding: 15, fontSize: 11, letterSpacing: "0.1em", cursor: "pointer" },
-
-  emptyState: { height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", textAlign: "center", opacity: 0.5 },
-  dimmedText: { fontSize: 12, marginTop: 10, letterSpacing: "0.05em" },
-  
+  ghostSelect: { background: "none", border: "none", color: THEME.accent, fontSize: 13, letterSpacing: "0.1em", cursor: "pointer", outline: "none", padding: 0 },
+  focusSection: { padding: "30px", border: `1px solid ${THEME.border}`, marginBottom: 40, background: "rgba(255,255,255,0.01)" },
+  focusGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 12, marginTop: 20 },
+  focusBtn: { background: "none", border: "1px solid", padding: "12px", fontSize: 10, letterSpacing: "0.1em", cursor: "pointer", transition: '0.2s' },
+  confirmBtn: { width: "100%", marginTop: 20, padding: 15, background: THEME.textMain, border: "none", color: THEME.bg, fontWeight: 700, fontSize: 11, cursor: "pointer", letterSpacing: '0.1em' },
+  actionLink: { background: "none", border: "none", color: THEME.accent, fontSize: 10, letterSpacing: "0.1em", cursor: "pointer", textDecoration: 'underline' },
+  mainGrid: { display: "grid", gap: 40 },
+  panel: { background: "rgba(255,255,255,0.02)", padding: 40, border: `1px solid ${THEME.border}`, position: 'relative' },
+  panelTitle: { fontSize: 11, letterSpacing: "0.3em", fontWeight: 400, marginBottom: 35, color: THEME.textDim, textTransform: 'uppercase' },
+  mainInput: { width: "100%", background: "none", border: "none", borderBottom: `1px solid ${THEME.border}`, color: THEME.textMain, fontSize: 32, padding: "10px 0", outline: "none", fontWeight: 300 },
+  inputRow: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 },
+  rowLabel: { fontSize: 14, color: THEME.textDim },
+  ghostInput: { background: "none", border: "none", color: THEME.textMain, textAlign: "right", fontSize: 15, width: 100, outline: "none" },
+  stressBox: { marginTop: 40, padding: 25, background: "rgba(255,255,255,0.02)", border: `1px solid ${THEME.border}` },
+  slider: { width: "100%", accentColor: THEME.textMain, cursor: "pointer", marginTop: 15 },
+  buttonGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginTop: 40 },
+  primaryBtn: { background: THEME.textMain, color: THEME.bg, border: "none", padding: 18, fontWeight: 700, fontSize: 11, letterSpacing: "0.2em", cursor: "pointer", transition: '0.3s' },
+  secondaryBtn: { background: "none", border: `1px solid ${THEME.border}`, color: THEME.textMain, padding: 18, fontSize: 11, letterSpacing: "0.2em", cursor: "pointer" },
+  emptyState: { height: "100%", minHeight: 300, display: "flex", flexDirection: "column", justifyContent: "center", textAlign: "center", opacity: 0.4 },
+  dimmedText: { fontSize: 13, marginTop: 15, letterSpacing: "0.05em" },
   aiContent: { animation: "fadeIn 1s ease" },
-  tabs: { display: "flex", gap: 25, marginBottom: 25, borderBottom: `1px solid ${THEME.border}`, paddingBottom: 15 },
-  tab: { background: "none", border: "none", fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", cursor: "pointer" },
-  briefingText: { fontSize: 15, lineHeight: "1.8", color: "#cbd5e1", whiteSpace: "pre-wrap" },
-  exportBar: { display: "flex", gap: 10, marginTop: 30 },
-  miniBtn: { background: "none", border: `1px solid ${THEME.border}`, color: THEME.textDim, padding: "8px 15px", fontSize: 9, cursor: "pointer" },
-
-  fragilityValue: { fontSize: 64, fontWeight: 200, margin: "20px 0", color: THEME.accent },
-  progressBase: { height: 2, background: THEME.border, width: "100%" },
-  progressFill: { height: "100%", background: THEME.accent, transition: "0.3s" },
-
-  modal: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.9)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000 },
-  modalCard: { background: THEME.bg, border: `1px solid ${THEME.border}`, padding: 40, width: "100%", maxWidth: 400 },
-  modalInput: { width: "100%", background: "rgba(255,255,255,0.05)", border: "none", padding: 15, color: "#fff", marginBottom: 20, outline: "none" },
-  
-  footer: { textAlign: "center", marginTop: 80, fontSize: 8, letterSpacing: "0.4em", color: THEME.textDim }
+  tabs: { display: "flex", gap: 30, marginBottom: 30, borderBottom: `1px solid ${THEME.border}`, paddingBottom: 15 },
+  tab: { background: "none", border: "none", fontSize: 11, fontWeight: 700, letterSpacing: "0.2em", cursor: "pointer", transition: '0.3s' },
+  briefingText: { fontSize: 16, lineHeight: "1.9", color: "#d1d5db", whiteSpace: "pre-wrap", fontWeight: 300 },
+  exportBar: { display: "flex", gap: 15, marginTop: 40, borderTop: `1px solid ${THEME.border}`, paddingTop: 25 },
+  miniBtn: { background: "none", border: `1px solid ${THEME.border}`, color: THEME.textDim, padding: "10px 20px", fontSize: 10, cursor: "pointer", letterSpacing: '0.1em' },
+  fragilityValue: { fontSize: 72, fontWeight: 200, margin: "25px 0", color: THEME.accent, letterSpacing: '-2px' },
+  progressBase: { height: 1, background: THEME.border, width: "100%", marginTop: 20 },
+  progressFill: { height: "100%", background: THEME.accent, transition: "0.6s cubic-bezier(0.4, 0, 0.2, 1)" },
+  accentLabel: { fontSize: 10, letterSpacing: "0.3em", color: THEME.accent, fontWeight: 700 },
+  modal: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.95)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000, backdropFilter: 'blur(5px)' },
+  modalCard: { background: THEME.bg, border: `1px solid ${THEME.border}`, padding: 50, width: "100%", maxWidth: 450 },
+  modalInput: { width: "100%", background: "rgba(255,255,255,0.05)", border: `1px solid ${THEME.border}`, padding: 18, color: "#fff", marginBottom: 30, outline: "none", fontSize: 16 },
+  footer: { textAlign: "center", marginTop: 100, fontSize: 9, letterSpacing: "0.5em", color: THEME.textDim, paddingBottom: 40 }
 };
