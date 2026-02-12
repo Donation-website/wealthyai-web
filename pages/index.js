@@ -80,9 +80,10 @@ export default function Home() {
   return (
     <>
       <SEO
-        title="WealthyAI – AI-powered financial clarity"
-        description="AI-powered financial planning with structured insights and clear perspective."
+        title="WealthyAI – AI-powered financial clarity | mywealthyai"
+        description="WealthyAI (mywealthyai) offers AI-powered financial planning, structured insights, and clear market perspective for institutional and personal use."
         url={SITE_URL}
+        keywords="mywealthyai, WealthyAI, AI finance, financial intelligence, structured insights, market perspective, financial clarity"
       />
 
       <main
@@ -322,22 +323,22 @@ export default function Home() {
               : "transparent",
           }}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px", alignItems: isMobile ? "center" : "flex-start" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", opacity: 0.65 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "14px", alignItems: isMobile ? "center" : "flex-start" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", opacity: 0.85 }}>
               <img 
                 src="/wealthyai/icons/micrologo.png" 
-                alt="Microsoft for Startups Founders Hub" 
-                style={{ height: "14px", width: "auto" }} 
+                alt="Microsoft Logo" 
+                style={{ height: "22px", width: "auto" }} 
               />
               <span style={{ 
-                fontSize: "10px", 
+                fontSize: "11px", 
                 textTransform: "uppercase", 
-                letterSpacing: "1.2px", 
+                letterSpacing: "1.4px", 
                 color: "white", 
                 fontWeight: "200",
                 fontFamily: "'Inter', sans-serif" 
               }}>
-                Member
+                Microsoft for Startups Founders Hub
               </span>
             </div>
             <div style={{ fontSize: "0.85rem", opacity: 0.6 }}>
