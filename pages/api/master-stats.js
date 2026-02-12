@@ -11,14 +11,22 @@ export default async function handler(req, res) {
     // 1. STRIPE ADATOK
     const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
     const balance = await stripe.balance.retrieve();
-    const amount = balance.available[0].amount / 100;
+    const stripeAmount = balance.available[0].amount / 100;
     const currency = balance.available[0].currency.toUpperCase();
 
-    // 2. SENDGRID STATISZTIKA (Dinamikus dátummal)
+    // 2. KUPONKÓDOK FIGYELÉSE
+    // Itt a 3 kuponodat tudod listázni. 
+    // Ha van adatbázisod, itt kérdezd le a használatukat.
+    const activeCoupons = [
+      { code: "KUPON1", status: "ACTIVE" },
+      { code: "KUPON2", status: "ACTIVE" },
+      { code: "KUPON3", status: "USED" } // Példa, ha látni akarod mi fogyott el
+    ];
+
+    // 3. SENDGRID STATISZTIKA (Dinamikus dátummal)
     let sendgridStats = { status: "OFFLINE", sentToday: 0 };
     
     if (process.env.SENDGRID_API_KEY) {
-      // Mai dátum lekérése YYYY-MM-DD formátumban
       const today = new Date().toISOString().split('T')[0];
       
       const sgResponse = await fetch(`https://api.sendgrid.com/v3/stats?start_date=${today}`, {
@@ -30,7 +38,6 @@ export default async function handler(req, res) {
       
       if (sgResponse.ok) {
         const statsData = await sgResponse.json();
-        // Összegezzük a mai napon kézbesített leveleket
         const totalDelivered = statsData.reduce((acc, curr) => {
           const dailyTotal = curr.stats.reduce((sAcc, sCurr) => sAcc + (sCurr.metrics.delivered || 0), 0);
           return acc + dailyTotal;
@@ -44,9 +51,13 @@ export default async function handler(req, res) {
       }
     }
 
-    // VÁLASZ ADÁSA
+    // ÖSSZESÍTETT VÁLASZ
     res.status(200).json({
-      stripe: `${amount} ${currency}`,
+      revenue: {
+        stripe: `${stripeAmount} ${currency}`,
+        activeCoupons: activeCoupons, // Itt látod a 3 kuponod státuszát
+        couponCount: activeCoupons.length
+      },
       sendgrid: sendgridStats,
       serverTime: new Date().toISOString()
     });
