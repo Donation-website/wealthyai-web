@@ -322,8 +322,18 @@ export default function Home() {
               : "transparent",
           }}
         >
-          <div style={{ fontSize: "0.85rem", opacity: 0.6 }}>
-            © 2026 WealthyAI — All rights reserved.
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", alignItems: isMobile ? "center" : "flex-start" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", opacity: 0.7 }}>
+              <img 
+                src="/wealthyai/icons/ms-founders-hub.png" 
+                alt="Microsoft for Startups Founders Hub" 
+                style={{ height: "18px", width: "auto" }} 
+              />
+              <span style={{ fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.5px", color: "white", fontWeight: "300" }}>Member</span>
+            </div>
+            <div style={{ fontSize: "0.85rem", opacity: 0.6 }}>
+              © 2026 WealthyAI — All rights reserved.
+            </div>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", alignItems: isMobile ? "center" : "flex-end", gap: "8px" }}>
