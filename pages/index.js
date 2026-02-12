@@ -159,7 +159,7 @@ export default function Home() {
             right: isMobile ? "0" : "40px",
             left: isMobile ? "0" : "auto",
             display: "flex",
-            justifyContent: isMobile ? "center" : "flex-end",
+            justifyContent: "center",
             gap: isMobile ? "15px" : "28px",
             zIndex: 6,
             fontSize: isMobile ? "0.8rem" : "0.95rem",
@@ -322,14 +322,23 @@ export default function Home() {
               : "transparent",
           }}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px", alignItems: isMobile ? "center" : "flex-start" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", opacity: 0.7 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px", alignItems: isMobile ? "center" : "flex-start" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", opacity: 0.65 }}>
               <img 
-                src="/wealthyai/icons/ms-founders-hub.png" 
+                src="/wealthyai/icons/micrologo.png" 
                 alt="Microsoft for Startups Founders Hub" 
-                style={{ height: "18px", width: "auto" }} 
+                style={{ height: "14px", width: "auto" }} 
               />
-              <span style={{ fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.5px", color: "white", fontWeight: "300" }}>Member</span>
+              <span style={{ 
+                fontSize: "10px", 
+                textTransform: "uppercase", 
+                letterSpacing: "1.2px", 
+                color: "white", 
+                fontWeight: "200",
+                fontFamily: "'Inter', sans-serif" 
+              }}>
+                Member
+              </span>
             </div>
             <div style={{ fontSize: "0.85rem", opacity: 0.6 }}>
               © 2026 WealthyAI — All rights reserved.
