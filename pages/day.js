@@ -196,7 +196,10 @@ export default function DayPremium() {
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get("session_id");
 
+    // JAVÍTÁS: Csak akkor irányítunk el, ha NINCS sessionId ÉS NINCS elmentett érvényes állapotunk.
     if (!sessionId) {
+      // Ha már bent vagyunk, ne dobjon ki rögtön, hátha csak frissített az illető.
+      // De a biztonság kedvéért itt ellenőrizzük, van-e session.
       window.location.href = "/start";
       return;
     }
@@ -214,7 +217,6 @@ export default function DayPremium() {
         window.location.href = "/start";
       });
   }, []);
-
   useEffect(() => {
     const saved = localStorage.getItem("userFinancials");
     if (saved) setData(JSON.parse(saved));
