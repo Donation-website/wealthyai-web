@@ -187,25 +187,26 @@ export default function DayPremium() {
     }
   }, [aiOpen, aiText]);
 
-  /* ===== SUBSCRIPTION CHECK - FIXED FOR VIP & HYDRATION ===== */
+  /* ===== FRISSÍTETT BELÉPTETÉS - STABIL VERZIÓ ===== */
   useEffect(() => {
     async function checkAccess() {
       const vipToken = localStorage.getItem("wai_vip_token");
       const params = new URLSearchParams(window.location.search);
       const sessionId = params.get("session_id");
 
-      // 1. Mester kód azonnali belépés
-      if (vipToken === "MASTER-DOMINANCE-2026") {
+      // 1. VIP/MASTER kód vagy session megléte esetén azonnal beengedünk
+      if (vipToken === "MASTER-DOMINANCE-2026" || (sessionId && sessionId.startsWith('cs_'))) {
         setIsAuthorized(true);
         setIsLoading(false);
+        if (sessionId) localStorage.setItem("wai_vip_token", sessionId);
         return;
       }
 
-      // 2. Ha nincs semmi, várunk, aztán kidobunk
+      // 2. Ha nincs session a URL-ben, nézzük meg, van-e érvényes kódunk a tárolóban
       if (!sessionId && !vipToken) {
         setTimeout(() => {
           if (!isAuthorized) window.location.href = "/start";
-        }, 3000);
+        }, 5000); // 5 másodperc türelmi idő
         return;
       }
 
@@ -218,19 +219,20 @@ export default function DayPremium() {
         });
         const d = await res.json();
         
-        if (d.valid || d.active || d.success) {
+        if (d.valid || d.active) {
           setIsAuthorized(true);
         } else {
           window.location.href = "/start";
         }
       } catch (err) {
+        // Hiba esetén ne dobjuk ki, ha van session_id
         if (sessionId) setIsAuthorized(true);
       }
       setIsLoading(false);
     }
 
     if (mounted) checkAccess();
-  }, [mounted]);
+  }, [mounted, isAuthorized]);
 
   useEffect(() => {
     const saved = localStorage.getItem("userFinancials");
@@ -420,7 +422,7 @@ export default function DayPremium() {
   );
 }
 
-/* ===== COMPONENTS ===== */
+/* ===== STYLES & COMPONENTS MARADTAK AZ EREDETIEK ===== */
 
 function Metric({ label, value, isMobile }) {
   return (
@@ -463,8 +465,6 @@ function MiniBar({ title, value }) {
     </div>
   );
 }
-
-/* ===== STYLES ===== */
 
 const page = {
   minHeight: "100vh",
