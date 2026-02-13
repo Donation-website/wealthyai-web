@@ -514,24 +514,78 @@ export default function UserDashboard() {
                 flexWrap: "wrap",
               }}
             >
-              <div
-                style={priceCard}
-                onClick={() =>
-                  handleCheckout("price_1SsRVyDyLtejYlZi3fEwvTPW")
-                }
-              >
-                <h3>1 Day · $9.99</h3>
-                <small>Immediate clarity</small>
+              <div style={{ ...priceCard, cursor: "default" }}>
+                <div
+                  onClick={() =>
+                    handleCheckout("price_1SsRVyDyLtejYlZi3fEwvTPW")
+                  }
+                  style={{ cursor: "pointer" }}
+                >
+                  <h3>1 Day · $9.99</h3>
+                  <small>Immediate clarity</small>
+                </div>
+                <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "12px" }}>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setShowVipInput(!showVipInput); }}
+                    style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: "10px", cursor: "pointer", letterSpacing: "0.05em" }}
+                  >
+                    {showVipInput ? "CLOSE PRIORITY" : "HAVE A PRIORITY CODE?"}
+                  </button>
+                  {showVipInput && (
+                    <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                      <input 
+                        type="text" 
+                        value={vipCode}
+                        onChange={(e) => setVipCode(e.target.value)}
+                        placeholder="Enter code"
+                        style={{ ...input, textAlign: "center", fontSize: "12px", padding: "6px", background: "rgba(255,255,255,0.04)" }}
+                      />
+                      <button 
+                        onClick={handleVipSubmit}
+                        style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "white", borderRadius: "6px", padding: "6px", fontSize: "11px", cursor: "pointer" }}
+                      >
+                        VALIDATE
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div
-                style={priceCard}
-                onClick={() =>
-                  handleCheckout("price_1SsRY1DyLtejYlZiglvFKufA")
-                }
-              >
-                <h3>1 Week · $14.99</h3>
-                <small>Behavior & patterns</small>
+              <div style={{ ...priceCard, cursor: "default" }}>
+                <div
+                  onClick={() =>
+                    handleCheckout("price_1SsRY1DyLtejYlZiglvFKufA")
+                  }
+                  style={{ cursor: "pointer" }}
+                >
+                  <h3>1 Week · $14.99</h3>
+                  <small>Behavior & patterns</small>
+                </div>
+                <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "12px" }}>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setShowVipInput(!showVipInput); }}
+                    style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: "10px", cursor: "pointer", letterSpacing: "0.05em" }}
+                  >
+                    {showVipInput ? "CLOSE PRIORITY" : "HAVE A PRIORITY CODE?"}
+                  </button>
+                  {showVipInput && (
+                    <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                      <input 
+                        type="text" 
+                        value={vipCode}
+                        onChange={(e) => setVipCode(e.target.value)}
+                        placeholder="Enter code"
+                        style={{ ...input, textAlign: "center", fontSize: "12px", padding: "6px", background: "rgba(255,255,255,0.04)" }}
+                      />
+                      <button 
+                        onClick={handleVipSubmit}
+                        style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "white", borderRadius: "6px", padding: "6px", fontSize: "11px", cursor: "pointer" }}
+                      >
+                        VALIDATE
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div style={{ ...priceCard, cursor: "default" }}>
