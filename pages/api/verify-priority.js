@@ -27,7 +27,7 @@ export default async function handler(req, res) {
 
     // 2. VIP VENDÉG KÓDOK - Csak a Month oldalhoz
     const guestCodes = [
-      "WAI-GUEST-7721", 
+      "WAI-GUEST-7725", 
       "WAI-CLIENT-8832", 
       "WAI-PARTNER-9943"
     ];
