@@ -16,6 +16,7 @@ function SpiderNet({ isMobile, height, color = "#38bdf8" }) {
   useEffect(() => {
     if (isMobile || !height || height < 5) return;
     const canvas = canvasRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext("2d");
     let animationFrameId;
     let particles = [];
@@ -129,6 +130,8 @@ const CATEGORIES = ["rent", "food", "transport", "entertainment", "subscriptions
 const COLORS = { rent: "#38bdf8", food: "#22d3ee", transport: "#34d399", entertainment: "#a78bfa", subscriptions: "#f472b6", other: "#facc15" };
 
 export default function PremiumWeek() {
+  const [mounted, setMounted] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [openDays, setOpenDays] = useState({});
   const [aiOpen, setAiOpen] = useState(false);
@@ -143,33 +146,41 @@ export default function PremiumWeek() {
   const [leftNetHeight, setLeftNetHeight] = useState(0);
   const [rightNetHeight, setRightNetHeight] = useState(0);
 
-  /* ================= ACCESS CHECK (MASTER CODE & STRIPE) ================= */
+  /* ================= ACCESS CHECK (FIXED VERSION) ================= */
   useEffect(() => {
-    const vipToken = localStorage.getItem("wai_vip_token");
-    if (vipToken === "MASTER-DOMINANCE-2026") {
-      return; 
-    }
+    setMounted(true);
+    async function checkAccess() {
+      const vipToken = localStorage.getItem("wai_vip_token");
+      const params = new URLSearchParams(window.location.search);
+      const sessionId = params.get("session_id");
 
-    const params = new URLSearchParams(window.location.search);
-    const sessionId = params.get("session_id");
-    
-    if (!sessionId) {
-      window.location.href = "/start";
-      return;
-    }
+      if (vipToken === "MASTER-DOMINANCE-2026") {
+        setIsAuthorized(true);
+        return;
+      }
 
-    fetch("/api/verify-active-subscription", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sessionId }),
-    })
-      .then(r => r.json())
-      .then(d => {
-        if (!d.valid) window.location.href = "/start";
-      })
-      .catch(() => {
-        window.location.href = "/start";
-      });
+      if (!sessionId && !vipToken) {
+        setTimeout(() => { window.location.href = "/start"; }, 5000);
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/verify-active-subscription", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId, vipToken }),
+        });
+        const data = await res.json();
+        if (data.valid || data.active) {
+          setIsAuthorized(true);
+        } else {
+          setTimeout(() => { window.location.href = "/start"; }, 5000);
+        }
+      } catch (e) {
+        if (sessionId || vipToken) setIsAuthorized(true);
+      }
+    }
+    checkAccess();
   }, []);
 
   useEffect(() => {
@@ -189,7 +200,7 @@ export default function PremiumWeek() {
   }, []);
 
   useEffect(() => {
-    if (isMobile) return;
+    if (isMobile || !mounted) return;
     const updateHeights = () => {
       const leftH = leftColRef.current?.offsetHeight || 0;
       const rightH = rightColRef.current?.offsetHeight || 0;
@@ -202,7 +213,7 @@ export default function PremiumWeek() {
     };
     const timer = setTimeout(updateHeights, 100);
     return () => clearTimeout(timer);
-  }, [aiOpen, aiText, openDays, isMobile, incomeType, incomeValue]);
+  }, [aiOpen, aiText, openDays, isMobile, incomeType, incomeValue, mounted]);
 
   const [week, setWeek] = useState(DAYS.reduce((acc, d) => {
     acc[d] = CATEGORIES.reduce((o, c) => ({ ...o, [c]: 0 }), {});
@@ -242,6 +253,8 @@ export default function PremiumWeek() {
     }
     setLoading(false);
   };
+
+  if (!mounted || (!isAuthorized && typeof window !== "undefined")) return null;
 
   /* ===== TICKER COMPONENT ===== */
   const WealthyTicker = () => {
@@ -428,7 +441,7 @@ function Chart({ title, children }) {
   );
 }
 
-/* ===== STYLES ===== */
+/* ===== STYLES (NO CHANGES) ===== */
 const tooltipContainer = { background: "rgba(2, 6, 23, 0.95)", border: "1px solid #1e293b", padding: "12px", borderRadius: "10px", backdropFilter: "blur(12px)" };
 const page = { 
   minHeight: "100vh", position: "relative", color: "#e5e7eb", fontFamily: "Inter, sans-serif", backgroundColor: "#020617",
