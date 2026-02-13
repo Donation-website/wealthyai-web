@@ -120,15 +120,22 @@ export default function PremiumMonth() {
     return Math.min(Math.max(finalRatio, 0), 100).toFixed(1);
   };
 
-  /* ================= ACCESS CHECK (MASTER + STRIPE + 7-DAY VIP) ================= */
+  /* ================= ACCESS CHECK & CYCLE LOGIC (FIXED) ================= */
+
+  const [cycleDay, setCycleDay] = useState(1);
 
   useEffect(() => {
     const vipToken = localStorage.getItem("wai_vip_token");
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get("session_id");
     
-    // 1. A Te örökös hozzáférésed
-    if (vipToken === "MASTER-DOMINANCE-2026") return;
+    // 1. Master hozzáférés
+    if (vipToken === "MASTER-DOMINANCE-2026") {
+      setCycleDay(1);
+      return;
+    }
 
-    // 2. A 3 speciális VIP kód a Havi modulhoz
+    // 2. VIP kódok kezelése
     const monthlyVips = [
       "WAI-GUEST-7725", 
       "WAI-CLIENT-8832", 
@@ -137,47 +144,57 @@ export default function PremiumMonth() {
 
     if (monthlyVips.includes(vipToken)) {
       const firstUsedKey = `start_time_${vipToken}`;
-      const firstUsedAt = localStorage.getItem(firstUsedKey);
+      let firstUsedAt = localStorage.getItem(firstUsedKey);
 
       if (!firstUsedAt) {
-        // Első belépés rögzítése
-        localStorage.setItem(firstUsedKey, Date.now().toString());
-        return; 
+        firstUsedAt = Date.now().toString();
+        localStorage.setItem(firstUsedKey, firstUsedAt);
       }
 
-      // 7 napos lejárat ellenőrzése (604.800.000 ms)
+      const diff = Math.floor((Date.now() - parseInt(firstUsedAt)) / 86400000);
+      setCycleDay(Math.min(diff + 1, 30));
+
       const limit = 7 * 24 * 60 * 60 * 1000;
-      if (Date.now() - parseInt(firstUsedAt) < limit) {
-        return; 
-      } else {
-        // Ha lejárt, törlés és kidobás
+      if (Date.now() - parseInt(firstUsedAt) >= limit) {
         localStorage.removeItem("wai_vip_token");
         window.location.href = "/start";
-        return;
       }
-    }
-
-    // 3. Ha nincs VIP kód, jön a Stripe ellenőrzés...
-    const params = new URLSearchParams(window.location.search);
-    const sessionId = params.get("session_id");
-    
-    if (!sessionId) {
-      window.location.href = "/start";
       return;
     }
 
-    fetch("/api/verify-active-subscription", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sessionId }),
-    })
+    // 3. Stripe és fizetős ciklus indítása
+    if (sessionId) {
+      fetch("/api/verify-active-subscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId }),
+      })
       .then(r => r.json())
       .then(d => {
-        if (!d.valid) window.location.href = "/start";
+        if (d.valid) {
+          let start = localStorage.getItem("subscriptionPeriodStart");
+          if (!start) {
+            start = Date.now().toString();
+            localStorage.setItem("subscriptionPeriodStart", start);
+          }
+          const diff = Math.floor((Date.now() - parseInt(start)) / 86400000);
+          setCycleDay(Math.min(diff + 1, 30));
+        } else {
+          window.location.href = "/start";
+        }
       })
       .catch(() => {
         window.location.href = "/start";
       });
+    } else {
+      const start = localStorage.getItem("subscriptionPeriodStart");
+      if (!start) {
+        window.location.href = "/start";
+      } else {
+        const diff = Math.floor((Date.now() - parseInt(start)) / 86400000);
+        setCycleDay(Math.min(diff + 1, 30));
+      }
+    }
   }, []);
 
   /* ================= REGION AUTO-DETECT ================= */
@@ -210,7 +227,6 @@ export default function PremiumMonth() {
   /* ================= CORE STATE ================= */
 
   const [viewMode, setViewMode] = useState("executive");
-  const [cycleDay, setCycleDay] = useState(1);
 
   const [loading, setLoading] = useState(false);
   const [emailSending, setEmailSending] = useState(false);
@@ -306,23 +322,7 @@ export default function PremiumMonth() {
     setSelectedDay(null);
   };
 
-  /* ================= CYCLE LOGIC ================= */
-
-  useEffect(() => {
-    const start =
-      localStorage.getItem("subscriptionPeriodStart") ||
-      localStorage.getItem("monthCycleStart");
-
-    if (!start) {
-      localStorage.setItem("monthCycleStart", Date.now().toString());
-      setCycleDay(1);
-    } else {
-      const diff = Math.floor((Date.now() - Number(start)) / 86400000);
-      setCycleDay(Math.min(diff + 1, 30));
-    }
-  }, []);
-
-  /* ================= SNAPSHOT AVAILABILITY ================= */
+  /* ================= SNAPSHOT AVAILABILITY EFFECT ================= */
 
   useEffect(() => {
     const today = getTodayKey();
@@ -566,7 +566,6 @@ export default function PremiumMonth() {
     if (!activeText) return;
     setEmailModalOpen(true);
   };
-
   /* ================= RENDER ================= */
 
   return (
