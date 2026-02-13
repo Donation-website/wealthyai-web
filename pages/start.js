@@ -12,10 +12,14 @@ export default function UserDashboard() {
     subscriptions: 120,
   });
 
-  /* ===== VIP ACCESS STATES ===== */
+  /* ===== ACCESS STATES ===== */
   const [showVipInput, setShowVipInput] = useState(false);
   const [showDayInput, setShowDayInput] = useState(false);
   const [showWeekInput, setShowWeekInput] = useState(false);
+  
+  /* Codes for each tier */
+  const [dayCode, setDayCode] = useState("");
+  const [weekCode, setWeekCode] = useState("");
   const [vipCode, setVipCode] = useState("");
 
   /* ===== MOBILE DETECTION ===== */
@@ -78,27 +82,27 @@ export default function UserDashboard() {
     );
   }
 
-  /* ===== VIP SUBMIT HANDLER (JAVÍTOTT ÚTVONAL) ===== */
+  /* ===== UNIVERSAL VALIDATE HANDLER ===== */
 
-  const handleVipSubmit = async () => {
-    if (!vipCode.trim()) return;
+  const handleVerify = async (code, type) => {
+    if (!code.trim()) return;
     
     try {
-      // Itt az új API fájlt hívjuk meg: verify-priority
       const res = await fetch("/api/verify-priority", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          vipCode: vipCode.trim(),
-          financials: data 
+          vipCode: code.trim(),
+          financials: data,
+          tier: type 
         }),
       });
 
       const result = await res.json();
 
       if (result.active) {
-        localStorage.setItem("wai_vip_token", vipCode.trim());
-        window.location.href = result.redirectPath || "/premium-month";
+        localStorage.setItem(`wai_${type}_token`, code.trim());
+        window.location.href = result.redirectPath || `/premium-${type}`;
       } else {
         alert("Invalid or expired priority code.");
       }
@@ -107,12 +111,11 @@ export default function UserDashboard() {
     }
   };
 
-  /* ===== STRIPE (PRICE IDs UPDATED) ===== */
+  /* ===== STRIPE ===== */
 
   const handleCheckout = async (priceId) => {
     localStorage.setItem("userFinancials", JSON.stringify(data));
 
-    // A Monthly Price ID ellenőrzése a visszatérő vásárlókhoz
     if (priceId === "price_1Sya6GDyLtejYlZiCb8oLqga") {
       const hasHadMonth = localStorage.getItem("hadMonthSubscription");
       if (hasHadMonth) {
@@ -250,6 +253,34 @@ export default function UserDashboard() {
     flex: isMobile ? "1 1 100%" : "0 1 240px",
   };
 
+  const gateInput = { 
+    background: "rgba(255,255,255,0.05)", 
+    border: "1px solid rgba(255,255,255,0.1)", 
+    borderRadius: "8px", 
+    padding: "10px", 
+    color: "white", 
+    fontSize: "13px", 
+    textAlign: "center", 
+    width: "100%", 
+    outline: "none",
+    boxSizing: "border-box"
+  };
+
+  const gateBtn = { 
+    background: "rgba(99,102,241,0.2)", 
+    border: "1px solid rgba(99,102,241,0.4)", 
+    color: "white", 
+    borderRadius: "8px", 
+    padding: "10px", 
+    fontSize: "12px", 
+    fontWeight: "600", 
+    cursor: "pointer", 
+    width: "100%", 
+    textTransform: "uppercase", 
+    letterSpacing: "0.05em",
+    marginTop: "8px"
+  };
+
   const helpButton = {
     position: "absolute",
     top: isMobile ? 15 : 24,
@@ -362,270 +393,232 @@ export default function UserDashboard() {
                   />
                 </div>
               ))}
+              
+              <div style={{ marginTop: 20 }}>
+                <h4 style={{ fontSize: "14px", marginBottom: 10, opacity: 0.8 }}>Additional Utilities</h4>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                    {[['Electricity', 'electricity'], ['Water', 'water'], ['Gas', 'gas'], ['Internet', 'internet']].map(([l, k]) => (
+                        <div key={k}>
+                            <label style={{ fontSize: "11px", opacity: 0.6 }}>{l}</label>
+                            <input type="number" value={data[k]} style={{ ...input, padding: "6px" }} onChange={(e) => setData({...data, [k]: Number(e.target.value)})} />
+                        </div>
+                    ))}
+                </div>
+              </div>
             </div>
 
             <div style={card}>
               <h3>Insights (Basic)</h3>
               <Radar data={radar} />
 
-              <p>
-                Risk Level: <strong>{riskLevel}</strong>
-              </p>
-              <p style={{ marginBottom: 15 }}>
-                Savings Score: <strong>{savingsScore}/100</strong>
-              </p>
+              <div style={{ textAlign: "center", marginBottom: 20 }}>
+                  <p style={{ margin: "5px 0" }}>
+                    Risk Level: <strong style={{ color: riskLevel === "High Risk" ? "#ef4444" : "#10b981" }}>{riskLevel}</strong>
+                  </p>
+                  <p style={{ margin: "5px 0" }}>
+                    Savings Score: <strong>{savingsScore}/100</strong>
+                  </p>
+              </div>
 
-              <ul style={{ paddingLeft: 20 }}>
-                {insights.map((i, idx) => (
-                  <li key={idx} style={{ marginBottom: 12, fontSize: "14px" }}>
-                    {i}
-                  </li>
-                ))}
-              </ul>
+              <div style={{ background: "rgba(0,0,0,0.2)", padding: "15px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.05)" }}>
+                  <ul style={{ paddingLeft: 20, margin: 0 }}>
+                    {insights.map((i, idx) => (
+                      <li key={idx} style={{ marginBottom: 10, fontSize: "13px", lineHeight: "1.4", opacity: 0.9 }}>
+                        {i}
+                      </li>
+                    ))}
+                  </ul>
+              </div>
 
-              <p style={{ opacity: 0.65, marginTop: 18, fontSize: "12px" }}>
-                This view shows a snapshot — not behavior, not direction.
-              </p>
-              <p
-                onClick={() =>
-                  document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })
-                }
-                style={{
-                  marginTop: 10,
-                  fontSize: "12px",
-                  opacity: 0.5,
-                  textAlign: "center",
-                  cursor: "pointer",
-                }}
-              >
-                Daily / Weekly / Monthly intelligence available ↓
+              <p style={{ opacity: 0.5, marginTop: 18, fontSize: "11px", textAlign: "center", fontStyle: "italic" }}>
+                This view shows a static snapshot of your current inputs.
               </p>
             </div>
           </div>
 
-          <div style={{ marginTop: isMobile ? 40 : 70, textAlign: "center" }}>
-            <h2
-              className="pulse-title"
-              style={{ fontSize: isMobile ? "1.4rem" : "2rem" }}
-            >
+          {/* DEPTH EXPLANATION */}
+          <div style={{ marginTop: 80, textAlign: "center" }}>
+            <h2 className="pulse-title" style={{ fontSize: isMobile ? "1.5rem" : "2.2rem", fontWeight: "700" }}>
               Choose your depth of financial intelligence
             </h2>
-
-            <p
-              style={{
-                maxWidth: 700,
-                margin: "18px auto",
-                opacity: 0.85,
-                fontSize: isMobile ? "14px" : "16px",
-              }}
-            >
-              Different questions require different levels of context.
-              You can choose the depth that matches what you want to understand right now.
+            <p style={{ maxWidth: 700, margin: "20px auto", opacity: 0.8, lineHeight: "1.6" }}>
+              Our AI models provide different layers of context based on the timeframe. 
+              Select the depth that matches your current investigative needs.
             </p>
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: isMobile
-                  ? "1fr"
-                  : "repeat(auto-fit, minmax(240px, 1fr))",
-                gap: 20,
-                marginTop: 30,
-              }}
-            >
-              <div style={card}>
-                <h4>Daily Intelligence</h4>
-                <p style={{ fontSize: "14px", opacity: 0.8 }}>
-                  Short-term interpretation of your current financial state.
-                  Best for immediate clarity.
-                </p>
-              </div>
-
-              <div style={card}>
-                <h4>Weekly Intelligence</h4>
-                <p style={{ fontSize: "14px", opacity: 0.8 }}>
-                  Behavior patterns across days and categories.
-                  Best for understanding habits.
-                </p>
-              </div>
-
-              <div style={card}>
-                <h4>Monthly Intelligence</h4>
-                <p style={{ fontSize: "14px", opacity: 0.8 }}>
-                  Multi-week context, regional insights, and forward-looking analysis.
-                  Best when decisions require direction.
-                </p>
-              </div>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 25, marginTop: 40 }}>
+                <div style={card}>
+                    <div style={{ height: 40, width: 40, background: "rgba(56,189,248,0.2)", borderRadius: "10px", margin: "0 auto 15px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <span style={{ color: "#38bdf8" }}>D</span>
+                    </div>
+                    <h4 style={{ marginBottom: 10 }}>Daily</h4>
+                    <p style={{ fontSize: "13px", opacity: 0.7 }}>Immediate, granular interpretation of your current state.</p>
+                </div>
+                <div style={card}>
+                    <div style={{ height: 40, width: 40, background: "rgba(167,139,250,0.2)", borderRadius: "10px", margin: "0 auto 15px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <span style={{ color: "#a78bfa" }}>W</span>
+                    </div>
+                    <h4 style={{ marginBottom: 10 }}>Weekly</h4>
+                    <p style={{ fontSize: "13px", opacity: 0.7 }}>Pattern recognition and behavioral habit analysis.</p>
+                </div>
+                <div style={card}>
+                    <div style={{ height: 40, width: 40, background: "rgba(34,211,238,0.2)", borderRadius: "10px", margin: "0 auto 15px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <span style={{ color: "#22d3ee" }}>M</span>
+                    </div>
+                    <h4 style={{ marginBottom: 10 }}>Monthly</h4>
+                    <p style={{ fontSize: "13px", opacity: 0.7 }}>Strategic direction, regional context, and long-term trajectory.</p>
+                </div>
             </div>
           </div>
 
-          <div
-            id="pricing"
-            style={{ marginTop: isMobile ? 40 : 60 }}
-          >
-            <h2
-              style={{
-                textAlign: "center",
-                marginBottom: 10,
-                fontSize: isMobile ? "1.4rem" : "2rem",
-              }}
-            >
-              Unlock Advanced AI Intelligence
-            </h2>
-
-            <div style={{ 
-              display: "flex", 
-              alignItems: "center", 
-              justifyContent: "center", 
-              gap: "12px", 
-              marginBottom: 30,
-              fontSize: isMobile ? "14px" : "16px",
-              opacity: 0.9,
-              flexWrap: "wrap"
-            }}>
-              <span style={{ color: "#10b981", fontWeight: "600" }}>Strict Data Privacy</span>
+          {/* PRICING GATE SECTION */}
+          <div id="pricing" style={{ marginTop: 100, paddingBottom: 100 }}>
+            <h2 style={{ textAlign: "center", marginBottom: 10, fontSize: "2rem" }}>Unlock Advanced AI Intelligence</h2>
+            
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", marginBottom: 40, opacity: 0.8 }}>
+              <span style={{ color: "#10b981", fontSize: "14px" }}>Strict Data Privacy</span>
               <span style={{ opacity: 0.3 }}>|</span>
-              <span>Secure transaction processed via</span>
-              <img 
-                src="/wealthyai/icons/stripe.png" 
-                alt="Stripe" 
-                style={{ height: "35px", width: "auto", display: "inline-block" }} 
-              />
+              <span style={{ fontSize: "14px" }}>Secure via</span>
+              <img src="/wealthyai/icons/stripe.png" alt="Stripe" style={{ height: "30px" }} />
             </div>
 
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                gap: 20,
-                flexWrap: "wrap",
-              }}
-            >
-              {/* DAY PASS */}
+            <div style={{ display: "flex", justifyContent: "center", gap: 25, flexWrap: "wrap" }}>
+              
+              {/* DAY GATE */}
               <div style={{ ...priceCard, cursor: "default" }}>
-                <div 
-                  onClick={() => handleCheckout("price_1SsRVyDyLtejYlZi3fEwvTPW")}
-                  style={{ cursor: "pointer" }}
-                >
-                  <h3>1 Day · $9.99</h3>
-                  <small>Immediate clarity</small>
+                <div onClick={() => handleCheckout("price_1SsRVyDyLtejYlZi3fEwvTPW")} style={{ cursor: "pointer" }}>
+                  <h3 style={{ fontSize: "1.4rem", marginBottom: 5 }}>1 Day · $9.99</h3>
+                  <p style={{ fontSize: "14px", opacity: 0.6 }}>Immediate clarity</p>
                 </div>
 
-                <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "12px" }}>
+                <div style={{ marginTop: 30, borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 20 }}>
                   <button 
                     onClick={(e) => { e.stopPropagation(); setShowDayInput(!showDayInput); }}
-                    style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: "10px", cursor: "pointer", letterSpacing: "0.05em" }}
+                    style={{ background: "none", border: "none", color: "rgba(255,255,255,0.3)", fontSize: "11px", cursor: "pointer", letterSpacing: "0.05em" }}
                   >
                     {showDayInput ? "CLOSE ACCESS" : "ACCESS WITH DAY PASS?"}
                   </button>
                   
                   {showDayInput && (
-                    <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                       <button 
-                        onClick={() => handleCheckout("price_1SsRVyDyLtejYlZi3fEwvTPW")}
-                        style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "white", borderRadius: "6px", padding: "6px", fontSize: "11px", cursor: "pointer" }}
+                    <div style={{ marginTop: 15, display: "flex", flexDirection: "column", gap: "10px" }}>
+                      <input 
+                        type="text" 
+                        value={dayCode}
+                        onChange={(e) => setDayCode(e.target.value)}
+                        placeholder="Enter code"
+                        style={gateInput}
+                      />
+                      <button 
+                        onClick={() => handleVerify(dayCode, "day")}
+                        style={gateBtn}
                       >
-                        VALIDATE ACCESS
+                        Validate Access
                       </button>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* WEEK PASS */}
+              {/* WEEK GATE */}
               <div style={{ ...priceCard, cursor: "default" }}>
-                <div 
-                  onClick={() => handleCheckout("price_1SsRY1DyLtejYlZiglvFKufA")}
-                  style={{ cursor: "pointer" }}
-                >
-                  <h3>1 Week · $14.99</h3>
-                  <small>Behavior & patterns</small>
+                <div onClick={() => handleCheckout("price_1SsRY1DyLtejYlZiglvFKufA")} style={{ cursor: "pointer" }}>
+                  <h3 style={{ fontSize: "1.4rem", marginBottom: 5 }}>1 Week · $14.99</h3>
+                  <p style={{ fontSize: "14px", opacity: 0.6 }}>Behavior & patterns</p>
                 </div>
 
-                <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "12px" }}>
+                <div style={{ marginTop: 30, borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 20 }}>
                   <button 
                     onClick={(e) => { e.stopPropagation(); setShowWeekInput(!showWeekInput); }}
-                    style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: "10px", cursor: "pointer", letterSpacing: "0.05em" }}
+                    style={{ background: "none", border: "none", color: "rgba(255,255,255,0.3)", fontSize: "11px", cursor: "pointer", letterSpacing: "0.05em" }}
                   >
                     {showWeekInput ? "CLOSE ACCESS" : "ACCESS WITH WEEK PASS?"}
                   </button>
                   
                   {showWeekInput && (
-                    <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                       <button 
-                        onClick={() => handleCheckout("price_1SsRY1DyLtejYlZiglvFKufA")}
-                        style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "white", borderRadius: "6px", padding: "6px", fontSize: "11px", cursor: "pointer" }}
+                    <div style={{ marginTop: 15, display: "flex", flexDirection: "column", gap: "10px" }}>
+                      <input 
+                        type="text" 
+                        value={weekCode}
+                        onChange={(e) => setWeekCode(e.target.value)}
+                        placeholder="Enter code"
+                        style={gateInput}
+                      />
+                      <button 
+                        onClick={() => handleVerify(weekCode, "week")}
+                        style={gateBtn}
                       >
-                        VALIDATE ACCESS
+                        Validate Access
                       </button>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* MONTH PASS */}
+              {/* MONTH GATE (ORIGINAL) */}
               <div style={{ ...priceCard, cursor: "default" }}>
-                <div 
-                  onClick={() => handleCheckout("price_1Sya6GDyLtejYlZiCb8oLqga")}
-                  style={{ cursor: "pointer" }}
-                >
-                  <h3>1 Month · $49.99</h3>
-                  <small>Full intelligence engine</small>
+                <div onClick={() => handleCheckout("price_1Sya6GDyLtejYlZiCb8oLqga")} style={{ cursor: "pointer" }}>
+                  <h3 style={{ fontSize: "1.4rem", marginBottom: 5 }}>1 Month · $49.99</h3>
+                  <p style={{ fontSize: "14px", opacity: 0.6 }}>Full intelligence engine</p>
                 </div>
 
-                <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "12px" }}>
+                <div style={{ marginTop: 30, borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 20 }}>
                   <button 
                     onClick={(e) => { e.stopPropagation(); setShowVipInput(!showVipInput); }}
-                    style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: "10px", cursor: "pointer", letterSpacing: "0.05em" }}
+                    style={{ background: "none", border: "none", color: "rgba(255,255,255,0.3)", fontSize: "11px", cursor: "pointer", letterSpacing: "0.05em" }}
                   >
                     {showVipInput ? "CLOSE PRIORITY" : "HAVE A PRIORITY CODE?"}
                   </button>
                   
                   {showVipInput && (
-                    <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <div style={{ marginTop: 15, display: "flex", flexDirection: "column", gap: "10px" }}>
                       <input 
                         type="text" 
                         value={vipCode}
                         onChange={(e) => setVipCode(e.target.value)}
                         placeholder="Enter code"
-                        style={{ ...input, textAlign: "center", fontSize: "12px", padding: "6px", background: "rgba(255,255,255,0.04)" }}
+                        style={gateInput}
                       />
                       <button 
-                        onClick={handleVipSubmit}
-                        style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "white", borderRadius: "6px", padding: "6px", fontSize: "11px", cursor: "pointer" }}
+                        onClick={() => handleVerify(vipCode, "month")}
+                        style={gateBtn}
                       >
-                        VALIDATE
+                        Validate
                       </button>
                     </div>
                   )}
                 </div>
               </div>
+
             </div>
           </div>
         </div>
 
-        <div style={{ 
-          marginTop: "50px", 
-          textAlign: "center", 
-          paddingBottom: "20px" 
-        }}>
-          <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
-            © 2026 WealthyAI — All rights reserved.
-          </div>
-        </div>
+        {/* FOOTER */}
+        <footer style={{ textAlign: "center", padding: "40px 0", borderTop: "1px solid rgba(255,255,255,0.05)", opacity: 0.6, fontSize: "12px" }}>
+            <p>© 2026 WealthyAI Intelligence Systems. All analytical results are interpretations, not financial advice.</p>
+            <div style={{ marginTop: 15, display: "flex", justifyContent: "center", gap: 20 }}>
+                <span>Privacy Policy</span>
+                <span>Terms of Service</span>
+                <span>Support</span>
+            </div>
+        </footer>
 
         <style>{`
           .pulse-title {
-            animation: pulseSoft 3s ease-in-out infinite;
+            animation: pulseSoft 4s ease-in-out infinite;
           }
           @keyframes pulseSoft {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
+            0%, 100% { opacity: 0.7; transform: scale(0.99); }
+            50% { opacity: 1; transform: scale(1); }
           }
           @keyframes waiScroll {
             from { transform: translateX(0); }
             to   { transform: translateX(-50%); }
+          }
+          input::-webkit-outer-spin-button,
+          input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
           }
         `}</style>
       </main>
