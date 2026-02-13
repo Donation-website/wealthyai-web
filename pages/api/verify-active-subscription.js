@@ -12,8 +12,18 @@ export default async function handler(req, res) {
     return res.status(405).json({ valid: false });
   }
 
-  const { sessionId } = req.body;
+  const { sessionId, vipToken } = req.body; // 🆕 Itt fogadjuk a VIP tokent is
 
+  // 1. VIP ELLENŐRZÉS - Ha te vagy az, ne is keressünk Stripe-ot
+  if (vipToken === "MASTER-DOMINANCE-2026") {
+    return res.status(200).json({ 
+      valid: true, 
+      plan: 'vip',
+      isReturningCustomer: false 
+    });
+  }
+
+  // 2. STRIPE ELLENŐRZÉS - Csak ha nincs VIP
   if (!sessionId) {
     return res.status(200).json({ valid: false });
   }
@@ -25,15 +35,14 @@ export default async function handler(req, res) {
 
     const subscription = session.subscription;
 
-    if (subscription && subscription.status === "active") {
-      const isReturningCustomer =
-        subscription.metadata?.had_month_before === "true";
+    if (subscription && (subscription.status === "active" || subscription.status === "trialing")) {
+      const isReturningCustomer = subscription.metadata?.had_month_before === "true";
 
       return res.status(200).json({
         valid: true,
         subscriptionId: subscription.id,
         periodStart: subscription.current_period_start,
-        isReturningCustomer, // 🆕 EZ AZ EGÉSZ LÉNYEG
+        isReturningCustomer, 
       });
     }
 
