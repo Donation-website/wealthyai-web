@@ -76,13 +76,13 @@ export default function UserDashboard() {
     );
   }
 
-  /* ===== VIP SUBMIT HANDLER (JAVÍTOTT ÚTVONAL) ===== */
+  /* ===== VIP SUBMIT HANDLER (IDŐBÉLYEGGEL ÉS SZINT-FIGYELŐVEL) ===== */
 
   const handleVipSubmit = async () => {
     if (!vipCode.trim()) return;
     
     try {
-      // Itt az új API fájlt hívjuk meg: verify-priority
+      // Meghívjuk az API-t az ellenőrzéshez
       const res = await fetch("/api/verify-priority", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -95,7 +95,23 @@ export default function UserDashboard() {
       const result = await res.json();
 
       if (result.active) {
+        // Alap kód mentése
         localStorage.setItem("wai_vip_token", vipCode.trim());
+
+        // IDŐBÉLYEG RÖGZÍTÉSE CSAK GUEST SZINTNÉL
+        if (result.level === "guest") {
+          const now = new Date();
+          const expiryDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+          
+          localStorage.setItem("wai_vip_activated_at", now.toISOString());
+          localStorage.setItem("wai_vip_expiry", expiryDate.toISOString());
+        } else {
+          // Ha Master (vagy egyéb), töröljük a korlátozást
+          localStorage.removeItem("wai_vip_expiry");
+          localStorage.removeItem("wai_vip_activated_at");
+        }
+
+        // Átirányítás
         window.location.href = result.redirectPath || "/premium-month";
       } else {
         alert("Invalid or expired priority code.");
@@ -110,7 +126,6 @@ export default function UserDashboard() {
   const handleCheckout = async (priceId) => {
     localStorage.setItem("userFinancials", JSON.stringify(data));
 
-    // A Monthly Price ID ellenőrzése a visszatérő vásárlókhoz
     if (priceId === "price_1Sya6GDyLtejYlZiCb8oLqga") {
       const hasHadMonth = localStorage.getItem("hadMonthSubscription");
       if (hasHadMonth) {
@@ -551,6 +566,12 @@ export default function UserDashboard() {
                       >
                         VALIDATE
                       </button>
+                      {/* VISSZAJELZÉS HA AKTÍV A KÓD */}
+                      {typeof window !== 'undefined' && localStorage.getItem("wai_vip_expiry") && (
+                        <div style={{ fontSize: "10px", color: "#10b981", marginTop: "5px" }}>
+                          Access active until: {new Date(localStorage.getItem("wai_vip_expiry")).toLocaleDateString()}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
