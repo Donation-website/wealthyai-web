@@ -159,8 +159,12 @@ export default function DayPremium() {
   const [isMobile, setIsMobile] = useState(false);
   const aiBoxRef = useRef(null);
   const [aiBoxHeight, setAiBoxHeight] = useState(0);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
     handleResize();
     window.addEventListener("resize", handleResize);
@@ -177,46 +181,57 @@ export default function DayPremium() {
   const [loading, setLoading] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
 
-  // Figyeljük a box magasságát
   useEffect(() => {
     if (aiOpen && aiBoxRef.current) {
       setAiBoxHeight(aiBoxRef.current.offsetHeight);
     }
   }, [aiOpen, aiText]);
 
-  /* ===== SUBSCRIPTION CHECK - FIXED FOR VIP ===== */
+  /* ===== SUBSCRIPTION CHECK - FIXED FOR VIP & HYDRATION ===== */
   useEffect(() => {
-    // 1. ELŐSZÖR A VIP TOKENT NÉZZÜK
-    const vipToken = localStorage.getItem("wai_vip_token");
-    if (vipToken === "MASTER-DOMINANCE-2026") {
-      return; // Ha mester kód van, megállunk, beengedve.
+    async function checkAccess() {
+      const vipToken = localStorage.getItem("wai_vip_token");
+      const params = new URLSearchParams(window.location.search);
+      const sessionId = params.get("session_id");
+
+      // 1. Mester kód azonnali belépés
+      if (vipToken === "MASTER-DOMINANCE-2026") {
+        setIsAuthorized(true);
+        setIsLoading(false);
+        return;
+      }
+
+      // 2. Ha nincs semmi, várunk, aztán kidobunk
+      if (!sessionId && !vipToken) {
+        setTimeout(() => {
+          if (!isAuthorized) window.location.href = "/start";
+        }, 3000);
+        return;
+      }
+
+      // 3. Szerver oldali ellenőrzés
+      try {
+        const res = await fetch("/api/verify-active-subscription", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId, vipToken }),
+        });
+        const d = await res.json();
+        
+        if (d.valid || d.active || d.success) {
+          setIsAuthorized(true);
+        } else {
+          window.location.href = "/start";
+        }
+      } catch (err) {
+        if (sessionId) setIsAuthorized(true);
+      }
+      setIsLoading(false);
     }
 
-    // 2. HA NINCS VIP, AKKOR A STRIPE-OT NÉZZÜK
-    const params = new URLSearchParams(window.location.search);
-    const sessionId = params.get("session_id");
+    if (mounted) checkAccess();
+  }, [mounted]);
 
-    // JAVÍTÁS: Csak akkor irányítunk el, ha NINCS sessionId ÉS NINCS elmentett érvényes állapotunk.
-    if (!sessionId) {
-      // Ha már bent vagyunk, ne dobjon ki rögtön, hátha csak frissített az illető.
-      // De a biztonság kedvéért itt ellenőrizzük, van-e session.
-      window.location.href = "/start";
-      return;
-    }
-
-    fetch("/api/verify-active-subscription", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sessionId }),
-    })
-      .then(res => res.json())
-      .then(d => {
-        if (!d.valid) window.location.href = "/start";
-      })
-      .catch(() => {
-        window.location.href = "/start";
-      });
-  }, []);
   useEffect(() => {
     const saved = localStorage.getItem("userFinancials");
     if (saved) setData(JSON.parse(saved));
@@ -255,35 +270,25 @@ export default function DayPremium() {
     setLoading(false);
   };
 
+  if (!mounted) return null;
+
+  if (isLoading) {
+    return (
+      <div style={{ backgroundColor: "#020617", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontFamily: "Inter, sans-serif" }}>
+        Initialising Intelligence...
+      </div>
+    );
+  }
+
+  if (!isAuthorized) return null;
+
   /* ===== TICKER COMPONENT ===== */
   const WealthyTicker = () => {
     if (isMobile) return null;
-
     const tickerText = "WealthyAI interprets your financial state over time — not advice, not prediction, just clarity • Interpretation over advice • Clarity over certainty • Insight unfolds over time • Financial understanding isn’t instant • Context changes • Insight follows time • Clarity over certainty • Built on time, not urgency • ";
-
     return (
-      <div
-        style={{
-          position: "absolute",
-          top: 10,
-          left: 0,
-          width: "100%",
-          height: 18,
-          overflow: "hidden",
-          zIndex: 20,
-          pointerEvents: "none",
-        }}
-      >
-        <div
-          style={{
-            display: "inline-block",
-            whiteSpace: "nowrap",
-            fontSize: 11,
-            letterSpacing: "0.08em",
-            color: "rgba(255,255,255,0.75)",
-            animation: "waiScroll 45s linear infinite",
-          }}
-        >
+      <div style={{ position: "absolute", top: 10, left: 0, width: "100%", height: 18, overflow: "hidden", zIndex: 20, pointerEvents: "none" }}>
+        <div style={{ display: "inline-block", whiteSpace: "nowrap", fontSize: 11, letterSpacing: "0.08em", color: "rgba(255,255,255,0.75)", animation: "waiScroll 45s linear infinite" }}>
           <span>{tickerText}</span>
           <span>{tickerText}</span>
         </div>
@@ -376,7 +381,6 @@ export default function DayPremium() {
               <MiniBar title="Expense Distribution" value={data.fixed + data.variable} />
             </div>
 
-            {/* AZ AMŐBA HELYE: Dinamikusan igazítva az AI boxhoz */}
             {!isMobile && aiOpen && (
               <div style={{ flex: 0, marginTop: '20px', width: '100%' }}>
                 <SpiderNet isMobile={isMobile} height={aiBoxHeight} />
@@ -420,15 +424,9 @@ export default function DayPremium() {
 
 function Metric({ label, value, isMobile }) {
   return (
-    <div style={{
-      ...metric,
-      marginBottom: isMobile ? "15px" : "25px"
-    }}>
+    <div style={{ ...metric, marginBottom: isMobile ? "15px" : "25px" }}>
       <div style={metricLabel}>{label}</div>
-      <div style={{
-        ...metricValue,
-        fontSize: isMobile ? "1.6rem" : "2.2rem"
-      }}>{value}</div>
+      <div style={{ ...metricValue, fontSize: isMobile ? "1.6rem" : "2.2rem" }}>{value}</div>
     </div>
   );
 }
