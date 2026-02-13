@@ -66,7 +66,7 @@ async function sendPaymentConfirmationEmail({ to, priceId, amount, currency, dat
             <li>Keep this email for the duration of your access.</li>
             <li>If you close your browser, return to <b>WealthyAI</b>.</li>
             <li>Click <b>"HAVE A PRIORITY CODE?"</b> on the dashboard.</li>
-            <li>Paste the <b>Access Key</b> fenti kódját a session visszaállításához.</li>
+            <li>Paste the <b>Access Key</b> Copy and paste this Access Key on the start page to restore your session or to log in from another device.</li>
           </ol>
 
           <p style="font-size: 12px; color: #64748b; margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
