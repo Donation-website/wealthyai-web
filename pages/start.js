@@ -13,8 +13,14 @@ export default function UserDashboard() {
   });
 
   /* ===== VIP ACCESS STATES ===== */
-  const [showVipInput, setShowVipInput] = useState(false);
-  const [vipCode, setVipCode] = useState("");
+  const [showVipInputDay, setShowVipInputDay] = useState(false);
+  const [vipCodeDay, setVipCodeDay] = useState("");
+
+  const [showVipInputWeek, setShowVipInputWeek] = useState(false);
+  const [vipCodeWeek, setVipCodeWeek] = useState("");
+
+  const [showVipInputMonth, setShowVipInputMonth] = useState(false);
+  const [vipCodeMonth, setVipCodeMonth] = useState("");
 
   /* ===== MOBILE DETECTION ===== */
   const [isMobile, setIsMobile] = useState(false);
@@ -78,8 +84,8 @@ export default function UserDashboard() {
 
   /* ===== VIP SUBMIT HANDLER (JAVÍTOTT ÚTVONAL) ===== */
 
-  const handleVipSubmit = async () => {
-    if (!vipCode.trim()) return;
+  const handleVipSubmit = async (code, type) => {
+    if (!code.trim()) return;
     
     try {
       // Itt az új API fájlt hívjuk meg: verify-priority
@@ -87,7 +93,7 @@ export default function UserDashboard() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          vipCode: vipCode.trim(),
+          vipCode: code.trim(),
           financials: data 
         }),
       });
@@ -95,8 +101,8 @@ export default function UserDashboard() {
       const result = await res.json();
 
       if (result.active) {
-        localStorage.setItem("wai_vip_token", vipCode.trim());
-        window.location.href = result.redirectPath || "/premium-month";
+        localStorage.setItem("wai_vip_token", code.trim());
+        window.location.href = result.redirectPath || `/premium-${type}`;
       } else {
         alert("Invalid or expired priority code.");
       }
@@ -499,26 +505,87 @@ export default function UserDashboard() {
                 flexWrap: "wrap",
               }}
             >
-              <div
-                style={priceCard}
-                onClick={() =>
-                  handleCheckout("price_1SsRVyDyLtejYlZi3fEwvTPW")
-                }
-              >
-                <h3>1 Day · $9.99</h3>
-                <small>Immediate clarity</small>
+              {/* --- DAY CARD --- */}
+              <div style={{ ...priceCard, cursor: "default" }}>
+                <div 
+                  onClick={() => handleCheckout("price_1SsRVyDyLtejYlZi3fEwvTPW")}
+                  style={{ cursor: "pointer" }}
+                >
+                  <h3>1 Day · $9.99</h3>
+                  <small>Immediate clarity</small>
+                </div>
+                <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "12px" }}>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setShowVipInputDay(!showVipInputDay); }}
+                    style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: "10px", cursor: "pointer", letterSpacing: "0.05em" }}
+                  >
+                    {showVipInputDay ? "CLOSE PRIORITY" : "HAVE A PRIORITY CODE?"}
+                  </button>
+                  {showVipInputDay && (
+                    <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px", position: "relative" }}>
+                      <span 
+                        onClick={() => setShowVipInputDay(false)}
+                        style={{ position: "absolute", right: "-5px", top: "-25px", cursor: "pointer", fontSize: "12px", opacity: 0.5 }}
+                      >✕</span>
+                      <input 
+                        type="text" 
+                        value={vipCodeDay}
+                        onChange={(e) => setVipCodeDay(e.target.value)}
+                        placeholder="Enter code"
+                        style={{ ...input, textAlign: "center", fontSize: "12px", padding: "6px", background: "rgba(255,255,255,0.04)" }}
+                      />
+                      <button 
+                        onClick={() => handleVipSubmit(vipCodeDay, "day")}
+                        style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "white", borderRadius: "6px", padding: "6px", fontSize: "11px", cursor: "pointer" }}
+                      >
+                        VALIDATE
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div
-                style={priceCard}
-                onClick={() =>
-                  handleCheckout("price_1SsRY1DyLtejYlZiglvFKufA")
-                }
-              >
-                <h3>1 Week · $14.99</h3>
-                <small>Behavior & patterns</small>
+              {/* --- WEEK CARD --- */}
+              <div style={{ ...priceCard, cursor: "default" }}>
+                <div 
+                  onClick={() => handleCheckout("price_1SsRY1DyLtejYlZiglvFKufA")}
+                  style={{ cursor: "pointer" }}
+                >
+                  <h3>1 Week · $14.99</h3>
+                  <small>Behavior & patterns</small>
+                </div>
+                <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "12px" }}>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setShowVipInputWeek(!showVipInputWeek); }}
+                    style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: "10px", cursor: "pointer", letterSpacing: "0.05em" }}
+                  >
+                    {showVipInputWeek ? "CLOSE PRIORITY" : "HAVE A PRIORITY CODE?"}
+                  </button>
+                  {showVipInputWeek && (
+                    <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px", position: "relative" }}>
+                      <span 
+                        onClick={() => setShowVipInputWeek(false)}
+                        style={{ position: "absolute", right: "-5px", top: "-25px", cursor: "pointer", fontSize: "12px", opacity: 0.5 }}
+                      >✕</span>
+                      <input 
+                        type="text" 
+                        value={vipCodeWeek}
+                        onChange={(e) => setVipCodeWeek(e.target.value)}
+                        placeholder="Enter code"
+                        style={{ ...input, textAlign: "center", fontSize: "12px", padding: "6px", background: "rgba(255,255,255,0.04)" }}
+                      />
+                      <button 
+                        onClick={() => handleVipSubmit(vipCodeWeek, "week")}
+                        style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "white", borderRadius: "6px", padding: "6px", fontSize: "11px", cursor: "pointer" }}
+                      >
+                        VALIDATE
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
+              {/* --- MONTH CARD --- */}
               <div style={{ ...priceCard, cursor: "default" }}>
                 <div 
                   onClick={() => handleCheckout("price_1Sya6GDyLtejYlZiCb8oLqga")}
@@ -527,26 +594,28 @@ export default function UserDashboard() {
                   <h3>1 Month · $49.99</h3>
                   <small>Full intelligence engine</small>
                 </div>
-
                 <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "12px" }}>
                   <button 
-                    onClick={(e) => { e.stopPropagation(); setShowVipInput(!showVipInput); }}
+                    onClick={(e) => { e.stopPropagation(); setShowVipInputMonth(!showVipInputMonth); }}
                     style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: "10px", cursor: "pointer", letterSpacing: "0.05em" }}
                   >
-                    {showVipInput ? "CLOSE PRIORITY" : "HAVE A PRIORITY CODE?"}
+                    {showVipInputMonth ? "CLOSE PRIORITY" : "HAVE A PRIORITY CODE?"}
                   </button>
-                  
-                  {showVipInput && (
-                    <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                  {showVipInputMonth && (
+                    <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px", position: "relative" }}>
+                      <span 
+                        onClick={() => setShowVipInputMonth(false)}
+                        style={{ position: "absolute", right: "-5px", top: "-25px", cursor: "pointer", fontSize: "12px", opacity: 0.5 }}
+                      >✕</span>
                       <input 
                         type="text" 
-                        value={vipCode}
-                        onChange={(e) => setVipCode(e.target.value)}
+                        value={vipCodeMonth}
+                        onChange={(e) => setVipCodeMonth(e.target.value)}
                         placeholder="Enter code"
                         style={{ ...input, textAlign: "center", fontSize: "12px", padding: "6px", background: "rgba(255,255,255,0.04)" }}
                       />
                       <button 
-                        onClick={handleVipSubmit}
+                        onClick={() => handleVipSubmit(vipCodeMonth, "month")}
                         style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "white", borderRadius: "6px", padding: "6px", fontSize: "11px", cursor: "pointer" }}
                       >
                         VALIDATE
