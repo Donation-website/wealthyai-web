@@ -18,10 +18,12 @@ async function getRawBody(readable) {
   return Buffer.concat(chunks);
 }
 
+// ✅ PDF generáló és E-mail küldő - benne a Session ID (Access Code)
 async function sendPaymentConfirmationEmail({ to, priceId, amount, currency, date, sessionId }) {
   try {
     const productName = "WealthyAI Intelligence Pass";
-    // Itt hívjuk a PDF generálót - győződj meg róla, hogy az importod rendben van!
+    
+    // PDF generálás - sessionId átadva a PDF-hez is
     const pdfBuffer = await generateAccessConfirmationPDF({ 
       productName, amount, currency, date, sessionId 
     });
@@ -37,10 +39,11 @@ async function sendPaymentConfirmationEmail({ to, priceId, amount, currency, dat
       from: process.env.MAIL_FROM,
       to,
       subject: `[CONFIDENTIAL] WealthyAI · Access Activated`,
-      text: `Welcome to the inner circle. Your access is now live.\n\nYour unique Access Code: ${sessionId}\n\nKeep this code safe. If you clear your browser cache or change devices, you can restore your access by entering this code in the Priority/Access field on our site.`,
+      // ✅ A szövegbe beletettük az Access Code-ot (Session ID)
+      text: `Welcome to the inner circle. Your access is now live.\n\nYOUR ACCESS CODE: ${sessionId}\n\nIMPORTANT: Use this code to restore your access if you clear your browser or switch devices. Simply enter it into the "Priority/Access Code" field on the dashboard.`,
       attachments: [{ filename: 'wealthyai-access.pdf', content: pdfBuffer }],
     });
-    console.log("✨ E-mail elküldve a session ID-val.");
+    console.log(`✨ E-mail sikeresen elküldve a kifizetett kódal: ${sessionId}`);
   } catch (err) {
     console.error('❌ E-MAIL HIBA:', err.message);
   }
@@ -64,24 +67,24 @@ export default async function handler(req, res) {
     const session = event.data.object;
     const subscriptionId = session.subscription;
 
-    // ✅ Ismétlődő fizetés azonnali leállítása
+    // 1. Ismétlődő fizetés azonnali leállítása (hogy ne vonjon le többet)
     if (subscriptionId) {
       try {
         await stripe.subscriptions.update(subscriptionId, { cancel_at_period_end: true });
         console.log(`✅ Előfizetés leállítva: ${subscriptionId}`);
       } catch (err) {
-        console.error(`❌ Hiba a leállításnál: ${err.message}`);
+        console.error(`❌ Előfizetés leállítás hiba: ${err.message}`);
       }
     }
 
-    // ✅ Küldés a session.id-val, ami a belépőkód lesz
+    // 2. Visszaigazolás küldése a SESSION ID-val
     await sendPaymentConfirmationEmail({
       to: session.customer_details.email,
       priceId: session.metadata?.priceId,
       amount: session.amount_total / 100,
       currency: session.currency,
       date: new Date().toLocaleDateString('hu-HU'),
-      sessionId: session.id 
+      sessionId: session.id // Ez lesz a user belépőkódja
     });
   }
 
