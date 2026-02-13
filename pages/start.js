@@ -116,8 +116,8 @@ export default function UserDashboard() {
   const handleCheckout = async (priceId) => {
     localStorage.setItem("userFinancials", JSON.stringify(data));
 
-    // A Monthly Price ID ellenőrzése a visszatérő vásárlókhoz
-    if (priceId === "price_1Sya6GDyLtejYlZiCb8oLqga") {
+    // A Monthly Price ID ellenőrzése a visszatérő vásárlókhoz (FRISSÍTVE)
+    if (priceId === "price_1T0L8aDyLtejYlZik3nH3Uft") {
       const hasHadMonth = localStorage.getItem("hadMonthSubscription");
       if (hasHadMonth) {
         localStorage.setItem("isReturningMonthCustomer", "true");
@@ -505,10 +505,10 @@ export default function UserDashboard() {
                 flexWrap: "wrap",
               }}
             >
-              {/* --- DAY CARD --- */}
+              {/* --- DAY CARD (ID FRISSÍTVE) --- */}
               <div style={{ ...priceCard, cursor: "default" }}>
                 <div 
-                  onClick={() => handleCheckout("price_1SsRVyDyLtejYlZi3fEwvTPW")}
+                  onClick={() => handleCheckout("price_1T0LCDDyLtejYlZimOucadbT")}
                   style={{ cursor: "pointer" }}
                 >
                   <h3>1 Day · $9.99</h3>
@@ -545,10 +545,10 @@ export default function UserDashboard() {
                 </div>
               </div>
 
-              {/* --- WEEK CARD --- */}
+              {/* --- WEEK CARD (ID FRISSÍTVE) --- */}
               <div style={{ ...priceCard, cursor: "default" }}>
                 <div 
-                  onClick={() => handleCheckout("price_1SsRY1DyLtejYlZiglvFKufA")}
+                  onClick={() => handleCheckout("price_1T0LBQDyLtejYlZiXKn0PmGP")}
                   style={{ cursor: "pointer" }}
                 >
                   <h3>1 Week · $14.99</h3>
@@ -585,10 +585,10 @@ export default function UserDashboard() {
                 </div>
               </div>
 
-              {/* --- MONTH CARD --- */}
+              {/* --- MONTH CARD (ID FRISSÍTVE) --- */}
               <div style={{ ...priceCard, cursor: "default" }}>
                 <div 
-                  onClick={() => handleCheckout("price_1Sya6GDyLtejYlZiCb8oLqga")}
+                  onClick={() => handleCheckout("price_1T0L8aDyLtejYlZik3nH3Uft")}
                   style={{ cursor: "pointer" }}
                 >
                   <h3>1 Month · $49.99</h3>
