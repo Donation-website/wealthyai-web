@@ -138,22 +138,23 @@ export default function PremiumMonth() {
 
     if (monthlyVips.includes(vipToken)) {
       // Megnézzük, van-e már rögzített lejárat
-      if (!expiry) {
-        // Ha valamiért nincs (pl. régebbi verzióból maradt), most létrehozzuk
+      if (!expiry || expiry === "undefined") {
         const now = new Date();
-        const expiryDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+        // TESZT ÜZEMMÓD: 1 perces lejárat (1 * 60 * 1000)
+        // Élesítésnél írd vissza: + 7 * 24 * 60 * 60 * 1000
+        const expiryDate = new Date(now.getTime() + 1 * 60 * 1000); 
+        
+        localStorage.setItem("wai_vip_activated_at", now.toISOString());
         localStorage.setItem("wai_vip_expiry", expiryDate.toISOString());
         return; 
       }
 
-      // 7 napos lejárat ellenőrzése
+      // Lejárat ellenőrzése
       const now = new Date();
       const expiryDate = new Date(expiry);
 
-      if (now < expiryDate) {
-        return; // Még érvényes, maradhat az oldalon
-      } else {
-        // Ha lejárt, törlés és kidobás
+      if (now > expiryDate) {
+        // Ha lejárt, takarítás és kidobás
         localStorage.removeItem("wai_vip_token");
         localStorage.removeItem("wai_vip_expiry");
         localStorage.removeItem("wai_vip_activated_at");
@@ -166,17 +167,17 @@ export default function PremiumMonth() {
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get("session_id");
     
-    if (!sessionId) {
-      // Ha nincs fizetési azonosító sem, irány a start
+    if (!sessionId && !vipToken) {
       window.location.href = "/start";
       return;
     }
 
-    fetch("/api/verify-active-subscription", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sessionId }),
-    })
+    if (sessionId) {
+      fetch("/api/verify-active-subscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId }),
+      })
       .then(r => r.json())
       .then(d => {
         if (!d.valid) window.location.href = "/start";
@@ -184,7 +185,25 @@ export default function PremiumMonth() {
       .catch(() => {
         window.location.href = "/start";
       });
+    }
   }, []);
+
+  /* ================= CIKLUS SZÁMLÁLÓ (Day 0-tól) ================= */
+  const getCycleDay = () => {
+    const startStr = localStorage.getItem("wai_vip_activated_at");
+    if (!startStr) return 0;
+
+    const start = new Date(startStr);
+    const today = new Date();
+    
+    // Különbség napokban
+    const diffTime = today.getTime() - start.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    return diffDays; // Ez 0-ról indul az első napon
+  };
+
+  const currentDay = getCycleDay();
   /* ================= REGION AUTO-DETECT ================= */
 
   const [region, setRegion] = useState("EU");
