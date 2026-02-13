@@ -14,6 +14,7 @@ function getTodayKey() {
 }
 
 function getDailyUnlockTime() {
+  if (typeof window === "undefined") return 0;
   const stored = JSON.parse(localStorage.getItem(DAILY_SIGNAL_KEY) || "{}");
   const today = getTodayKey();
 
@@ -99,6 +100,7 @@ export default function PremiumMonth() {
   const [stressFactor, setStressFactor] = useState(0); 
 
   const calculateFragility = () => {
+    if (typeof inputs === 'undefined') return "0.0";
     const totalFixed = 
       inputs.housing + 
       inputs.electricity + 
@@ -138,10 +140,9 @@ export default function PremiumMonth() {
 
     if (monthlyVips.includes(vipToken)) {
       // Megnézzük, van-e már rögzített lejárat
-      if (!expiry || expiry === "undefined") {
+      if (!expiry || expiry === "undefined" || expiry === "Invalid Date") {
         const now = new Date();
-        // TESZT ÜZEMMÓD: 1 perces lejárat (1 * 60 * 1000)
-        // Élesítésnél írd vissza: + 7 * 24 * 60 * 60 * 1000
+        // === TESZT ÜZEMMÓD: 1 PERC ÉS A HIÁNYZÓ + JEL JAVÍTVA ===
         const expiryDate = new Date(now.getTime() + 1 * 60 * 1000); 
         
         localStorage.setItem("wai_vip_activated_at", now.toISOString());
@@ -154,7 +155,7 @@ export default function PremiumMonth() {
       const expiryDate = new Date(expiry);
 
       if (now > expiryDate) {
-        // Ha lejárt, takarítás és kidobás
+        // Ha lejárt, törlés és kidobás
         localStorage.removeItem("wai_vip_token");
         localStorage.removeItem("wai_vip_expiry");
         localStorage.removeItem("wai_vip_activated_at");
@@ -178,32 +179,60 @@ export default function PremiumMonth() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sessionId }),
       })
-      .then(r => r.json())
-      .then(d => {
-        if (!d.valid) window.location.href = "/start";
-      })
-      .catch(() => {
-        window.location.href = "/start";
-      });
+        .then(r => r.json())
+        .then(d => {
+          if (!d.valid) window.location.href = "/start";
+        })
+        .catch(() => {
+          window.location.href = "/start";
+        });
     }
   }, []);
 
   /* ================= CIKLUS SZÁMLÁLÓ (Day 0-tól) ================= */
   const getCycleDay = () => {
+    if (typeof window === "undefined") return 0;
     const startStr = localStorage.getItem("wai_vip_activated_at");
     if (!startStr) return 0;
 
     const start = new Date(startStr);
     const today = new Date();
     
-    // Különbség napokban
     const diffTime = today.getTime() - start.getTime();
+    // Math.floor biztosítja, hogy az első 24 órában Day 0 legyen
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     
-    return diffDays; // Ez 0-ról indul az első napon
+    return diffDays >= 0 ? diffDays : 0;
   };
 
   const currentDay = getCycleDay();
+
+  /* ================= REGION AUTO-DETECT ================= */
+
+  const [region, setRegion] = useState("EU");
+  const [country, setCountry] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const detect = async () => {
+      try {
+        const r = await fetch("/api/detect-region");
+        if (!r.ok) return;
+        const j = await r.json();
+        if (cancelled) return;
+        if (j?.region) setRegion(j.region);
+        if (j?.country) setCountry(j.country);
+      } catch {
+        /* silent fallback */
+      }
+    };
+
+    detect();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   /* ================= REGION AUTO-DETECT ================= */
 
   const [region, setRegion] = useState("EU");
