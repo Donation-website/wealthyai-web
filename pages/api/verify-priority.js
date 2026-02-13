@@ -9,32 +9,20 @@ export default async function handler(req, res) {
     if (!vipCode) return res.status(400).json({ valid: false, active: false });
     const trimmedCode = vipCode.trim();
 
-    // --- 1. MASTER KÓD ---
+    // 1. MASTER KÓD
     if (trimmedCode === "MASTER-DOMINANCE-2026") {
-      return res.status(200).json({ 
-        valid: true, 
-        active: true, 
-        level: "master", 
-        redirectPath: "/premium/hub" 
-      });
+      return res.status(200).json({ valid: true, active: true, level: "master", redirectPath: "/premium/hub" });
     }
 
-    // --- 2. HAVI VIP KÓDOK (Csak a megadott kódok) ---
+    // 2. HAVI VIP KÓDOK (Csak a megadott oldalakhoz)
     const monthlyVips = ["WAI-GUEST-7721", "WAI-CLIENT-8832", "WAI-PARTNER-9943"];
     if (monthlyVips.includes(trimmedCode)) {
-      return res.status(200).json({ 
-        valid: true, 
-        active: true, 
-        level: "guest", 
-        redirectPath: "/premium-month" 
-      });
+      return res.status(200).json({ valid: true, active: true, level: "guest", redirectPath: "/premium-month" });
     }
 
-    // --- 3. STRIPE SESSION ID ELLENŐRZÉS (Fizetős userek) ---
+    // 3. STRIPE SESSION (Fizetős userek)
     if (trimmedCode.startsWith("cs_")) {
       const session = await stripe.checkout.sessions.retrieve(trimmedCode);
-      
-      // Ha kifizette (paid) vagy nem kellett fizetni (no_payment_required)
       const isPaid = ["paid", "no_payment_required"].includes(session.payment_status);
       
       if (isPaid) {
@@ -46,15 +34,15 @@ export default async function handler(req, res) {
         else if (priceId === "price_1T0LCDDyLtejYlZimOucadbT") path = "/day";
 
         return res.status(200).json({
-          valid: true,
-          active: true,
+          valid: true,   // A frontend ezt keresi
+          active: true,  // Meg ez is itt van a biztonság kedvéért
           level: "paid",
           redirectPath: path
         });
       }
     }
 
-    return res.status(401).json({ valid: false, active: false, message: "Invalid code" });
+    return res.status(401).json({ valid: false, active: false });
   } catch (err) {
     console.error("Verification error:", err);
     return res.status(500).json({ valid: false, active: false });
