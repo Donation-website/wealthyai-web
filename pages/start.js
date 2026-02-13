@@ -12,7 +12,7 @@ export default function UserDashboard() {
     subscriptions: 120,
   });
 
-  /* ===== ACCESS STATES ===== */
+  /* ===== VIP ACCESS STATES ===== */
   const [showVipInput, setShowVipInput] = useState(false);
   const [showDayInput, setShowDayInput] = useState(false);
   const [showWeekInput, setShowWeekInput] = useState(false);
@@ -78,12 +78,13 @@ export default function UserDashboard() {
     );
   }
 
-  /* ===== VIP SUBMIT HANDLER ===== */
+  /* ===== VIP SUBMIT HANDLER (JAVÍTOTT ÚTVONAL) ===== */
 
   const handleVipSubmit = async () => {
     if (!vipCode.trim()) return;
     
     try {
+      // Itt az új API fájlt hívjuk meg: verify-priority
       const res = await fetch("/api/verify-priority", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -106,11 +107,12 @@ export default function UserDashboard() {
     }
   };
 
-  /* ===== STRIPE ===== */
+  /* ===== STRIPE (PRICE IDs UPDATED) ===== */
 
   const handleCheckout = async (priceId) => {
     localStorage.setItem("userFinancials", JSON.stringify(data));
 
+    // A Monthly Price ID ellenőrzése a visszatérő vásárlókhoz
     if (priceId === "price_1Sya6GDyLtejYlZiCb8oLqga") {
       const hasHadMonth = localStorage.getItem("hadMonthSubscription");
       if (hasHadMonth) {
@@ -499,7 +501,7 @@ export default function UserDashboard() {
                 flexWrap: "wrap",
               }}
             >
-              {/* DAILY PASS */}
+              {/* DAY PASS */}
               <div style={{ ...priceCard, cursor: "default" }}>
                 <div 
                   onClick={() => handleCheckout("price_1SsRVyDyLtejYlZi3fEwvTPW")}
@@ -514,24 +516,23 @@ export default function UserDashboard() {
                     onClick={(e) => { e.stopPropagation(); setShowDayInput(!showDayInput); }}
                     style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: "10px", cursor: "pointer", letterSpacing: "0.05em" }}
                   >
-                    {showDayInput ? "CLOSE ACCESS" : "UNLOCK NOW?"}
+                    {showDayInput ? "CLOSE ACCESS" : "ACCESS WITH DAY PASS?"}
                   </button>
                   
                   {showDayInput && (
                     <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                      <p style={{ fontSize: "11px", opacity: 0.7 }}>Ready for 24h intelligence?</p>
-                      <button 
+                       <button 
                         onClick={() => handleCheckout("price_1SsRVyDyLtejYlZi3fEwvTPW")}
-                        style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "white", borderRadius: "6px", padding: "8px", fontSize: "11px", cursor: "pointer" }}
+                        style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "white", borderRadius: "6px", padding: "6px", fontSize: "11px", cursor: "pointer" }}
                       >
-                        PROCEED TO STRIPE
+                        VALIDATE ACCESS
                       </button>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* WEEKLY PASS */}
+              {/* WEEK PASS */}
               <div style={{ ...priceCard, cursor: "default" }}>
                 <div 
                   onClick={() => handleCheckout("price_1SsRY1DyLtejYlZiglvFKufA")}
@@ -546,24 +547,23 @@ export default function UserDashboard() {
                     onClick={(e) => { e.stopPropagation(); setShowWeekInput(!showWeekInput); }}
                     style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: "10px", cursor: "pointer", letterSpacing: "0.05em" }}
                   >
-                    {showWeekInput ? "CLOSE ACCESS" : "UNLOCK NOW?"}
+                    {showWeekInput ? "CLOSE ACCESS" : "ACCESS WITH WEEK PASS?"}
                   </button>
                   
                   {showWeekInput && (
                     <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                      <p style={{ fontSize: "11px", opacity: 0.7 }}>Weekly insight engine ready.</p>
-                      <button 
+                       <button 
                         onClick={() => handleCheckout("price_1SsRY1DyLtejYlZiglvFKufA")}
-                        style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "white", borderRadius: "6px", padding: "8px", fontSize: "11px", cursor: "pointer" }}
+                        style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "white", borderRadius: "6px", padding: "6px", fontSize: "11px", cursor: "pointer" }}
                       >
-                        PROCEED TO STRIPE
+                        VALIDATE ACCESS
                       </button>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* MONTHLY / VIP PASS */}
+              {/* MONTH PASS */}
               <div style={{ ...priceCard, cursor: "default" }}>
                 <div 
                   onClick={() => handleCheckout("price_1Sya6GDyLtejYlZiCb8oLqga")}
