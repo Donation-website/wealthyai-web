@@ -85,22 +85,20 @@ const WealthyTicker = ({ isMobile }) => {
 };
 
 export default function PremiumMonth() {
-  // === STATES ===
+  // === MOBILE ADDITION: device detection ===
   const [isMobile, setIsMobile] = useState(false);
-  const [simulationActive, setSimulationActive] = useState(false);
-  const [stressFactor, setStressFactor] = useState(0); 
-  const [region, setRegion] = useState("EU");
-  const [country, setCountry] = useState(null);
 
-  // === MOBILE DETECTION ===
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+  
+  /* ================= SIMULATION & STRESS STATE ================= */
+  const [simulationActive, setSimulationActive] = useState(false);
+  const [stressFactor, setStressFactor] = useState(0); 
 
-  /* ================= FRAGILITY CALCULATION ================= */
   const calculateFragility = () => {
     if (typeof inputs === 'undefined') return "0.0";
     const totalFixed = 
@@ -125,14 +123,13 @@ export default function PremiumMonth() {
   };
 
   /* ================= ACCESS CHECK (MASTER + STRIPE + 1-MIN TEST VIP) ================= */
+
   useEffect(() => {
     const vipToken = localStorage.getItem("wai_vip_token");
     const expiry = localStorage.getItem("wai_vip_expiry");
     
-    // 1. A Te örökös hozzáférésed (Master)
     if (vipToken === "MASTER-DOMINANCE-2026") return;
 
-    // 2. A 3 speciális VIP kód a Havi modulhoz
     const monthlyVips = [
       "WAI-GUEST-7725", 
       "WAI-CLIENT-8832", 
@@ -142,7 +139,7 @@ export default function PremiumMonth() {
     if (monthlyVips.includes(vipToken)) {
       if (!expiry || expiry === "undefined" || expiry === "Invalid Date") {
         const now = new Date();
-        // === TESZT ÜZEMMÓD: 1 PERC ===
+        // === TESZT ÜZEMMÓD: 1 PERC ÉS + JEL JAVÍTVA ===
         const expiryDate = new Date(now.getTime() + 1 * 60 * 1000); 
         
         localStorage.setItem("wai_vip_activated_at", now.toISOString());
@@ -150,7 +147,6 @@ export default function PremiumMonth() {
         return; 
       }
 
-      // Lejárat ellenőrzése
       const now = new Date();
       const expiryDate = new Date(expiry);
 
@@ -163,7 +159,6 @@ export default function PremiumMonth() {
       }
     }
 
-    // 3. Ha nincs VIP kód, jön a Stripe ellenőrzés...
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get("session_id");
     
@@ -187,6 +182,23 @@ export default function PremiumMonth() {
         });
     }
   }, []);
+
+  /* ================= CIKLUS SZÁMLÁLÓ (Day 0-tól) ================= */
+  const getCycleDay = () => {
+    if (typeof window === "undefined") return 0;
+    const startStr = localStorage.getItem("wai_vip_activated_at");
+    if (!startStr) return 0;
+
+    const start = new Date(startStr);
+    const today = new Date();
+    
+    const diffTime = today.getTime() - start.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    return diffDays >= 0 ? diffDays : 0;
+  };
+
+  const currentDay = getCycleDay();
 
   /* ================= REGION AUTO-DETECT ================= */
   useEffect(() => {
