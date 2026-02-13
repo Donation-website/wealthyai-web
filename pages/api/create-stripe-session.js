@@ -14,21 +14,22 @@ export default async function handler(req, res) {
 
   let successPath = "/start";
 
-  if (priceId === "price_1SsRVyDyLtejYlZi3fEwvTPW") {
+  // ✅ ÚJ ONE-OFF ID-K ÉS ÚTVONALAK
+  if (priceId === "price_1T0LCDDyLtejYlZimOucadbT") {
     successPath = "/day";
-  } else if (priceId === "price_1SsRY1DyLtejYlZiglvFKufA") {
+  } else if (priceId === "price_1T0LBQDyLtejYlZiXKn0PmGP") {
     successPath = "/premium-week";
-  } else if (priceId === "price_1Sya6GDyLtejYlZiCb8oLqga") {
+  } else if (priceId === "price_1T0L8aDyLtejYlZik3nH3Uft") {
     successPath = "/premium-month";
   }
 
   try {
     const session = await stripe.checkout.sessions.create({
-      mode: "payment", // ✅ ÁTÁLLÍTVA EGYSZERI FIZETÉSRE
+      mode: "payment", // ✅ Garantáltan egyszeri fizetés
       line_items: [{ price: priceId, quantity: 1 }],
       allow_promotion_codes: true, 
       metadata: {
-        priceId, // Ebből tudjuk majd a lejáratot
+        priceId, // Ezt olvassa majd ki a verify-priority az ellenőrzésnél
       },
       success_url: `${req.headers.origin}${successPath}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.origin}/start?canceled=true`,
