@@ -12,11 +12,10 @@ export default function UserDashboard() {
     subscriptions: 120,
   });
 
-  /* ===== VIP ACCESS STATES ===== */
-  const [showVipInput, setShowVipInput] = useState({ day: false, week: false, month: false });
-  const [showVipDay, setShowVipDay] = useState(false);
-  const [showVipWeek, setShowVipWeek] = useState(false);
-  const [showVipMonth, setShowVipMonth] = useState(false);
+  /* ===== VIP & PACKAGE ACCESS STATES ===== */
+  const [showVipInput, setShowVipInput] = useState(false);
+  const [showDayInput, setShowDayInput] = useState(false);
+  const [showWeekInput, setShowWeekInput] = useState(false);
   const [vipCode, setVipCode] = useState("");
 
   /* ===== MOBILE DETECTION ===== */
@@ -29,6 +28,7 @@ export default function UserDashboard() {
   }, []);
 
   /* ===== CALCULATIONS ===== */
+
   const totalExpenses = data.fixed + data.variable;
   const balance = data.income - totalExpenses;
 
@@ -53,30 +53,42 @@ export default function UserDashboard() {
       : "Low Risk";
 
   /* ===== INSIGHTS ===== */
+
   const insights = [];
+
   if (balance < 0) {
-    insights.push("Your expenses exceed your income. Immediate action may be required.");
-  }
-  if (data.subscriptions > data.income * 0.08) {
-    insights.push("Subscriptions appear high. Reviewing unused services may free up cash.");
-  }
-  if (savingsRate >= 20) {
-    insights.push("You are saving at a healthy rate, supporting long-term stability.");
-  } else if (balance >= 0) {
-    insights.push("Your savings rate is modest. Small adjustments could improve resilience.");
+    insights.push(
+      "Your expenses exceed your income. Immediate action may be required."
+    );
   }
 
-  /* ===== VIP SUBMIT HANDLER - MASTER-DOMINANCE-2026 MODIFICATIONS ===== */
-  const handleVipSubmit = async (currentCode) => {
-    const codeToVerify = currentCode || vipCode;
-    if (!codeToVerify.trim()) return;
+  if (data.subscriptions > data.income * 0.08) {
+    insights.push(
+      "Subscriptions appear high. Reviewing unused services may free up cash."
+    );
+  }
+
+  if (savingsRate >= 20) {
+    insights.push(
+      "You are saving at a healthy rate, supporting long-term stability."
+    );
+  } else if (balance >= 0) {
+    insights.push(
+      "Your savings rate is modest. Small adjustments could improve resilience."
+    );
+  }
+
+  /* ===== VIP SUBMIT HANDLER (JAVÍTOTT ÚTVONAL) ===== */
+
+  const handleVipSubmit = async () => {
+    if (!vipCode.trim()) return;
     
     try {
       const res = await fetch("/api/verify-priority", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          vipCode: codeToVerify.trim(),
+          vipCode: vipCode.trim(),
           financials: data 
         }),
       });
@@ -84,18 +96,7 @@ export default function UserDashboard() {
       const result = await res.json();
 
       if (result.active) {
-        localStorage.setItem("wai_vip_token", codeToVerify.trim());
-
-        if (result.level === "guest") {
-          const now = new Date();
-          const expiryDate = new Date(now.getTime() + 1 * 60 * 60 * 1000);
-          localStorage.setItem("wai_vip_activated_at", now.toISOString());
-          localStorage.setItem("wai_vip_expiry", expiryDate.toISOString());
-        } else {
-          localStorage.removeItem("wai_vip_expiry");
-          localStorage.removeItem("wai_vip_activated_at");
-        }
-
+        localStorage.setItem("wai_vip_token", vipCode.trim());
         window.location.href = result.redirectPath || "/premium-month";
       } else {
         alert("Invalid or expired priority code.");
@@ -105,20 +106,25 @@ export default function UserDashboard() {
     }
   };
 
+  /* ===== STRIPE (PRICE IDs UPDATED) ===== */
+
   const handleCheckout = async (priceId) => {
     localStorage.setItem("userFinancials", JSON.stringify(data));
+
     if (priceId === "price_1Sya6GDyLtejYlZiCb8oLqga") {
       const hasHadMonth = localStorage.getItem("hadMonthSubscription");
       if (hasHadMonth) {
         localStorage.setItem("isReturningMonthCustomer", "true");
       }
     }
+
     try {
       const res = await fetch("/api/create-stripe-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ priceId }),
       });
+
       const session = await res.json();
       if (session.url) window.location.href = session.url;
       else alert("Payment initialization failed.");
@@ -127,15 +133,23 @@ export default function UserDashboard() {
     }
   };
 
+
+  /* ===== RADAR DATA ===== */
+
   const radar = [
     { label: "Expense Load", value: usagePercent },
     { label: "Savings Strength", value: Math.min(100, Math.max(0, savingsRate * 3)) },
     {
       label: "Subscription Weight",
-      value: data.income > 0 ? Math.min((data.subscriptions / data.income) * 200, 100) : (data.subscriptions > 0 ? 100 : 0),
+      value:
+        data.income > 0
+          ? Math.min((data.subscriptions / data.income) * 200, 100)
+          : (data.subscriptions > 0 ? 100 : 0),
     },
   ];
+
   /* ===== RADAR COMPONENT ===== */
+
   const Radar = ({ data, size = isMobile ? 180 : 200 }) => {
     const c = size / 2;
     const r = size / 2 - 24;
@@ -207,12 +221,14 @@ export default function UserDashboard() {
   };
 
   /* ===== STYLES ===== */
+
   const card = {
     background: "rgba(15,23,42,0.65)",
     backdropFilter: "blur(14px)",
     borderRadius: "22px",
     padding: isMobile ? "20px" : "26px",
     border: "1px solid rgba(255,255,255,0.08)",
+    position: "relative",
   };
 
   const input = {
@@ -231,6 +247,18 @@ export default function UserDashboard() {
     textAlign: "center",
     cursor: "pointer",
     flex: isMobile ? "1 1 100%" : "0 1 240px",
+  };
+
+  const closeX = {
+    position: "absolute",
+    top: "10px",
+    right: "12px",
+    background: "none",
+    border: "none",
+    color: "rgba(255,255,255,0.4)",
+    fontSize: "16px",
+    cursor: "pointer",
+    fontWeight: "bold"
   };
 
   const helpButton = {
@@ -281,7 +309,8 @@ export default function UserDashboard() {
       </div>
     );
   };
-return (
+
+  return (
     <>
       <main
         style={{
@@ -308,9 +337,7 @@ return (
       >
         <WealthyTicker />
 
-        <a href="/start/help" style={helpButton}>
-          Help
-        </a>
+        <a href="/start/help" style={helpButton}>Help</a>
 
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "30px" }}>
@@ -329,103 +356,26 @@ return (
             <div style={card}>
               <h3>Income & Expenses</h3>
 
-              <div style={{ marginBottom: 15 }}>
-                <label style={{ fontSize: "14px" }}>Monthly Income ($)</label>
-                <input
-                  type="number"
-                  value={data.income}
-                  style={input}
-                  onChange={(e) =>
-                    setData({ ...data, income: Number(e.target.value) })
-                  }
-                />
-              </div>
-
-              <div style={{ marginBottom: 15 }}>
-                <label style={{ fontSize: "14px" }}>Fixed Expenses</label>
-                <input
-                  type="number"
-                  value={data.fixed}
-                  style={input}
-                  onChange={(e) =>
-                    setData({ ...data, fixed: Number(e.target.value) })
-                  }
-                />
-              </div>
-
-              <div style={{ marginBottom: 15 }}>
-                <label style={{ fontSize: "14px" }}>Variable Expenses</label>
-                <input
-                  type="number"
-                  value={data.variable}
-                  style={input}
-                  onChange={(e) =>
-                    setData({ ...data, variable: Number(e.target.value) })
-                  }
-                />
-              </div>
-
-              <div style={{ marginBottom: 15 }}>
-                <label style={{ fontSize: "14px" }}>Electricity</label>
-                <input
-                  type="number"
-                  value={data.electricity}
-                  style={input}
-                  onChange={(e) =>
-                    setData({ ...data, electricity: Number(e.target.value) })
-                  }
-                />
-              </div>
-
-              <div style={{ marginBottom: 15 }}>
-                <label style={{ fontSize: "14px" }}>Water</label>
-                <input
-                  type="number"
-                  value={data.water}
-                  style={input}
-                  onChange={(e) =>
-                    setData({ ...data, water: Number(e.target.value) })
-                  }
-                />
-              </div>
-
-              <div style={{ marginBottom: 15 }}>
-                <label style={{ fontSize: "14px" }}>Gas</label>
-                <input
-                  type="number"
-                  value={data.gas}
-                  style={input}
-                  onChange={(e) =>
-                    setData({ ...data, gas: Number(e.target.value) })
-                  }
-                />
-              </div>
-
-              <div style={{ marginBottom: 15 }}>
-                <label style={{ fontSize: "14px" }}>Internet</label>
-                <input
-                  type="number"
-                  value={data.internet}
-                  style={input}
-                  onChange={(e) =>
-                    setData({ ...data, internet: Number(e.target.value) })
-                  }
-                />
-              </div>
-
-              <div style={{ marginBottom: 15 }}>
-                <label style={{ fontSize: "14px" }}>Subscriptions</label>
-                <input
-                  type="number"
-                  value={data.subscriptions}
-                  style={input}
-                  onChange={(e) =>
-                    setData({ ...data, subscriptions: Number(e.target.value) })
-                  }
-                />
-              </div>
+              {[
+                ["Monthly Income ($)", "income"],
+                ["Fixed Expenses", "fixed"],
+                ["Variable Expenses", "variable"],
+              ].map(([label, key]) => (
+                <div key={key} style={{ marginBottom: 15 }}>
+                  <label style={{ fontSize: "14px" }}>{label}</label>
+                  <input
+                    type="number"
+                    value={data[key]}
+                    style={input}
+                    onChange={(e) =>
+                      setData({ ...data, [key]: Number(e.target.value) })
+                    }
+                  />
+                </div>
+              ))}
             </div>
-<div style={card}>
+
+            <div style={card}>
               <h3>Insights (Basic)</h3>
               <Radar data={radar} />
 
@@ -554,52 +504,92 @@ return (
               />
             </div>
 
-            <div style={{ display: "flex", justifyContent: "center", gap: 20, flexWrap: "wrap" }}>
-              {['day', 'week', 'month'].map((type) => (
-                <div key={type} style={priceCard}>
-                  <div onClick={() => handleCheckout(
-                    type === 'day' ? "price_1SsRVyDyLtejYlZi3fEwvTPW" : 
-                    type === 'week' ? "price_1SsRY1DyLtejYlZiglvFKufA" : 
-                    "price_1Sya6GDyLtejYlZiCb8oLqga"
-                  )} style={{ cursor: "pointer" }}>
-                    <h3>{type === 'day' ? '1 Day · $9.99' : type === 'week' ? '1 Week · $14.99' : '1 Month · $49.99'}</h3>
-                    <small style={{ display: 'block', marginBottom: '15px' }}>{type === 'day' ? 'Immediate clarity' : type === 'week' ? 'Behavior & patterns' : 'Full intelligence engine'}</small>
-                  </div>
-
-                  <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "12px" }}>
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowVipInput(prev => ({ ...prev, [type]: !prev[type] }));
-                      }}
-                      style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: "10px", cursor: "pointer" }}
-                    >
-                      {showVipInput[type] ? "CLOSE PRIORITY" : "HAVE A PRIORITY CODE?"}
-                    </button>
-                    
-                    {showVipInput[type] && (
-                      <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                        <input 
-                          type="text" 
-                          autoFocus
-                          onChange={(e) => setVipCode(e.target.value)}
-                          placeholder="Enter code"
-                          style={{ ...input, textAlign: "center", fontSize: "12px", background: "rgba(255,255,255,0.04)" }}
-                        />
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleVipSubmit(vipCode);
-                          }}
-                          style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "white", borderRadius: "6px", padding: "6px" }}
-                        >
-                          VALIDATE
-                        </button>
-                      </div>
-                    )}
-                  </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                gap: 20,
+                flexWrap: "wrap",
+              }}
+            >
+              {/* DAY PASS */}
+              <div style={{ ...priceCard, cursor: "default" }}>
+                <div onClick={() => setShowDayInput(!showDayInput)} style={{ cursor: "pointer" }}>
+                  <h3>1 Day · $9.99</h3>
+                  <small>Immediate clarity</small>
                 </div>
-              ))}
+                {showDayInput && (
+                  <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "15px", position: "relative" }}>
+                    <button onClick={() => setShowDayInput(false)} style={closeX}>✕</button>
+                    <p style={{ fontSize: "11px", marginBottom: "10px" }}>Ready for 24h access?</p>
+                    <button 
+                      onClick={() => handleCheckout("price_1SsRVyDyLtejYlZi3fEwvTPW")}
+                      style={{ background: "#6366f1", border: "none", color: "white", borderRadius: "8px", padding: "10px 20px", width: "100%", cursor: "pointer", fontWeight: "600" }}
+                    >
+                      PURCHASE DAY PASS
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* WEEK PASS */}
+              <div style={{ ...priceCard, cursor: "default" }}>
+                <div onClick={() => setShowWeekInput(!showWeekInput)} style={{ cursor: "pointer" }}>
+                  <h3>1 Week · $14.99</h3>
+                  <small>Behavior & patterns</small>
+                </div>
+                {showWeekInput && (
+                  <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "15px", position: "relative" }}>
+                    <button onClick={() => setShowWeekInput(false)} style={closeX}>✕</button>
+                    <p style={{ fontSize: "11px", marginBottom: "10px" }}>Analyze your weekly habits</p>
+                    <button 
+                      onClick={() => handleCheckout("price_1SsRY1DyLtejYlZiglvFKufA")}
+                      style={{ background: "#6366f1", border: "none", color: "white", borderRadius: "8px", padding: "10px 20px", width: "100%", cursor: "pointer", fontWeight: "600" }}
+                    >
+                      PURCHASE WEEK PASS
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* MONTH / VIP PASS */}
+              <div style={{ ...priceCard, cursor: "default" }}>
+                <div 
+                  onClick={() => handleCheckout("price_1Sya6GDyLtejYlZiCb8oLqga")}
+                  style={{ cursor: "pointer" }}
+                >
+                  <h3>1 Month · $49.99</h3>
+                  <small>Full intelligence engine</small>
+                </div>
+
+                <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "12px", position: "relative" }}>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setShowVipInput(!showVipInput); }}
+                    style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: "10px", cursor: "pointer", letterSpacing: "0.05em" }}
+                  >
+                    {showVipInput ? "CLOSE PRIORITY" : "HAVE A PRIORITY CODE?"}
+                  </button>
+                  
+                  {showVipInput && (
+                    <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                      <button onClick={() => setShowVipInput(false)} style={closeX}>✕</button>
+                      <input 
+                        type="text" 
+                        value={vipCode}
+                        onChange={(e) => setVipCode(e.target.value)}
+                        placeholder="Enter code"
+                        style={{ ...input, textAlign: "center", fontSize: "12px", padding: "6px", background: "rgba(255,255,255,0.04)" }}
+                      />
+                      <button 
+                        onClick={handleVipSubmit}
+                        style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "white", borderRadius: "6px", padding: "6px", fontSize: "11px", cursor: "pointer" }}
+                      >
+                        VALIDATE
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
