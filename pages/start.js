@@ -29,7 +29,6 @@ export default function UserDashboard() {
   }, []);
 
   /* ===== CALCULATIONS ===== */
-
   const totalExpenses = data.fixed + data.variable;
   const balance = data.income - totalExpenses;
 
@@ -54,32 +53,20 @@ export default function UserDashboard() {
       : "Low Risk";
 
   /* ===== INSIGHTS ===== */
-
   const insights = [];
-
   if (balance < 0) {
-    insights.push(
-      "Your expenses exceed your income. Immediate action may be required."
-    );
+    insights.push("Your expenses exceed your income. Immediate action may be required.");
   }
-
   if (data.subscriptions > data.income * 0.08) {
-    insights.push(
-      "Subscriptions appear high. Reviewing unused services may free up cash."
-    );
+    insights.push("Subscriptions appear high. Reviewing unused services may free up cash.");
   }
-
   if (savingsRate >= 20) {
-    insights.push(
-      "You are saving at a healthy rate, supporting long-term stability."
-    );
+    insights.push("You are saving at a healthy rate, supporting long-term stability.");
   } else if (balance >= 0) {
-    insights.push(
-      "Your savings rate is modest. Small adjustments could improve resilience."
-    );
+    insights.push("Your savings rate is modest. Small adjustments could improve resilience.");
   }
 
-  /* ===== VIP SUBMIT HANDLER - KICSERÉLVE ===== */
+  /* ===== VIP SUBMIT HANDLER - MASTER-DOMINANCE-2026 MODIFICATIONS ===== */
   const handleVipSubmit = async (currentCode) => {
     const codeToVerify = currentCode || vipCode;
     if (!codeToVerify.trim()) return;
@@ -99,14 +86,12 @@ export default function UserDashboard() {
       if (result.active) {
         localStorage.setItem("wai_vip_token", codeToVerify.trim());
 
-        // MESTERKÓD KEZELÉSE: Ha nem guest, töröljük a korlátokat
         if (result.level === "guest") {
           const now = new Date();
           const expiryDate = new Date(now.getTime() + 1 * 60 * 60 * 1000);
           localStorage.setItem("wai_vip_activated_at", now.toISOString());
           localStorage.setItem("wai_vip_expiry", expiryDate.toISOString());
         } else {
-          // MESTER SZINT - MINDENT TÖRÖLÜNK, HOGY NE LEGYEN LIMIT
           localStorage.removeItem("wai_vip_expiry");
           localStorage.removeItem("wai_vip_activated_at");
         }
@@ -120,25 +105,20 @@ export default function UserDashboard() {
     }
   };
 
-  /* ===== STRIPE (PRICE IDs UPDATED) ===== */
-
   const handleCheckout = async (priceId) => {
     localStorage.setItem("userFinancials", JSON.stringify(data));
-
     if (priceId === "price_1Sya6GDyLtejYlZiCb8oLqga") {
       const hasHadMonth = localStorage.getItem("hadMonthSubscription");
       if (hasHadMonth) {
         localStorage.setItem("isReturningMonthCustomer", "true");
       }
     }
-
     try {
       const res = await fetch("/api/create-stripe-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ priceId }),
       });
-
       const session = await res.json();
       if (session.url) window.location.href = session.url;
       else alert("Payment initialization failed.");
@@ -147,23 +127,15 @@ export default function UserDashboard() {
     }
   };
 
-
-  /* ===== RADAR DATA ===== */
-
   const radar = [
     { label: "Expense Load", value: usagePercent },
     { label: "Savings Strength", value: Math.min(100, Math.max(0, savingsRate * 3)) },
     {
       label: "Subscription Weight",
-      value:
-        data.income > 0
-          ? Math.min((data.subscriptions / data.income) * 200, 100)
-          : (data.subscriptions > 0 ? 100 : 0),
+      value: data.income > 0 ? Math.min((data.subscriptions / data.income) * 200, 100) : (data.subscriptions > 0 ? 100 : 0),
     },
   ];
-
   /* ===== RADAR COMPONENT ===== */
-
   const Radar = ({ data, size = isMobile ? 180 : 200 }) => {
     const c = size / 2;
     const r = size / 2 - 24;
@@ -233,8 +205,8 @@ export default function UserDashboard() {
       </svg>
     );
   };
-/* ===== STYLES ===== */
 
+  /* ===== STYLES ===== */
   const card = {
     background: "rgba(15,23,42,0.65)",
     backdropFilter: "blur(14px)",
@@ -309,8 +281,7 @@ export default function UserDashboard() {
       </div>
     );
   };
-
-  return (
+return (
     <>
       <main
         style={{
@@ -337,7 +308,9 @@ export default function UserDashboard() {
       >
         <WealthyTicker />
 
-        <a href="/start/help" style={helpButton}>Help</a>
+        <a href="/start/help" style={helpButton}>
+          Help
+        </a>
 
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "30px" }}>
@@ -362,141 +335,202 @@ export default function UserDashboard() {
                   type="number"
                   value={data.income}
                   style={input}
-                  onChange={(e) => setData({ ...data, income: Number(e.target.value) })}
+                  onChange={(e) =>
+                    setData({ ...data, income: Number(e.target.value) })
+                  }
                 />
               </div>
 
               <div style={{ marginBottom: 15 }}>
-                <label style={{ fontSize: "14px" }}>Fixed Expenses (Rent, Bills, etc.)</label>
+                <label style={{ fontSize: "14px" }}>Fixed Expenses</label>
                 <input
                   type="number"
                   value={data.fixed}
                   style={input}
-                  onChange={(e) => setData({ ...data, fixed: Number(e.target.value) })}
+                  onChange={(e) =>
+                    setData({ ...data, fixed: Number(e.target.value) })
+                  }
                 />
               </div>
 
               <div style={{ marginBottom: 15 }}>
-                <label style={{ fontSize: "14px" }}>Variable Expenses (Food, Fun, etc.)</label>
+                <label style={{ fontSize: "14px" }}>Variable Expenses</label>
                 <input
                   type="number"
                   value={data.variable}
                   style={input}
-                  onChange={(e) => setData({ ...data, variable: Number(e.target.value) })}
+                  onChange={(e) =>
+                    setData({ ...data, variable: Number(e.target.value) })
+                  }
                 />
               </div>
 
-              <div style={{ marginTop: 20, borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: 15 }}>
-                <h4 style={{ marginBottom: 10, fontSize: "15px" }}>Utility Breakdown (Optional)</h4>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-                   <div>
-                     <label style={{ fontSize: "12px", opacity: 0.7 }}>Electricity</label>
-                     <input type="number" value={data.electricity} style={input} onChange={(e) => setData({...data, electricity: Number(e.target.value)})} />
-                   </div>
-                   <div>
-                     <label style={{ fontSize: "12px", opacity: 0.7 }}>Water</label>
-                     <input type="number" value={data.water} style={input} onChange={(e) => setData({...data, water: Number(e.target.value)})} />
-                   </div>
-                   <div>
-                     <label style={{ fontSize: "12px", opacity: 0.7 }}>Gas</label>
-                     <input type="number" value={data.gas} style={input} onChange={(e) => setData({...data, gas: Number(e.target.value)})} />
-                   </div>
-                   <div>
-                     <label style={{ fontSize: "12px", opacity: 0.7 }}>Internet</label>
-                     <input type="number" value={data.internet} style={input} onChange={(e) => setData({...data, internet: Number(e.target.value)})} />
-                   </div>
-                </div>
+              <div style={{ marginBottom: 15 }}>
+                <label style={{ fontSize: "14px" }}>Electricity</label>
+                <input
+                  type="number"
+                  value={data.electricity}
+                  style={input}
+                  onChange={(e) =>
+                    setData({ ...data, electricity: Number(e.target.value) })
+                  }
+                />
+              </div>
+
+              <div style={{ marginBottom: 15 }}>
+                <label style={{ fontSize: "14px" }}>Water</label>
+                <input
+                  type="number"
+                  value={data.water}
+                  style={input}
+                  onChange={(e) =>
+                    setData({ ...data, water: Number(e.target.value) })
+                  }
+                />
+              </div>
+
+              <div style={{ marginBottom: 15 }}>
+                <label style={{ fontSize: "14px" }}>Gas</label>
+                <input
+                  type="number"
+                  value={data.gas}
+                  style={input}
+                  onChange={(e) =>
+                    setData({ ...data, gas: Number(e.target.value) })
+                  }
+                />
+              </div>
+
+              <div style={{ marginBottom: 15 }}>
+                <label style={{ fontSize: "14px" }}>Internet</label>
+                <input
+                  type="number"
+                  value={data.internet}
+                  style={input}
+                  onChange={(e) =>
+                    setData({ ...data, internet: Number(e.target.value) })
+                  }
+                />
+              </div>
+
+              <div style={{ marginBottom: 15 }}>
+                <label style={{ fontSize: "14px" }}>Subscriptions</label>
+                <input
+                  type="number"
+                  value={data.subscriptions}
+                  style={input}
+                  onChange={(e) =>
+                    setData({ ...data, subscriptions: Number(e.target.value) })
+                  }
+                />
               </div>
             </div>
 <div style={card}>
               <h3>Insights (Basic)</h3>
               <Radar data={radar} />
 
-              <div style={{ marginTop: 20 }}>
-                <p>Risk Level: <strong>{riskLevel}</strong></p>
-                <p style={{ marginBottom: 15 }}>Savings Score: <strong>{savingsScore}/100</strong></p>
-              </div>
+              <p>
+                Risk Level: <strong>{riskLevel}</strong>
+              </p>
+              <p style={{ marginBottom: 15 }}>
+                Savings Score: <strong>{savingsScore}/100</strong>
+              </p>
 
-              <ul style={{ paddingLeft: 20, marginTop: 15 }}>
+              <ul style={{ paddingLeft: 20 }}>
                 {insights.map((i, idx) => (
-                  <li key={idx} style={{ marginBottom: 12, fontSize: "14px", lineHeight: "1.5" }}>
+                  <li key={idx} style={{ marginBottom: 12, fontSize: "14px" }}>
                     {i}
                   </li>
                 ))}
               </ul>
 
-              <p style={{ opacity: 0.65, marginTop: 25, fontSize: "12px", fontStyle: "italic" }}>
-                This view shows a static snapshot of your provided data — it does not account for behavioral trends, regional inflation, or long-term fiscal direction.
+              <p style={{ opacity: 0.65, marginTop: 18, fontSize: "12px" }}>
+                This view shows a snapshot — not behavior, not direction.
               </p>
-              
-              <div 
-                onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}
+              <p
+                onClick={() =>
+                  document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })
+                }
                 style={{
-                  marginTop: 20,
-                  padding: "10px",
-                  borderRadius: "8px",
-                  background: "rgba(255,255,255,0.03)",
+                  marginTop: 10,
                   fontSize: "12px",
-                  opacity: 0.6,
+                  opacity: 0.5,
                   textAlign: "center",
                   cursor: "pointer",
-                  border: "1px dashed rgba(255,255,255,0.1)"
                 }}
               >
-                Advanced Daily / Weekly / Monthly intelligence available below ↓
-              </div>
+                Daily / Weekly / Monthly intelligence available ↓
+              </p>
             </div>
           </div>
 
-          {/* ===== DEPTH EXPLAINER SECTION ===== */}
-          <div style={{ marginTop: isMobile ? 60 : 100, textAlign: "center" }}>
-            <h2 className="pulse-title" style={{ fontSize: isMobile ? "1.6rem" : "2.4rem", fontWeight: "700" }}>
+          <div style={{ marginTop: isMobile ? 40 : 70, textAlign: "center" }}>
+            <h2
+              className="pulse-title"
+              style={{ fontSize: isMobile ? "1.4rem" : "2rem" }}
+            >
               Choose your depth of financial intelligence
             </h2>
 
-            <p style={{ maxWidth: 800, margin: "20px auto", opacity: 0.8, fontSize: isMobile ? "15px" : "18px", lineHeight: "1.6" }}>
-              WealthyAI operates on layers of context. While basic overview gives you a snapshot, 
-              true understanding comes from observing how your money moves through time and environment.
+            <p
+              style={{
+                maxWidth: 700,
+                margin: "18px auto",
+                opacity: 0.85,
+                fontSize: isMobile ? "14px" : "16px",
+              }}
+            >
+              Different questions require different levels of context.
+              You can choose the depth that matches what you want to understand right now.
             </p>
 
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)",
-              gap: 25,
-              marginTop: 40
-            }}>
-              <div style={{ ...card, textAlign: "left" }}>
-                <div style={{ color: "#38bdf8", fontSize: "24px", marginBottom: "10px" }}>◈</div>
-                <h4 style={{ marginBottom: 10 }}>Daily Intelligence</h4>
-                <p style={{ fontSize: "14px", opacity: 0.7, lineHeight: "1.5" }}>
-                  Short-term interpretation of your current financial state. Best for immediate clarity 
-                  on "where am I right now?" without the noise of long-term fluctuations.
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: isMobile
+                  ? "1fr"
+                  : "repeat(auto-fit, minmax(240px, 1fr))",
+                gap: 20,
+                marginTop: 30,
+              }}
+            >
+              <div style={card}>
+                <h4>Daily Intelligence</h4>
+                <p style={{ fontSize: "14px", opacity: 0.8 }}>
+                  Short-term interpretation of your current financial state.
+                  Best for immediate clarity.
                 </p>
               </div>
 
-              <div style={{ ...card, textAlign: "left", border: "1px solid rgba(167,139,250,0.3)" }}>
-                <div style={{ color: "#a78bfa", fontSize: "24px", marginBottom: "10px" }}>◈◈</div>
-                <h4 style={{ marginBottom: 10 }}>Weekly Intelligence</h4>
-                <p style={{ fontSize: "14px", opacity: 0.7, lineHeight: "1.5" }}>
-                  Identifies behavior patterns across days and categories. Translates your 
-                  spending habits into psychological insights to see "why" the numbers move.
+              <div style={card}>
+                <h4>Weekly Intelligence</h4>
+                <p style={{ fontSize: "14px", opacity: 0.8 }}>
+                  Behavior patterns across days and categories.
+                  Best for understanding habits.
                 </p>
               </div>
 
-              <div style={{ ...card, textAlign: "left", border: "1px solid rgba(34,211,238,0.3)" }}>
-                <div style={{ color: "#22d3ee", fontSize: "24px", marginBottom: "10px" }}>◈◈◈</div>
-                <h4 style={{ marginBottom: 10 }}>Monthly Intelligence</h4>
-                <p style={{ fontSize: "14px", opacity: 0.7, lineHeight: "1.5" }}>
-                  The full engine. Multi-week context, regional economic insights, and forward-looking 
-                  analysis. Necessary for decisions that impact your future trajectory.
+              <div style={card}>
+                <h4>Monthly Intelligence</h4>
+                <p style={{ fontSize: "14px", opacity: 0.8 }}>
+                  Multi-week context, regional insights, and forward-looking analysis.
+                  Best when decisions require direction.
                 </p>
               </div>
             </div>
           </div>
 
-          {/* ===== PRICING SECTION - DINAMIKUSAN KICSERÉLVE ===== */}
-          <div id="pricing" style={{ marginTop: isMobile ? 60 : 100, paddingBottom: 100 }}>
-            <h2 style={{ textAlign: "center", marginBottom: 10, fontSize: isMobile ? "1.8rem" : "2.5rem" }}>
+          <div
+            id="pricing"
+            style={{ marginTop: isMobile ? 40 : 60 }}
+          >
+            <h2
+              style={{
+                textAlign: "center",
+                marginBottom: 10,
+                fontSize: isMobile ? "1.4rem" : "2rem",
+              }}
+            >
               Unlock Advanced AI Intelligence
             </h2>
 
@@ -505,7 +539,7 @@ export default function UserDashboard() {
               alignItems: "center", 
               justifyContent: "center", 
               gap: "12px", 
-              marginBottom: 40,
+              marginBottom: 30,
               fontSize: isMobile ? "14px" : "16px",
               opacity: 0.9,
               flexWrap: "wrap"
@@ -516,81 +550,50 @@ export default function UserDashboard() {
               <img 
                 src="/wealthyai/icons/stripe.png" 
                 alt="Stripe" 
-                style={{ height: "35px", width: "auto", display: "inline-block", marginLeft: "5px" }} 
+                style={{ height: "35px", width: "auto", display: "inline-block" }} 
               />
             </div>
 
-            <div style={{ 
-              display: "flex", 
-              justifyContent: "center", 
-              gap: 25, 
-              flexWrap: "wrap",
-              maxWidth: "1100px",
-              margin: "0 auto"
-            }}>
+            <div style={{ display: "flex", justifyContent: "center", gap: 20, flexWrap: "wrap" }}>
               {['day', 'week', 'month'].map((type) => (
-                <div key={type} style={{ ...priceCard, border: type === 'month' ? "1px solid rgba(99,102,241,0.5)" : "1px solid rgba(255,255,255,0.08)" }}>
+                <div key={type} style={priceCard}>
                   <div onClick={() => handleCheckout(
                     type === 'day' ? "price_1SsRVyDyLtejYlZi3fEwvTPW" : 
                     type === 'week' ? "price_1SsRY1DyLtejYlZiglvFKufA" : 
                     "price_1Sya6GDyLtejYlZiCb8oLqga"
-                  )} style={{ padding: "10px 0" }}>
-                    <h3 style={{ fontSize: "1.4rem", marginBottom: "8px" }}>
-                      {type === 'day' ? '1 Day · $9.99' : type === 'week' ? '1 Week · $14.99' : '1 Month · $49.99'}
-                    </h3>
-                    <p style={{ fontSize: "13px", opacity: 0.7, marginBottom: "20px" }}>
-                      {type === 'day' ? 'Immediate clarity' : type === 'week' ? 'Behavior & patterns' : 'Full intelligence engine'}
-                    </p>
-                    <button style={{
-                      width: "100%",
-                      padding: "12px",
-                      borderRadius: "10px",
-                      border: "none",
-                      background: type === 'month' ? "#6366f1" : "rgba(255,255,255,0.1)",
-                      color: "white",
-                      fontWeight: "600",
-                      cursor: "pointer"
-                    }}>
-                      Get Started
-                    </button>
+                  )} style={{ cursor: "pointer" }}>
+                    <h3>{type === 'day' ? '1 Day · $9.99' : type === 'week' ? '1 Week · $14.99' : '1 Month · $49.99'}</h3>
+                    <small style={{ display: 'block', marginBottom: '15px' }}>{type === 'day' ? 'Immediate clarity' : type === 'week' ? 'Behavior & patterns' : 'Full intelligence engine'}</small>
                   </div>
 
-                  <div style={{ marginTop: "25px", borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "15px" }}>
+                  <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "12px" }}>
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
                         setShowVipInput(prev => ({ ...prev, [type]: !prev[type] }));
                       }}
-                      style={{ background: "none", border: "none", color: "rgba(255,255,255,0.3)", fontSize: "11px", cursor: "pointer", letterSpacing: "0.05em" }}
+                      style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: "10px", cursor: "pointer" }}
                     >
-                      {showVipInput[type] ? "CANCEL CODE" : "HAVE A PRIORITY CODE?"}
+                      {showVipInput[type] ? "CLOSE PRIORITY" : "HAVE A PRIORITY CODE?"}
                     </button>
                     
                     {showVipInput[type] && (
-                      <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                      <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
                         <input 
                           type="text" 
                           autoFocus
                           onChange={(e) => setVipCode(e.target.value)}
-                          placeholder="Enter your code"
-                          style={{ ...input, textAlign: "center", fontSize: "13px", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.1)" }}
+                          placeholder="Enter code"
+                          style={{ ...input, textAlign: "center", fontSize: "12px", background: "rgba(255,255,255,0.04)" }}
                         />
                         <button 
                           onClick={(e) => {
                             e.stopPropagation();
                             handleVipSubmit(vipCode);
                           }}
-                          style={{ 
-                            background: "rgba(99,102,241,0.2)", 
-                            border: "1px solid rgba(99,102,241,0.4)", 
-                            color: "white", 
-                            borderRadius: "8px", 
-                            padding: "8px",
-                            fontSize: "12px",
-                            fontWeight: "600"
-                          }}
+                          style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "white", borderRadius: "6px", padding: "6px" }}
                         >
-                          VALIDATE PRIORITY
+                          VALIDATE
                         </button>
                       </div>
                     )}
@@ -601,36 +604,28 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        <footer style={{ 
+        <div style={{ 
           marginTop: "50px", 
           textAlign: "center", 
-          padding: "40px 20px",
-          borderTop: "1px solid rgba(255,255,255,0.05)"
+          paddingBottom: "20px" 
         }}>
-          <div style={{ fontSize: "0.9rem", opacity: 0.6, marginBottom: "10px" }}>
-            WealthyAI — Deciphering the language of money.
+          <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
+            © 2026 WealthyAI — All rights reserved.
           </div>
-          <div style={{ fontSize: "0.8rem", opacity: 0.4 }}>
-            © 2026 WealthyAI Intelligence Systems. All rights reserved.
-          </div>
-        </footer>
+        </div>
 
         <style>{`
           .pulse-title {
-            animation: pulseSoft 4s ease-in-out infinite;
+            animation: pulseSoft 3s ease-in-out infinite;
           }
           @keyframes pulseSoft {
-            0%, 100% { opacity: 0.7; transform: scale(0.99); }
-            50% { opacity: 1; transform: scale(1); }
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
           }
           @keyframes waiScroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-          }
-          input::-webkit-outer-spin-button,
-          input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
+            from { transform: translateX(0); }
+            to   { transform: translateX(-50%); }
           }
         `}</style>
       </main>
