@@ -1,4 +1,3 @@
-import { buffer } from "micro";
 import Stripe from "stripe";
 import nodemailer from "nodemailer";
 import { generateAccessConfirmationPDF } from "../../lib/pdf/generateAccessConfirmation";
@@ -6,27 +5,34 @@ import { generateAccessConfirmationPDF } from "../../lib/pdf/generateAccessConfi
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
+// Letiltjuk a Next.js alapértelmezett body-parserét, mert a Stripe-nak nyers body kell
 export const config = {
   api: {
     bodyParser: false,
   },
 };
 
-// --- E-MAIL KÜLDŐ FÜGGVÉNY (AZ EREDETI LOGIKÁD ALAPJÁN FRISSÍTVE) ---
+// Saját segédfüggvény a nyers body kiolvasásához (micro helyett)
+async function getRawBody(readable) {
+  const chunks = [];
+  for await (const chunk of readable) {
+    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+  }
+  return Buffer.concat(chunks);
+}
+
 async function sendPaymentConfirmationEmail({ to, priceId, amount, currency, date, sessionId }) {
   console.log(`📧 E-mail küldés indítása: ${to}`);
   
   try {
     const productName = "WealthyAI Intelligence Pass";
     
-    // 1. PDF Generálás indítása (sessionId-val kiegészítve)
+    // PDF generálás az általad beküldött függvénnyel
     console.log("📄 PDF generálás folyamatban...");
     const pdfBuffer = await generateAccessConfirmationPDF({
       productName, amount, currency, date, sessionId
     });
-    console.log("✅ PDF sikeresen legyártva, méret:", pdfBuffer.length);
 
-    // 2. Transporter beállítása (PONTOSAN A TE BEÁLLÍTÁSAID)
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT),
@@ -38,15 +44,11 @@ async function sendPaymentConfirmationEmail({ to, priceId, amount, currency, dat
       connectionTimeout: 10000, 
     });
 
-    // 3. Tényleges küldés
-    console.log("🚀 Levél feladása az SMTP szervernek...");
-    const info = await transporter.sendMail({
+    await transporter.sendMail({
       from: process.env.MAIL_FROM,
       to,
       subject: `[CONFIDENTIAL] WealthyAI · Access Activated`,
-      // Megtartjuk az eredeti text-et is fallback-nek
-      text: `Welcome to the inner circle. Your access is now live. Your Access Key: ${sessionId}`,
-      // De küldünk szép HTML-t is az instrukciókkal
+      text: `Welcome to the inner circle. Access Key: ${sessionId}`,
       html: `
         <div style="font-family: sans-serif; line-height: 1.6; color: #1e293b; max-width: 600px;">
           <h2 style="color: #0f172a;">Welcome to the inner circle.</h2>
@@ -75,24 +77,22 @@ async function sendPaymentConfirmationEmail({ to, priceId, amount, currency, dat
       attachments: [{ filename: 'wealthyai-access.pdf', content: pdfBuffer }],
     });
 
-    console.log("✨ E-mail sikeresen elküldve! MessageID:", info.messageId);
+    console.log("✨ E-mail sikeresen elküldve!");
   } catch (err) {
-    console.error('❌ KRITIKUS HIBA AZ E-MAIL FOLYAMATBAN:', err.message);
+    console.error('❌ E-MAIL HIBA:', err.message);
     throw err; 
   }
 }
 
-// --- WEBHOOK HANDLER ---
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).send("Method Not Allowed");
-  }
+  if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
 
   const sig = req.headers["stripe-signature"];
   let event;
 
   try {
-    const rawBody = await buffer(req);
+    // Itt hívjuk meg a saját body-olvasónkat
+    const rawBody = await getRawBody(req);
     event = stripe.webhooks.constructEvent(rawBody, sig, endpointSecret);
   } catch (err) {
     console.error(`❌ Webhook Error: ${err.message}`);
@@ -101,23 +101,19 @@ export default async function handler(req, res) {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
-
     try {
       await sendPaymentConfirmationEmail({
         to: session.customer_details.email,
         priceId: session.metadata?.priceId || "unknown",
         amount: session.amount_total / 100,
-        currency: session.currency.toUpperCase(),
+        currency: (session.currency || 'USD').toUpperCase(),
         date: new Date().toLocaleDateString(),
         sessionId: session.id, 
       });
-
       console.log(`✅ Sikeres feldolgozás: ${session.id}`);
     } catch (err) {
-      console.error(`❌ Hiba a feldolgozás során: ${err.message}`);
-      // Nem küldünk 500-at, hogy a Stripe ne próbálja újra végtelenül, ha az e-mail hibás, 
-      // de a logban ott lesz a hiba.
-      return res.status(200).json({ error: "Email delivery failed, but session completed" });
+      console.error(`❌ Hiba: ${err.message}`);
+      return res.status(200).json({ error: "Email failed but session ok" });
     }
   }
 
