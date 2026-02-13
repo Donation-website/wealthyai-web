@@ -120,15 +120,22 @@ export default function PremiumMonth() {
     return Math.min(Math.max(finalRatio, 0), 100).toFixed(1);
   };
 
-  /* ================= ACCESS CHECK (MASTER + STRIPE + 7-DAY VIP) ================= */
+  /* ================= ACCESS CHECK & CYCLE CALCULATION ================= */
+
+  const [cycleDay, setCycleDay] = useState(1);
 
   useEffect(() => {
     const vipToken = localStorage.getItem("wai_vip_token");
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get("session_id");
     
-    // 1. A Te örökös hozzáférésed
-    if (vipToken === "MASTER-DOMINANCE-2026") return;
+    // 1. MASTER hozzáférés
+    if (vipToken === "MASTER-DOMINANCE-2026") {
+        setCycleDay(1);
+        return;
+    }
 
-    // 2. A 3 speciális VIP kód a Havi modulhoz
+    // 2. VIP / GUEST kódok logikája
     const monthlyVips = [
       "WAI-GUEST-7725", 
       "WAI-CLIENT-8832", 
@@ -137,47 +144,66 @@ export default function PremiumMonth() {
 
     if (monthlyVips.includes(vipToken)) {
       const firstUsedKey = `start_time_${vipToken}`;
-      const firstUsedAt = localStorage.getItem(firstUsedKey);
+      let firstUsedAt = localStorage.getItem(firstUsedKey);
 
       if (!firstUsedAt) {
-        // Első belépés rögzítése
-        localStorage.setItem(firstUsedKey, Date.now().toString());
-        return; 
-      }
-
-      // 7 napos lejárat ellenőrzése (604.800.000 ms)
-      const limit = 7 * 24 * 60 * 60 * 1000;
-      if (Date.now() - parseInt(firstUsedAt) < limit) {
-        return; 
+        firstUsedAt = Date.now().toString();
+        localStorage.setItem(firstUsedKey, firstUsedAt);
+        // Ha most aktiválta, az 1. napon van
+        setCycleDay(1);
       } else {
-        // Ha lejárt, törlés és kidobás
-        localStorage.removeItem("wai_vip_token");
+        const diff = Math.floor((Date.now() - parseInt(firstUsedAt)) / 86400000);
+        setCycleDay(Math.min(diff + 1, 30));
+        
+        // 7 napos lejárat ellenőrzése
+        const limit = 7 * 24 * 60 * 60 * 1000;
+        if (Date.now() - parseInt(firstUsedAt) >= limit) {
+          localStorage.removeItem("wai_vip_token");
+          window.location.href = "/start";
+          return;
+        }
+      }
+      return; // Ha VIP, ne fusson tovább a Stripe-ra
+    }
+
+    // 3. Stripe ellenőrzés és Fizetős ciklus indítása
+    if (!sessionId) {
+      // Megnézzük, van-e már aktív elmentett előfizetési kezdőidőpontunk
+      const storedStart = localStorage.getItem("subscriptionPeriodStart");
+      if (!storedStart) {
         window.location.href = "/start";
         return;
       }
-    }
-
-    // 3. Ha nincs VIP kód, jön a Stripe ellenőrzés...
-    const params = new URLSearchParams(window.location.search);
-    const sessionId = params.get("session_id");
-    
-    if (!sessionId) {
-      window.location.href = "/start";
-      return;
-    }
-
-    fetch("/api/verify-active-subscription", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sessionId }),
-    })
+      // Ha van korábbi kezdet, számoljuk a napot
+      const diff = Math.floor((Date.now() - parseInt(storedStart)) / 86400000);
+      setCycleDay(Math.min(diff + 1, 30));
+    } else {
+      // Frissen érkezett a Stripe-tól
+      fetch("/api/verify-active-subscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId }),
+      })
       .then(r => r.json())
       .then(d => {
-        if (!d.valid) window.location.href = "/start";
+        if (d.valid) {
+          // Itt rögzítjük a fizetés utáni VALÓDI ciklus kezdetet, ha még nincs
+          if (!localStorage.getItem("subscriptionPeriodStart")) {
+            localStorage.setItem("subscriptionPeriodStart", Date.now().toString());
+            setCycleDay(1);
+          } else {
+            const start = localStorage.getItem("subscriptionPeriodStart");
+            const diff = Math.floor((Date.now() - parseInt(start)) / 86400000);
+            setCycleDay(Math.min(diff + 1, 30));
+          }
+        } else {
+          window.location.href = "/start";
+        }
       })
       .catch(() => {
         window.location.href = "/start";
       });
+    }
   }, []);
 
   /* ================= REGION AUTO-DETECT ================= */
@@ -210,7 +236,6 @@ export default function PremiumMonth() {
   /* ================= CORE STATE ================= */
 
   const [viewMode, setViewMode] = useState("executive");
-  const [cycleDay, setCycleDay] = useState(1);
 
   const [loading, setLoading] = useState(false);
   const [emailSending, setEmailSending] = useState(false);
@@ -240,7 +265,6 @@ export default function PremiumMonth() {
   /* ================= SNAPSHOT AVAILABILITY ================= */
 
   const [isTodayAvailable, setIsTodayAvailable] = useState(false);
-
   /* ================= WEEKLY FOCUS ================= */
 
   const WEEK_LENGTH = 7;
@@ -297,6 +321,7 @@ export default function PremiumMonth() {
     unexpected: 200,
     other: 300,
   });
+  
   const update = (key, value) => {
     setInputs({ ...inputs, [key]: Number(value) });
     setAiVisible(false);
@@ -305,22 +330,6 @@ export default function PremiumMonth() {
     setDailySnapshot(null);
     setSelectedDay(null);
   };
-
-  /* ================= CYCLE LOGIC ================= */
-
-  useEffect(() => {
-    const start =
-      localStorage.getItem("subscriptionPeriodStart") ||
-      localStorage.getItem("monthCycleStart");
-
-    if (!start) {
-      localStorage.setItem("monthCycleStart", Date.now().toString());
-      setCycleDay(1);
-    } else {
-      const diff = Math.floor((Date.now() - Number(start)) / 86400000);
-      setCycleDay(Math.min(diff + 1, 30));
-    }
-  }, []);
 
   /* ================= SNAPSHOT AVAILABILITY ================= */
 
@@ -537,6 +546,7 @@ export default function PremiumMonth() {
     a.href = url;
     a.download = "wealthyai-monthly-briefing.pdf";
     a.click();
+    URL.revokeObjectURL(url);
   };
 
   const confirmAndSendEmail = async () => {
@@ -946,7 +956,7 @@ export default function PremiumMonth() {
               placeholder="your@email.com" 
               value={userEmail} 
               onChange={(e) => setUserEmail(e.target.value)} 
-              style={{ ...input, marginBottom: 20, border: "1px solid #38bdf8" }} 
+              style={{ ...input, marginBottom: 20, border: "1px solid #38bdf8", background: "rgba(255,255,255,0.05)", padding: 10, borderRadius: 8, color: "white", width: "100%" }} 
             />
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={() => setEmailModalOpen(false)} style={exportBtn}>
@@ -1023,11 +1033,10 @@ const page = {
     repeating-linear-gradient(-25deg, rgba(56,189,248,0.04) 0px, rgba(56,189,248,0.04) 1px, transparent 1px, transparent 180px),
     repeating-linear-gradient(35deg, rgba(167,139,250,0.04) 0px, rgba(167,139,250,0.04) 1px, transparent 1px, transparent 260px),
     radial-gradient(circle at 20% 30%, rgba(56,189,248,0.14), transparent 45%),
-    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.14), transparent 50%),
-    url("/wealthyai/icons/generated.png")
+    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.14), transparent 50%)
   `,
-  backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, repeat",
-  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 420px auto",
+  backgroundRepeat: "repeat, repeat, no-repeat, no-repeat",
+  backgroundSize: "auto, auto, 100% 100%, 100% 100%",
 };
 
 const header = { textAlign: "center", marginBottom: 20 };
