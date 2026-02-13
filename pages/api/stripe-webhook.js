@@ -4,7 +4,6 @@ import nodemailer from "nodemailer";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-// ✅ Next.js beépített megoldás a nyers adatokhoz, nem kell hozzá 'micro'
 export const config = {
   api: {
     bodyParser: false,
@@ -19,11 +18,13 @@ async function getRawBody(readable) {
   return Buffer.concat(chunks);
 }
 
-async function sendPaymentConfirmationEmail({ to, priceId, amount, currency, date }) {
+async function sendPaymentConfirmationEmail({ to, priceId, amount, currency, date, sessionId }) {
   try {
     const productName = "WealthyAI Intelligence Pass";
-    // PDF generálás hívása (győződj meg róla, hogy a függvény létezik a fájlban vagy importálva van!)
-    const pdfBuffer = await generateAccessConfirmationPDF({ productName, amount, currency, date });
+    // Itt hívjuk a PDF generálót - győződj meg róla, hogy az importod rendben van!
+    const pdfBuffer = await generateAccessConfirmationPDF({ 
+      productName, amount, currency, date, sessionId 
+    });
 
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
@@ -36,12 +37,12 @@ async function sendPaymentConfirmationEmail({ to, priceId, amount, currency, dat
       from: process.env.MAIL_FROM,
       to,
       subject: `[CONFIDENTIAL] WealthyAI · Access Activated`,
-      text: "Welcome to the inner circle. Your access is now live.",
+      text: `Welcome to the inner circle. Your access is now live.\n\nYour unique Access Code: ${sessionId}\n\nKeep this code safe. If you clear your browser cache or change devices, you can restore your access by entering this code in the Priority/Access field on our site.`,
       attachments: [{ filename: 'wealthyai-access.pdf', content: pdfBuffer }],
     });
-    console.log("✨ E-mail elküldve.");
+    console.log("✨ E-mail elküldve a session ID-val.");
   } catch (err) {
-    console.error('❌ E-mail hiba:', err.message);
+    console.error('❌ E-MAIL HIBA:', err.message);
   }
 }
 
@@ -52,7 +53,7 @@ export default async function handler(req, res) {
   let event;
 
   try {
-    const rawBody = await getRawBody(req); // 'micro' helyett ezt használjuk
+    const rawBody = await getRawBody(req);
     event = stripe.webhooks.constructEvent(rawBody, sig, endpointSecret);
   } catch (err) {
     console.error(`❌ Webhook hiba: ${err.message}`);
@@ -63,17 +64,24 @@ export default async function handler(req, res) {
     const session = event.data.object;
     const subscriptionId = session.subscription;
 
-    // ✅ Azonnali leállítás, hogy ne vonjon le többet
+    // ✅ Ismétlődő fizetés azonnali leállítása
     if (subscriptionId) {
-      await stripe.subscriptions.update(subscriptionId, { cancel_at_period_end: true });
+      try {
+        await stripe.subscriptions.update(subscriptionId, { cancel_at_period_end: true });
+        console.log(`✅ Előfizetés leállítva: ${subscriptionId}`);
+      } catch (err) {
+        console.error(`❌ Hiba a leállításnál: ${err.message}`);
+      }
     }
 
+    // ✅ Küldés a session.id-val, ami a belépőkód lesz
     await sendPaymentConfirmationEmail({
       to: session.customer_details.email,
       priceId: session.metadata?.priceId,
       amount: session.amount_total / 100,
       currency: session.currency,
       date: new Date().toLocaleDateString('hu-HU'),
+      sessionId: session.id 
     });
   }
 
