@@ -124,8 +124,9 @@ export default function PremiumMonth() {
 
   useEffect(() => {
     const vipToken = localStorage.getItem("wai_vip_token");
+    const expiry = localStorage.getItem("wai_vip_expiry");
     
-    // 1. A Te örökös hozzáférésed
+    // 1. A Te örökös hozzáférésed (Master)
     if (vipToken === "MASTER-DOMINANCE-2026") return;
 
     // 2. A 3 speciális VIP kód a Havi modulhoz
@@ -136,22 +137,26 @@ export default function PremiumMonth() {
     ];
 
     if (monthlyVips.includes(vipToken)) {
-      const firstUsedKey = `start_time_${vipToken}`;
-      const firstUsedAt = localStorage.getItem(firstUsedKey);
-
-      if (!firstUsedAt) {
-        // Első belépés rögzítése
-        localStorage.setItem(firstUsedKey, Date.now().toString());
+      // Megnézzük, van-e már rögzített lejárat
+      if (!expiry) {
+        // Ha valamiért nincs (pl. régebbi verzióból maradt), most létrehozzuk
+        const now = new Date();
+        const expiryDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+        localStorage.setItem("wai_vip_expiry", expiryDate.toISOString());
         return; 
       }
 
-      // 7 napos lejárat ellenőrzése (604.800.000 ms)
-      const limit = 7 * 24 * 60 * 60 * 1000;
-      if (Date.now() - parseInt(firstUsedAt) < limit) {
-        return; 
+      // 7 napos lejárat ellenőrzése
+      const now = new Date();
+      const expiryDate = new Date(expiry);
+
+      if (now < expiryDate) {
+        return; // Még érvényes, maradhat az oldalon
       } else {
         // Ha lejárt, törlés és kidobás
         localStorage.removeItem("wai_vip_token");
+        localStorage.removeItem("wai_vip_expiry");
+        localStorage.removeItem("wai_vip_activated_at");
         window.location.href = "/start";
         return;
       }
@@ -162,6 +167,7 @@ export default function PremiumMonth() {
     const sessionId = params.get("session_id");
     
     if (!sessionId) {
+      // Ha nincs fizetési azonosító sem, irány a start
       window.location.href = "/start";
       return;
     }
@@ -179,7 +185,6 @@ export default function PremiumMonth() {
         window.location.href = "/start";
       });
   }, []);
-
   /* ================= REGION AUTO-DETECT ================= */
 
   const [region, setRegion] = useState("EU");
