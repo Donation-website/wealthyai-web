@@ -190,42 +190,44 @@ export default function DayPremium() {
   /* ===== FRISSÍTETT BELÉPTETÉS - STABIL VERZIÓ ===== */
   useEffect(() => {
     async function checkAccess() {
+      if (isAuthorized) return;
+
       const vipToken = localStorage.getItem("wai_vip_token");
       const params = new URLSearchParams(window.location.search);
       const sessionId = params.get("session_id");
 
-      // 1. VIP/MASTER kód vagy session megléte esetén azonnal beengedünk
       if (vipToken === "MASTER-DOMINANCE-2026" || (sessionId && sessionId.startsWith('cs_'))) {
+        if (sessionId) localStorage.setItem("wai_vip_token", sessionId);
         setIsAuthorized(true);
         setIsLoading(false);
-        if (sessionId) localStorage.setItem("wai_vip_token", sessionId);
         return;
       }
 
-      // 2. Ha nincs session a URL-ben, nézzük meg, van-e érvényes kódunk a tárolóban
       if (!sessionId && !vipToken) {
         setTimeout(() => {
-          if (!isAuthorized) window.location.href = "/start";
-        }, 5000); // 5 másodperc türelmi idő
+          if (!localStorage.getItem("wai_vip_token")) {
+             window.location.href = "/start";
+          }
+        }, 5000);
         return;
       }
 
-      // 3. Szerver oldali ellenőrzés
       try {
         const res = await fetch("/api/verify-active-subscription", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ sessionId, vipToken }),
         });
-        const d = await res.json();
         
-        if (d.valid || d.active) {
-          setIsAuthorized(true);
-        } else {
-          window.location.href = "/start";
+        if (res.ok) {
+          const d = await res.json();
+          if (d.valid || d.active) {
+            setIsAuthorized(true);
+          } else {
+            window.location.href = "/start";
+          }
         }
       } catch (err) {
-        // Hiba esetén ne dobjuk ki, ha van session_id
         if (sessionId) setIsAuthorized(true);
       }
       setIsLoading(false);
@@ -238,7 +240,6 @@ export default function DayPremium() {
     const saved = localStorage.getItem("userFinancials");
     if (saved) setData(JSON.parse(saved));
   }, []);
-
   const surplus = data.income - (data.fixed + data.variable);
   const savingsRate = data.income > 0 ? (surplus / data.income) * 100 : 0;
   const fiveYearProjection = surplus * 60 * 1.45;
