@@ -85,20 +85,22 @@ const WealthyTicker = ({ isMobile }) => {
 };
 
 export default function PremiumMonth() {
-  // === MOBILE ADDITION: device detection ===
+  // === STATES ===
   const [isMobile, setIsMobile] = useState(false);
+  const [simulationActive, setSimulationActive] = useState(false);
+  const [stressFactor, setStressFactor] = useState(0); 
+  const [region, setRegion] = useState("EU");
+  const [country, setCountry] = useState(null);
 
+  // === MOBILE DETECTION ===
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-  
-  /* ================= SIMULATION & STRESS STATE ================= */
-  const [simulationActive, setSimulationActive] = useState(false);
-  const [stressFactor, setStressFactor] = useState(0); 
 
+  /* ================= FRAGILITY CALCULATION ================= */
   const calculateFragility = () => {
     if (typeof inputs === 'undefined') return "0.0";
     const totalFixed = 
@@ -122,8 +124,7 @@ export default function PremiumMonth() {
     return Math.min(Math.max(finalRatio, 0), 100).toFixed(1);
   };
 
-  /* ================= ACCESS CHECK (MASTER + STRIPE + 7-DAY VIP) ================= */
-
+  /* ================= ACCESS CHECK (MASTER + STRIPE + 1-MIN TEST VIP) ================= */
   useEffect(() => {
     const vipToken = localStorage.getItem("wai_vip_token");
     const expiry = localStorage.getItem("wai_vip_expiry");
@@ -139,10 +140,9 @@ export default function PremiumMonth() {
     ];
 
     if (monthlyVips.includes(vipToken)) {
-      // Megnézzük, van-e már rögzített lejárat
       if (!expiry || expiry === "undefined" || expiry === "Invalid Date") {
         const now = new Date();
-        // === TESZT ÜZEMMÓD: 1 PERC ÉS A HIÁNYZÓ + JEL JAVÍTVA ===
+        // === TESZT ÜZEMMÓD: 1 PERC ===
         const expiryDate = new Date(now.getTime() + 1 * 60 * 1000); 
         
         localStorage.setItem("wai_vip_activated_at", now.toISOString());
@@ -155,7 +155,6 @@ export default function PremiumMonth() {
       const expiryDate = new Date(expiry);
 
       if (now > expiryDate) {
-        // Ha lejárt, törlés és kidobás
         localStorage.removeItem("wai_vip_token");
         localStorage.removeItem("wai_vip_expiry");
         localStorage.removeItem("wai_vip_activated_at");
@@ -189,6 +188,25 @@ export default function PremiumMonth() {
     }
   }, []);
 
+  /* ================= REGION AUTO-DETECT ================= */
+  useEffect(() => {
+    let cancelled = false;
+    const detect = async () => {
+      try {
+        const r = await fetch("/api/detect-region");
+        if (!r.ok) return;
+        const j = await r.json();
+        if (cancelled) return;
+        if (j?.region) setRegion(j.region);
+        if (j?.country) setCountry(j.country);
+      } catch {
+        /* silent fallback */
+      }
+    };
+    detect();
+    return () => { cancelled = true; };
+  }, []);
+
   /* ================= CIKLUS SZÁMLÁLÓ (Day 0-tól) ================= */
   const getCycleDay = () => {
     if (typeof window === "undefined") return 0;
@@ -207,6 +225,7 @@ export default function PremiumMonth() {
 
   const currentDay = getCycleDay();
 
+  // Megjegyzés: A kód végéről hiányzó return (UI) részt és zárójelet pótold a sajátod alapján!
   /* ================= REGION AUTO-DETECT ================= */
 
   const [region, setRegion] = useState("EU");
