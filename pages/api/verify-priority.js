@@ -22,25 +22,30 @@ export default async function handler(req, res) {
       return res.status(200).json({ active: true, level: "guest", redirectPath: "/premium-month" });
     }
 
-    // --- 2. STRIPE SESSION ID ELLENŐRZÉS (AUTOMATIKUS LEJÁRAT) ---
+    // --- 2. STRIPE SESSION ID ELLENŐRZÉS (AZ ÚJ ID-KKAL) ---
     if (trimmedCode.startsWith("cs_")) {
       const session = await stripe.checkout.sessions.retrieve(trimmedCode);
       
       if (session.payment_status === "paid") {
-        const createdTimestamp = session.created * 1000; // Stripe másodpercben adja
+        const createdTimestamp = session.created * 1000; 
         const now = Date.now();
         const priceId = session.metadata.priceId;
 
         let daysAllowed = 1;
         let path = "/day";
 
-        if (priceId === "price_1SsRY1DyLtejYlZiglvFKufA") { 
+        // ✅ ID-K FRISSÍTVE A MATEKHOZ
+        if (priceId === "price_1T0LBQDyLtejYlZiXKn0PmGP") { // 1 Week
           daysAllowed = 7; 
           path = "/premium-week";
         }
-        else if (priceId === "price_1Sya6GDyLtejYlZiCb8oLqga") { 
+        else if (priceId === "price_1T0L8aDyLtejYlZik3nH3Uft") { // 1 Month
           daysAllowed = 30; 
           path = "/premium-month";
+        }
+        else if (priceId === "price_1T0LCDDyLtejYlZimOucadbT") { // 1 Day
+          daysAllowed = 1;
+          path = "/day";
         }
 
         const expiryDate = createdTimestamp + (daysAllowed * 24 * 60 * 60 * 1000);
@@ -60,6 +65,7 @@ export default async function handler(req, res) {
     return res.status(401).json({ active: false, message: "Invalid code." });
 
   } catch (err) {
+    console.error("Verification error:", err);
     return res.status(500).json({ active: false });
   }
 }
