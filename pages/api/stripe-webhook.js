@@ -48,7 +48,7 @@ async function sendPaymentConfirmationEmail({ to, priceId, amount, currency, dat
       from: process.env.MAIL_FROM,
       to,
       subject: `[CONFIDENTIAL] WealthyAI · Access Activated`,
-      text: `Welcome to the inner circle. Access Key: ${sessionId}`,
+      text: `Welcome to the inner circle. Access Key: ${sessionId}\n\nCopy and paste this Access Key on the start page to restore your session or to log in from another device.`,
       html: `
         <div style="font-family: sans-serif; line-height: 1.6; color: #1e293b; max-width: 600px;">
           <h2 style="color: #0f172a;">Welcome to the inner circle.</h2>
@@ -66,7 +66,7 @@ async function sendPaymentConfirmationEmail({ to, priceId, amount, currency, dat
             <li>Keep this email for the duration of your access.</li>
             <li>If you close your browser, return to <b>WealthyAI</b>.</li>
             <li>Click <b>"HAVE A PRIORITY CODE?"</b> on the dashboard.</li>
-            <li>Paste the <b>Access Key</b> Copy and paste this Access Key on the start page to restore your session or to log in from another device.</li>
+            <li>Copy and paste the <b>Access Key</b> shown above to restore your session or to log in from another device.</li>
           </ol>
 
           <p style="font-size: 12px; color: #64748b; margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
