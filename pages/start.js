@@ -12,7 +12,7 @@ export default function UserDashboard() {
     subscriptions: 120,
   });
 
-  /* ===== VIP & PACKAGE ACCESS STATES ===== */
+  /* ===== ACCESS STATES ===== */
   const [showVipInput, setShowVipInput] = useState(false);
   const [showDayInput, setShowDayInput] = useState(false);
   const [showWeekInput, setShowWeekInput] = useState(false);
@@ -78,7 +78,7 @@ export default function UserDashboard() {
     );
   }
 
-  /* ===== VIP SUBMIT HANDLER (JAVÍTOTT ÚTVONAL) ===== */
+  /* ===== VIP SUBMIT HANDLER ===== */
 
   const handleVipSubmit = async () => {
     if (!vipCode.trim()) return;
@@ -106,7 +106,7 @@ export default function UserDashboard() {
     }
   };
 
-  /* ===== STRIPE (PRICE IDs UPDATED) ===== */
+  /* ===== STRIPE ===== */
 
   const handleCheckout = async (priceId) => {
     localStorage.setItem("userFinancials", JSON.stringify(data));
@@ -228,7 +228,6 @@ export default function UserDashboard() {
     borderRadius: "22px",
     padding: isMobile ? "20px" : "26px",
     border: "1px solid rgba(255,255,255,0.08)",
-    position: "relative",
   };
 
   const input = {
@@ -247,18 +246,6 @@ export default function UserDashboard() {
     textAlign: "center",
     cursor: "pointer",
     flex: isMobile ? "1 1 100%" : "0 1 240px",
-  };
-
-  const closeX = {
-    position: "absolute",
-    top: "10px",
-    right: "12px",
-    background: "none",
-    border: "none",
-    color: "rgba(255,255,255,0.4)",
-    fontSize: "16px",
-    cursor: "pointer",
-    fontWeight: "bold"
   };
 
   const helpButton = {
@@ -512,47 +499,71 @@ export default function UserDashboard() {
                 flexWrap: "wrap",
               }}
             >
-              {/* DAY PASS */}
+              {/* DAILY PASS */}
               <div style={{ ...priceCard, cursor: "default" }}>
-                <div onClick={() => setShowDayInput(!showDayInput)} style={{ cursor: "pointer" }}>
+                <div 
+                  onClick={() => handleCheckout("price_1SsRVyDyLtejYlZi3fEwvTPW")}
+                  style={{ cursor: "pointer" }}
+                >
                   <h3>1 Day · $9.99</h3>
                   <small>Immediate clarity</small>
                 </div>
-                {showDayInput && (
-                  <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "15px", position: "relative" }}>
-                    <button onClick={() => setShowDayInput(false)} style={closeX}>✕</button>
-                    <p style={{ fontSize: "11px", marginBottom: "10px" }}>Ready for 24h access?</p>
-                    <button 
-                      onClick={() => handleCheckout("price_1SsRVyDyLtejYlZi3fEwvTPW")}
-                      style={{ background: "#6366f1", border: "none", color: "white", borderRadius: "8px", padding: "10px 20px", width: "100%", cursor: "pointer", fontWeight: "600" }}
-                    >
-                      PURCHASE DAY PASS
-                    </button>
-                  </div>
-                )}
+
+                <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "12px" }}>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setShowDayInput(!showDayInput); }}
+                    style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: "10px", cursor: "pointer", letterSpacing: "0.05em" }}
+                  >
+                    {showDayInput ? "CLOSE ACCESS" : "UNLOCK NOW?"}
+                  </button>
+                  
+                  {showDayInput && (
+                    <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                      <p style={{ fontSize: "11px", opacity: 0.7 }}>Ready for 24h intelligence?</p>
+                      <button 
+                        onClick={() => handleCheckout("price_1SsRVyDyLtejYlZi3fEwvTPW")}
+                        style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "white", borderRadius: "6px", padding: "8px", fontSize: "11px", cursor: "pointer" }}
+                      >
+                        PROCEED TO STRIPE
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* WEEK PASS */}
+              {/* WEEKLY PASS */}
               <div style={{ ...priceCard, cursor: "default" }}>
-                <div onClick={() => setShowWeekInput(!showWeekInput)} style={{ cursor: "pointer" }}>
+                <div 
+                  onClick={() => handleCheckout("price_1SsRY1DyLtejYlZiglvFKufA")}
+                  style={{ cursor: "pointer" }}
+                >
                   <h3>1 Week · $14.99</h3>
                   <small>Behavior & patterns</small>
                 </div>
-                {showWeekInput && (
-                  <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "15px", position: "relative" }}>
-                    <button onClick={() => setShowWeekInput(false)} style={closeX}>✕</button>
-                    <p style={{ fontSize: "11px", marginBottom: "10px" }}>Analyze your weekly habits</p>
-                    <button 
-                      onClick={() => handleCheckout("price_1SsRY1DyLtejYlZiglvFKufA")}
-                      style={{ background: "#6366f1", border: "none", color: "white", borderRadius: "8px", padding: "10px 20px", width: "100%", cursor: "pointer", fontWeight: "600" }}
-                    >
-                      PURCHASE WEEK PASS
-                    </button>
-                  </div>
-                )}
+
+                <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "12px" }}>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setShowWeekInput(!showWeekInput); }}
+                    style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: "10px", cursor: "pointer", letterSpacing: "0.05em" }}
+                  >
+                    {showWeekInput ? "CLOSE ACCESS" : "UNLOCK NOW?"}
+                  </button>
+                  
+                  {showWeekInput && (
+                    <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                      <p style={{ fontSize: "11px", opacity: 0.7 }}>Weekly insight engine ready.</p>
+                      <button 
+                        onClick={() => handleCheckout("price_1SsRY1DyLtejYlZiglvFKufA")}
+                        style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "white", borderRadius: "6px", padding: "8px", fontSize: "11px", cursor: "pointer" }}
+                      >
+                        PROCEED TO STRIPE
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* MONTH / VIP PASS */}
+              {/* MONTHLY / VIP PASS */}
               <div style={{ ...priceCard, cursor: "default" }}>
                 <div 
                   onClick={() => handleCheckout("price_1Sya6GDyLtejYlZiCb8oLqga")}
@@ -562,7 +573,7 @@ export default function UserDashboard() {
                   <small>Full intelligence engine</small>
                 </div>
 
-                <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "12px", position: "relative" }}>
+                <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "12px" }}>
                   <button 
                     onClick={(e) => { e.stopPropagation(); setShowVipInput(!showVipInput); }}
                     style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: "10px", cursor: "pointer", letterSpacing: "0.05em" }}
@@ -572,7 +583,6 @@ export default function UserDashboard() {
                   
                   {showVipInput && (
                     <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                      <button onClick={() => setShowVipInput(false)} style={closeX}>✕</button>
                       <input 
                         type="text" 
                         value={vipCode}
