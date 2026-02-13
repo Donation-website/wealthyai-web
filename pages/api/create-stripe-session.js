@@ -20,17 +20,13 @@ export default async function handler(req, res) {
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      payment_method_types: ["card"],
       line_items: [{
         price: priceId,
         quantity: 1,
       }],
-      // ✅ ITT A KUPONKÓD MEZŐ, VISSZATETTEM!
+      // ✅ A KUPON VISSZAKERÜLT
       allow_promotion_codes: true, 
-      // ✅ ÉS ITT A LEÁLLÍTÁS, HOGY NE VONJA LE TÖBBSZÖR
-      subscription_data: {
-        cancel_at_period_end: true,
-      },
+      // ❌ A LEÁLLÍTÁST KIVETTEM, MERT EZ OKOZTA A "FAILED" HIBÁT
       success_url: `${req.headers.origin}${successPath}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.origin}/start?canceled=true`,
       metadata: {
