@@ -12,10 +12,8 @@ export default function UserDashboard() {
     subscriptions: 120,
   });
 
-  /* ===== ACCESS STATES ===== */
+  /* ===== VIP ACCESS STATES ===== */
   const [showVipInput, setShowVipInput] = useState(false);
-  const [showDayInput, setShowDayInput] = useState(false);
-  const [showWeekInput, setShowWeekInput] = useState(false);
   const [vipCode, setVipCode] = useState("");
 
   /* ===== MOBILE DETECTION ===== */
@@ -78,12 +76,13 @@ export default function UserDashboard() {
     );
   }
 
-  /* ===== VIP SUBMIT HANDLER ===== */
+  /* ===== VIP SUBMIT HANDLER (JAVÍTOTT ÚTVONAL) ===== */
 
   const handleVipSubmit = async () => {
     if (!vipCode.trim()) return;
     
     try {
+      // Itt az új API fájlt hívjuk meg: verify-priority
       const res = await fetch("/api/verify-priority", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -106,11 +105,12 @@ export default function UserDashboard() {
     }
   };
 
-  /* ===== STRIPE ===== */
+  /* ===== STRIPE (PRICE IDs UPDATED) ===== */
 
   const handleCheckout = async (priceId) => {
     localStorage.setItem("userFinancials", JSON.stringify(data));
 
+    // A Monthly Price ID ellenőrzése a visszatérő vásárlókhoz
     if (priceId === "price_1Sya6GDyLtejYlZiCb8oLqga") {
       const hasHadMonth = localStorage.getItem("hadMonthSubscription");
       if (hasHadMonth) {
@@ -499,79 +499,31 @@ export default function UserDashboard() {
                 flexWrap: "wrap",
               }}
             >
-              {/* DAILY PASS */}
-              <div style={{ ...priceCard, cursor: "default" }}>
-                <div onClick={() => handleCheckout("price_1SsRVyDyLtejYlZi3fEwvTPW")} style={{ cursor: "pointer" }}>
-                  <h3>1 Day · $9.99</h3>
-                  <small>Immediate clarity</small>
-                </div>
-
-                <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "12px" }}>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); setShowDayInput(!showDayInput); }}
-                    style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: "10px", cursor: "pointer", letterSpacing: "0.05em" }}
-                  >
-                    {showDayInput ? "CLOSE ACCESS" : "ACCESS WITH DAY PASS?"}
-                  </button>
-                  
-                  {showDayInput && (
-                    <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                      <input 
-                        type="text" 
-                        value={vipCode}
-                        onChange={(e) => setVipCode(e.target.value)}
-                        placeholder="Enter code"
-                        style={{ ...input, textAlign: "center", fontSize: "12px", padding: "6px", background: "rgba(255,255,255,0.04)" }}
-                      />
-                      <button 
-                        onClick={handleVipSubmit}
-                        style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "white", borderRadius: "6px", padding: "6px", fontSize: "11px", cursor: "pointer" }}
-                      >
-                        VALIDATE ACCESS
-                      </button>
-                    </div>
-                  )}
-                </div>
+              <div
+                style={priceCard}
+                onClick={() =>
+                  handleCheckout("price_1SsRVyDyLtejYlZi3fEwvTPW")
+                }
+              >
+                <h3>1 Day · $9.99</h3>
+                <small>Immediate clarity</small>
               </div>
 
-              {/* WEEKLY PASS */}
-              <div style={{ ...priceCard, cursor: "default" }}>
-                <div onClick={() => handleCheckout("price_1SsRY1DyLtejYlZiglvFKufA")} style={{ cursor: "pointer" }}>
-                  <h3>1 Week · $14.99</h3>
-                  <small>Behavior & patterns</small>
-                </div>
-
-                <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "12px" }}>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); setShowWeekInput(!showWeekInput); }}
-                    style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: "10px", cursor: "pointer", letterSpacing: "0.05em" }}
-                  >
-                    {showWeekInput ? "CLOSE ACCESS" : "ACCESS WITH WEEK PASS?"}
-                  </button>
-                  
-                  {showWeekInput && (
-                    <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                      <input 
-                        type="text" 
-                        value={vipCode}
-                        onChange={(e) => setVipCode(e.target.value)}
-                        placeholder="Enter code"
-                        style={{ ...input, textAlign: "center", fontSize: "12px", padding: "6px", background: "rgba(255,255,255,0.04)" }}
-                      />
-                      <button 
-                        onClick={handleVipSubmit}
-                        style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "white", borderRadius: "6px", padding: "6px", fontSize: "11px", cursor: "pointer" }}
-                      >
-                        VALIDATE ACCESS
-                      </button>
-                    </div>
-                  )}
-                </div>
+              <div
+                style={priceCard}
+                onClick={() =>
+                  handleCheckout("price_1SsRY1DyLtejYlZiglvFKufA")
+                }
+              >
+                <h3>1 Week · $14.99</h3>
+                <small>Behavior & patterns</small>
               </div>
 
-              {/* MONTHLY / VIP PASS */}
               <div style={{ ...priceCard, cursor: "default" }}>
-                <div onClick={() => handleCheckout("price_1Sya6GDyLtejYlZiCb8oLqga")} style={{ cursor: "pointer" }}>
+                <div 
+                  onClick={() => handleCheckout("price_1Sya6GDyLtejYlZiCb8oLqga")}
+                  style={{ cursor: "pointer" }}
+                >
                   <h3>1 Month · $49.99</h3>
                   <small>Full intelligence engine</small>
                 </div>
@@ -604,6 +556,16 @@ export default function UserDashboard() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        <div style={{ 
+          marginTop: "50px", 
+          textAlign: "center", 
+          paddingBottom: "20px" 
+        }}>
+          <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
+            © 2026 WealthyAI — All rights reserved.
           </div>
         </div>
 
