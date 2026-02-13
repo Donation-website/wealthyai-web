@@ -7,12 +7,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { vipCode, financials } = req.body;
+    const { vipCode } = req.body;
     if (!vipCode) return res.status(400).json({ active: false });
 
     const trimmedCode = vipCode.trim();
 
-    // --- 1. MASTER & VIP KÓDOK (VÁLTOZATLAN) ---
+    // --- 1. MASTER & VIP KÓDOK ---
     if (trimmedCode === "MASTER-DOMINANCE-2026") {
       return res.status(200).json({ active: true, level: "master", redirectPath: "/premium/hub" });
     }
@@ -22,19 +22,23 @@ export default async function handler(req, res) {
       return res.status(200).json({ active: true, level: "guest", redirectPath: "/premium-month" });
     }
 
-    // --- 2. STRIPE SESSION ID ELLENŐRZÉS (AZ ÚJ ID-KKAL) ---
+    // --- 2. STRIPE SESSION ID ELLENŐRZÉS ---
     if (trimmedCode.startsWith("cs_")) {
       const session = await stripe.checkout.sessions.retrieve(trimmedCode);
       
-      if (session.payment_status === "paid") {
+      // JAVÍTÁS: Elfogadjuk a 'paid' ÉS a 'no_payment_required' (kupon) státuszt is
+      const isPaid = session.payment_status === "paid" || session.payment_status === "no_payment_required";
+      const isComplete = session.status === "complete";
+
+      if (isPaid && isComplete) {
         const createdTimestamp = session.created * 1000; 
         const now = Date.now();
-        const priceId = session.metadata.priceId;
+        const priceId = session.metadata?.priceId;
 
         let daysAllowed = 1;
         let path = "/day";
 
-        // ✅ ID-K FRISSÍTVE A MATEKHOZ
+        // ID-K ELLENŐRZÉSE
         if (priceId === "price_1T0LBQDyLtejYlZiXKn0PmGP") { // 1 Week
           daysAllowed = 7; 
           path = "/premium-week";
