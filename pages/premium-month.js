@@ -14,6 +14,7 @@ function getTodayKey() {
 }
 
 function getDailyUnlockTime() {
+  if (typeof window === "undefined") return 0;
   const stored = JSON.parse(localStorage.getItem(DAILY_SIGNAL_KEY) || "{}");
   const today = getTodayKey();
 
@@ -84,19 +85,36 @@ const WealthyTicker = ({ isMobile }) => {
 };
 
 export default function PremiumMonth() {
-  // === MOBILE ADDITION: device detection ===
+  // === SSR Protection: Hydration fix ===
+  const [mounted, setMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-  
+
   /* ================= SIMULATION & STRESS STATE ================= */
   const [simulationActive, setSimulationActive] = useState(false);
   const [stressFactor, setStressFactor] = useState(0); 
+
+  const [inputs, setInputs] = useState({
+    income: 4000,
+    housing: 1200,
+    electricity: 120,
+    gas: 90,
+    water: 40,
+    internet: 60,
+    mobile: 40,
+    tv: 30,
+    insurance: 150,
+    banking: 20,
+    unexpected: 200,
+    other: 300,
+  });
 
   const calculateFragility = () => {
     const totalFixed = 
@@ -125,6 +143,7 @@ export default function PremiumMonth() {
   const [cycleDay, setCycleDay] = useState(1);
 
   useEffect(() => {
+    if (!mounted) return;
     const vipToken = localStorage.getItem("wai_vip_token");
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get("session_id");
@@ -195,7 +214,7 @@ export default function PremiumMonth() {
         setCycleDay(Math.min(diff + 1, 30));
       }
     }
-  }, []);
+  }, [mounted]);
 
   /* ================= REGION AUTO-DETECT ================= */
 
@@ -203,6 +222,7 @@ export default function PremiumMonth() {
   const [country, setCountry] = useState(null);
 
   useEffect(() => {
+    if (!mounted) return;
     let cancelled = false;
 
     const detect = async () => {
@@ -222,7 +242,7 @@ export default function PremiumMonth() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [mounted]);
 
   /* ================= CORE STATE ================= */
 
@@ -261,13 +281,15 @@ export default function PremiumMonth() {
 
   const WEEK_LENGTH = 7;
 
-  const [weeklyFocus, setWeeklyFocus] = useState(() => {
+  const [weeklyFocus, setWeeklyFocus] = useState(null);
+
+  useEffect(() => {
+    if (!mounted) return;
     try {
-      return JSON.parse(localStorage.getItem("weeklyFocus"));
-    } catch {
-      return null;
-    }
-  });
+      const saved = localStorage.getItem("weeklyFocus");
+      if (saved) setWeeklyFocus(JSON.parse(saved));
+    } catch {}
+  }, [mounted]);
 
   const [focusOpen, setFocusOpen] = useState(false);
   const [focusPreview, setFocusPreview] = useState(null);
@@ -297,22 +319,6 @@ export default function PremiumMonth() {
     setFocusPreview(null);
   };
 
-  /* ================= INPUTS ================= */
-
-  const [inputs, setInputs] = useState({
-    income: 4000,
-    housing: 1200,
-    electricity: 120,
-    gas: 90,
-    water: 40,
-    internet: 60,
-    mobile: 40,
-    tv: 30,
-    insurance: 150,
-    banking: 20,
-    unexpected: 200,
-    other: 300,
-  });
   const update = (key, value) => {
     setInputs({ ...inputs, [key]: Number(value) });
     setAiVisible(false);
@@ -325,6 +331,7 @@ export default function PremiumMonth() {
   /* ================= SNAPSHOT AVAILABILITY EFFECT ================= */
 
   useEffect(() => {
+    if (!mounted) return;
     const today = getTodayKey();
     const key = `dailyAvailableAt_${today}`;
     let availableAt = localStorage.getItem(key);
@@ -333,8 +340,8 @@ export default function PremiumMonth() {
       const randomOffsetMs = Math.floor(Math.random() * 6 * 60 * 60 * 1000);
       const base = new Date();
       base.setHours(7, 0, 0, 0);
-      availableAt = base.getTime() + randomOffsetMs;
-      localStorage.setItem(key, availableAt.toString());
+      availableAt = (base.getTime() + randomOffsetMs).toString();
+      localStorage.setItem(key, availableAt);
     }
 
     const check = () => {
@@ -346,11 +353,12 @@ export default function PremiumMonth() {
     check();
     const i = setInterval(check, 60000);
     return () => clearInterval(i);
-  }, [cycleDay]);
+  }, [mounted, cycleDay]);
 
   /* ================= DAILY SIGNAL EFFECT ================= */
 
   useEffect(() => {
+    if (!mounted) return;
     const unlockAt = getDailyUnlockTime();
 
     const check = async () => {
@@ -382,7 +390,7 @@ export default function PremiumMonth() {
     const t = setInterval(check, 30000);
     check();
     return () => clearInterval(t);
-  }, [region, country, cycleDay]);
+  }, [mounted, region, country, cycleDay]);
 
   /* ================= AI LOGIC ================= */
 
@@ -538,7 +546,6 @@ export default function PremiumMonth() {
     a.download = "wealthyai-monthly-briefing.pdf";
     a.click();
   };
-
   const confirmAndSendEmail = async () => {
     if (!userEmail) return alert("Please enter an email address.");
     setEmailSending(true);
@@ -566,7 +573,10 @@ export default function PremiumMonth() {
     if (!activeText) return;
     setEmailModalOpen(true);
   };
+
   /* ================= RENDER ================= */
+
+  if (!mounted) return null;
 
   return (
     <div style={{ ...page, overflowX: isMobile ? "hidden" : undefined, backgroundAttachment: "fixed" }}>
