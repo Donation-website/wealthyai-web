@@ -6,8 +6,10 @@ export default async function handler(req, res) {
 
   try {
     const { vipCode } = req.body;
-    if (!vipCode) return res.status(400).json({ active: false });
+    if (!vipCode) return res.status(400).json({ active: false, error: "No code provided" });
     const trimmedCode = vipCode.trim();
+
+    console.log("🚀 Verifying code:", trimmedCode);
 
     // 1. MASTER & VIP KÓDOK
     if (trimmedCode === "MASTER-DOMINANCE-2026") {
@@ -16,50 +18,53 @@ export default async function handler(req, res) {
 
     // 2. STRIPE SESSION ID ELLENŐRZÉS
     if (trimmedCode.startsWith("cs_")) {
-      console.log("🔍 Ellenőrzés indítása a kóddal:", trimmedCode);
-      const session = await stripe.checkout.sessions.retrieve(trimmedCode);
-      
-      // Elfogadjuk a kifizetett és a kuponos (no_payment_required) státuszt is
-      const isValidStatus = ["paid", "no_payment_required"].includes(session.payment_status);
-      const isComplete = session.status === "complete";
-
-      if (isValidStatus && isComplete) {
-        const createdTimestamp = session.created * 1000;
-        const now = Date.now();
+      try {
+        const session = await stripe.checkout.sessions.retrieve(trimmedCode);
         
-        // Alapértelmezett értékek, ha a metadata hiányozna
-        let daysAllowed = 1;
-        let path = "/day";
+        // Elfogadjuk: paid VAGY no_payment_required (kupon)
+        const isValidStatus = ["paid", "no_payment_required"].includes(session.payment_status);
+        const isComplete = session.status === "complete";
 
-        const priceId = session.metadata?.priceId;
-        console.log("📋 Talált PriceID:", priceId);
+        if (isValidStatus && isComplete) {
+          const createdTimestamp = session.created * 1000;
+          const now = Date.now();
+          
+          let daysAllowed = 1;
+          let path = "/day";
 
-        if (priceId === "price_1T0LBQDyLtejYlZiXKn0PmGP") { 
-          daysAllowed = 7; path = "/premium-week";
-        } else if (priceId === "price_1T0L8aDyLtejYlZik3nH3Uft") { 
-          daysAllowed = 30; path = "/premium-month";
-        } else if (priceId === "price_1T0LCDDyLtejYlZimOucadbT") { 
-          daysAllowed = 1; path = "/day";
+          // Metadata ellenőrzés
+          const priceId = session.metadata?.priceId;
+          console.log("📦 Found PriceID:", priceId);
+
+          if (priceId === "price_1T0LBQDyLtejYlZiXKn0PmGP") { 
+            daysAllowed = 7; path = "/premium-week";
+          } else if (priceId === "price_1T0L8aDyLtejYlZik3nH3Uft") { 
+            daysAllowed = 30; path = "/premium-month";
+          } else if (priceId === "price_1T0LCDDyLtejYlZimOucadbT") { 
+            daysAllowed = 1; path = "/day";
+          }
+
+          const expiryDate = createdTimestamp + (daysAllowed * 24 * 60 * 60 * 1000);
+
+          if (now < expiryDate) {
+            return res.status(200).json({
+              active: true,
+              level: "paid",
+              redirectPath: path
+            });
+          }
+          return res.status(401).json({ active: false, message: "Expired session" });
         }
-
-        const expiryDate = createdTimestamp + (daysAllowed * 24 * 60 * 60 * 1000);
-
-        if (now < expiryDate) {
-          console.log("✅ Hozzáférés megadva ide:", path);
-          return res.status(200).json({
-            active: true,
-            level: "paid",
-            redirectPath: path
-          });
-        }
+      } catch (stripeErr) {
+        console.error("❌ Stripe API error:", stripeErr.message);
+        return res.status(401).json({ active: false, error: "Stripe error: " + stripeErr.message });
       }
     }
     
-    console.log("❌ Érvénytelen vagy lejárt kód");
-    return res.status(401).json({ active: false, message: "Invalid or expired code." });
+    return res.status(401).json({ active: false, message: "Invalid code format" });
 
   } catch (err) {
-    console.error("❌ Szerver hiba:", err.message);
-    return res.status(500).json({ active: false });
+    console.error("❌ Critical Server Error:", err.message);
+    return res.status(500).json({ active: false, error: err.message });
   }
 }
