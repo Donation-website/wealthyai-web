@@ -101,7 +101,7 @@ export default function UserDashboard() {
         // IDŐBÉLYEG RÖGZÍTÉSE CSAK GUEST SZINTNÉL
         if (result.level === "guest") {
           const now = new Date();
-          const expiryDate = new Date(now.getTime() 1* 60 * 60 * 1000);
+          const expiryDate = new Date(now.getTime() + 1* 60 * 60 * 1000);
           
           localStorage.setItem("wai_vip_activated_at", now.toISOString());
           localStorage.setItem("wai_vip_expiry", expiryDate.toISOString());
