@@ -1,53 +1,37 @@
-// pages/api/verify-priority.js
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
-  // Csak a POST kéréseket engedélyezzük
-  if (req.method !== "POST") {
-    return res.status(405).json({ active: false, message: "Method not allowed" });
-  }
+  if (req.method !== "POST") return res.status(405).end("Method Not Allowed");
 
   try {
-    const { vipCode, financials } = req.body;
+    const { priceId } = req.body;
+    if (!priceId) return res.status(400).json({ error: "Missing priceId" });
 
-    // Ha nincs kód, azonnal elutasítjuk
-    if (!vipCode) {
-      return res.status(400).json({ active: false, message: "No code provided" });
-    }
+    let successPath = "/start";
+    if (priceId === "price_1SsRVyDyLtejYlZi3fEwvTPW") successPath = "/day";
+    else if (priceId === "price_1SsRY1DyLtejYlZiglvFKufA") successPath = "/premium-week";
+    else if (priceId === "price_1Sya6GDyLtejYlZiCb8oLqga") successPath = "/premium-month";
 
-    const trimmedCode = vipCode.trim();
-
-    // 1. BIG MASTER (Te) - Teljes hozzáférés a Hub-hoz (Nincs időkorlát)
-    if (trimmedCode === "MASTER-DOMINANCE-2026") {
-      return res.status(200).json({
-        active: true,
-        level: "master",
-        redirectPath: "/premium/hub",
-      });
-    }
-
-    // 2. VIP VENDÉG KÓDOK - Csak a Month oldalhoz (A frontend itt indítja el a 7 napot)
-    const guestCodes = [
-      "WAI-GUEST-7725", 
-      "WAI-CLIENT-8832", 
-      "WAI-PARTNER-9943"
-    ];
-
-    if (guestCodes.includes(trimmedCode)) {
-      return res.status(200).json({
-        active: true,
-        level: "guest",
-        redirectPath: "/premium-month",
-      });
-    }
-
-    // 3. Ha egyik sem stimmel vagy időközben törölted a kódot a listából
-    return res.status(401).json({ 
-      active: false, 
-      message: "Invalid or expired priority code." 
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      payment_method_types: ["card"],
+      line_items: [{
+        price: priceId,
+        quantity: 1,
+      }],
+      allow_promotion_codes: true, 
+      success_url: `${req.headers.origin}${successPath}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.headers.origin}/start?canceled=true`,
+      metadata: {
+        priceId: priceId
+      }
     });
 
+    return res.status(200).json({ url: session.url });
   } catch (err) {
-    console.error("Priority verification error:", err);
-    return res.status(500).json({ active: false, message: "Internal server error" });
+    console.error("STRIPE SESSION HIBA:", err.message);
+    return res.status(500).json({ error: err.message });
   }
 }
