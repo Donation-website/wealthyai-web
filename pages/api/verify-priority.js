@@ -16,7 +16,7 @@ export default async function handler(req, res) {
 
     const trimmedCode = vipCode.trim();
 
-    // 1. BIG MASTER (Te) - Teljes hozzáférés a Hub-hoz
+    // 1. BIG MASTER (Te) - Teljes hozzáférés a Hub-hoz (Nincs időkorlát)
     if (trimmedCode === "MASTER-DOMINANCE-2026") {
       return res.status(200).json({
         active: true,
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // 2. VIP VENDÉG KÓDOK - Csak a Month oldalhoz
+    // 2. VIP VENDÉG KÓDOK - Csak a Month oldalhoz (A frontend itt indítja el a 7 napot)
     const guestCodes = [
       "WAI-GUEST-7725", 
       "WAI-CLIENT-8832", 
@@ -40,7 +40,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // 3. Ha egyik sem stimmel
+    // 3. Ha egyik sem stimmel vagy időközben törölted a kódot a listából
     return res.status(401).json({ 
       active: false, 
       message: "Invalid or expired priority code." 
