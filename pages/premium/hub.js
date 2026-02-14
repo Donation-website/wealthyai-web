@@ -3,8 +3,12 @@ import React, { useState, useEffect } from "react";
 export default function PremiumHub() {
   const [isMobile, setIsMobile] = useState(false);
   const [isMaster, setIsMaster] = useState(false);
-  // Élő adatok állapota
-  const [stats, setStats] = useState({ stripe: "CONNECTING...", sendgrid: "CHECKING..." });
+  // Élő adatok állapota - Kiegészítve Product Hunt státusszal
+  const [stats, setStats] = useState({ 
+    stripe: "CONNECTING...", 
+    sendgrid: "CHECKING...",
+    ph_status: "WARMING UP" 
+  });
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -24,9 +28,10 @@ export default function PremiumHub() {
         .then(res => res.json())
         .then(data => setStats({
           stripe: data.stripe || "ACTIVE",
-          sendgrid: data.sendgrid || "READY"
+          sendgrid: data.sendgrid || "READY",
+          ph_status: "ENGAGED"
         }))
-        .catch(() => setStats({ stripe: "OFFLINE", sendgrid: "ERROR" }));
+        .catch(() => setStats({ stripe: "OFFLINE", sendgrid: "ERROR", ph_status: "LIVE" }));
       }
     }
 
@@ -146,15 +151,19 @@ export default function PremiumHub() {
               <div style={{ color: stats.stripe.includes('ERROR') ? "#ef4444" : "#22c55e" }}>{stats.stripe}</div>
             </div>
             <div>
+              <div style={{ color: "#64748b" }}>PRODUCT HUNT</div>
+              <div style={{ color: "#fbbf24" }}>{stats.ph_status}</div>
+            </div>
+            <div>
               <div style={{ color: "#64748b" }}>TRAFFIC</div>
               <div style={{ color: "#3b82f6" }}>MONITORING...</div>
             </div>
           </div>
 
           <div style={{ display: "flex", gap: "8px" }}>
+            <a href="https://www.producthunt.com/@zoltan_horvath5" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#da552f" }}>PH PROFIL</a>
             <a href="https://mail.zoho.eu" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#1e3a8a" }}>ZOHO</a>
             <a href="https://www.linkedin.com/in/zoltan-horvath-77386a3a9/?locale=hu" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#0a66c2" }}>LINKEDIN</a>
-            {/* Ez a link pontosan oda visz, ahol a lipcsei... profiloddal látod a projektet */}
             <a href="https://vercel.com/donation-website-projects/wealthyai-web/analytics" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#000000" }}>ANALYTICS</a>
             <a href="https://dashboard.stripe.com" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#4338ca" }}>STRIPE</a>
           </div>
