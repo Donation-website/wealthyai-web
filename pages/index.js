@@ -158,14 +158,14 @@ export default function Home() {
           style={{
             position: isMobile ? "fixed" : "absolute",
             top: isMobile ? "15px" : "30px",
-            right: isMobile ? "0" : "40px",
-            left: isMobile ? "0" : "auto",
+            right: isMobile ? "40px" : "40px",
+            left: isMobile ? "auto" : "auto",
             display: "flex",
             justifyContent: "center",
             gap: isMobile ? "15px" : "28px",
             zIndex: 6,
             fontSize: isMobile ? "0.8rem" : "0.95rem",
-            width: isMobile ? "100%" : "auto",
+            width: isMobile ? "auto" : "auto",
           }}
         >
           <a href="/philosophy" onClick={stopAudio} className="nav-link">Philosophy</a>
@@ -336,9 +336,17 @@ export default function Home() {
               color: "white", 
               fontWeight: "200", 
               opacity: 0.5,
-              fontFamily: "'Inter', sans-serif" 
+              fontFamily: "'Inter', sans-serif",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px"
             }}>
               Member of Microsoft for Startups
+              <img 
+                src="/wealthyai/icons/microsoft-logo-png-2395.png" 
+                alt="Microsoft Logo" 
+                style={{ height: "16px", width: "auto", display: "inline-block" }} 
+              />
             </div>
             <div style={{ fontSize: "0.85rem", opacity: 0.6 }}>
               © 2026 mywealthyai.com — All rights reserved.
