@@ -328,24 +328,29 @@ export default function Home() {
               : "transparent",
           }}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px", alignItems: isMobile ? "center" : "flex-start" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px", alignItems: isMobile ? "center" : "flex-start" }}>
             <div style={{ 
-              fontSize: "9px", 
+              fontSize: "10px", 
               textTransform: "uppercase", 
               letterSpacing: "2px", 
               color: "white", 
-              fontWeight: "200", 
-              opacity: 0.5,
+              fontWeight: "400", 
+              opacity: 0.7,
               fontFamily: "'Inter', sans-serif",
               display: "flex",
               alignItems: "center",
-              gap: "8px"
+              gap: "12px"
             }}>
               Member of Microsoft for Startups
               <img 
                 src="/wealthyai/icons/microsoft-logo-png-2395.png" 
                 alt="Microsoft Logo" 
-                style={{ height: "16px", width: "auto", display: "inline-block" }} 
+                style={{ 
+                  height: "24px", 
+                  width: "auto", 
+                  display: "inline-block",
+                  filter: "drop-shadow(0 0 5px rgba(255,255,255,0.2))"
+                }} 
               />
             </div>
             <div style={{ fontSize: "0.85rem", opacity: 0.6 }}>
