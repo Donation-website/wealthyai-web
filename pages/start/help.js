@@ -44,6 +44,20 @@ export default function HelpPage() {
             or judgment.
           </p>
 
+          <Section title="How to Access Premium Features" isMobile={isMobile}>
+            Getting started with <strong>MyWealthyAI</strong> is seamless. Since we value your privacy, we don’t use traditional accounts or passwords.
+            <br /><br />
+            <strong>1. Choose Your Plan:</strong> Select from our 1-Day, 1-Week, or 1-Month access packages.
+            <br />
+            <strong>2. Secure Payment:</strong> You will be redirected to <strong>Stripe</strong>. Please ensure you provide a <strong>valid email address</strong> during checkout.
+            <br />
+            <strong>3. Receive Your Priority Code:</strong> Check your inbox (and <strong>Spam folder</strong>) for your unique <strong>Stripe Priority Code</strong>.
+            <br />
+            <strong>4. Unlock & Explore:</strong> Return to the site, click your chosen plan, enter the code into the <strong>"Enter code"</strong> field, and hit <strong>Validate</strong>.
+            <br /><br />
+            <em>Note: Your access starts from the moment of purchase. Keep your code safe, as you will need it to re-enter if you close your session.</em>
+          </Section>
+
           <Section title="What this page shows" isMobile={isMobile}>
             The Financial Overview is a <strong>basic snapshot</strong> of your
             current financial situation.
