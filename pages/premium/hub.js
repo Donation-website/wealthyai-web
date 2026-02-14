@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 export default function PremiumHub() {
   const [isMobile, setIsMobile] = useState(false);
   const [isMaster, setIsMaster] = useState(false);
+  // Élő adatok állapota (Stripe egyenleg és rendszerstátusz)
   const [stats, setStats] = useState({ stripe: "CONNECTING...", sendgrid: "CHECKING..." });
 
   useEffect(() => {
@@ -15,6 +16,7 @@ export default function PremiumHub() {
       const masterStatus = token === "MASTER-DOMINANCE-2026";
       setIsMaster(masterStatus);
 
+      // Ha te vagy a Master, lekérjük az élő adatokat a Vercel API-n keresztül
       if (masterStatus) {
         fetch('/api/master-stats', {
           headers: { 'x-master-token': 'MASTER-DOMINANCE-2026' }
@@ -145,13 +147,14 @@ export default function PremiumHub() {
             </div>
             <div>
               <div style={{ color: "#64748b" }}>TRAFFIC</div>
-              <div style={{ color: "#3b82f6" }}>LIVE STATS</div>
+              <div style={{ color: "#3b82f6" }}>LIVE ANALYTICS</div>
             </div>
           </div>
 
           <div style={{ display: "flex", gap: "8px" }}>
+            <a href="https://mail.zoho.eu" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#1e3a8a" }}>ZOHO</a>
             <a href="https://www.linkedin.com/in/zoltan-horvath-77386a3a9/?locale=hu" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#0a66c2" }}>LINKEDIN</a>
-            <a href="https://vercel.com/dashboard/analytics" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#000000" }}>ANALYTICS</a>
+            <a href="https://vercel.com/donation-website-projects/wealthyai-web/analytics" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#000000" }}>ANALYTICS</a>
             <a href="https://dashboard.stripe.com" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#4338ca" }}>STRIPE</a>
           </div>
         </div>
@@ -161,6 +164,7 @@ export default function PremiumHub() {
       <h1 style={styles.title}>WealthyAI Control Hub</h1>
       
       <div style={styles.grid}>
+        {/* DAILY */}
         <div style={styles.card} onClick={() => navigateTo("/day")}
           onMouseEnter={(e) => Object.assign(e.currentTarget.style, styles.cardHover)}
           onMouseLeave={(e) => Object.assign(e.currentTarget.style, styles.card)}>
@@ -169,6 +173,7 @@ export default function PremiumHub() {
           <p style={{ fontSize: "14px", opacity: 0.7 }}>Immediate Snapshots</p>
         </div>
 
+        {/* WEEKLY */}
         <div style={styles.card} onClick={() => navigateTo("/premium-week")}
           onMouseEnter={(e) => Object.assign(e.currentTarget.style, styles.cardHover)}
           onMouseLeave={(e) => Object.assign(e.currentTarget.style, styles.card)}>
@@ -177,6 +182,7 @@ export default function PremiumHub() {
           <p style={{ fontSize: "14px", opacity: 0.7 }}>Behavioral Patterns</p>
         </div>
 
+        {/* MONTHLY */}
         <div style={styles.card} onClick={() => navigateTo("/premium-month")}
           onMouseEnter={(e) => Object.assign(e.currentTarget.style, styles.cardHover)}
           onMouseLeave={(e) => Object.assign(e.currentTarget.style, styles.card)}>
