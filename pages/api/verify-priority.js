@@ -1,35 +1,45 @@
 import { connectToDatabase } from "../../lib/db";
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ message: "Method not allowed" });
+  if (req.method !== "POST") 
+    return res.status(405).json({ message: "Method not allowed" });
 
-  const { session_id } = req.body;
+  const { vipCode } = req.body;
 
-  // 1. AZ EREDETI FIX KÓDOK (VISSZAÁLLÍTVA)
+  if (!vipCode) {
+    return res.status(400).json({ valid: false });
+  }
+
+  // 1. FIX MASTER + VIP KÓDOK
   const masterCode = "MASTER-DOMINANCE-2026"; 
   const vipCodes = ["WAI-GUEST-7725", "WAI-CLIENT-8832", "WAI-PARTER-9943"];
 
-  if (session_id === masterCode || vipCodes.includes(session_id)) {
+  if (vipCode === masterCode || vipCodes.includes(vipCode)) {
     return res.status(200).json({ 
       valid: true, 
-      message: "Eredeti VIP hozzáférés engedélyezve." 
+      active: true,
+      redirectPath: "/premium/hub"
     });
   }
 
-  // 2. ADATBÁZIS ELLENŐRZÉS (A Stripe vásárlóknak)
-  try {
-    const pool = await connectToDatabase();
-    const result = await pool.request()
-      .input("sessionId", session_id)
-      .query("SELECT * FROM subscriptions WHERE stripe_session_id = @sessionId");
+  // 2. STRIPE SESSION ID CHECK (ha cs_ kezdetű)
+  if (vipCode.startsWith("cs_")) {
+    try {
+      const pool = await connectToDatabase();
+      const result = await pool.request()
+        .input("sessionId", vipCode)
+        .query("SELECT * FROM subscriptions WHERE stripe_session_id = @sessionId");
 
-    if (result.recordset.length > 0) {
-      return res.status(200).json({ valid: true });
-    } else {
-      return res.status(404).json({ valid: false, message: "Érvénytelen kód." });
+      if (result.recordset.length > 0) {
+        return res.status(200).json({ valid: true, active: true });
+      } else {
+        return res.status(401).json({ valid: false });
+      }
+    } catch (error) {
+      console.error("SQL hiba:", error);
+      return res.status(500).json({ valid: false });
     }
-  } catch (error) {
-    console.error("SQL hiba:", error);
-    return res.status(500).json({ message: "Szerver hiba az ellenőrzéskor." });
   }
+
+  return res.status(401).json({ valid: false });
 }
