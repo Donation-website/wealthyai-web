@@ -1,4 +1,4 @@
-tedd bele az 1day 1 week 1 month szamlalast kerlek semmi mast es copy paste. import Stripe from "stripe";
+import Stripe from "stripe";
 import { EmailClient } from "@azure/communication-email";
 import { generateAccessConfirmationPDF } from "../../lib/pdf/generateAccessConfirmation";
 import sql from "mssql";
