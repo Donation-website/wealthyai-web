@@ -5,9 +5,52 @@ import PDFDocument from "pdfkit";
 import path from "path";
 import fs from "fs";
 
+/* ================================
+   SIMPLE IN-MEMORY RATE LIMIT
+   3 EMAIL / IP / HOUR
+================================ */
+
+const rateLimitStore = global.rateLimitStore || new Map();
+global.rateLimitStore = rateLimitStore;
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const hour = 60 * 60 * 1000;
+
+  if (!rateLimitStore.has(ip)) {
+    rateLimitStore.set(ip, { count: 1, firstRequest: now });
+    return true;
+  }
+
+  const data = rateLimitStore.get(ip);
+
+  if (now - data.firstRequest > hour) {
+    rateLimitStore.set(ip, { count: 1, firstRequest: now });
+    return true;
+  }
+
+  if (data.count >= 3) {
+    return false;
+  }
+
+  data.count++;
+  return true;
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).end();
+  }
+
+  const ip =
+    req.headers["x-forwarded-for"]?.split(",")[0] ||
+    req.socket?.remoteAddress ||
+    "unknown";
+
+  if (!checkRateLimit(ip)) {
+    return res.status(429).json({
+      error: "Too many requests. Please wait before trying again.",
+    });
   }
 
   const timeout = setTimeout(() => {
