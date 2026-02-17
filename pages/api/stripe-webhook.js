@@ -1,9 +1,27 @@
 import Stripe from "stripe";
 import { EmailClient } from "@azure/communication-email";
 import { generateAccessConfirmationPDF } from "../../lib/pdf/generateAccessConfirmation";
+import sql from "mssql";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+// SQL Konfiguráció a Vercel-ben megadott környezeti változók alapján
+const sqlConfig = {
+    user: process.env.AZURE_SQL_USER,
+    password: process.env.AZURE_SQL_PASSWORD,
+    database: process.env.AZURE_SQL_DATABASE,
+    server: process.env.AZURE_SQL_SERVER,
+    pool: {
+        max: 10,
+        min: 0,
+        idleTimeoutMillis: 30000
+    },
+    options: {
+        encrypt: true,
+        trustServerCertificate: false
+    }
+};
 
 export const config = {
   api: {
@@ -19,12 +37,38 @@ async function getRawBody(readable) {
   return Buffer.concat(chunks);
 }
 
+// ÚJ FUNKCIÓ: Mentés az Azure SQL-be - semmit nem töröltünk, csak hozzáadtunk
+async function saveSubscriptionToAzure(session) {
+    try {
+        let pool = await sql.connect(sqlConfig);
+        
+        // Alapértelmezett 31 napos lejárat
+        let expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + 31); 
+
+        await pool.request()
+            .input('session_id', sql.NVarChar, session.id)
+            .input('email', sql.NVarChar, session.customer_details.email)
+            .input('tier', sql.NVarChar, 'premium') 
+            .input('expires_at', sql.DateTime, expiryDate)
+            .query(`
+                INSERT INTO subscriptions (stripe_session_id, email, tier, expires_at)
+                VALUES (@session_id, @email, @tier, @expires_at)
+            `);
+        
+        console.log("💾 SQL Adatmentés sikeresen megtörtént az Azure-ba.");
+    } catch (err) {
+        console.error("❌ SQL Hiba a mentési kísérlet során:", err.message);
+        throw err;
+    }
+}
+
 async function sendPaymentConfirmationEmail({ to, amount, currency, date, sessionId }) {
   console.log(`📧 Azure email küldés: ${to}`);
 
   const productName = "WealthyAI Intelligence Pass";
 
-  // PDF generálás
+  // PDF generálás - EREDETI LOGIKA
   const pdfBuffer = await generateAccessConfirmationPDF({
     productName,
     amount,
@@ -103,6 +147,10 @@ export default async function handler(req, res) {
     const session = event.data.object;
 
     try {
+      // 1. LÉPÉS: SQL MENTÉS (A stabilitás miatt ez az első)
+      await saveSubscriptionToAzure(session);
+
+      // 2. LÉPÉS: EREDETI EMAIL KÜLDÉS ÉS PDF GENERÁLÁS
       await sendPaymentConfirmationEmail({
         to: session.customer_details.email,
         amount: session.amount_total / 100,
@@ -111,10 +159,12 @@ export default async function handler(req, res) {
         sessionId: session.id,
       });
 
-      console.log(`✅ Feldolgozva: ${session.id}`);
+      console.log(`✅ Feldolgozva és mentve: ${session.id}`);
     } catch (err) {
-      console.error(`❌ Email hiba: ${err.message}`);
-      return res.status(200).json({ error: "Email failed but session ok" });
+      console.error(`❌ Hiba a feldolgozás során: ${err.message}`);
+      // Akkor is 200-at küldünk, ha az SQL/Email hiba volt, 
+      // hogy a Stripe ne küldözgesse újra és újra
+      return res.status(200).json({ error: "Processing error occurred but event received" });
     }
   }
 
