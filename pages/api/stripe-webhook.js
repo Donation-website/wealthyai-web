@@ -1,54 +1,49 @@
 import Stripe from "stripe";
-import nodemailer from "nodemailer";
+import { EmailClient } from "@azure/communication-email";
 import { generateAccessConfirmationPDF } from "../../lib/pdf/generateAccessConfirmation";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-// Letiltjuk a Next.js alapértelmezett body-parserét, mert a Stripe-nak nyers body kell
 export const config = {
   api: {
     bodyParser: false,
   },
 };
 
-// Saját segédfüggvény a nyers body kiolvasásához (micro helyett)
 async function getRawBody(readable) {
   const chunks = [];
   for await (const chunk of readable) {
-    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+    chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
   }
   return Buffer.concat(chunks);
 }
 
-async function sendPaymentConfirmationEmail({ to, priceId, amount, currency, date, sessionId }) {
-  console.log(`📧 E-mail küldés indítása: ${to}`);
-  
-  try {
-    const productName = "WealthyAI Intelligence Pass";
-    
-    // PDF generálás az általad beküldött függvénnyel
-    console.log("📄 PDF generálás folyamatban...");
-    const pdfBuffer = await generateAccessConfirmationPDF({
-      productName, amount, currency, date, sessionId
-    });
+async function sendPaymentConfirmationEmail({ to, amount, currency, date, sessionId }) {
+  console.log(`📧 Azure email küldés: ${to}`);
 
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      secure: Number(process.env.SMTP_PORT) === 465,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-      connectionTimeout: 10000, 
-    });
+  const productName = "WealthyAI Intelligence Pass";
 
-    await transporter.sendMail({
-      from: process.env.MAIL_FROM,
-      to,
-      subject: `[CONFIDENTIAL] WealthyAI · Access Activated`,
-      text: `Welcome to the inner circle. Access Key: ${sessionId}\n\nCopy and paste this Access Key on the start page to restore your session or to log in from another device.`,
+  // PDF generálás
+  const pdfBuffer = await generateAccessConfirmationPDF({
+    productName,
+    amount,
+    currency,
+    date,
+    sessionId,
+  });
+
+  const client = new EmailClient(
+    process.env.AZURE_COMMUNICATION_CONNECTION_STRING
+  );
+
+  const message = {
+    senderAddress: process.env.MAIL_FROM,
+    content: {
+      subject: "[CONFIDENTIAL] WealthyAI · Access Activated",
+      plainText: `Welcome to the inner circle. Access Key: ${sessionId}
+
+Copy and paste this Access Key on the start page to restore your session or to log in from another device.`,
       html: `
         <div style="font-family: sans-serif; line-height: 1.6; color: #1e293b; max-width: 600px;">
           <h2 style="color: #0f172a;">Welcome to the inner circle.</h2>
@@ -61,37 +56,42 @@ async function sendPaymentConfirmationEmail({ to, priceId, amount, currency, dat
             </code>
           </div>
 
-          <h3 style="font-size: 16px;">How to resume your session:</h3>
-          <ol style="padding-left: 20px;">
-            <li>Keep this email for the duration of your access.</li>
-            <li>If you close your browser, return to <b>WealthyAI</b>.</li>
-            <li>Click <b>"HAVE A PRIORITY CODE?"</b> on the dashboard.</li>
-            <li>Copy and paste the <b>Access Key</b> shown above to restore your session or to log in from another device.</li>
-          </ol>
-
-          <p style="font-size: 12px; color: #64748b; margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+          <p style="font-size: 12px; color: #64748b; margin-top: 30px;">
             The activation confirmation is also attached as a PDF.
           </p>
         </div>
       `,
-      attachments: [{ filename: 'wealthyai-access.pdf', content: pdfBuffer }],
-    });
+    },
+    recipients: {
+      to: [{ address: to }],
+    },
+    attachments: [
+      {
+        name: "wealthyai-access.pdf",
+        contentType: "application/pdf",
+        contentInBase64: pdfBuffer.toString("base64"),
+      },
+    ],
+  };
 
-    console.log("✨ E-mail sikeresen elküldve!");
-  } catch (err) {
-    console.error('❌ E-MAIL HIBA:', err.message);
-    throw err; 
+  const poller = await client.beginSend(message);
+  const result = await poller.pollUntilDone();
+
+  if (result.status !== "Succeeded") {
+    throw new Error("Azure email send failed");
   }
+
+  console.log("✅ Azure payment confirmation email sent");
 }
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
+  if (req.method !== "POST")
+    return res.status(405).send("Method Not Allowed");
 
   const sig = req.headers["stripe-signature"];
   let event;
 
   try {
-    // Itt hívjuk meg a saját body-olvasónkat
     const rawBody = await getRawBody(req);
     event = stripe.webhooks.constructEvent(rawBody, sig, endpointSecret);
   } catch (err) {
@@ -101,18 +101,19 @@ export default async function handler(req, res) {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
+
     try {
       await sendPaymentConfirmationEmail({
         to: session.customer_details.email,
-        priceId: session.metadata?.priceId || "unknown",
         amount: session.amount_total / 100,
-        currency: (session.currency || 'USD').toUpperCase(),
+        currency: (session.currency || "USD").toUpperCase(),
         date: new Date().toLocaleDateString(),
-        sessionId: session.id, 
+        sessionId: session.id,
       });
-      console.log(`✅ Sikeres feldolgozás: ${session.id}`);
+
+      console.log(`✅ Feldolgozva: ${session.id}`);
     } catch (err) {
-      console.error(`❌ Hiba: ${err.message}`);
+      console.error(`❌ Email hiba: ${err.message}`);
       return res.status(200).json({ error: "Email failed but session ok" });
     }
   }
