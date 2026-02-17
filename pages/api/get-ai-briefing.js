@@ -1,4 +1,5 @@
 import { rateLimit } from "../../lib/rateLimit";
+import { enterpriseShield } from "../../lib/securityShield"; // ✅ ÚJ
 
 export default async function handler(req, res) {
 
@@ -11,6 +12,21 @@ export default async function handler(req, res) {
     return res.status(429).json({
       briefing: "Too many requests. Please try again later."
     });
+  }
+
+  // 🔒 ENTERPRISE SHIELD (GLOBAL SQL LIMIT) ✅ ÚJ
+  try {
+    await enterpriseShield(req, "monthly-ai", 6);
+  } catch (shieldError) {
+    if (shieldError.message === "IP_BLOCKED") {
+      return res.status(403).json({ briefing: "Access temporarily blocked." });
+    }
+    if (shieldError.message === "RATE_LIMIT_EXCEEDED") {
+      return res.status(429).json({
+        briefing: "Too many requests. Please try again later."
+      });
+    }
+    return res.status(500).json({ briefing: "Security system error." });
   }
 
   if (req.method !== "POST") {
