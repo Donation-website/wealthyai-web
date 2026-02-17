@@ -4,7 +4,6 @@ import { EmailClient } from "@azure/communication-email";
 import PDFDocument from "pdfkit";
 import path from "path";
 import fs from "fs";
-import { enterpriseShield } from "../../lib/securityShield"; // ✅ ÚJ
 
 /* ================================
    SIMPLE IN-MEMORY RATE LIMIT
@@ -52,21 +51,6 @@ export default async function handler(req, res) {
     return res.status(429).json({
       error: "Too many requests. Please wait before trying again.",
     });
-  }
-
-  // 🔒 ENTERPRISE SHIELD (GLOBAL SQL LIMIT) ✅ ÚJ
-  try {
-    await enterpriseShield(req, "email", 3);
-  } catch (shieldError) {
-    if (shieldError.message === "IP_BLOCKED") {
-      return res.status(403).json({ error: "Access temporarily blocked." });
-    }
-    if (shieldError.message === "RATE_LIMIT_EXCEEDED") {
-      return res.status(429).json({
-        error: "Too many requests. Please try again later."
-      });
-    }
-    return res.status(500).json({ error: "Security system error." });
   }
 
   const timeout = setTimeout(() => {
