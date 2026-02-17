@@ -40,6 +40,7 @@ async function getRawBody(readable) {
 // ÚJ FUNKCIÓ: Mentés az Azure SQL-be - semmit nem töröltünk, csak hozzáadtunk
 async function saveSubscriptionToAzure(session) {
     try {
+        // JAVÍTVA: Az sql.connect(sqlConfig) helyett ezt a stabilabb formát használjuk a pool-hoz
         let pool = await sql.connect(sqlConfig);
         
         // Alapértelmezett 31 napos lejárat
