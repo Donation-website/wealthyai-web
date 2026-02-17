@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 export default function PremiumHub() {
   const [isMobile, setIsMobile] = useState(false);
   const [isMaster, setIsMaster] = useState(false);
-  // Élő adatok állapota - Kiegészítve Product Hunt státusszal
   const [stats, setStats] = useState({ 
     stripe: "CONNECTING...", 
     sendgrid: "CHECKING...",
@@ -20,7 +19,6 @@ export default function PremiumHub() {
       const masterStatus = token === "MASTER-DOMINANCE-2026";
       setIsMaster(masterStatus);
 
-      // Élő adatok lekérése a Mester számára
       if (masterStatus) {
         fetch('/api/master-stats', {
           headers: { 'x-master-token': 'MASTER-DOMINANCE-2026' }
@@ -166,6 +164,8 @@ export default function PremiumHub() {
             <a href="https://www.linkedin.com/in/zoltan-horvath-77386a3a9/?locale=hu" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#0a66c2" }}>LINKEDIN</a>
             <a href="https://vercel.com/donation-website-projects/wealthyai-web/analytics" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#000000" }}>ANALYTICS</a>
             <a href="https://dashboard.stripe.com" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#4338ca" }}>STRIPE</a>
+            <a href="https://www.namecheap.com/" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#ef4444" }}>NAMECHEAP</a>
+            <a href="https://portal.azure.com/#home" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#2563eb" }}>AZURE</a>
           </div>
         </div>
       )}
