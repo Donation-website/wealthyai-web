@@ -1,6 +1,6 @@
 export const config = { runtime: "nodejs" };
 
-import nodemailer from "nodemailer";
+import { EmailClient } from "@azure/communication-email";
 import PDFDocument from "pdfkit";
 import path from "path";
 import fs from "fs";
@@ -10,13 +10,12 @@ export default async function handler(req, res) {
     return res.status(405).end();
   }
 
-  // Időkorlát beállítása (ha 15 mp alatt nem megy el, hiba)
   const timeout = setTimeout(() => {
     if (!res.headersSent) {
       console.error("TIMEOUT REACHED");
-      return res.status(504).json({ error: "Gateway Timeout - Email taking too long" });
+      return res.status(504).json({ error: "Gateway Timeout" });
     }
-  }, 15000);
+  }, 20000);
 
   try {
     const { text, cycleDay, region, email } = req.body;
@@ -26,16 +25,15 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Missing text or email" });
     }
 
-    // --- 1. PDF GENERÁLÁS (PROMISE-BAN, HOGY MEGVÁRJA) ---
+    // ----- PDF GENERÁLÁS -----
     const pdfBuffer = await new Promise((resolve, reject) => {
       const doc = new PDFDocument({ margin: 50 });
       const chunks = [];
 
       doc.on("data", (chunk) => chunks.push(chunk));
       doc.on("end", () => resolve(Buffer.concat(chunks)));
-      doc.on("error", (err) => reject(err));
+      doc.on("error", reject);
 
-      // PDF Tartalom felépítése
       const logoPath = path.join(process.cwd(), "public/wealthyai/icons/generated.png");
       if (fs.existsSync(logoPath)) {
         doc.image(logoPath, doc.page.width - 130, 40, { width: 80 });
@@ -45,52 +43,60 @@ export default async function handler(req, res) {
       doc.fontSize(14).text("Monthly Strategic Briefing", { underline: true });
       doc.moveDown();
       doc.fontSize(10).fillColor("gray")
-         .text(`Region: ${region}`)
-         .text(`Cycle Day: ${cycleDay}`)
-         .text(`Date: ${new Date().toLocaleDateString()}`);
-      
+        .text(`Region: ${region}`)
+        .text(`Cycle Day: ${cycleDay}`)
+        .text(`Date: ${new Date().toLocaleDateString()}`);
+
       doc.moveDown(2).fontSize(11).fillColor("black").text(text, {
-        align: 'justify',
-        lineGap: 4
+        align: "justify",
+        lineGap: 4,
       });
 
       doc.end();
     });
 
-    // --- 2. SMTP KÜLDÉS ---
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      secure: Number(process.env.SMTP_PORT) === 465,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-      connectionTimeout: 10000,
-    });
+    // ----- AZURE EMAIL -----
+    const client = new EmailClient(
+      process.env.AZURE_COMMUNICATION_CONNECTION_STRING
+    );
 
-    await transporter.sendMail({
-      from: process.env.MAIL_FROM,
-      to: email,
-      subject: `Your WealthyAI Monthly Briefing - Day ${cycleDay}`,
-      text: "Your monthly WealthyAI briefing report is attached.",
+    const message = {
+      senderAddress: process.env.MAIL_FROM,
+      content: {
+        subject: `Your WealthyAI Monthly Briefing - Day ${cycleDay}`,
+        plainText: "Your monthly WealthyAI briefing report is attached.",
+      },
+      recipients: {
+        to: [{ address: email }],
+      },
       attachments: [
         {
-          filename: `wealthyai-briefing-day${cycleDay}.pdf`,
-          content: pdfBuffer,
+          name: `wealthyai-briefing-day${cycleDay}.pdf`,
+          contentType: "application/pdf",
+          contentInBase64: pdfBuffer.toString("base64"),
         },
       ],
-    });
+    };
+
+    const poller = await client.beginSend(message);
+    const result = await poller.pollUntilDone();
+
+    if (result.status !== "Succeeded") {
+      throw new Error("Azure email send failed");
+    }
 
     clearTimeout(timeout);
-    console.log(`✅ Email sent to ${email}`);
+    console.log("✅ Azure email sent to", email);
     return res.status(200).json({ ok: true });
 
   } catch (err) {
     clearTimeout(timeout);
-    console.error("CRITICAL ERROR IN API:", err);
+    console.error("AZURE ERROR:", err);
     if (!res.headersSent) {
-      return res.status(500).json({ error: "Internal Server Error", details: err.message });
+      return res.status(500).json({
+        error: "Email sending failed",
+        details: err.message,
+      });
     }
   }
 }
