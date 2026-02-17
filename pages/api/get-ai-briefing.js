@@ -1,18 +1,4 @@
-import { rateLimit } from "../../lib/rateLimit";
-
-export default async function handler(req, res) {
-
-  // 🔒 IP RATE LIMIT (3 kérés / óra)
-  const ip =
-    req.headers["x-forwarded-for"]?.split(",")[0] ||
-    req.socket.remoteAddress;
-
-  if (!rateLimit(ip, 3, 60 * 60 * 1000)) {
-    return res.status(429).json({
-      briefing: "Too many requests. Please try again later."
-    });
-  }
-
+ez melyik fajl? export default async function handler(req, res) { 
   if (req.method !== "POST") {
     return res.status(405).json({ briefing: "Method not allowed." });
   }
@@ -21,7 +7,7 @@ export default async function handler(req, res) {
     const {
       region,
       cycleDay,
-      analysisMode,
+      analysisMode, // backward compatibility
       previousSignals,
       weeklyFocus,
       isReturningCustomer,
@@ -38,6 +24,10 @@ export default async function handler(req, res) {
       unexpected,
       other,
     } = req.body;
+
+    /* ================================
+        INPUT SANITIZATION (HARD)
+    ================================= */
 
     const safe = (v) => Math.max(0, Number(v || 0));
 
@@ -56,6 +46,10 @@ export default async function handler(req, res) {
       other: safe(other),
     };
 
+    /* ================================
+        STRUCTURAL DERIVATION (CRITICAL)
+    ================================= */
+
     const totalEnergy = S.electricity + S.gas;
     const hasEnergyExposure = totalEnergy > 0;
 
@@ -63,9 +57,14 @@ export default async function handler(req, res) {
     const recurringServices = S.internet + S.mobile + S.tv;
     const irregularPressure = S.unexpected + S.other;
 
+    // MATH CHECK FOR AI TRUTH
     const totalOut = fixedCore + recurringServices + irregularPressure + totalEnergy + S.water;
     const isDeficit = S.income < totalOut;
     const fragilityIndex = S.income > 0 ? ((totalOut / S.income) * 100).toFixed(1) : "INFINITE";
+
+    /* ================================
+        SYSTEM PROMPT — BASE (RE-STRENGTHENED)
+    ================================= */
 
     let systemPrompt = `
 You are WealthyAI — a PAID financial intelligence system.
@@ -90,9 +89,9 @@ ABSOLUTE RULE:
 - It MUST NOT appear in the visible briefing.
 
 STRICT CONSTRAINTS:
-- NEVER restate inputs.
+- NEVER restate inputs (Do not say "Your rent is 1200").
 - NEVER invent exposure.
-- INCOME TRUTH: If income is 0, the structure is "unsupported".
+- INCOME TRUTH: If income is 0, the structure is "unsupported". Do not hallucinate stability.
 
 SCOPE:
 - NEXT 90 DAYS
@@ -125,7 +124,7 @@ WEEKLY INTERPRETATION LENS (DOMINANT):
 - stability → describe predictability, fixed costs, and structural pressure.
 - spending → analyze behavioral patterns, discretionary flow, and non-fixed categories.
 - resilience → analyze buffers, risk tolerance, and structural fragility.
-- direction → observe forward signals.
+- direction → observe forward signals (no forecasting).
 
 ACTIVE WEEKLY FOCUS:
 - ${weeklyFocus}
@@ -150,6 +149,10 @@ TASK: Write the briefing strictly from structure through the lens of ${weeklyFoc
     const executivePrompt = `MODE: EXECUTIVE\n- Calm, Observational.\n${baseUserPrompt}`;
     const directivePrompt = `MODE: DIRECTIVE\n- Firm, Strategic.\n${baseUserPrompt}`;
 
+    /* ================================
+        GROQ CALL (RESTORED TO INSTANT)
+    ================================= */
+
     const callGroq = async (prompt, temperature) => {
       const r = await fetch(
         "https://api.groq.com/openai/v1/chat/completions",
@@ -160,7 +163,7 @@ TASK: Write the briefing strictly from structure through the lens of ${weeklyFoc
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "llama-3.1-8b-instant",
+            model: "llama-3.1-8b-instant", // VISSZAÁLLÍTVA AZ EREDETI MODELLRE
             messages: [
               { role: "system", content: systemPrompt },
               { role: "user", content: prompt },
@@ -180,6 +183,10 @@ TASK: Write the briefing strictly from structure through the lens of ${weeklyFoc
       }
       return text;
     };
+
+    /* ================================
+        EXECUTION
+    ================================= */
 
     const executive = await callGroq(executivePrompt, 0.25);
     const directive = await callGroq(directivePrompt, 0.1);
