@@ -37,20 +37,37 @@ async function getRawBody(readable) {
   return Buffer.concat(chunks);
 }
 
-// ÚJ FUNKCIÓ: Mentés az Azure SQL-be - semmit nem töröltünk, csak hozzáadtunk
+// JAVÍTOTT FUNKCIÓ: Csomagfüggő lejárat
 async function saveSubscriptionToAzure(session) {
     try {
-        // JAVÍTVA: Az sql.connect(sqlConfig) helyett ezt a stabilabb formát használjuk a pool-hoz
         let pool = await sql.connect(sqlConfig);
-        
-        // Alapértelmezett 31 napos lejárat
+
+        // 🔹 Csomag azonosítás metadata alapján
+        const priceId = session.metadata?.priceId;
+
         let expiryDate = new Date();
-        expiryDate.setDate(expiryDate.getDate() + 31); 
+
+        // 1 DAY
+        if (priceId === "price_1T0LCDDyLtejYlZimOucadbT") {
+            expiryDate.setDate(expiryDate.getDate() + 1);
+        }
+        // 1 WEEK
+        else if (priceId === "price_1T0LBQDyLtejYlZiXKn0PmGP") {
+            expiryDate.setDate(expiryDate.getDate() + 7);
+        }
+        // 1 MONTH
+        else if (priceId === "price_1T0L8aDyLtejYlZik3nH3Uft") {
+            expiryDate.setDate(expiryDate.getDate() + 30);
+        }
+        // fallback (ha bármi hiányzik)
+        else {
+            expiryDate.setDate(expiryDate.getDate() + 30);
+        }
 
         await pool.request()
             .input('session_id', sql.NVarChar, session.id)
             .input('email', sql.NVarChar, session.customer_details.email)
-            .input('tier', sql.NVarChar, 'premium') 
+            .input('tier', sql.NVarChar, 'premium')
             .input('expires_at', sql.DateTime, expiryDate)
             .query(`
                 INSERT INTO subscriptions (stripe_session_id, email, tier, expires_at)
@@ -69,7 +86,6 @@ async function sendPaymentConfirmationEmail({ to, amount, currency, date, sessio
 
   const productName = "WealthyAI Intelligence Pass";
 
-  // PDF generálás - EREDETI LOGIKA
   const pdfBuffer = await generateAccessConfirmationPDF({
     productName,
     amount,
@@ -148,10 +164,8 @@ export default async function handler(req, res) {
     const session = event.data.object;
 
     try {
-      // 1. LÉPÉS: SQL MENTÉS (A stabilitás miatt ez az első)
       await saveSubscriptionToAzure(session);
 
-      // 2. LÉPÉS: EREDETI EMAIL KÜLDÉS ÉS PDF GENERÁLÁS
       await sendPaymentConfirmationEmail({
         to: session.customer_details.email,
         amount: session.amount_total / 100,
@@ -163,8 +177,6 @@ export default async function handler(req, res) {
       console.log(`✅ Feldolgozva és mentve: ${session.id}`);
     } catch (err) {
       console.error(`❌ Hiba a feldolgozás során: ${err.message}`);
-      // Akkor is 200-at küldünk, ha az SQL/Email hiba volt, 
-      // hogy a Stripe ne küldözgesse újra és újra
       return res.status(200).json({ error: "Processing error occurred but event received" });
     }
   }
