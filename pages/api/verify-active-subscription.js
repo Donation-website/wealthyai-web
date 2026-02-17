@@ -18,13 +18,16 @@ export default async function handler(req, res) {
   const { sessionId, vipToken } = req.body || {};
 
   // 1. MASTER/VIP - AZONNALI BELÉPÉS
-  // Megtartottuk az eredeti logikát: Master kód és WAI- kezdetű tokenek
-  if (vipToken === "MASTER-DOMINANCE-2026" || vipToken?.startsWith("WAI-")) {
+  // Megtartottuk az eredeti logikát: Master kód és a megadott VIP tokenek
+  const masterCode = "MASTER-DOMINANCE-2026"; 
+  const vipCodes = ["WAI-GUEST-7725", "WAI-CLIENT-8832", "WAI-PARTER-9943"];
+
+  if (vipToken === masterCode || vipCodes.includes(vipToken)) {
     return res.status(200).json({ valid: true, active: true, success: true });
   }
 
   // --- EMLÉKEZTETŐ: A két további kód helye ---
-  // Itt ellenőrizheted majd azt a két extra kódot, amit említettél
+  // Itt ellenőrizheted majd azt a két extra kódot, amit említettél [2026-02-17]
   // if (vipToken === "EXTRA-KOD-1") ...
 
   // 2. SQL ÉS STRIPE ELLENŐRZÉS
@@ -42,7 +45,7 @@ export default async function handler(req, res) {
       if (subscription) {
         const now = new Date();
         // Ellenőrizzük, hogy aktív-e még (időben nem járt le)
-        const isNotExpired = now < subscription.expires_at;
+        const isNotExpired = now < new Date(subscription.expires_at);
         
         return res.status(200).json({ 
           valid: isNotExpired, 
