@@ -5,7 +5,6 @@ import { NextResponse } from "next/server";
 ================================ */
 
 const BOT_PATTERNS = [
-  "bot",
   "crawler",
   "spider",
   "scraper",
@@ -25,7 +24,7 @@ global.rateStore = rateStore;
 
 function checkRateLimit(ip) {
   const now = Date.now();
-  const windowMs = 60 * 1000; // 1 perc
+  const windowMs = 60 * 1000;
   const limit = 20;
 
   if (!rateStore.has(ip)) {
@@ -53,23 +52,33 @@ function checkRateLimit(ip) {
 ================================ */
 
 export function middleware(req) {
+  const pathname = req.nextUrl.pathname;
+
+  // 🔓 STRIPE ROUTES NEVER BLOCKED
+  if (
+    pathname.startsWith("/api/create-stripe-session") ||
+    pathname.startsWith("/api/webhook")
+  ) {
+    return NextResponse.next();
+  }
+
   const ua = req.headers.get("user-agent")?.toLowerCase() || "";
   const ip =
     req.ip ||
     req.headers.get("x-forwarded-for")?.split(",")[0] ||
     "unknown";
 
-  // 1️⃣ BOT BLOCK
+  // 1️⃣ BOT BLOCK (kivéve stripe)
   if (BOT_PATTERNS.some(p => ua.includes(p))) {
     return new NextResponse("Blocked", { status: 403 });
   }
 
-  // 2️⃣ Empty / Suspicious UA
+  // 2️⃣ Suspicious UA
   if (!ua || ua.length < 10) {
     return new NextResponse("Blocked", { status: 403 });
   }
 
-  // 3️⃣ IP RATE LIMIT
+  // 3️⃣ RATE LIMIT
   if (!checkRateLimit(ip)) {
     return new NextResponse("Too Many Requests", { status: 429 });
   }
