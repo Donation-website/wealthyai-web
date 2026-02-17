@@ -6,8 +6,8 @@ export default async function handler(req, res) {
   const { session_id } = req.body;
 
   // 1. AZ EREDETI FIX KÓDOK (VISSZAÁLLÍTVA)
-  const masterCode = "WAI-MASTER-2026-X"; 
-  const vipCodes = ["WAI-VIP-01", "WAI-VIP-02", "WAI-VIP-03"];
+  const masterCode = "MASTER-DOMINANCE-2026"; 
+  const vipCodes = ["WAI-GUEST-7725", "WAI-CLIENT-8832", "WAI-PARTER-9943"];
 
   if (session_id === masterCode || vipCodes.includes(session_id)) {
     return res.status(200).json({ 
