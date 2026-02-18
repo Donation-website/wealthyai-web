@@ -355,7 +355,7 @@ export default function PremiumMonth() {
     return () => clearInterval(i);
   }, [mounted, cycleDay]);
 
-  /* ================= DAILY SIGNAL EFFECT ================= */
+  /* ================= DAILY SIGNAL EFFECT (JAVÍTVA) ================= */
 
   useEffect(() => {
     if (!mounted) return;
@@ -364,7 +364,8 @@ export default function PremiumMonth() {
     const check = async () => {
       if (Date.now() < unlockAt) return;
 
-      const seenKey = "dailySignalSeen_" + getTodayKey();
+      // Hozzáadva a region a gyorsítótár kulcshoz, hogy váltáskor frissüljön
+      const seenKey = "dailySignalSeen_" + getTodayKey() + "_" + region;
       const cached = localStorage.getItem(seenKey);
 
       if (cached) {
@@ -373,10 +374,11 @@ export default function PremiumMonth() {
         return;
       }
 
+      setDailyPending(true);
       const r = await fetch("/api/get-daily-signal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ region, country, cycleDay }),
+        body: JSON.stringify({ region, country, cycleDay }), // A beküldött region most már a select-ből jön
       });
       const j = await r.json();
 
@@ -392,7 +394,7 @@ export default function PremiumMonth() {
     return () => clearInterval(t);
   }, [mounted, region, country, cycleDay]);
 
-  /* ================= AI LOGIC ================= */
+  /* ================= AI LOGIC (JAVÍTVA) ================= */
 
   const saveBriefing = (dual) => {
     const today = getTodayKey();
@@ -420,12 +422,12 @@ export default function PremiumMonth() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          region,
+          region, // Kényszerített régió
           country,
           cycleDay,
           previousSignals: "",
           weeklyFocus: weeklyFocus?.key,
-          stressLevel: calculateFragility(), // JAVÍTVA: Átadjuk a csúszka értékét
+          stressLevel: calculateFragility(),
           ...inputs,
         }),
       });
@@ -459,16 +461,17 @@ export default function PremiumMonth() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          region,
+          region, // Kényszerített régió
           country,
           cycleDay,
           previousSignals: "",
           weeklyFocus: weeklyFocus?.key,
-          stressLevel: calculateFragility(), // JAVÍTVA: Átadjuk a csúszka értékét
+          stressLevel: calculateFragility(),
           ...inputs,
         }),
       });
-      const data = await res.json();
+// ... folytatás a 2. részben
+    const data = await res.json();
 
       if (data?.snapshot) {
         saveMonthlySnapshot(data.snapshot);
@@ -548,6 +551,7 @@ export default function PremiumMonth() {
     a.download = "wealthyai-monthly-briefing.pdf";
     a.click();
   };
+
   const confirmAndSendEmail = async () => {
     if (!userEmail) return alert("Please enter an email address.");
     setEmailSending(true);
@@ -570,6 +574,7 @@ export default function PremiumMonth() {
     }
     setEmailSending(false);
   };
+
   const sendEmailPDF = async () => {
     if (!activeText) return;
     setEmailModalOpen(true);
@@ -615,12 +620,13 @@ export default function PremiumMonth() {
       <div style={signalBox}>
         <strong>Today’s Signal</strong>
         {dailyPending ? (
-          <p style={{ opacity: 0.7 }}>Today’s signal is still forming.</p>
+          <p style={{ opacity: 0.7 }}>Today’s signal for {REGIONS.find(r => r.code === region)?.label} is still forming...</p>
         ) : (
           <p>{dailySignal}</p>
         )}
       </div>
-<div style={signalBox}>
+
+      <div style={signalBox}>
         <strong>Weekly focus</strong>
         <p style={{ opacity: 0.75 }}>
           {weeklyFocus
@@ -642,7 +648,6 @@ export default function PremiumMonth() {
               const isSelected = weeklyFocus?.key === f.key;
               const hasSelection = !!weeklyFocus;
               const disabled = i < getCurrentWeekIndex();
-
               return (
                 <button
                   key={f.key}
