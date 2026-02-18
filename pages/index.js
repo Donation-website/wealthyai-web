@@ -19,19 +19,25 @@ export default function Home() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Turnstile explicit render és callback
+  // Turnstile javított renderelés és callback kezelés
   useEffect(() => {
-    window.onTurnstileSuccess = () => {
-      setIsVerified(true);
-    };
-
-    const scriptInterval = setInterval(() => {
+    const renderTurnstile = () => {
       if (window.turnstile && document.getElementById("turnstile-container")) {
         window.turnstile.render("#turnstile-container", {
           sitekey: "0x4AAAAAACfHxdcNLlIOQCJF",
-          callback: "onTurnstileSuccess",
+          callback: () => {
+            console.log("Verifikáció sikeres!");
+            setIsVerified(true);
+          },
           theme: "dark",
         });
+        return true;
+      }
+      return false;
+    };
+
+    const scriptInterval = setInterval(() => {
+      if (renderTurnstile()) {
         clearInterval(scriptInterval);
       }
     }, 500);
@@ -141,6 +147,18 @@ export default function Home() {
           preload="auto" 
           onEnded={handleAudioEnd}
         />
+
+        {/* TURNSTILE WIDGET - BAL FELSŐ SAROKBA HELYEZVE */}
+        <div 
+          id="turnstile-container" 
+          style={{ 
+            position: "fixed", 
+            top: "20px", 
+            left: "20px", 
+            zIndex: 999,
+            minHeight: "65px" 
+          }}
+        ></div>
 
         {/* NARRATOR TOGGLE */}
         <div 
@@ -268,7 +286,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* START SECTION - AZ EREDETI HELYÉN */}
+        {/* START SECTION - MARAD AZ EREDETI HELYÉN, DE TISZTA */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
@@ -285,9 +303,6 @@ export default function Home() {
             textAlign: isMobile ? "center" : "left",
           }}
         >
-          {/* TURNSTILE WIDGET CONTAINER */}
-          <div id="turnstile-container" style={{ minHeight: "65px", zIndex: 30 }}></div>
-
           <a
             href={isVerified ? "/start" : "#"}
             onClick={(e) => {
