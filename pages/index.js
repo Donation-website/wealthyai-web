@@ -19,12 +19,13 @@ export default function Home() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Turnstile javított renderelés és callback kezelés
+  // Turnstile javított renderelés: kényszerített megjelenés és eltüntetés siker esetén
   useEffect(() => {
     const renderTurnstile = () => {
       if (window.turnstile && document.getElementById("turnstile-container")) {
         window.turnstile.render("#turnstile-container", {
           sitekey: "0x4AAAAAACfHxdcNLlIOQCJF",
+          appearance: "always", // Kényszerített megjelenítés
           callback: () => {
             console.log("Verifikáció sikeres!");
             setIsVerified(true);
@@ -148,7 +149,7 @@ export default function Home() {
           onEnded={handleAudioEnd}
         />
 
-        {/* TURNSTILE WIDGET - BAL FELSŐ SAROKBA HELYEZVE */}
+        {/* TURNSTILE WIDGET - ELTŰNIK, HA SIKERES (isVerified true) */}
         <div 
           id="turnstile-container" 
           style={{ 
@@ -156,7 +157,8 @@ export default function Home() {
             top: "20px", 
             left: "20px", 
             zIndex: 999,
-            minHeight: "65px" 
+            minHeight: "65px",
+            display: isVerified ? "none" : "block" 
           }}
         ></div>
 
@@ -286,7 +288,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* START SECTION - MARAD AZ EREDETI HELYÉN, DE TISZTA */}
+        {/* START SECTION */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
