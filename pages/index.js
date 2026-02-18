@@ -37,7 +37,7 @@ export default function Home() {
     };
   }, []);
 
-  // Fix: Globális callback kezelése a Turnstile-hoz
+  // Turnstile callback function
   useEffect(() => {
     window.onTurnstileSuccess = () => {
       setIsVerified(true);
@@ -129,6 +129,7 @@ export default function Home() {
           onEnded={handleAudioEnd}
         />
 
+        {/* NARRATOR TOGGLE */}
         <div 
           onClick={toggleMute}
           className="narrator-toggle"
@@ -164,6 +165,7 @@ export default function Home() {
           </span>
         </div>
 
+        {/* TOP NAV */}
         <div
           style={{
             position: isMobile ? "fixed" : "absolute",
@@ -184,6 +186,7 @@ export default function Home() {
           <a href="/terms" onClick={stopAudio} className="nav-link">Terms</a>
         </div>
 
+        {/* CENTER LOGO & TEXT */}
         <div
           style={{
             textAlign: "center",
@@ -254,31 +257,29 @@ export default function Home() {
           </div>
         </div>
 
+        {/* START SECTION - FIX: BAL OLDALRA TOLVA, SÖTÉTÍTETT PANELBEN */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
             top: isMobile ? "auto" : "45%",
-            left: isMobile ? "auto" : "10%",
+            left: isMobile ? "auto" : "6%",
             transform: isMobile ? "none" : "translateY(-50%)",
             marginTop: isMobile ? "40px" : "0",
-            zIndex: 25,
+            zIndex: 100,
             display: "flex",
             flexDirection: "column",
             alignItems: isMobile ? "center" : "flex-start",
             gap: "18px",
-            padding: isMobile ? "0 20px" : "0",
+            padding: "24px",
+            background: "rgba(6, 11, 19, 0.8)",
+            backdropFilter: "blur(12px)",
+            borderRadius: "20px",
+            border: "1px solid rgba(56, 189, 248, 0.15)",
             textAlign: isMobile ? "center" : "left",
           }}
         >
-          {/* CRITICAL FIX: Z-INDEX ÉS LÁTHATÓSÁG */}
-          <div style={{ 
-            minHeight: "80px", 
-            minWidth: "300px",
-            display: "block",
-            visibility: "visible",
-            opacity: 1,
-            zIndex: 999
-          }}>
+          {/* TURNSTILE WIDGET CONTAINER */}
+          <div style={{ minHeight: "65px", width: "100%", display: "flex", justifyContent: isMobile ? "center" : "flex-start" }}>
             <div 
               className="cf-turnstile" 
               data-sitekey="0x4AAAAAACfHxdcNLlIOQCJF"
@@ -292,7 +293,6 @@ export default function Home() {
             onClick={(e) => {
               if (!isVerified) {
                 e.preventDefault();
-                alert("Please complete the verification above.");
                 return;
               }
               stopAudio();
@@ -301,19 +301,21 @@ export default function Home() {
             style={{
               width: "140px",
               textAlign: "center",
-              padding: "16px 0",
+              padding: "15px 0",
               backgroundColor: isVerified ? "#38bdf8" : "rgba(255,255,255,0.05)",
-              border: isVerified ? "1px solid #38bdf8" : "1px solid rgba(255,255,255,0.1)",
-              borderRadius: "10px",
+              border: isVerified ? "none" : "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "12px",
               color: isVerified ? "#060b13" : "rgba(255,255,255,0.3)",
               textDecoration: "none",
               fontWeight: "900",
-              fontSize: "1.2rem",
+              fontSize: "1.1rem",
               cursor: isVerified ? "pointer" : "not-allowed",
               transition: "all 0.4s ease",
+              textTransform: "uppercase",
+              letterSpacing: "1px"
             }}
           >
-            Start
+            {isVerified ? "Start Now" : "Locked"}
           </a>
 
           <div
@@ -321,7 +323,7 @@ export default function Home() {
               fontSize: "0.85rem",
               opacity: 0.75,
               letterSpacing: "0.3px",
-              maxWidth: isMobile ? "280px" : "320px",
+              maxWidth: isMobile ? "280px" : "300px",
             }}
           >
             Start with a simple financial snapshot. Takes less than a minute.
@@ -344,6 +346,7 @@ export default function Home() {
           </div>
         </div>
 
+        {/* FOOTER */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
