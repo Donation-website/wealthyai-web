@@ -37,6 +37,13 @@ export default function Home() {
     };
   }, []);
 
+  // Turnstile callback function
+  useEffect(() => {
+    window.onTurnstileSuccess = () => {
+      setIsVerified(true);
+    };
+  }, []);
+
   const handleAudioEnd = () => {
     setIsPlaying(false);
     setIsMuted(true);
@@ -77,13 +84,6 @@ export default function Home() {
       if (sel && sel.toString()) sel.removeAllRanges();
     }
   };
-
-  // Turnstile callback function
-  useEffect(() => {
-    window.onTurnstileSuccess = () => {
-      setIsVerified(true);
-    };
-  }, []);
 
   return (
     <>
@@ -265,35 +265,32 @@ export default function Home() {
             left: isMobile ? "auto" : "10%",
             transform: isMobile ? "none" : "translateY(-50%)",
             marginTop: isMobile ? "40px" : "0",
-            zIndex: 4,
+            zIndex: 10,
             display: "flex",
             flexDirection: "column",
             alignItems: isMobile ? "center" : "flex-start",
-            gap: "10px",
+            gap: "12px",
             padding: isMobile ? "0 20px" : "0",
             textAlign: isMobile ? "center" : "left",
           }}
         >
-          {/* TURNSTILE SECURITY - ELEGANT COMPACT VERSION */}
-          <div 
-            className="cf-turnstile" 
-            data-sitekey="0x4AAAAAACfHxdcNLlIOQCJF"
-            data-callback="onTurnstileSuccess"
-            data-theme="dark"
-            data-size="compact"
-            style={{ 
-              marginBottom: "8px", 
-              width: isMobile ? "130px" : "130px", 
-              overflow: "hidden",
-              borderRadius: "10px"
-            }}
-          ></div>
+          {/* TURNSTILE WIDGET */}
+          <div style={{ minHeight: "65px" }}>
+            <div 
+              className="cf-turnstile" 
+              data-sitekey="0x4AAAAAACfHxdcNLlIOQCJF"
+              data-callback="onTurnstileSuccess"
+              data-theme="dark"
+              data-size="compact"
+            ></div>
+          </div>
 
           <a
             href={isVerified ? "/start" : "#"}
             onClick={(e) => {
               if (!isVerified) {
                 e.preventDefault();
+                alert("Please verify you are human first.");
                 return;
               }
               stopAudio();
@@ -303,17 +300,15 @@ export default function Home() {
               width: "130px",
               textAlign: "center",
               padding: "14px 0",
-              backgroundColor: isVerified ? "#1a253a" : "rgba(26, 37, 58, 0.4)",
+              backgroundColor: isVerified ? "#1a253a" : "rgba(255,255,255,0.05)",
               border: isVerified ? "1px solid rgba(255,255,255,0.4)" : "1px solid rgba(255,255,255,0.1)",
               borderRadius: "10px",
-              color: isVerified ? "white" : "rgba(255,255,255,0.2)",
+              color: isVerified ? "white" : "rgba(255,255,255,0.3)",
               textDecoration: "none",
               fontWeight: "bold",
-              fontSize: isMobile ? "1rem" : "1.1rem",
+              fontSize: "1.1rem",
               cursor: isVerified ? "pointer" : "not-allowed",
               transition: "all 0.4s ease",
-              boxSizing: "border-box",
-              display: "block"
             }}
           >
             Start
@@ -321,11 +316,10 @@ export default function Home() {
 
           <div
             style={{
-              fontSize: "0.82rem",
+              fontSize: "0.85rem",
               opacity: 0.75,
               letterSpacing: "0.3px",
               maxWidth: isMobile ? "280px" : "320px",
-              marginTop: "5px"
             }}
           >
             Start with a simple financial snapshot. Takes less than a minute.
@@ -444,7 +438,6 @@ export default function Home() {
           .start-btn:hover { 
             box-shadow: ${isVerified ? "0 0 35px rgba(56,189,248,0.45)" : "none"}; 
             filter: ${isVerified ? "drop-shadow(0 0 18px rgba(56,189,248,0.45))" : "none"}; 
-            background-color: ${isVerified ? "#233352" : "rgba(26, 37, 58, 0.4)"} !important;
           }
         `}</style>
       </main>
