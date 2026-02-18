@@ -50,7 +50,7 @@ export default function PremiumHub() {
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
-      padding: "0 20px 40px 20px",
+      padding: isMobile ? "0 15px 40px 15px" : "0 20px 40px 20px",
       textAlign: "center",
       backgroundImage: "radial-gradient(circle at center, #1e1b4b 0%, #020617 100%)",
     },
@@ -61,19 +61,29 @@ export default function PremiumHub() {
       borderBottom: "1px solid #f59e0b50",
       padding: "12px 20px",
       display: "flex",
+      flexDirection: isMobile ? "column" : "row",
       justifyContent: "space-between",
       alignItems: "center",
       position: "sticky",
       top: 0,
       zIndex: 100,
       marginBottom: "40px",
+      gap: isMobile ? "15px" : "0px",
     },
     statusGroup: {
       display: "flex",
-      gap: "20px",
+      gap: isMobile ? "10px" : "20px",
       fontSize: "10px",
       fontFamily: "monospace",
-      textAlign: "left",
+      textAlign: isMobile ? "center" : "left",
+      flexWrap: isMobile ? "wrap" : "nowrap",
+      justifyContent: "center",
+    },
+    adminBtnGroup: {
+      display: "flex", 
+      gap: "8px", 
+      flexWrap: isMobile ? "wrap" : "nowrap", 
+      justifyContent: "center"
     },
     adminBtn: {
       padding: "6px 12px",
@@ -84,6 +94,7 @@ export default function PremiumHub() {
       color: "white",
       border: "1px solid rgba(255,255,255,0.1)",
       transition: "0.2s",
+      whiteSpace: "nowrap",
     },
     masterBadge: {
       background: "linear-gradient(90deg, #fbbf24, #f59e0b)",
@@ -101,6 +112,7 @@ export default function PremiumHub() {
       fontSize: isMobile ? "1.8rem" : "2.8rem",
       marginBottom: "10px",
       fontWeight: "800",
+      padding: isMobile ? "0 10px" : "0",
     },
     grid: {
       display: "grid",
@@ -114,7 +126,7 @@ export default function PremiumHub() {
       background: "rgba(30, 41, 59, 0.4)",
       border: "1px solid rgba(255, 255, 255, 0.1)",
       borderRadius: "24px",
-      padding: "40px 30px",
+      padding: isMobile ? "30px 20px" : "40px 30px",
       cursor: "pointer",
       transition: "all 0.3s ease",
       display: "flex",
@@ -158,7 +170,7 @@ export default function PremiumHub() {
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: "8px" }}>
+          <div style={styles.adminBtnGroup}>
             <a href="https://www.producthunt.com/@zoltan_horvath5" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#da552f" }}>PH PROFIL</a>
             <a href="https://mail.zoho.eu" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#1e3a8a" }}>ZOHO</a>
             <a href="https://www.linkedin.com/in/zoltan-horvath-77386a3a9/?locale=hu" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#0a66c2" }}>LINKEDIN</a>
