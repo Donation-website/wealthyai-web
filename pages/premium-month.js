@@ -243,6 +243,7 @@ export default function PremiumMonth() {
       cancelled = true;
     };
   }, [mounted]);
+
   /* ================= CORE STATE ================= */
 
   const [viewMode, setViewMode] = useState("executive");
@@ -410,12 +411,6 @@ export default function PremiumMonth() {
   };
 
   const runAI = async () => {
-    const token = window.turnstile?.getResponse();
-    if (!token) {
-      alert("Please complete the security check on the start page.");
-      return;
-    }
-
     setLoading(true);
     setSelectedDay(null);
     setSimulationActive(false);
@@ -430,7 +425,6 @@ export default function PremiumMonth() {
           cycleDay,
           previousSignals: "",
           weeklyFocus: weeklyFocus?.key,
-          cf_token: token,
           ...inputs,
         }),
       });
@@ -455,12 +449,6 @@ export default function PremiumMonth() {
       return;
     }
 
-    const token = window.turnstile?.getResponse();
-    if (!token) {
-      alert("Please complete the security check on the start page.");
-      return;
-    }
-
     setLoading(true);
     setSelectedDay(null);
     setSimulationActive(false);
@@ -475,7 +463,6 @@ export default function PremiumMonth() {
           cycleDay,
           previousSignals: "",
           weeklyFocus: weeklyFocus?.key,
-          cf_token: token,
           ...inputs,
         }),
       });
@@ -546,16 +533,10 @@ export default function PremiumMonth() {
   const downloadPDF = async () => {
     if (!activeText) return;
 
-    const token = window.turnstile?.getResponse();
-    if (!token) {
-      alert("Security token expired. Please refresh.");
-      return;
-    }
-
     const res = await fetch("/api/export-month-pdf", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: activeText, cycleDay, region, cf_token: token }),
+      body: JSON.stringify({ text: activeText, cycleDay, region }),
     });
 
     const blob = await res.blob();
@@ -565,16 +546,8 @@ export default function PremiumMonth() {
     a.download = "wealthyai-monthly-briefing.pdf";
     a.click();
   };
-
   const confirmAndSendEmail = async () => {
     if (!userEmail) return alert("Please enter an email address.");
-
-    const token = window.turnstile?.getResponse();
-    if (!token) {
-      alert("Security token missing.");
-      return;
-    }
-
     setEmailSending(true);
 
     try {
@@ -585,8 +558,7 @@ export default function PremiumMonth() {
           text: activeText, 
           cycleDay, 
           region,
-          email: userEmail,
-          cf_token: token
+          email: userEmail 
         }),
       });
       alert("Email sent successfully!");
@@ -596,7 +568,6 @@ export default function PremiumMonth() {
     }
     setEmailSending(false);
   };
-
   const sendEmailPDF = async () => {
     if (!activeText) return;
     setEmailModalOpen(true);
