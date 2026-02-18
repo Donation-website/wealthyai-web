@@ -425,6 +425,7 @@ export default function PremiumMonth() {
           cycleDay,
           previousSignals: "",
           weeklyFocus: weeklyFocus?.key,
+          stressLevel: calculateFragility(),
           ...inputs,
         }),
       });
@@ -463,6 +464,7 @@ export default function PremiumMonth() {
           cycleDay,
           previousSignals: "",
           weeklyFocus: weeklyFocus?.key,
+          stressLevel: calculateFragility(),
           ...inputs,
         }),
       });
@@ -585,8 +587,7 @@ export default function PremiumMonth() {
       <a href="/month/help" style={helpButton}>
         Help
       </a>
-
-      <div style={header}>
+<div style={header}>
         <h1 style={title}>WEALTHYAI · MONTHLY BRIEFING</h1>
         <p style={subtitle}>Strategic financial outlook · Next 90 days</p>
       </div>
