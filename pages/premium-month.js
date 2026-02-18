@@ -221,6 +221,16 @@ export default function PremiumMonth() {
   const [region, setRegion] = useState("EU");
   const [country, setCountry] = useState(null);
 
+  // RÉGIÓVÁLTÁS KOR AI ELEMZÉS BEZÁRÁSA
+  useEffect(() => {
+    if (!mounted) return;
+    setAiVisible(false);
+    setAiCollapsed(true);
+    setDailyDual(null);
+    setDailySnapshot(null);
+    setSelectedDay(null);
+  }, [region]);
+
   useEffect(() => {
     if (!mounted) return;
     let cancelled = false;
@@ -469,9 +479,7 @@ export default function PremiumMonth() {
           stressLevel: calculateFragility(),
           ...inputs,
         }),
-      });
-// ... folytatás a 2. részben
-    const data = await res.json();
+        const data = await res.json();
 
       if (data?.snapshot) {
         saveMonthlySnapshot(data.snapshot);
@@ -1181,3 +1189,4 @@ const footer = {
   color: "#64748b",
   paddingBottom: 20,
 };
+      });
