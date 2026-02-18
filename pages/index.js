@@ -37,6 +37,7 @@ export default function Home() {
     };
   }, []);
 
+  // Turnstile callback function
   useEffect(() => {
     window.onTurnstileSuccess = () => {
       setIsVerified(true);
@@ -128,6 +129,7 @@ export default function Home() {
           onEnded={handleAudioEnd}
         />
 
+        {/* NARRATOR TOGGLE */}
         <div 
           onClick={toggleMute}
           className="narrator-toggle"
@@ -163,6 +165,7 @@ export default function Home() {
           </span>
         </div>
 
+        {/* TOP NAV */}
         <div
           style={{
             position: isMobile ? "fixed" : "absolute",
@@ -183,6 +186,7 @@ export default function Home() {
           <a href="/terms" onClick={stopAudio} className="nav-link">Terms</a>
         </div>
 
+        {/* CENTER LOGO & TEXT */}
         <div
           style={{
             textAlign: "center",
@@ -253,6 +257,7 @@ export default function Home() {
           </div>
         </div>
 
+        {/* START SECTION (LEFT) */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
@@ -260,24 +265,23 @@ export default function Home() {
             left: isMobile ? "auto" : "10%",
             transform: isMobile ? "none" : "translateY(-50%)",
             marginTop: isMobile ? "40px" : "0",
-            zIndex: 10,
+            zIndex: 20,
             display: "flex",
             flexDirection: "column",
             alignItems: isMobile ? "center" : "flex-start",
-            gap: "12px",
+            gap: "15px",
             padding: isMobile ? "0 20px" : "0",
             textAlign: isMobile ? "center" : "left",
           }}
         >
+          {/* IMPROVED TURNSTILE CONTAINER */}
           <div style={{ 
-            minHeight: "70px", 
-            width: "300px", 
-            display: "flex", 
-            justifyContent: isMobile ? "center" : "flex-start",
-            marginBottom: "5px",
-            overflow: "hidden",
-            borderRadius: "8px",
-            background: "rgba(0,0,0,0.2)"
+            minHeight: "65px", 
+            zIndex: 30,
+            position: "relative",
+            background: "rgba(0,0,0,0.3)",
+            padding: "5px",
+            borderRadius: "5px"
           }}>
             <div 
               className="cf-turnstile" 
@@ -299,20 +303,18 @@ export default function Home() {
             }}
             className="start-btn"
             style={{
-              width: "140px",
+              width: "130px",
               textAlign: "center",
-              padding: "16px 0",
-              backgroundColor: isVerified ? "#38bdf8" : "rgba(255,255,255,0.05)",
-              border: isVerified ? "1px solid #38bdf8" : "1px solid rgba(255,255,255,0.1)",
+              padding: "14px 0",
+              backgroundColor: isVerified ? "#1a253a" : "rgba(255,255,255,0.05)",
+              border: isVerified ? "1px solid rgba(56,189,248,0.8)" : "1px solid rgba(255,255,255,0.1)",
               borderRadius: "10px",
-              color: isVerified ? "#060b13" : "rgba(255,255,255,0.3)",
+              color: isVerified ? "white" : "rgba(255,255,255,0.3)",
               textDecoration: "none",
-              fontWeight: "800",
+              fontWeight: "bold",
               fontSize: "1.1rem",
               cursor: isVerified ? "pointer" : "not-allowed",
-              transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-              textTransform: "uppercase",
-              letterSpacing: "1px"
+              transition: "all 0.4s ease",
             }}
           >
             Start
@@ -346,6 +348,7 @@ export default function Home() {
           </div>
         </div>
 
+        {/* FOOTER */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
@@ -439,9 +442,8 @@ export default function Home() {
           }
           .nav-link:hover::before, .icon-link:hover::before { opacity: 1; }
           .start-btn:hover { 
-            background-color: ${isVerified ? "#7dd3fc" : "rgba(255,255,255,0.05)"} !important;
             box-shadow: ${isVerified ? "0 0 35px rgba(56,189,248,0.45)" : "none"}; 
-            transform: ${isVerified ? "translateY(-2px)" : "none"};
+            filter: ${isVerified ? "drop-shadow(0 0 18px rgba(56,189,248,0.45))" : "none"}; 
           }
         `}</style>
       </main>
