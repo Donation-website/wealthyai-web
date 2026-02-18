@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import SEO from "../components/SEO";
+import Head from "next/head";
 
 export default function Home() {
   const SITE_URL = "https://mywealthyai.com";
@@ -8,6 +9,7 @@ export default function Home() {
   const audioRef = useRef(null);
   const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
 
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -76,8 +78,16 @@ export default function Home() {
     }
   };
 
+  // Turnstile callback
+  const onTurnstileSuccess = () => {
+    setIsVerified(true);
+  };
+
   return (
     <>
+      <Head>
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+      </Head>
       <SEO
         title="WealthyAI – AI-powered financial clarity | mywealthyai"
         description="WealthyAI (mywealthyai) offers AI-powered financial planning, structured insights, and clear market perspective."
@@ -262,19 +272,37 @@ export default function Home() {
             textAlign: isMobile ? "center" : "left",
           }}
         >
+          {/* TURNSTILE SECURITY */}
+          <div 
+            className="cf-turnstile" 
+            data-sitekey="1x00000000000000000000AA" // TESZT KULCS - Cseréld le a saját Cloudflare Turnstile Site Key-edre!
+            data-callback="onTurnstileSuccess"
+            data-theme="dark"
+            data-size="compact"
+            style={{ marginBottom: "5px" }}
+          ></div>
+
           <a
-            href="/start"
-            onClick={stopAudio}
+            href={isVerified ? "/start" : "#"}
+            onClick={(e) => {
+              if (!isVerified) {
+                e.preventDefault();
+                return;
+              }
+              stopAudio();
+            }}
             className="start-btn"
             style={{
               padding: "14px 40px",
-              backgroundColor: "#1a253a",
-              border: "1px solid rgba(255,255,255,0.4)",
+              backgroundColor: isVerified ? "#1a253a" : "rgba(26, 37, 58, 0.5)",
+              border: isVerified ? "1px solid rgba(255,255,255,0.4)" : "1px solid rgba(255,255,255,0.1)",
               borderRadius: "10px",
-              color: "white",
+              color: isVerified ? "white" : "rgba(255,255,255,0.3)",
               textDecoration: "none",
               fontWeight: "bold",
               fontSize: isMobile ? "1rem" : "1.2rem",
+              cursor: isVerified ? "pointer" : "not-allowed",
+              transition: "all 0.4s ease",
             }}
           >
             Start
@@ -401,9 +429,27 @@ export default function Home() {
             filter: blur(16px); opacity: 0; transition: opacity 0.25s ease; pointer-events: none; z-index: -1;
           }
           .nav-link:hover::before, .icon-link:hover::before { opacity: 1; }
-          .start-btn:hover { box-shadow: 0 0 35px rgba(56,189,248,0.45); filter: drop-shadow(0 0 18px rgba(56,189,248,0.45)); }
+          .start-btn:hover { 
+            box-shadow: ${isVerified ? "0 0 35px rgba(56,189,248,0.45)" : "none"}; 
+            filter: ${isVerified ? "drop-shadow(0 0 18px rgba(56,189,248,0.45))" : "none"}; 
+          }
         `}</style>
       </main>
+      <script dangerouslySetInnerHTML={{
+        __html: `
+          window.onTurnstileSuccess = () => {
+            const event = new CustomEvent('turnstile-success');
+            window.dispatchEvent(event);
+          };
+        `
+      }} />
+      <script dangerouslySetInnerHTML={{
+        __html: `
+          window.addEventListener('turnstile-success', () => {
+            // Ez egy extra biztonsági háló a React állapothoz
+          });
+        `
+      }} />
     </>
   );
 }
