@@ -11,6 +11,10 @@ export default function Home() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
 
+  /* ===== ROBOT TRAP STATE ===== */
+  const [botValue, setBotValue] = useState("");
+  const [isBotTrapped, setIsBotTrapped] = useState(false);
+
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -19,13 +23,12 @@ export default function Home() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Turnstile javított renderelés: kényszerített megjelenés és eltüntetés siker esetén
   useEffect(() => {
     const renderTurnstile = () => {
       if (window.turnstile && document.getElementById("turnstile-container")) {
         window.turnstile.render("#turnstile-container", {
           sitekey: "0x4AAAAAACfHxdcNLlIOQCJF",
-          appearance: "always", // Kényszerített megjelenítés
+          appearance: "always",
           callback: () => {
             console.log("Verifikáció sikeres!");
             setIsVerified(true);
@@ -105,6 +108,21 @@ export default function Home() {
     }
   };
 
+  /* ===== TRAP CHECKER ===== */
+  const handleStartClick = (e) => {
+    if (botValue !== "") {
+      e.preventDefault();
+      setIsBotTrapped(true); // Megfogtuk a kis köcsögöt
+      console.log("Bot detected and trapped.");
+      return;
+    }
+    if (!isVerified) {
+      e.preventDefault();
+      return;
+    }
+    stopAudio();
+  };
+
   return (
     <>
       <Head>
@@ -149,7 +167,19 @@ export default function Home() {
           onEnded={handleAudioEnd}
         />
 
-        {/* TURNSTILE WIDGET - ELTŰNIK, HA SIKERES (isVerified true) */}
+        {/* HONEYPOT - LÁTHATATLAN CSAPDA MEZŐ */}
+        <div style={{ opacity: 0, position: "absolute", top: 0, left: 0, height: 0, width: 0, zIndex: -1, pointerEvents: "none" }}>
+          <label>If you are human, leave this empty</label>
+          <input 
+            type="text" 
+            value={botValue} 
+            onChange={(e) => setBotValue(e.target.value)} 
+            tabIndex="-1" 
+            autoComplete="off"
+          />
+        </div>
+
+        {/* TURNSTILE WIDGET */}
         <div 
           id="turnstile-container" 
           style={{ 
@@ -306,14 +336,8 @@ export default function Home() {
           }}
         >
           <a
-            href={isVerified ? "/start" : "#"}
-            onClick={(e) => {
-              if (!isVerified) {
-                e.preventDefault();
-                return;
-              }
-              stopAudio();
-            }}
+            href={isVerified && !isBotTrapped ? "/start" : "#"}
+            onClick={handleStartClick}
             className="start-btn"
             style={{
               width: "130px",
@@ -330,7 +354,7 @@ export default function Home() {
               transition: "all 0.4s ease",
             }}
           >
-            Start
+            {isBotTrapped ? "Loading..." : "Start"}
           </a>
 
           <div
@@ -341,7 +365,7 @@ export default function Home() {
               maxWidth: isMobile ? "280px" : "320px",
             }}
           >
-            Start with a simple financial snapshot. Takes less than a minute.
+            {isBotTrapped ? "System congestion. Please wait..." : "Start with a simple financial snapshot. Takes less than a minute."}
           </div>
 
           <div style={{
@@ -455,7 +479,7 @@ export default function Home() {
           }
           .nav-link:hover::before, .icon-link:hover::before { opacity: 1; }
           .start-btn:hover { 
-            box-shadow: ${isVerified ? "0 0 35px rgba(56,189,248,0.45)" : "none"}; 
+            box-shadow: ${isVerified && !isBotTrapped ? "0 0 35px rgba(56,189,248,0.45)" : "none"}; 
           }
         `}</style>
       </main>
