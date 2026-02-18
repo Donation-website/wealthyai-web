@@ -1,4 +1,4 @@
-  export default async function handler(req, res) { 
+export default async function handler(req, res) { 
   if (req.method !== "POST") {
     return res.status(405).json({ briefing: "Method not allowed." });
   }
@@ -7,7 +7,7 @@
     const {
       region,
       cycleDay,
-      analysisMode, // backward compatibility
+      analysisMode,
       previousSignals,
       weeklyFocus,
       isReturningCustomer,
@@ -23,6 +23,8 @@
       banking,
       unexpected,
       other,
+      // ÚJ PARAMÉTER A FRONTENDTŐL:
+      stressLevel, 
     } = req.body;
 
     /* ================================
@@ -46,6 +48,9 @@
       other: safe(other),
     };
 
+    // A stressz mértéke (0 és 100 közötti számként kezelve, ha a frontend calculateFragility-t küld)
+    const activeStressFactor = safe(stressLevel);
+
     /* ================================
         STRUCTURAL DERIVATION (CRITICAL)
     ================================= */
@@ -57,13 +62,18 @@
     const recurringServices = S.internet + S.mobile + S.tv;
     const irregularPressure = S.unexpected + S.other;
 
-    // MATH CHECK FOR AI TRUTH
+    // MATH CHECK FOR AI TRUTH 
+    // Itt a lényeg: ha a stressLevel (fragility) értéket kapjuk meg a frontendtől, azt használjuk
     const totalOut = fixedCore + recurringServices + irregularPressure + totalEnergy + S.water;
+    
+    // Ha a frontend már kiszámolt egy stresszelt fragility-t, azt használjuk, 
+    // különben az alap számítást végezzük el.
+    const fragilityIndex = activeStressFactor > 0 ? activeStressFactor.toFixed(1) : (S.income > 0 ? ((totalOut / S.income) * 100).toFixed(1) : "INFINITE");
+    
     const isDeficit = S.income < totalOut;
-    const fragilityIndex = S.income > 0 ? ((totalOut / S.income) * 100).toFixed(1) : "INFINITE";
 
     /* ================================
-        SYSTEM PROMPT — BASE (RE-STRENGTHENED)
+        SYSTEM PROMPT — BASE
     ================================= */
 
     let systemPrompt = `
@@ -75,23 +85,20 @@ MONTHLY STRATEGIC FINANCIAL BRIEFING AUTHOR
 PHILOSOPHY & CONSTITUTION:
 - WealthyAI DOES NOT advise. It INTERPRETS.
 - It provides a "clearer frame", not a better plan.
-- The goal is "Clearer thinking", not "Faster decisions".
 
 TONE & STYLE (CRITICAL):
 - ALWAYS write in second person ("Your income", "You are facing").
 - NEVER refer to "the user".
 - AVOID robotic list-making. USE integrated, professional narrative flow. 
 - BE observational and analytical.
-- DO NOT use generic filler sentences.
 
 ABSOLUTE RULE:
 - ANY content after the marker "--- INTERNAL SIGNALS ---" is FOR INTERNAL USE ONLY.
 - It MUST NOT appear in the visible briefing.
 
 STRICT CONSTRAINTS:
-- NEVER restate inputs (Do not say "Your rent is 1200").
-- NEVER invent exposure.
-- INCOME TRUTH: If income is 0, the structure is "unsupported". Do not hallucinate stability.
+- NEVER restate inputs.
+- INCOME TRUTH: If income is 0, the structure is "unsupported".
 
 SCOPE:
 - NEXT 90 DAYS
@@ -112,6 +119,7 @@ INTERNAL SIGNALS:
 STRUCTURAL FACTS:
 - Income: ${S.income} | Outflow: ${totalOut}
 - State: ${isDeficit ? "DEFICIT" : "SURPLUS"} | Fragility: ${fragilityIndex}%
+- Stress Simulation Active: ${activeStressFactor > (totalOut/S.income*100) ? "YES (Testing structural limits)" : "NO"}
 - Energy exposure: ${hasEnergyExposure ? "YES" : "NO"}
 - Fixed cost gravity: ${fixedCore > 0 ? "YES" : "NO"}
 - Recurring rigidity: ${recurringServices > 0 ? "YES" : "NO"}
@@ -137,20 +145,19 @@ ACTIVE WEEKLY FOCUS:
       systemPrompt += `\nREGION: ${region || "International"}.`;
     }
 
-    systemPrompt += `\nRETURNING CONTEXT: ${isReturningCustomer ? "YES" : "NO"}`;
-
     const baseUserPrompt = `
 Region: ${region} | Cycle day: ${cycleDay} | Fragility: ${fragilityIndex}%
 Previous signals: ${previousSignals || "None"}
 
-TASK: Write the briefing strictly from structure through the lens of ${weeklyFocus || "general balance"}.
+TASK: Write the briefing strictly from structure through the lens of ${weeklyFocus || "general balance"}. 
+If Fragility is high due to stress simulation, acknowledge the thin margins without giving advice.
 `;
 
     const executivePrompt = `MODE: EXECUTIVE\n- Calm, Observational.\n${baseUserPrompt}`;
     const directivePrompt = `MODE: DIRECTIVE\n- Firm, Strategic.\n${baseUserPrompt}`;
 
     /* ================================
-        GROQ CALL (RESTORED TO INSTANT)
+        GROQ CALL
     ================================= */
 
     const callGroq = async (prompt, temperature) => {
@@ -163,7 +170,7 @@ TASK: Write the briefing strictly from structure through the lens of ${weeklyFoc
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "llama-3.1-8b-instant", // VISSZAÁLLÍTVA AZ EREDETI MODELLRE
+            model: "llama-3.1-8b-instant",
             messages: [
               { role: "system", content: systemPrompt },
               { role: "user", content: prompt },
@@ -183,10 +190,6 @@ TASK: Write the briefing strictly from structure through the lens of ${weeklyFoc
       }
       return text;
     };
-
-    /* ================================
-        EXECUTION
-    ================================= */
 
     const executive = await callGroq(executivePrompt, 0.25);
     const directive = await callGroq(directivePrompt, 0.1);
