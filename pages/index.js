@@ -37,7 +37,7 @@ export default function Home() {
     };
   }, []);
 
-  // Turnstile callback function
+  // Fix: Globális callback kezelése a Turnstile-hoz
   useEffect(() => {
     window.onTurnstileSuccess = () => {
       setIsVerified(true);
@@ -129,7 +129,6 @@ export default function Home() {
           onEnded={handleAudioEnd}
         />
 
-        {/* NARRATOR TOGGLE */}
         <div 
           onClick={toggleMute}
           className="narrator-toggle"
@@ -165,7 +164,6 @@ export default function Home() {
           </span>
         </div>
 
-        {/* TOP NAV */}
         <div
           style={{
             position: isMobile ? "fixed" : "absolute",
@@ -186,7 +184,6 @@ export default function Home() {
           <a href="/terms" onClick={stopAudio} className="nav-link">Terms</a>
         </div>
 
-        {/* CENTER LOGO & TEXT */}
         <div
           style={{
             textAlign: "center",
@@ -257,7 +254,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* START SECTION (LEFT) */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
@@ -265,30 +261,29 @@ export default function Home() {
             left: isMobile ? "auto" : "10%",
             transform: isMobile ? "none" : "translateY(-50%)",
             marginTop: isMobile ? "40px" : "0",
-            zIndex: 20,
+            zIndex: 25,
             display: "flex",
             flexDirection: "column",
             alignItems: isMobile ? "center" : "flex-start",
-            gap: "15px",
+            gap: "18px",
             padding: isMobile ? "0 20px" : "0",
             textAlign: isMobile ? "center" : "left",
           }}
         >
-          {/* IMPROVED TURNSTILE CONTAINER */}
+          {/* CRITICAL FIX: Z-INDEX ÉS LÁTHATÓSÁG */}
           <div style={{ 
-            minHeight: "65px", 
-            zIndex: 30,
-            position: "relative",
-            background: "rgba(0,0,0,0.3)",
-            padding: "5px",
-            borderRadius: "5px"
+            minHeight: "80px", 
+            minWidth: "300px",
+            display: "block",
+            visibility: "visible",
+            opacity: 1,
+            zIndex: 999
           }}>
             <div 
               className="cf-turnstile" 
               data-sitekey="0x4AAAAAACfHxdcNLlIOQCJF"
               data-callback="onTurnstileSuccess"
               data-theme="dark"
-              data-size="normal"
             ></div>
           </div>
 
@@ -297,22 +292,23 @@ export default function Home() {
             onClick={(e) => {
               if (!isVerified) {
                 e.preventDefault();
+                alert("Please complete the verification above.");
                 return;
               }
               stopAudio();
             }}
             className="start-btn"
             style={{
-              width: "130px",
+              width: "140px",
               textAlign: "center",
-              padding: "14px 0",
-              backgroundColor: isVerified ? "#1a253a" : "rgba(255,255,255,0.05)",
-              border: isVerified ? "1px solid rgba(56,189,248,0.8)" : "1px solid rgba(255,255,255,0.1)",
+              padding: "16px 0",
+              backgroundColor: isVerified ? "#38bdf8" : "rgba(255,255,255,0.05)",
+              border: isVerified ? "1px solid #38bdf8" : "1px solid rgba(255,255,255,0.1)",
               borderRadius: "10px",
-              color: isVerified ? "white" : "rgba(255,255,255,0.3)",
+              color: isVerified ? "#060b13" : "rgba(255,255,255,0.3)",
               textDecoration: "none",
-              fontWeight: "bold",
-              fontSize: "1.1rem",
+              fontWeight: "900",
+              fontSize: "1.2rem",
               cursor: isVerified ? "pointer" : "not-allowed",
               transition: "all 0.4s ease",
             }}
@@ -348,7 +344,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* FOOTER */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
@@ -443,7 +438,7 @@ export default function Home() {
           .nav-link:hover::before, .icon-link:hover::before { opacity: 1; }
           .start-btn:hover { 
             box-shadow: ${isVerified ? "0 0 35px rgba(56,189,248,0.45)" : "none"}; 
-            filter: ${isVerified ? "drop-shadow(0 0 18px rgba(56,189,248,0.45))" : "none"}; 
+            transform: ${isVerified ? "scale(1.05)" : "none"};
           }
         `}</style>
       </main>
