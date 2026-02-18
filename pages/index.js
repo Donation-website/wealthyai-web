@@ -78,10 +78,12 @@ export default function Home() {
     }
   };
 
-  // Turnstile callback
-  const onTurnstileSuccess = () => {
-    setIsVerified(true);
-  };
+  // Turnstile callback function
+  useEffect(() => {
+    window.onTurnstileSuccess = () => {
+      setIsVerified(true);
+    };
+  }, []);
 
   return (
     <>
@@ -272,14 +274,19 @@ export default function Home() {
             textAlign: isMobile ? "center" : "left",
           }}
         >
-          {/* TURNSTILE SECURITY */}
+          {/* TURNSTILE SECURITY - ELEGANT COMPACT VERSION */}
           <div 
             className="cf-turnstile" 
-            data-sitekey="1x00000000000000000000AA" // TESZT KULCS - Cseréld le a saját Cloudflare Turnstile Site Key-edre!
+            data-sitekey="0x4AAAAAACfHxdcNLlIOQCJF"
             data-callback="onTurnstileSuccess"
             data-theme="dark"
             data-size="compact"
-            style={{ marginBottom: "5px" }}
+            style={{ 
+              marginBottom: "8px", 
+              width: isMobile ? "130px" : "130px", 
+              overflow: "hidden",
+              borderRadius: "10px"
+            }}
           ></div>
 
           <a
@@ -293,16 +300,20 @@ export default function Home() {
             }}
             className="start-btn"
             style={{
-              padding: "14px 40px",
-              backgroundColor: isVerified ? "#1a253a" : "rgba(26, 37, 58, 0.5)",
+              width: "130px",
+              textAlign: "center",
+              padding: "14px 0",
+              backgroundColor: isVerified ? "#1a253a" : "rgba(26, 37, 58, 0.4)",
               border: isVerified ? "1px solid rgba(255,255,255,0.4)" : "1px solid rgba(255,255,255,0.1)",
               borderRadius: "10px",
-              color: isVerified ? "white" : "rgba(255,255,255,0.3)",
+              color: isVerified ? "white" : "rgba(255,255,255,0.2)",
               textDecoration: "none",
               fontWeight: "bold",
-              fontSize: isMobile ? "1rem" : "1.2rem",
+              fontSize: isMobile ? "1rem" : "1.1rem",
               cursor: isVerified ? "pointer" : "not-allowed",
               transition: "all 0.4s ease",
+              boxSizing: "border-box",
+              display: "block"
             }}
           >
             Start
@@ -310,10 +321,11 @@ export default function Home() {
 
           <div
             style={{
-              fontSize: "0.85rem",
+              fontSize: "0.82rem",
               opacity: 0.75,
               letterSpacing: "0.3px",
-              maxWidth: isMobile ? "280px" : "100%",
+              maxWidth: isMobile ? "280px" : "320px",
+              marginTop: "5px"
             }}
           >
             Start with a simple financial snapshot. Takes less than a minute.
@@ -432,24 +444,10 @@ export default function Home() {
           .start-btn:hover { 
             box-shadow: ${isVerified ? "0 0 35px rgba(56,189,248,0.45)" : "none"}; 
             filter: ${isVerified ? "drop-shadow(0 0 18px rgba(56,189,248,0.45))" : "none"}; 
+            background-color: ${isVerified ? "#233352" : "rgba(26, 37, 58, 0.4)"} !important;
           }
         `}</style>
       </main>
-      <script dangerouslySetInnerHTML={{
-        __html: `
-          window.onTurnstileSuccess = () => {
-            const event = new CustomEvent('turnstile-success');
-            window.dispatchEvent(event);
-          };
-        `
-      }} />
-      <script dangerouslySetInnerHTML={{
-        __html: `
-          window.addEventListener('turnstile-success', () => {
-            // Ez egy extra biztonsági háló a React állapothoz
-          });
-        `
-      }} />
     </>
   );
 }
