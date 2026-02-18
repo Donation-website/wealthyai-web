@@ -26,8 +26,10 @@ export default function Home() {
         window.turnstile.render("#turnstile-container", {
           sitekey: "0x4AAAAAACfHxdcNLlIOQCJF",
           appearance: "always", // Kényszerített megjelenítés
-          callback: () => {
+          callback: (token) => {
             console.log("Verifikáció sikeres!");
+            // TOKEN MENTÉSE A SESSIONSTORAGE-BA
+            sessionStorage.setItem("cf_ver_token", token);
             setIsVerified(true);
           },
           theme: "dark",
