@@ -44,22 +44,25 @@ export default function PremiumHub() {
   const styles = {
     container: {
       minHeight: "100vh",
+      width: "100%",
       backgroundColor: "#020617",
       color: "white",
       fontFamily: "Inter, sans-serif",
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
-      padding: isMobile ? "0 15px 40px 15px" : "0 20px 40px 20px",
+      padding: isMobile ? "0 10px 40px 10px" : "0 20px 40px 20px",
       textAlign: "center",
       backgroundImage: "radial-gradient(circle at center, #1e1b4b 0%, #020617 100%)",
+      boxSizing: "border-box",
+      overflowX: "hidden"
     },
     adminBar: {
       width: "100%",
       backgroundColor: "rgba(15, 23, 42, 0.9)",
       backdropFilter: "blur(10px)",
       borderBottom: "1px solid #f59e0b50",
-      padding: "12px 20px",
+      padding: isMobile ? "15px 10px" : "12px 20px",
       display: "flex",
       flexDirection: isMobile ? "column" : "row",
       justifyContent: "space-between",
@@ -69,6 +72,7 @@ export default function PremiumHub() {
       zIndex: 100,
       marginBottom: "40px",
       gap: isMobile ? "15px" : "0px",
+      boxSizing: "border-box"
     },
     statusGroup: {
       display: "flex",
@@ -76,14 +80,15 @@ export default function PremiumHub() {
       fontSize: "10px",
       fontFamily: "monospace",
       textAlign: isMobile ? "center" : "left",
-      flexWrap: isMobile ? "wrap" : "nowrap",
+      flexWrap: "wrap",
       justifyContent: "center",
     },
     adminBtnGroup: {
       display: "flex", 
       gap: "8px", 
-      flexWrap: isMobile ? "wrap" : "nowrap", 
-      justifyContent: "center"
+      flexWrap: "wrap", 
+      justifyContent: "center",
+      width: isMobile ? "100%" : "auto"
     },
     adminBtn: {
       padding: "6px 12px",
@@ -95,6 +100,7 @@ export default function PremiumHub() {
       border: "1px solid rgba(255,255,255,0.1)",
       transition: "0.2s",
       whiteSpace: "nowrap",
+      boxSizing: "border-box"
     },
     masterBadge: {
       background: "linear-gradient(90deg, #fbbf24, #f59e0b)",
@@ -109,30 +115,36 @@ export default function PremiumHub() {
       boxShadow: "0 0 20px rgba(251, 191, 36, 0.3)",
     },
     title: {
-      fontSize: isMobile ? "1.8rem" : "2.8rem",
+      fontSize: isMobile ? "1.6rem" : "2.8rem",
       marginBottom: "10px",
       fontWeight: "800",
-      padding: isMobile ? "0 10px" : "0",
+      padding: "0 10px",
+      boxSizing: "border-box",
+      maxWidth: "100%"
     },
     grid: {
       display: "grid",
       gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)",
-      gap: "25px",
+      gap: "20px",
       width: "100%",
       maxWidth: "1100px",
       marginTop: "40px",
+      padding: "0 10px",
+      boxSizing: "border-box"
     },
     card: {
       background: "rgba(30, 41, 59, 0.4)",
       border: "1px solid rgba(255, 255, 255, 0.1)",
       borderRadius: "24px",
-      padding: isMobile ? "30px 20px" : "40px 30px",
+      padding: isMobile ? "30px 15px" : "40px 30px",
       cursor: "pointer",
       transition: "all 0.3s ease",
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
       gap: "15px",
+      boxSizing: "border-box",
+      width: "100%"
     },
     cardHover: {
       border: "1px solid rgba(99, 102, 241, 0.6)",
