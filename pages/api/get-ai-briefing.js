@@ -18,11 +18,7 @@ export default async function handler(req, res) {
       water,
       internet,
       mobile,
-      tv,
       insurance,
-      banking,
-      unexpected,
-      other,
       // BEFOGADJUK A CSÚSZKA ÉRTÉKÉT:
       stressLevel, 
     } = req.body;
@@ -41,11 +37,7 @@ export default async function handler(req, res) {
       water: safe(water),
       internet: safe(internet),
       mobile: safe(mobile),
-      tv: safe(tv),
       insurance: safe(insurance),
-      banking: safe(banking),
-      unexpected: safe(unexpected),
-      other: safe(other),
     };
 
     /* ================================
@@ -55,12 +47,13 @@ export default async function handler(req, res) {
     const totalEnergy = S.electricity + S.gas;
     const hasEnergyExposure = totalEnergy > 0;
 
-    const fixedCore = S.housing + S.insurance + S.banking;
-    const recurringServices = S.internet + S.mobile + S.tv;
-    const irregularPressure = S.unexpected + S.other;
+    const fixedCore = S.housing + S.insurance;
+    const recurringServices = S.internet + S.mobile;
 
-    const totalOut = fixedCore + recurringServices + irregularPressure + totalEnergy + S.water;
+    // CSAK a meglévő mezők összeadása
+    const totalOut = S.housing + S.electricity + S.gas + S.water + S.internet + S.mobile + S.insurance;
     const isDeficit = S.income < totalOut;
+    const dynamicSurplus = S.income - totalOut;
 
     // MODOSÍTÁS: Ha van stressLevel (csúszka), az AI azt a számot kapja meg Fragility-ként
     const fragilityIndex = stressLevel 
@@ -68,7 +61,17 @@ export default async function handler(req, res) {
       : (S.income > 0 ? ((totalOut / S.income) * 100).toFixed(1) : "INFINITE");
 
     /* ================================
-        SYSTEM PROMPT — BASE (VÁLTOZATLAN)
+        CURRENCY LOGIC (REGION BASED)
+    ================================= */
+    let currencyInstr = "Use numerical values only.";
+    if (region === "HU") currencyInstr = "Region is Hungary. Use numbers (HUF context), no $ symbol.";
+    else if (region === "US" || region === "USA") currencyInstr = "Region is USA. Use $ symbol.";
+    else if (region === "UK") currencyInstr = "Region is UK. Use £ symbol.";
+    else if (region === "EU") currencyInstr = "Region is Eurozone. Use € symbol.";
+    else currencyInstr = "Region is International/Other. DO NOT use specific currency symbols (no $, €, £). Use units or plain numbers.";
+
+    /* ================================
+        SYSTEM PROMPT — BASE (VÁLTOZATLAN STRUKTÚRA)
     ================================= */
 
     let systemPrompt = `
@@ -77,17 +80,20 @@ You are WealthyAI — a PAID financial intelligence system.
 ROLE:
 MONTHLY STRATEGIC FINANCIAL BRIEFING AUTHOR
 
-STRUCTURAL FACTS (USE THESE FOR ANALYSIS):
+STRUCTURAL FACTS (MANDATORY DATA):
 - Income: ${S.income} | Outflow: ${totalOut}
+- Net Balance (Surplus/Deficit): ${dynamicSurplus}
 - State: ${isDeficit ? "DEFICIT" : "SURPLUS"} | Fragility: ${fragilityIndex}%
 - Energy exposure: ${hasEnergyExposure ? "YES" : "NO"}
 - Fixed cost gravity: ${fixedCore > 0 ? "YES" : "NO"}
 - Recurring rigidity: ${recurringServices > 0 ? "YES" : "NO"}
-- Irregular pressure: ${irregularPressure > 0 ? "YES" : "NO"}
+
+CURRENCY GUIDELINE:
+${currencyInstr}
 
 PHILOSOPHY & CONSTITUTION:
 - WealthyAI DOES NOT advise. It INTERPRETS.
-- It provides a "clearer frame", not a better plan.
+- Use the EXACT Net Balance (${dynamicSurplus}) for your calculations.
 - The goal is "Clearer thinking", not "Faster decisions".
 
 TONE & STYLE (CRITICAL):
@@ -103,7 +109,7 @@ ABSOLUTE RULE:
 
 STRICT CONSTRAINTS:
 - NEVER restate inputs (Do not say "Your rent is 1200").
-- NEVER invent exposure.
+- NEVER invent figures. Use ONLY the Net Balance of ${dynamicSurplus}.
 - INCOME TRUTH: If income is 0, the structure is "unsupported". Do not hallucinate stability.
 
 SCOPE:
@@ -139,14 +145,13 @@ ACTIVE WEEKLY FOCUS:
 
     systemPrompt += `\nRETURNING CONTEXT: ${isReturningCustomer ? "YES" : "NO"}`;
     
-    // A belső szignálok maradnak a végén, de a számok kikerültek eléjük
     systemPrompt += `\n\n--- INTERNAL SIGNALS ---\n`;
 
     const baseUserPrompt = `
-Region: ${region} | Cycle day: ${cycleDay} | Fragility: ${fragilityIndex}%
+Region: ${region} | Cycle day: ${cycleDay} | Fragility: ${fragilityIndex}% | Balance: ${dynamicSurplus}
 Previous signals: ${previousSignals || "None"}
 
-TASK: Write the briefing strictly from structure through the lens of ${weeklyFocus || "general balance"}.
+TASK: Write the briefing. Use the calculated balance of ${dynamicSurplus}.
 `;
 
     const executivePrompt = `MODE: EXECUTIVE\n- Calm, Observational.\n${baseUserPrompt}`;
