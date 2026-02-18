@@ -9,7 +9,34 @@ export default async function handler(req, res) {
     return res.status(405).end();
   }
 
-  const { text, cycleDay, region } = req.body;
+  const { text, cycleDay, region, cf_token } = req.body;
+
+  // --- CLOUDFLARE TURNSTILE VÉDELEM ---
+  if (!cf_token) {
+    return res.status(403).json({ error: "Security token missing." });
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append("secret", process.env.TURNSTILE_SECRET_KEY);
+    formData.append("response", cf_token);
+
+    const result = await fetch(
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    const outcome = await result.json();
+    if (!outcome.success) {
+      return res.status(403).json({ error: "Invalid security token." });
+    }
+  } catch (err) {
+    return res.status(500).json({ error: "Security verification failed." });
+  }
+  // --- VÉDELEM VÉGE ---
 
   // Modern PDF beállítása
   const doc = new PDFDocument({ 
