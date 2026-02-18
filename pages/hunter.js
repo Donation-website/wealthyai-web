@@ -2,14 +2,12 @@ import { useEffect } from "react";
 
 export default function HunterAccess() {
   useEffect(() => {
-    // 1. Beállítjuk a VIP tokent a Hunternek
-    localStorage.setItem("wai_vip_token", "HUNTER-ACCESS-2026");
+    // 1. Megadjuk neki a Master kódot, hogy a belső oldalak (Month, Day) NE dobják ki
+    localStorage.setItem("wai_vip_token", "MASTER-DOMINANCE-2026");
+    
+    // 2. Elhelyezünk egy "GUEST" jelzőt, amit csak a Dashboard (hub.js) fog nézni
+    localStorage.setItem("wai_role", "GUEST");
 
-    // 2. Beállítunk egy lejárati időt (8 óra)
-    const expiryTime = new Date().getTime() + 28800000;
-    localStorage.setItem("wai_vip_expiry", expiryTime);
-
-    // 3. Átirányítás a HELYES útvonalra: /premium/hub
     setTimeout(() => {
       window.location.href = "/premium/hub"; 
     }, 1000);
