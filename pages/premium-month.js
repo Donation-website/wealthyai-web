@@ -479,7 +479,8 @@ export default function PremiumMonth() {
           stressLevel: calculateFragility(),
           ...inputs,
         }),
-        const data = await res.json();
+      });
+      const data = await res.json();
 
       if (data?.snapshot) {
         saveMonthlySnapshot(data.snapshot);
@@ -619,8 +620,7 @@ export default function PremiumMonth() {
           ))}
         </select>
       </div>
-
-      <div style={signalBox}>
+<div style={signalBox}>
         <strong>Cycle Status</strong>
         <p>Day {cycleDay} of your current monthly cycle.</p>
       </div>
@@ -1189,4 +1189,3 @@ const footer = {
   color: "#64748b",
   paddingBottom: 20,
 };
-      });
