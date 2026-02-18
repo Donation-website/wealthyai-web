@@ -187,6 +187,7 @@ export default function PremiumHub() {
             <a href="https://dash.cloudflare.com/d0303d7c50394b280a28b58d33c13f11/home/domains" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#f38020" }}>CLOUDFLARE</a>
             <a href="https://www.producthunt.com/@zoltan_horvath5" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#da552f" }}>PH PROFIL</a>
             <a href="https://mail.zoho.eu" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#1e3a8a" }}>ZOHO</a>
+            <a href="https://www.linkedin.com/in/zoltan-horvath-77386a3a9/?locale=hu" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#0a66c2" }}>LINKEDIN</a>
             <a href="https://vercel.com/donation-website-projects/wealthyai-web/analytics" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#000000" }}>ANALYTICS</a>
             <a href="https://dashboard.stripe.com" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#4338ca" }}>STRIPE</a>
             <a href="https://portal.azure.com/#home" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#2563eb" }}>AZURE</a>
