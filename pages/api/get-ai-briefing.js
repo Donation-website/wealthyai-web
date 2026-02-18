@@ -77,6 +77,14 @@ You are WealthyAI — a PAID financial intelligence system.
 ROLE:
 MONTHLY STRATEGIC FINANCIAL BRIEFING AUTHOR
 
+STRUCTURAL FACTS (USE THESE FOR ANALYSIS):
+- Income: ${S.income} | Outflow: ${totalOut}
+- State: ${isDeficit ? "DEFICIT" : "SURPLUS"} | Fragility: ${fragilityIndex}%
+- Energy exposure: ${hasEnergyExposure ? "YES" : "NO"}
+- Fixed cost gravity: ${fixedCore > 0 ? "YES" : "NO"}
+- Recurring rigidity: ${recurringServices > 0 ? "YES" : "NO"}
+- Irregular pressure: ${irregularPressure > 0 ? "YES" : "NO"}
+
 PHILOSOPHY & CONSTITUTION:
 - WealthyAI DOES NOT advise. It INTERPRETS.
 - It provides a "clearer frame", not a better plan.
@@ -108,19 +116,6 @@ OUTPUT STRUCTURE:
 4. Regional Perspective
 5. 90-Day Direction
 6. Closing Signal (EXACTLY one sentence).
-
-INTERNAL SIGNALS:
---- INTERNAL SIGNALS ---
-`;
-
-    systemPrompt += `
-STRUCTURAL FACTS:
-- Income: ${S.income} | Outflow: ${totalOut}
-- State: ${isDeficit ? "DEFICIT" : "SURPLUS"} | Fragility: ${fragilityIndex}%
-- Energy exposure: ${hasEnergyExposure ? "YES" : "NO"}
-- Fixed cost gravity: ${fixedCore > 0 ? "YES" : "NO"}
-- Recurring rigidity: ${recurringServices > 0 ? "YES" : "NO"}
-- Irregular pressure: ${irregularPressure > 0 ? "YES" : "NO"}
 `;
 
     if (weeklyFocus) {
@@ -143,6 +138,9 @@ ACTIVE WEEKLY FOCUS:
     }
 
     systemPrompt += `\nRETURNING CONTEXT: ${isReturningCustomer ? "YES" : "NO"}`;
+    
+    // A belső szignálok maradnak a végén, de a számok kikerültek eléjük
+    systemPrompt += `\n\n--- INTERNAL SIGNALS ---\n`;
 
     const baseUserPrompt = `
 Region: ${region} | Cycle day: ${cycleDay} | Fragility: ${fragilityIndex}%
