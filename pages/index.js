@@ -19,6 +19,26 @@ export default function Home() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Turnstile explicit render és callback
+  useEffect(() => {
+    window.onTurnstileSuccess = () => {
+      setIsVerified(true);
+    };
+
+    const scriptInterval = setInterval(() => {
+      if (window.turnstile && document.getElementById("turnstile-container")) {
+        window.turnstile.render("#turnstile-container", {
+          sitekey: "0x4AAAAAACfHxdcNLlIOQCJF",
+          callback: "onTurnstileSuccess",
+          theme: "dark",
+        });
+        clearInterval(scriptInterval);
+      }
+    }, 500);
+
+    return () => clearInterval(scriptInterval);
+  }, []);
+
   useEffect(() => {
     const playTimeout = setTimeout(() => {
       if (audioRef.current) {
@@ -34,13 +54,6 @@ export default function Home() {
     return () => {
       clearTimeout(playTimeout);
       if (audioRef.current) audioRef.current.pause();
-    };
-  }, []);
-
-  // Turnstile callback function
-  useEffect(() => {
-    window.onTurnstileSuccess = () => {
-      setIsVerified(true);
     };
   }, []);
 
@@ -88,7 +101,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
       </Head>
       <SEO
         title="WealthyAI – AI-powered financial clarity | mywealthyai"
@@ -171,13 +184,11 @@ export default function Home() {
             position: isMobile ? "fixed" : "absolute",
             top: isMobile ? "15px" : "30px",
             right: isMobile ? "40px" : "40px",
-            left: isMobile ? "auto" : "auto",
             display: "flex",
             justifyContent: "center",
             gap: isMobile ? "15px" : "28px",
             zIndex: 6,
             fontSize: isMobile ? "0.8rem" : "0.95rem",
-            width: isMobile ? "auto" : "auto",
           }}
         >
           <a href="/philosophy" onClick={stopAudio} className="nav-link">Philosophy</a>
@@ -257,36 +268,25 @@ export default function Home() {
           </div>
         </div>
 
-        {/* START SECTION - FIX: BAL OLDALRA TOLVA, SÖTÉTÍTETT PANELBEN */}
+        {/* START SECTION - AZ EREDETI HELYÉN */}
         <div
           style={{
             position: isMobile ? "relative" : "absolute",
             top: isMobile ? "auto" : "45%",
-            left: isMobile ? "auto" : "6%",
+            left: isMobile ? "auto" : "10%",
             transform: isMobile ? "none" : "translateY(-50%)",
             marginTop: isMobile ? "40px" : "0",
-            zIndex: 100,
+            zIndex: 20,
             display: "flex",
             flexDirection: "column",
             alignItems: isMobile ? "center" : "flex-start",
-            gap: "18px",
-            padding: "24px",
-            background: "rgba(6, 11, 19, 0.8)",
-            backdropFilter: "blur(12px)",
-            borderRadius: "20px",
-            border: "1px solid rgba(56, 189, 248, 0.15)",
+            gap: "15px",
+            padding: isMobile ? "0 20px" : "0",
             textAlign: isMobile ? "center" : "left",
           }}
         >
           {/* TURNSTILE WIDGET CONTAINER */}
-          <div style={{ minHeight: "65px", width: "100%", display: "flex", justifyContent: isMobile ? "center" : "flex-start" }}>
-            <div 
-              className="cf-turnstile" 
-              data-sitekey="0x4AAAAAACfHxdcNLlIOQCJF"
-              data-callback="onTurnstileSuccess"
-              data-theme="dark"
-            ></div>
-          </div>
+          <div id="turnstile-container" style={{ minHeight: "65px", zIndex: 30 }}></div>
 
           <a
             href={isVerified ? "/start" : "#"}
@@ -299,23 +299,21 @@ export default function Home() {
             }}
             className="start-btn"
             style={{
-              width: "140px",
+              width: "130px",
               textAlign: "center",
-              padding: "15px 0",
-              backgroundColor: isVerified ? "#38bdf8" : "rgba(255,255,255,0.05)",
-              border: isVerified ? "none" : "1px solid rgba(255,255,255,0.1)",
-              borderRadius: "12px",
-              color: isVerified ? "#060b13" : "rgba(255,255,255,0.3)",
+              padding: "14px 0",
+              backgroundColor: isVerified ? "#1a253a" : "rgba(255,255,255,0.05)",
+              border: isVerified ? "1px solid rgba(56,189,248,0.8)" : "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "10px",
+              color: isVerified ? "white" : "rgba(255,255,255,0.3)",
               textDecoration: "none",
-              fontWeight: "900",
+              fontWeight: "bold",
               fontSize: "1.1rem",
               cursor: isVerified ? "pointer" : "not-allowed",
               transition: "all 0.4s ease",
-              textTransform: "uppercase",
-              letterSpacing: "1px"
             }}
           >
-            {isVerified ? "Start Now" : "Locked"}
+            Start
           </a>
 
           <div
@@ -323,7 +321,7 @@ export default function Home() {
               fontSize: "0.85rem",
               opacity: 0.75,
               letterSpacing: "0.3px",
-              maxWidth: isMobile ? "280px" : "300px",
+              maxWidth: isMobile ? "280px" : "320px",
             }}
           >
             Start with a simple financial snapshot. Takes less than a minute.
@@ -441,7 +439,6 @@ export default function Home() {
           .nav-link:hover::before, .icon-link:hover::before { opacity: 1; }
           .start-btn:hover { 
             box-shadow: ${isVerified ? "0 0 35px rgba(56,189,248,0.45)" : "none"}; 
-            transform: ${isVerified ? "scale(1.05)" : "none"};
           }
         `}</style>
       </main>
