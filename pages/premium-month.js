@@ -425,7 +425,7 @@ export default function PremiumMonth() {
           cycleDay,
           previousSignals: "",
           weeklyFocus: weeklyFocus?.key,
-          stressLevel: calculateFragility(),
+          stressLevel: calculateFragility(), // JAVÍTVA: Átadjuk a csúszka értékét
           ...inputs,
         }),
       });
@@ -464,7 +464,7 @@ export default function PremiumMonth() {
           cycleDay,
           previousSignals: "",
           weeklyFocus: weeklyFocus?.key,
-          stressLevel: calculateFragility(),
+          stressLevel: calculateFragility(), // JAVÍTVA: Átadjuk a csúszka értékét
           ...inputs,
         }),
       });
@@ -587,7 +587,7 @@ export default function PremiumMonth() {
       <a href="/month/help" style={helpButton}>
         Help
       </a>
-<div style={header}>
+      <div style={header}>
         <h1 style={title}>WEALTHYAI · MONTHLY BRIEFING</h1>
         <p style={subtitle}>Strategic financial outlook · Next 90 days</p>
       </div>
@@ -620,8 +620,7 @@ export default function PremiumMonth() {
           <p>{dailySignal}</p>
         )}
       </div>
-
-      <div style={signalBox}>
+<div style={signalBox}>
         <strong>Weekly focus</strong>
         <p style={{ opacity: 0.75 }}>
           {weeklyFocus
