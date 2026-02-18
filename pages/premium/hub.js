@@ -16,11 +16,15 @@ export default function PremiumHub() {
     
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem("wai_vip_token");
+      const role = localStorage.getItem("wai_role"); // Ellenőrizzük, hogy vendég-e
       
-      // SZIGORÚ ELLENŐRZÉS: Csak a MASTER-DOMINANCE kódra nyílik meg az admin sáv
-      const masterStatus = token === "MASTER-DOMINANCE-2026";
+      const isTokenValid = token === "MASTER-DOMINANCE-2026";
+      
+      // CSAK akkor Master (admin), ha jó a kód ÉS NEM vendég (Guest)
+      const masterStatus = isTokenValid && role !== "GUEST";
       setIsMaster(masterStatus);
 
+      // Statisztikák lekérése csak a valódi Masternek
       if (masterStatus) {
         fetch('/api/master-stats', {
           headers: { 'x-master-token': 'MASTER-DOMINANCE-2026' }
@@ -39,7 +43,6 @@ export default function PremiumHub() {
   }, []);
 
   const navigateTo = (path) => {
-    // Navigációnál megtartjuk a jelenlegi tokent, nem írjuk felül kényszerítve Masterre
     window.location.href = path;
   };
 
@@ -159,7 +162,7 @@ export default function PremiumHub() {
   return (
     <div style={styles.container}>
       
-      {/* CSAK HA MASTER VAGY, AKKOR LÁTOD AZ ADMIN SÁVOT */}
+      {/* CSAK HA MASTER VAGY (ÉS NEM VENDÉG), AKKOR LÁTOD AZ ADMIN SÁVOT */}
       {isMaster && (
         <div style={styles.adminBar}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
