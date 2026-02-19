@@ -146,7 +146,17 @@ export default function PremiumWeek() {
   const [leftNetHeight, setLeftNetHeight] = useState(0);
   const [rightNetHeight, setRightNetHeight] = useState(0);
 
-  /* ================= ACCESS CHECK (FIXED VERSION) ================= */
+  /* ===== CURRENCY LOGIC ===== */
+  const getCurrency = (c) => {
+    switch(c) {
+      case "HU": return "Ft";
+      case "EU": return "€";
+      case "UK": return "£";
+      default: return "$";
+    }
+  };
+
+  /* ================= ACCESS CHECK ================= */
   useEffect(() => {
     setMounted(true);
     async function checkAccess() {
@@ -190,6 +200,7 @@ export default function PremiumWeek() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  /* AUTO DETECTION */
   useEffect(() => {
     const lang = navigator.language || "";
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
@@ -198,6 +209,12 @@ export default function PremiumWeek() {
     else if (lang.startsWith("en")) setCountry("US");
     else setCountry("EU");
   }, []);
+
+  /* CLOSE AI ON REGION CHANGE */
+  useEffect(() => {
+    setAiOpen(false);
+    setAiText("");
+  }, [country]);
 
   useEffect(() => {
     if (isMobile || !mounted) return;
@@ -276,7 +293,7 @@ export default function PremiumWeek() {
           <p style={{ margin: "0 0 5px 0", fontWeight: "bold", color: "#7dd3fc" }}>{label}</p>
           {payload.map((entry, index) => (
             <div key={index} style={{ color: entry.color || entry.payload.fill, fontSize: "12px", padding: "2px 0" }}>
-              {entry.name.toUpperCase()}: <span style={{ color: "#fff" }}>${entry.value.toLocaleString()}</span>
+              {entry.name.toUpperCase()}: <span style={{ color: "#fff" }}>{entry.value.toLocaleString()} {getCurrency(country)}</span>
             </div>
           ))}
         </div>
@@ -306,14 +323,17 @@ export default function PremiumWeek() {
                   <select value={incomeType} onChange={(e) => setIncomeType(e.target.value)} style={regionSelect}>
                     <option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option>
                   </select>
-                  <input type="number" value={incomeValue} onChange={(e) => setIncomeValue(Number(e.target.value))} style={input} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <input type="number" value={incomeValue} onChange={(e) => setIncomeValue(Number(e.target.value))} style={input} />
+                    <span style={{ fontSize: 12, color: '#38bdf8' }}>{getCurrency(country)}</span>
+                  </div>
                 </div>
               </div>
 
               <div style={regionRow}>
                 <span style={regionLabel}>Region Setting</span>
                 <select value={country} onChange={(e) => setCountry(e.target.value)} style={regionSelect}>
-                  <option value="US">US</option><option value="EU">EU</option><option value="UK">UK</option><option value="HU">HU</option>
+                  <option value="US">US</option><option value="EU">EU</option><option value="UK">UK</option><option value="HU">HU</option><option value="Other">Other</option>
                 </select>
               </div>
 
@@ -328,7 +348,10 @@ export default function PremiumWeek() {
                       {CATEGORIES.map(c => (
                         <div key={c} style={row}>
                           <span style={catLabel}>{c.toUpperCase()}</span>
-                          <input type="number" value={week[d][c]} onChange={e => update(d, c, e.target.value)} style={input} />
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                            <input type="number" value={week[d][c]} onChange={e => update(d, c, e.target.value)} style={input} />
+                            <span style={{ fontSize: 10, color: '#94a3b8' }}>{getCurrency(country)}</span>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -391,8 +414,8 @@ export default function PremiumWeek() {
               </div>
 
               <div style={summary}>
-                WEEKLY SPEND: <strong style={{color: "#fb7185"}}>${Math.round(weeklySpend).toLocaleString()}</strong> · 
-                SURPLUS: <strong style={{color: "#34d399"}}>${Math.round(weeklyIncome - weeklySpend).toLocaleString()}</strong>
+                WEEKLY SPEND: <strong style={{color: "#fb7185"}}>{Math.round(weeklySpend).toLocaleString()} {getCurrency(country)}</strong> · 
+                SURPLUS: <strong style={{color: "#34d399"}}>{Math.round(weeklyIncome - weeklySpend).toLocaleString()} {getCurrency(country)}</strong>
               </div>
 
               <button onClick={runAI} style={aiButton}>
@@ -402,7 +425,7 @@ export default function PremiumWeek() {
               {aiOpen && (
                 <div style={aiBox}>
                   <div style={aiHeader}>
-                    <strong>Weekly AI Insight</strong>
+                    <strong>Weekly AI Insight ({country})</strong>
                     <button onClick={() => setAiOpen(false)} style={closeBtn}>✕</button>
                   </div>
                   <pre style={aiTextStyle}>{aiText}</pre>
@@ -441,7 +464,7 @@ function Chart({ title, children }) {
   );
 }
 
-/* ===== STYLES (NO CHANGES) ===== */
+/* ===== STYLES ===== */
 const tooltipContainer = { background: "rgba(2, 6, 23, 0.95)", border: "1px solid #1e293b", padding: "12px", borderRadius: "10px", backdropFilter: "blur(12px)" };
 const page = { 
   minHeight: "100vh", position: "relative", color: "#e5e7eb", fontFamily: "Inter, sans-serif", backgroundColor: "#020617",
