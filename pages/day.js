@@ -162,6 +162,7 @@ export default function DayPremium() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
+  const [country, setCountry] = useState("US");
 
   useEffect(() => {
     setMounted(true);
@@ -181,13 +182,28 @@ export default function DayPremium() {
   const [loading, setLoading] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
 
+  /* CURRENCY LOGIC */
+  const getCurrency = (c) => {
+    switch(c) {
+      case "HU": return "Ft";
+      case "EU": return "€";
+      case "UK": return "£";
+      default: return "$";
+    }
+  };
+
+  /* CLOSE AI ON REGION CHANGE */
+  useEffect(() => {
+    setAiOpen(false);
+    setAiText("");
+  }, [country]);
+
   useEffect(() => {
     if (aiOpen && aiBoxRef.current) {
       setAiBoxHeight(aiBoxRef.current.offsetHeight);
     }
   }, [aiOpen, aiText]);
 
-  /* ===== FRISSÍTETT BELÉPTETÉS - STABIL VERZIÓ ===== */
   useEffect(() => {
     async function checkAccess() {
       if (isAuthorized) return;
@@ -240,6 +256,7 @@ export default function DayPremium() {
     const saved = localStorage.getItem("userFinancials");
     if (saved) setData(JSON.parse(saved));
   }, []);
+
   const surplus = data.income - (data.fixed + data.variable);
   const savingsRate = data.income > 0 ? (surplus / data.income) * 100 : 0;
   const fiveYearProjection = surplus * 60 * 1.45;
@@ -260,6 +277,7 @@ export default function DayPremium() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           mode: "day",
+          country,
           income: data.income,
           fixed: data.fixed,
           variable: data.variable,
@@ -285,7 +303,6 @@ export default function DayPremium() {
 
   if (!isAuthorized) return null;
 
-  /* ===== TICKER COMPONENT ===== */
   const WealthyTicker = () => {
     if (isMobile) return null;
     const tickerText = "WealthyAI interprets your financial state over time — not advice, not prediction, just clarity • Interpretation over advice • Clarity over certainty • Insight unfolds over time • Financial understanding isn’t instant • Context changes • Insight follows time • Clarity over certainty • Built on time, not urgency • ";
@@ -331,11 +348,22 @@ export default function DayPremium() {
         }}>
           {/* BAL OSZLOP */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <Metric label="MONTHLY SURPLUS" value={`$${surplus.toLocaleString()}`} isMobile={isMobile} />
+            <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
+               <span style={{ fontSize: 12, color: '#7dd3fc', fontWeight: 'bold' }}>REGION SETTING:</span>
+               <select value={country} onChange={(e) => setCountry(e.target.value)} style={{ background: "#0f172a", color: "#38bdf8", border: "1px solid rgba(56, 189, 248, 0.3)", borderRadius: "6px", padding: "4px 8px", outline: "none", fontSize: "12px" }}>
+                  <option value="US">US ($)</option>
+                  <option value="EU">EU (€)</option>
+                  <option value="UK">UK (£)</option>
+                  <option value="HU">HU (Ft)</option>
+                  <option value="Other">Other ($)</option>
+               </select>
+            </div>
+
+            <Metric label="MONTHLY SURPLUS" value={`${surplus.toLocaleString()} ${getCurrency(country)}`} isMobile={isMobile} />
             <Metric label="SAVINGS RATE" value={`${savingsRate.toFixed(1)}%`} isMobile={isMobile} />
             <Metric
               label="5Y PROJECTION"
-              value={`$${Math.round(fiveYearProjection).toLocaleString()}`}
+              value={`${Math.round(fiveYearProjection).toLocaleString()} ${getCurrency(country)}`}
               isMobile={isMobile}
             />
 
@@ -343,7 +371,7 @@ export default function DayPremium() {
               {aiOpen && (
                 <div ref={aiBoxRef} style={aiBox}>
                   <div style={aiHeader}>
-                    <strong>AI Insight</strong>
+                    <strong>AI Insight ({country})</strong>
                     <button onClick={() => setAiOpen(false)} style={closeBtn}>✕</button>
                   </div>
                   <pre style={aiTextStyle}>{aiText}</pre>
@@ -364,14 +392,17 @@ export default function DayPremium() {
               {["income", "fixed", "variable"].map((k) => (
                 <div key={k} style={inputRow}>
                   <span>{k.toUpperCase()}</span>
-                  <input
-                    type="number"
-                    value={data[k]}
-                    onChange={(e) =>
-                      setData({ ...data, [k]: Number(e.target.value) })
-                    }
-                    style={input}
-                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <input
+                      type="number"
+                      value={data[k]}
+                      onChange={(e) =>
+                        setData({ ...data, [k]: Number(e.target.value) })
+                      }
+                      style={input}
+                    />
+                    <span style={{ fontSize: 12, color: '#38bdf8' }}>{getCurrency(country)}</span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -422,8 +453,6 @@ export default function DayPremium() {
     </div>
   );
 }
-
-/* ===== STYLES & COMPONENTS MARADTAK AZ EREDETIEK ===== */
 
 function Metric({ label, value, isMobile }) {
   return (
