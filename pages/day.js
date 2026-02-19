@@ -465,8 +465,9 @@ export default function DayPremium() {
         fontSize: isMobile ? "12px" : "14px",
         borderTop: isMobile ? "none" : "none", 
       }}>
-        Weekly and Monthly plans unlock country-specific tax optimization,
-        stress testing and advanced projections.
+        Weekly and Monthly plans unlock deeper insights through multi-angle analysis, 
+        stress testing, and advanced projections.
+        
         {isMobile && <div style={{marginTop: 10, fontSize: 10, opacity: 0.6}}>© 2026 WealthyAI</div>}
       </div>
 
