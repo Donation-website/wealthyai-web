@@ -168,6 +168,30 @@ export default function DayPremium() {
     setMounted(true);
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
     handleResize();
+
+    const detectRegion = async () => {
+      try {
+        const res = await fetch("https://ipapi.co/json/");
+        const geo = await res.json();
+        const code = geo.country_code;
+
+        if (code === "HU") {
+          setCountry("HU");
+        } else if (code === "GB") {
+          setCountry("UK");
+        } else if (["AT", "DE", "FR", "IT", "ES", "BE", "NL", "LU", "IE", "PT"].includes(code)) {
+          setCountry("EU");
+        } else if (code === "US") {
+          setCountry("US");
+        } else {
+          setCountry("Other");
+        }
+      } catch (e) {
+        console.warn("Region detection unavailable, fallback to US");
+      }
+    };
+    detectRegion();
+
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -188,6 +212,7 @@ export default function DayPremium() {
       case "HU": return "Ft";
       case "EU": return "€";
       case "UK": return "£";
+      case "Other": return "$";
       default: return "$";
     }
   };
@@ -212,6 +237,7 @@ export default function DayPremium() {
       const params = new URLSearchParams(window.location.search);
       const sessionId = params.get("session_id");
 
+      // MESTERKÓD VISSZAHELYEZVE
       if (vipToken === "MASTER-DOMINANCE-2026" || (sessionId && sessionId.startsWith('cs_'))) {
         if (sessionId) localStorage.setItem("wai_vip_token", sessionId);
         setIsAuthorized(true);
