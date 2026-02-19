@@ -20,7 +20,8 @@ export default function PremiumHub() {
     li: "aHR0cHM6Ly93d3cubGlua2VkaW4uY29tL2luL3pvbHRhbi1ob3J2YXRoLTc3Mzg2YTMhOS8/bG9jYWxlPWh1",
     ve: "aHR0cHM6Ly92ZXJjZWwuY29tL2RvbmF0aW9uLXdlYnNpdGUtcHJvamVjdHMvd2VhbHRoeWFpLXdlYi9hbmFseXRpY3M=",
     st: "aHR0cHM6Ly9kYXNoYm9hcmQuc3RyaXBlLmNvbQ==",
-    az: "aHR0cHM6Ly9wb3J0YWwuYXp1cmUuY29tLyNob21l"
+    az: "aHR0cHM6Ly9wb3J0YWwuYXp1cmUuY29tLyNob21l",
+    re: "aHR0cHM6Ly93d3cucmVkZGl0LmNvbS91c2VyL1B1enpsZWhlYWRlZC1TZXQ5MTg4Lw=="
   };
 
   useEffect(() => {
@@ -65,7 +66,6 @@ export default function PremiumHub() {
   };
 
   const styles = {
-    // ... (A stílusok maradjanak változatlanok, amiket írtál)
     container: {
       minHeight: "100vh",
       width: "100%",
@@ -188,7 +188,7 @@ export default function PremiumHub() {
               width: "8px", height: "8px", borderRadius: "50%", 
               backgroundColor: stats.stripe !== "OFFLINE" ? "#22c55e" : "#ef4444", 
               boxShadow: stats.stripe !== "OFFLINE" ? "0 0 10px #22c55e" : "0 0 10px #ef4444" 
-            }}></div>
+             }}></div>
             <span style={{ fontSize: "10px", fontWeight: "bold", color: "#f59e0b", letterSpacing: "1px" }}>WAI MASTER SYSTEM</span>
           </div>
 
@@ -212,6 +212,7 @@ export default function PremiumHub() {
             <button onClick={() => openSecure('ph')} style={{ ...styles.adminBtn, backgroundColor: "#da552f" }}>PH PROFIL</button>
             <button onClick={() => openSecure('zo')} style={{ ...styles.adminBtn, backgroundColor: "#1e3a8a" }}>ZOHO</button>
             <button onClick={() => openSecure('li')} style={{ ...styles.adminBtn, backgroundColor: "#0a66c2" }}>LINKEDIN</button>
+            <button onClick={() => openSecure('re')} style={{ ...styles.adminBtn, backgroundColor: "#ff4500" }}>REDDIT</button>
             <button onClick={() => openSecure('ve')} style={{ ...styles.adminBtn, backgroundColor: "#000000" }}>ANALYTICS</button>
             <button onClick={() => openSecure('st')} style={{ ...styles.adminBtn, backgroundColor: "#4338ca" }}>STRIPE</button>
             <button onClick={() => openSecure('az')} style={{ ...styles.adminBtn, backgroundColor: "#2563eb" }}>AZURE</button>
