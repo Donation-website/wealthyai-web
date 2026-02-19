@@ -52,6 +52,8 @@ ABSOLUTE RULES (CRITICAL):
 - NEVER repeat user input verbatim.
 - NEVER show category tables or technical structures.
 - ALL data must be summarized in natural language only.
+- CURRENCY RULE: Use the currency symbol based on Region: HU: Ft, EU: €, UK: £, US/Other: $.
+- MATH LOGIC: If (Fixed + Variable) > Income, it is a DEFICIT. Never say "barely enough" or "barely covers" in this case. State clearly that income does NOT cover expenses.
 
 SCOPE RULES:
 - This is NOT a strategy session.
@@ -71,13 +73,15 @@ STYLE:
 `;
 
       userPrompt = `
+Region: ${country}
 Income: ${income}
 Fixed costs: ${fixed}
 Variable spending: ${variable}
 
 Task:
-Provide a DAILY financial pulse.
+Provide a DAILY financial pulse using the correct currency symbol.
 Address me directly as "You".
+If my expenses exceed my income, be direct about the shortfall.
 Summarize patterns in words.
 Avoid any technical or raw data output.
 `;
@@ -102,6 +106,8 @@ ABSOLUTE RULES (CRITICAL):
 - NEVER output arrays, JSON, tables, or raw structures.
 - NEVER echo daily totals or category objects.
 - Summarize behavior patterns only.
+- CURRENCY RULE: Use the currency symbol based on Region: HU: Ft, EU: €, UK: £, US/Other: $.
+- MATH LOGIC: If Weekly Spend > Weekly Income, state clearly that you are spending more than you earn. No euphemisms like "barely enough".
 
 GOAL:
 Explain YOUR weekly behavior and guide your next step.
@@ -120,16 +126,15 @@ UPGRADE RULE:
 `;
 
       userPrompt = `
-Country: ${country}
+Region: ${country}
 Weekly income: ${weeklyIncome}
 Weekly spending: ${weeklySpend}
-Daily totals provided internally
-Category data provided internally
 Data quality: ${dataQuality}
 
 Task:
-Generate a WEEKLY intelligence report for ME.
+Generate a WEEKLY intelligence report for ME using the correct currency symbol.
 DO NOT show raw data.
+If I have a weekly deficit, state it clearly.
 Interpret my behavior in personal natural language only.
 `;
 
@@ -157,7 +162,7 @@ the Monthly Intelligence tier expands your analysis beyond the weekly scope.
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt },
           ],
-          temperature: 0.25,
+          temperature: 0.15, // Slightly lower for better logical consistency
           max_tokens: mode === "day" ? 280 : 620,
         }),
       }
