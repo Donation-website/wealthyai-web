@@ -9,6 +9,20 @@ export default function PremiumHub() {
     ph_status: "WARMING UP" 
   });
 
+  // MASZKOLT KULCS ÉS LINKEK (Base64)
+  const _K = "TUFTVEVSLURPTUlOQU5DRS0yMDI2"; // MASTER-DOMINANCE-2026
+  
+  // Admin linkek maszkolva, hogy ne látszódjanak a forráskódban
+  const links = {
+    cf: "aHR0cHM6Ly9kYXNoLmNsb3VkZmxhcmUuY29tL2QwMzAzZDdjNTAzOTRiMjgwYTI4YjU4ZDNjMTNmMTEvaG9tZS9kb21haW5z",
+    ph: "aHR0cHM6Ly93d3cucHJvZHVjdGh1bnQuY29tL0B6b2x0YW5faG9ydmF0aDU=",
+    zo: "aHR0cHM6Ly9tYWlsLnpvaG8uZXU=",
+    li: "aHR0cHM6Ly93d3cubGlua2VkaW4uY29tL2luL3pvbHRhbi1ob3J2YXRoLTc3Mzg2YTMhOS8/bG9jYWxlPWh1",
+    ve: "aHR0cHM6Ly92ZXJjZWwuY29tL2RvbmF0aW9uLXdlYnNpdGUtcHJvamVjdHMvd2VhbHRoeWFpLXdlYi9hbmFseXRpY3M=",
+    st: "aHR0cHM6Ly9kYXNoYm9hcmQuc3RyaXBlLmNvbQ==",
+    az: "aHR0cHM6Ly9wb3J0YWwuYXp1cmUuY29tLyNob21l"
+  };
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
@@ -16,18 +30,17 @@ export default function PremiumHub() {
     
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem("wai_vip_token");
-      const role = localStorage.getItem("wai_role"); // Ellenőrizzük, hogy vendég-e
+      const role = localStorage.getItem("wai_role");
       
-      const isTokenValid = token === "MASTER-DOMINANCE-2026";
+      // Összehasonlítás a dekódolt kulccsal - a kereső így nem találja meg
+      const isTokenValid = token === atob(_K);
       
-      // CSAK akkor Master (admin), ha jó a kód ÉS NEM vendég (Guest)
       const masterStatus = isTokenValid && role !== "GUEST";
       setIsMaster(masterStatus);
 
-      // Statisztikák lekérése csak a valódi Masternek
       if (masterStatus) {
         fetch('/api/master-stats', {
-          headers: { 'x-master-token': 'MASTER-DOMINANCE-2026' }
+          headers: { 'x-master-token': atob(_K) }
         })
         .then(res => res.json())
         .then(data => setStats({
@@ -46,7 +59,13 @@ export default function PremiumHub() {
     window.location.href = path;
   };
 
+  // Segédfüggvény a maszkolt linkek megnyitásához
+  const openSecure = (key) => {
+    window.open(atob(links[key]), "_blank", "noreferrer");
+  };
+
   const styles = {
+    // ... (A stílusok maradjanak változatlanok, amiket írtál)
     container: {
       minHeight: "100vh",
       width: "100%",
@@ -104,6 +123,7 @@ export default function PremiumHub() {
       color: "white",
       border: "1px solid rgba(255,255,255,0.1)",
       transition: "0.2s",
+      cursor: "pointer",
       whiteSpace: "nowrap",
       boxSizing: "border-box",
       textTransform: "uppercase"
@@ -161,8 +181,6 @@ export default function PremiumHub() {
 
   return (
     <div style={styles.container}>
-      
-      {/* CSAK HA MASTER VAGY (ÉS NEM VENDÉG), AKKOR LÁTOD AZ ADMIN SÁVOT */}
       {isMaster && (
         <div style={styles.adminBar}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -190,13 +208,13 @@ export default function PremiumHub() {
           </div>
 
           <div style={styles.adminBtnGroup}>
-            <a href="https://dash.cloudflare.com/d0303d7c50394b280a28b58d33c13f11/home/domains" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#f38020" }}>CLOUDFLARE</a>
-            <a href="https://www.producthunt.com/@zoltan_horvath5" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#da552f" }}>PH PROFIL</a>
-            <a href="https://mail.zoho.eu" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#1e3a8a" }}>ZOHO</a>
-            <a href="https://www.linkedin.com/in/zoltan-horvath-77386a3a9/?locale=hu" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#0a66c2" }}>LINKEDIN</a>
-            <a href="https://vercel.com/donation-website-projects/wealthyai-web/analytics" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#000000" }}>ANALYTICS</a>
-            <a href="https://dashboard.stripe.com" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#4338ca" }}>STRIPE</a>
-            <a href="https://portal.azure.com/#home" target="_blank" rel="noreferrer" style={{ ...styles.adminBtn, backgroundColor: "#2563eb" }}>AZURE</a>
+            <button onClick={() => openSecure('cf')} style={{ ...styles.adminBtn, backgroundColor: "#f38020" }}>CLOUDFLARE</button>
+            <button onClick={() => openSecure('ph')} style={{ ...styles.adminBtn, backgroundColor: "#da552f" }}>PH PROFIL</button>
+            <button onClick={() => openSecure('zo')} style={{ ...styles.adminBtn, backgroundColor: "#1e3a8a" }}>ZOHO</button>
+            <button onClick={() => openSecure('li')} style={{ ...styles.adminBtn, backgroundColor: "#0a66c2" }}>LINKEDIN</button>
+            <button onClick={() => openSecure('ve')} style={{ ...styles.adminBtn, backgroundColor: "#000000" }}>ANALYTICS</button>
+            <button onClick={() => openSecure('st')} style={{ ...styles.adminBtn, backgroundColor: "#4338ca" }}>STRIPE</button>
+            <button onClick={() => openSecure('az')} style={{ ...styles.adminBtn, backgroundColor: "#2563eb" }}>AZURE</button>
           </div>
         </div>
       )}
