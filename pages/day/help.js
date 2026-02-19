@@ -29,58 +29,56 @@ export default function DayHelpPage() {
           <h1 style={{
             ...title,
             fontSize: isMobile ? "1.8rem" : "2.2rem"
-          }}>How Daily Financial Intelligence Works</h1>
+          }}>Daily Financial Intelligence Help</h1>
 
           <p style={intro}>
-            This page explains how to use the <strong>Daily view</strong> in WealthyAI.
-            The goal is fast clarity — not long-term planning, not pressure.
+            This page provides technical and functional guidance for the <strong>Daily Premium Access</strong>. 
+            WealthyAI is designed to offer immediate clarity through regional intelligence.
           </p>
 
-          <Section title="What this page is">
-            The Daily view gives you a <strong>financial pulse for today</strong>.
+          <Section title="Regional & Currency Settings">
+            The system now features a <strong>Region Selector</strong> located above your metrics. 
             <br /><br />
-            It is designed for quick awareness: understanding where you stand right now
-            and what direction the next few days are heading.
+            You can switch between <strong>US ($), EU (€), UK (£), and HU (Ft)</strong>. This adjustment ensures that the AI interprets your surplus and expenses within the correct economic context, providing more relevant insights for your specific location.
           </Section>
 
-          <Section title="What the daily analysis does" isMobile={isMobile}>
-            The system looks at:
+          <Section title="What the Daily Analysis interprets" isMobile={isMobile}>
+            The Daily view focuses on your immediate financial health by analyzing:
             <ul style={{ paddingLeft: "20px", marginTop: "10px" }}>
-              <li>your current income input</li>
-              <li>your fixed and variable costs</li>
-              <li>your immediate surplus or deficit</li>
-            </ul>
-            Based on this, it provides a short, grounded interpretation.
-          </Section>
-
-          <Section title="What this analysis does NOT do" isMobile={isMobile}>
-            <ul style={{ paddingLeft: "20px" }}>
-              <li>It does not replace weekly or monthly planning</li>
-              <li>It does not predict long-term outcomes</li>
-              <li>It does not judge spending decisions</li>
-              <li>It does not enforce rules or budgets</li>
+              <li><strong>Income Flow:</strong> Your primary monthly revenue input.</li>
+              <li><strong>Fixed vs. Variable:</strong> The balance between non-negotiable costs and lifestyle spending.</li>
+              <li><strong>Current Surplus:</strong> The precise amount of liquidity available for today's decisions.</li>
             </ul>
           </Section>
 
-          <Section title="How to read the daily insight">
-            <p><strong>Today's Financial State</strong><br />
-            A snapshot of where you stand right now.</p>
+          <Section title="The AI Insight Panel" isMobile={isMobile}>
+            When you trigger the <strong>Generate AI Strategy</strong> button, the system performs a real-time analysis:
+            <p style={{ marginTop: "15px" }}><strong>1. Daily Financial State</strong><br />
+            An objective breakdown of your current standing based on the selected region.</p>
 
-            <p style={{ marginTop: "15px" }}><strong>What This Means</strong><br />
-            Context for your current numbers.</p>
+            <p style={{ marginTop: "15px" }}><strong>2. Behavior Signal</strong><br />
+            Identifies if your current spending habits are sustainable or if they signal high-risk financial strain.</p>
 
-            <p style={{ marginTop: "15px" }}><strong>7-Day Direction</strong><br />
-            A conservative short-term outlook — not a promise.</p>
+            <p style={{ marginTop: "15px" }}><strong>3. 7-Day Direction</strong><br />
+            A short-term tactical plan to optimize your cash flow for the upcoming week.</p>
           </Section>
 
-          <Section title="Daily vs Weekly analysis">
-            Daily analysis is about awareness.
+          <Section title="Projections & SpiderNet Visualization">
+            The <strong>5Y Projection</strong> metric uses a conservative growth model (8-45% scaling) to show the long-term potential of your current daily surplus. 
             <br /><br />
-            Weekly analysis helps you detect patterns that are invisible day-by-day.
+            The <strong>SpiderNet animation</strong> (visible on desktop) dynamically adjusts its density based on the AI panel's height, representing the complexity of the neural processing happening in the background.
+          </Section>
+
+          <Section title="Limitations of Daily Access">
+            <ul style={{ paddingLeft: "20px" }}>
+              <li><strong>Local Storage:</strong> All financial data is stored locally in your browser. Clearing your cache will reset your inputs.</li>
+              <li><strong>No Tax Stress-Testing:</strong> Detailed tax optimization and country-specific fiscal stress tests are reserved for Monthly Intelligence members.</li>
+              <li><strong>Non-Advice:</strong> This system provides interpretation of data, not regulated financial advice.</li>
+            </ul>
           </Section>
 
           <p style={footer}>
-            WealthyAI supports clarity — not control.
+            © 2026 WealthyAI — Built for clarity, designed for time.
           </p>
         </div>
       </div>
@@ -108,7 +106,7 @@ const page = {
   position: "relative",
   minHeight: "100vh",
   background: "#020617",
-  overflowX: "hidden", // Megakadályozza a vízszintes csúszkát mobilon
+  overflowX: "hidden",
   fontFamily: "Inter, system-ui",
 };
 
@@ -188,7 +186,7 @@ const section = {
   background: "rgba(56,189,248,0.14)",
   border: "1px solid rgba(125,211,252,0.35)",
   backdropFilter: "blur(12px)",
-  boxSizing: "border-box", // Fontos, hogy ne lógjon ki a padding miatt
+  boxSizing: "border-box",
 };
 
 const sectionTitle = {
