@@ -1,6 +1,13 @@
 import React, { useEffect } from 'react';
 
 export default function Blog() {
+  // Ez a rész gondoskodik róla, hogy a kommentmező mindig betöltsön
+  useEffect(() => {
+    if (window.Cusdis) {
+      window.Cusdis.render(document.getElementById('cusdis_thread'));
+    }
+  }, []);
+
   return (
     <div style={page}>
       <div style={bgGrid} />
@@ -23,7 +30,6 @@ export default function Blog() {
             </p>
           </header>
 
-          {/* Manifest Section */}
           <div style={section}>
             <p style={{ fontSize: '1.4rem', color: '#fff', marginBottom: '30px', fontWeight: '300', fontStyle: 'italic', lineHeight: '1.4' }}>
               "We didn’t build WealthyAI to tell people what to do with their money."
@@ -36,7 +42,6 @@ export default function Blog() {
               </p>
             </div>
 
-            {/* VLOG SECTION - KÉP 1 */}
             <div style={vlogStep}>
               <h3 style={stepTitle}>01. Visualizing Fragility</h3>
               <img src="/wealthyai/icons/blog1.jpg" alt="Financial Structure" style={vlogImage} />
@@ -45,7 +50,6 @@ export default function Blog() {
               </p>
             </div>
 
-            {/* VLOG SECTION - KÉP 2 */}
             <div style={vlogStep}>
               <h3 style={stepTitle}>02. The AI Interpretation</h3>
               <img src="/wealthyai/icons/blog2.jpg" alt="AI Logic" style={vlogImage} />
@@ -54,7 +58,6 @@ export default function Blog() {
               </p>
             </div>
 
-            {/* VLOG SECTION - KÉP 3 */}
             <div style={vlogStep}>
               <h3 style={stepTitle}>03. Strategic Path</h3>
               <img src="/wealthyai/icons/blog3.jpg" alt="90 Day Roadmap" style={vlogImage} />
@@ -71,26 +74,15 @@ export default function Blog() {
             </div>
           </div>
 
-          {/* CUSDIS KOMMENT RENDSZER - JAVÍTOTT ÉS VILÁGOSABB */}
-          <div style={{ ...section, background: 'rgba(15, 23, 42, 0.8)', marginTop: '40px', minHeight: '400px', border: '1px solid rgba(56,189,248,0.4)' }}>
+          {/* CUSDIS KOMMENT SZEKCIÓ - FIXÁLT BETÖLTÉSSEL */}
+          <div style={{ ...section, background: 'rgba(15, 23, 42, 0.8)', marginTop: '40px', minHeight: '450px', border: '2px solid rgba(56,189,248,0.5)' }}>
             <h2 style={sectionTitle}>Discussion</h2>
-            <p style={{ color: '#38bdf8', marginBottom: '10px', fontSize: '1.1rem', fontWeight: '600' }}>
-              Tell us your thoughts! 
-            </p>
-            <p style={{ color: '#94a3b8', marginBottom: '30px', fontSize: '0.9rem' }}>
-              No email or registration required. Just enter a nickname and post.
-            </p>
             
-            {/* CSS a beviteli mezők láthatóságáért */}
             <style>{`
               #cusdis_thread iframe { 
                 color-scheme: dark !important;
-                filter: brightness(1.3) contrast(1.1);
-              }
-              #cusdis_thread {
-                background: rgba(15, 23, 42, 0.5);
-                padding: 15px;
-                border-radius: 12px;
+                filter: brightness(1.2) contrast(1.1);
+                min-height: 400px;
               }
             `}</style>
 
@@ -101,7 +93,7 @@ export default function Blog() {
               data-page-id="blog-genesis-01"
               data-page-url="https://mywealthyai.vercel.app/blog"
               data-page-title="WealthyAI Genesis"
-              style={{ width: '100%', minHeight: '200px' }}
+              style={{ width: '100%', minHeight: '400px' }}
             ></div>
             
             <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
@@ -116,7 +108,7 @@ export default function Blog() {
   );
 }
 
-// STYLES - Minden változatlan marad
+// STYLES
 const page = { position: "relative", minHeight: "100vh", background: "#020617", overflow: "hidden", fontFamily: "Inter, system-ui" };
 const content = { position: "relative", zIndex: 10, padding: "80px 24px", display: "flex", justifyContent: "center" };
 const container = { width: "100%", maxWidth: 850 };
