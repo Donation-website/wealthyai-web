@@ -9,11 +9,11 @@ export default function PremiumHub() {
     ph_status: "WARMING UP" 
   });
 
-  // MASZKOLT KULCS ÉS LINKEK (Base64) - Szigorúan változatlan
+  // MASZKOLT KULCS ÉS LINKEK (Base64)
   const _K = "TUFTVEVSLURPTUlOQU5DRS0yMDI2"; // MASTER-DOMINANCE-2026
   
   const links = {
-    cf: "aHR0cHM6Ly9kYXNoLmNsb3VkZmxhcmUuY29tL2QwMzAzZDdjNTAzOTRiMjgwYTI4YjU4ZDNjMTNmMTEvaG9tZS9kb21haW5z",
+    cf: "aHR0cHM6Ly9kYXNoDashLmNsb3VkZmxhcmUuY29tL2QwMzAzZDdjNTAzOTRiMjgwYTI4YjU4ZDNjMTNmMTEvaG9tZS9kb21haW5z",
     ph: "aHR0cHM6Ly93d3cucHJvZHVjdGh1bnQuY29tL0B6b2x0YW5faG9ydmF0aDU=",
     zo: "aHR0cHM6Ly9tYWlsLnpvaG8uZXU=",
     li: "aHR0cHM6Ly93d3cubGlua2VkaW4uY29tL2luL3pvbHRhbi1ob3J2YXRoLTc3Mzg2YTMhOS8/bG9jYWxlPWh1",
@@ -21,7 +21,7 @@ export default function PremiumHub() {
     st: "aHR0cHM6Ly9kYXNoYm9hcmQuc3RyaXBlLmNvbQ==",
     az: "aHR0cHM6Ly9wb3J0YWwuYXp1cmUuY29tLyNob21l",
     re: "aHR0cHM6Ly93d3cucmVkZGl0LmNvbS91c2VyL1B1enpsZWhlYWRlZC1TZXQ5MTg4Lw==",
-    dq: "aHR0cHM6Ly9kaXNxdXMuY29tL2FkbWluLw==" // ÚJ: Közvetlen admin link
+    cd: "aHR0cHM6Ly9jdXNkaXMuY29tL2Rhc2hib2FyZC9wcm9qZWN0L2ZkYzc3YmU1LWY5ODAtNDJmZS05YzdjLTAzMzI2NmJlMTYxYQ==" // FRISSÍTVE: Cusdis Admin
   };
 
   useEffect(() => {
@@ -48,15 +48,6 @@ export default function PremiumHub() {
           ph_status: "ENGAGED"
         }))
         .catch(() => setStats({ stripe: "OFFLINE", sendgrid: "ERROR", ph_status: "LIVE" }));
-      }
-
-      // DISQUS INTEGRÁCIÓ
-      if (!document.getElementById('disqus-embed-script')) {
-        const d = document, s = d.createElement('script');
-        s.id = 'disqus-embed-script';
-        s.src = 'https://mywealthyai.disqus.com/embed.js';
-        s.setAttribute('data-timestamp', +new Date());
-        (d.head || d.body).appendChild(s);
       }
     }
 
@@ -183,14 +174,14 @@ export default function PremiumHub() {
       background: "rgba(30, 41, 59, 0.7)",
       transform: "translateY(-5px)",
     },
-    disqusSection: {
+    commentSection: {
       width: "100%",
       maxWidth: "850px",
       marginTop: "60px",
       padding: "30px",
       borderRadius: "24px",
       background: "rgba(15, 23, 42, 0.6)",
-      border: "1px solid rgba(255, 255, 255, 0.05)",
+      border: "1px solid rgba(56,189,248,0.2)",
       boxSizing: "border-box",
       textAlign: "left"
     }
@@ -233,8 +224,8 @@ export default function PremiumHub() {
             <button onClick={() => openSecure('ve')} style={{ ...styles.adminBtn, backgroundColor: "#000000" }}>ANALYTICS</button>
             <button onClick={() => openSecure('st')} style={{ ...styles.adminBtn, backgroundColor: "#4338ca" }}>STRIPE</button>
             <button onClick={() => openSecure('az')} style={{ ...styles.adminBtn, backgroundColor: "#2563eb" }}>AZURE</button>
-            {/* ÚJ DISQUS ADMIN GOMB */}
-            <button onClick={() => openSecure('dq')} style={{ ...styles.adminBtn, backgroundColor: "#2e3192", border: "1px solid #38bdf8" }}>DISQUS ADMIN</button>
+            {/* CUSDIS ADMIN GOMB - A DISQUS HELYETT */}
+            <button onClick={() => openSecure('cd')} style={{ ...styles.adminBtn, backgroundColor: "#38bdf8", color: "#000" }}>CUSDIS ADMIN</button>
           </div>
         </div>
       )}
@@ -243,35 +234,43 @@ export default function PremiumHub() {
       <h1 style={styles.title}>WealthyAI Control Hub</h1>
       
       <div style={styles.grid}>
-        <div style={styles.card} onClick={() => navigateTo("/day")}
-          onMouseEnter={(e) => Object.assign(e.currentTarget.style, styles.cardHover)}
-          onMouseLeave={(e) => Object.assign(e.currentTarget.style, styles.card)}>
+        <div style={styles.card} onClick={() => navigateTo("/day")}>
           <div style={{ fontSize: "40px" }}>⚡</div>
           <h2 style={{ margin: 0 }}>Daily</h2>
           <p style={{ fontSize: "14px", opacity: 0.7 }}>Immediate Snapshots</p>
         </div>
 
-        <div style={styles.card} onClick={() => navigateTo("/premium-week")}
-          onMouseEnter={(e) => Object.assign(e.currentTarget.style, styles.cardHover)}
-          onMouseLeave={(e) => Object.assign(e.currentTarget.style, styles.card)}>
+        <div style={styles.card} onClick={() => navigateTo("/premium-week")}>
           <div style={{ fontSize: "40px" }}>📊</div>
           <h2 style={{ margin: 0 }}>Weekly</h2>
           <p style={{ fontSize: "14px", opacity: 0.7 }}>Behavioral Patterns</p>
         </div>
 
-        <div style={styles.card} onClick={() => navigateTo("/premium-month")}
-          onMouseEnter={(e) => Object.assign(e.currentTarget.style, styles.cardHover)}
-          onMouseLeave={(e) => Object.assign(e.currentTarget.style, styles.card)}>
+        <div style={styles.card} onClick={() => navigateTo("/premium-month")}>
           <div style={{ fontSize: "40px" }}>🧠</div>
           <h2 style={{ margin: 0 }}>Monthly</h2>
           <p style={{ fontSize: "14px", opacity: 0.7 }}>Full Strategy Engine</p>
         </div>
       </div>
 
-      {/* DISQUS SECTION */}
-      <div style={styles.disqusSection}>
+      {/* JAVÍTOTT CUSDIS SZEKCIÓ */}
+      <div style={styles.commentSection}>
         <h3 style={{ color: "#38bdf8", marginBottom: "20px", fontSize: "1.1rem" }}>System Discussion</h3>
-        <div id="disqus_thread"></div>
+        
+        <style>{`
+          #cusdis_thread iframe { color-scheme: dark !important; filter: brightness(1.2); }
+        `}</style>
+
+        <div 
+          id="cusdis_thread"
+          data-host="https://cusdis.com"
+          data-app-id="fdc77be5-f980-42fe-9c7c-033266be161a" 
+          data-page-id="premium-hub-master"
+          data-page-url="https://mywealthyai.vercel.app/premium-hub"
+          data-page-title="WealthyAI Control Hub"
+          style={{ width: '100%', minHeight: '200px' }}
+        ></div>
+        <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
       </div>
 
       <button onClick={() => navigateTo("/")}
