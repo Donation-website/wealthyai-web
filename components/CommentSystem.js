@@ -11,11 +11,11 @@ const CommentSystem = () => {
   const [newComment, setNewComment] = useState("");
   const [userName, setUserName] = useState("");
   const [isAdminSession, setIsAdminSession] = useState(false);
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
 
   const ADMIN_SECRET = "111"; 
   const CORE_AVATAR = "/wealthyai/icons/avatar.png";
 
-  // Kommentek betöltése a Supabase felhőből
   const fetchComments = async () => {
     const { data, error } = await supabase
       .from('comments')
@@ -46,7 +46,8 @@ const CommentSystem = () => {
       setIsAdminSession(true);
     }
 
-    const { error } = await supabase.from('comments').insert([{
+    // 1. Felhasználó kommentjének mentése
+    const { data: insertedData, error } = await supabase.from('comments').insert([{
       user_name: name,
       text: text,
       role: isAdmin ? "ADMIN" : "USER",
@@ -58,13 +59,47 @@ const CommentSystem = () => {
     if (!error) {
       setNewComment("");
       fetchComments();
+
+      // 2. AUTOMATIKUS AI VÁLASZ (Csak ha nem az admin írt)
+      if (!isAdmin) {
+        triggerAiReply(text, name);
+      }
+    }
+  };
+
+  // EZ A FÜGGVÉNY HÍVJA MEG A LLAMA-T
+  const triggerAiReply = async (userComment, name) => {
+    setIsAiGenerating(true);
+    try {
+      const response = await fetch('/api/core-reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userComment, userName: name })
+      });
+
+      const data = await response.json();
+
+      if (data.reply) {
+        // AI Válasz mentése a Supabase-be CORE névvel és ikonnal
+        await supabase.from('comments').insert([{
+          user_name: "WealthyAI CORE",
+          text: data.reply,
+          role: "ADMIN",
+          avatar: CORE_AVATAR
+        }]);
+        fetchComments();
+      }
+    } catch (err) {
+      console.error("AI reply error:", err);
+    } finally {
+      setIsAiGenerating(false);
     }
   };
 
   const styles = {
     section: { marginTop: "40px", padding: "30px", background: "rgba(15, 23, 42, 0.5)", borderRadius: "24px", border: "1px solid rgba(56, 189, 248, 0.2)", backdropFilter: "blur(12px)", color: "#fff" },
     input: { width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(56, 189, 248, 0.3)", borderRadius: "12px", padding: "12px 15px", color: "white", marginBottom: "10px", outline: "none", boxSizing: "border-box" },
-    button: { background: "linear-gradient(90deg, #38bdf8, #a78bfa)", color: "white", border: "none", padding: "14px", borderRadius: "12px", fontWeight: "bold", cursor: "pointer", width: "100%", textTransform: "uppercase" },
+    button: { background: "linear-gradient(90deg, #38bdf8, #a78bfa)", color: "white", border: "none", padding: "14px", borderRadius: "12px", fontWeight: "bold", cursor: "pointer", width: "100%", textTransform: "uppercase", opacity: isAiGenerating ? 0.6 : 1 },
     card: { display: "flex", gap: "15px", marginTop: "20px", padding: "18px", borderRadius: "20px", background: "rgba(255,255,255,0.02)", borderLeft: "4px solid #38bdf8", position: "relative" },
     adminCard: { borderLeft: "4px solid #a78bfa", background: "rgba(167, 139, 250, 0.05)" },
     avatar: { width: "48px", height: "48px", borderRadius: "12px", background: "#020617", objectFit: "cover" },
@@ -77,7 +112,9 @@ const CommentSystem = () => {
       <form onSubmit={handleSubmit}>
         <input style={styles.input} placeholder="Nickname" value={userName} onChange={(e) => setUserName(e.target.value)} required />
         <textarea style={{ ...styles.input, minHeight: "80px" }} placeholder="Insight..." value={newComment} onChange={(e) => setNewComment(e.target.value)} required />
-        <button type="submit" style={styles.button}>Post Insight</button>
+        <button type="submit" style={styles.button} disabled={isAiGenerating}>
+          {isAiGenerating ? "CORE is processing..." : "Post Insight"}
+        </button>
       </form>
       <div style={{ marginTop: "30px" }}>
         {comments.map((c) => (
