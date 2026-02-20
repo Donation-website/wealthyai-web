@@ -20,7 +20,8 @@ export default function PremiumHub() {
     ve: "aHR0cHM6Ly92ZXJjZWwuY29tL2RvbmF0aW9uLXdlYnNpdGUtcHJvamVjdHMvd2VhbHRoeWFpLXdlYi9hbmFseXRpY3M=",
     st: "aHR0cHM6Ly9kYXNoYm9hcmQuc3RyaXBlLmNvbQ==",
     az: "aHR0cHM6Ly9wb3J0YWwuYXp1cmUuY29tLyNob21l",
-    re: "aHR0cHM6Ly93d3cucmVkZGl0LmNvbS91c2VyL1B1enpsZWhlYWRlZC1TZXQ5MTg4Lw=="
+    re: "aHR0cHM6Ly93d3cucmVkZGl0LmNvbS91c2VyL1B1enpsZWhlYWRlZC1TZXQ5MTg4Lw==",
+    dq: "aHR0cHM6Ly9kaXNxdXMuY29tL2FkbWluLw==" // ÚJ: Közvetlen admin link
   };
 
   useEffect(() => {
@@ -49,7 +50,7 @@ export default function PremiumHub() {
         .catch(() => setStats({ stripe: "OFFLINE", sendgrid: "ERROR", ph_status: "LIVE" }));
       }
 
-      // DISQUS INTEGRÁCIÓ - Csak egyszer töltjük be
+      // DISQUS INTEGRÁCIÓ
       if (!document.getElementById('disqus-embed-script')) {
         const d = document, s = d.createElement('script');
         s.id = 'disqus-embed-script';
@@ -232,6 +233,8 @@ export default function PremiumHub() {
             <button onClick={() => openSecure('ve')} style={{ ...styles.adminBtn, backgroundColor: "#000000" }}>ANALYTICS</button>
             <button onClick={() => openSecure('st')} style={{ ...styles.adminBtn, backgroundColor: "#4338ca" }}>STRIPE</button>
             <button onClick={() => openSecure('az')} style={{ ...styles.adminBtn, backgroundColor: "#2563eb" }}>AZURE</button>
+            {/* ÚJ DISQUS ADMIN GOMB */}
+            <button onClick={() => openSecure('dq')} style={{ ...styles.adminBtn, backgroundColor: "#2e3192", border: "1px solid #38bdf8" }}>DISQUS ADMIN</button>
           </div>
         </div>
       )}
@@ -265,7 +268,7 @@ export default function PremiumHub() {
         </div>
       </div>
 
-      {/* DISQUS SECTION - A te linked alapján */}
+      {/* DISQUS SECTION */}
       <div style={styles.disqusSection}>
         <h3 style={{ color: "#38bdf8", marginBottom: "20px", fontSize: "1.1rem" }}>System Discussion</h3>
         <div id="disqus_thread"></div>
