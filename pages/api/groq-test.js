@@ -9,16 +9,24 @@ export default async function handler(req, res) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "llama3-8b-8192",
+          // FRISSÍTVE: A legújabb stabil modellre
+          model: "llama-3.1-8b-instant",
           messages: [{ role: "user", content: "Say OK" }],
           max_tokens: 5,
         }),
       }
     );
 
-    const text = await r.text();
-    return res.status(200).send(text);
+    if (!r.ok) {
+        const errorText = await r.text();
+        return res.status(r.status).send(`Groq Error: ${errorText}`);
+    }
+
+    const data = await r.json();
+    const reply = data.choices[0]?.message?.content || "No reply";
+    
+    return res.status(200).send(`AI ENGINE STATUS: ONLINE | RESPONSE: ${reply}`);
   } catch (e) {
-    return res.status(500).send(e.toString());
+    return res.status(500).send(`CRITICAL SYSTEM ERROR: ${e.toString()}`);
   }
 }
