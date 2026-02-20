@@ -1,29 +1,30 @@
 import { useEffect, useRef } from 'react';
 
 export default function GiscusComments() {
-  const commentRef = useRef(null);
+  const ref = useRef(null);
 
   useEffect(() => {
     const script = document.createElement('script');
     script.src = "https://giscus.app/client.js";
     script.setAttribute("data-repo", "Donation-website/wealthyai-web");
-    script.setAttribute("data-repo-id", "R_kgDOQ-vyRg");
+    script.setAttribute("data-repo-id", "IDE MÁSOLD A DATA-REPO-ID-T"); // Itt a hiba!
     script.setAttribute("data-category", "Announcements");
-    script.setAttribute("data-category-id", "DIC_kwDOQ-vyRs4C21w1");
+    script.setAttribute("data-category-id", "IDE MÁSOLD A DATA-CATEGORY-ID-T"); // Itt a hiba!
     script.setAttribute("data-mapping", "pathname");
     script.setAttribute("data-strict", "0");
     script.setAttribute("data-reactions-enabled", "1");
     script.setAttribute("data-emit-metadata", "0");
-    script.setAttribute("data-input-position", "bottom");
-    script.setAttribute("data-theme", "dark");
+    script.setAttribute("data-input-position", "top");
+    script.setAttribute("data-theme", "dark_high_contrast");
     script.setAttribute("data-lang", "en");
     script.setAttribute("crossorigin", "anonymous");
     script.async = true;
 
-    if (commentRef.current) {
-      commentRef.current.appendChild(script);
+    if (ref.current) {
+      ref.current.innerHTML = '';
+      ref.current.appendChild(script);
     }
   }, []);
 
-  return <div id="comments" ref={commentRef} className="mt-10" />;
+  return <div ref={ref} />;
 }
