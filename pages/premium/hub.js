@@ -16,7 +16,8 @@ export default function PremiumHub() {
     ph_status: "WARMING UP" 
   });
 
-  const _K = "TUFTVEVSLURPTUlOQU5DRS0yMDI2"; // MASTER-DOMINANCE-2026
+  // MASZKOLT KULCS ÉS LINKEK (Base64) - MIND VISSZATÉVE
+  const _K = "TUFTVEVSLURPTUlOQU5DRS0yMDI2"; 
   
   const links = {
     cf: "aHR0cHM6Ly9kYXNoLmNsb3VkZmxhcmUuY29tL2QwMzAzZDdjNTAzOTRiMjgwYTI4YjU4ZDNjMTNmMTEvaG9tZS9kb21haW5z",
@@ -27,7 +28,7 @@ export default function PremiumHub() {
     st: "aHR0cHM6Ly9kYXNoYm9hcmQuc3RyaXBlLmNvbQ==",
     az: "aHR0cHM6Ly9wb3J0YWwuYXp1cmUuY29tLyNob21l",
     re: "aHR0cHM6Ly93d3cucmVkZGl0LmNvbS91c2VyL1B1enpsZWhlYWRlZC1TZXQ5MTg4Lw==",
-    sb: "aHR0cHM6Ly9zdXBhYmFzZS5jb20vZGFzaGJvYXJkL29yZy91dWhvanduamJlYnVrimJmYnV3em4=" // SUPABASE ADMIN
+    sb: "aHR0cHM6Ly9zdXBhYmFzZS5jb20vZGFzaGJvYXJkL29yZy91dWhvanduamJlYnVrimJmYnV3em4=" 
   };
 
   const fetchComments = async () => {
@@ -77,17 +78,17 @@ export default function PremiumHub() {
   const openSecure = (key) => { window.open(atob(links[key]), "_blank", "noreferrer"); };
 
   const styles = {
-    container: { minHeight: "100vh", width: "100%", backgroundColor: "#020617", color: "white", fontFamily: "Inter, sans-serif", display: "flex", flexDirection: "column", alignItems: "center", padding: isMobile ? "0 10px 40px 10px" : "0 20px 40px 20px", textAlign: "center", backgroundImage: "radial-gradient(circle at center, #1e1b4b 0%, #020617 100%)", boxSizing: "border-box" },
-    adminBar: { width: "100%", backgroundColor: "rgba(15, 23, 42, 0.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid #f59e0b50", padding: isMobile ? "20px 15px" : "12px 20px", display: "flex", flexDirection: isMobile ? "column" : "row", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 100, marginBottom: isMobile ? "20px" : "40px", gap: isMobile ? "20px" : "15px" },
-    statusGroup: { display: "flex", gap: isMobile ? "15px" : "25px", fontSize: "10px", fontFamily: "monospace", justifyContent: "center" },
-    adminBtnGroup: { display: "flex", gap: "6px", flexWrap: "wrap", justifyContent: "center" },
-    adminBtn: { padding: "8px 12px", borderRadius: "6px", fontSize: "9px", fontWeight: "bold", color: "white", border: "1px solid rgba(255,255,255,0.1)", cursor: "pointer", textTransform: "uppercase" },
+    container: { minHeight: "100vh", width: "100%", backgroundColor: "#020617", color: "white", fontFamily: "Inter, sans-serif", display: "flex", flexDirection: "column", alignItems: "center", padding: isMobile ? "0 10px 40px 10px" : "0 20px 40px 20px", textAlign: "center", backgroundImage: "radial-gradient(circle at center, #1e1b4b 0%, #020617 100%)", boxSizing: "border-box", overflowX: "hidden" },
+    adminBar: { width: "100%", backgroundColor: "rgba(15, 23, 42, 0.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid #f59e0b50", padding: isMobile ? "20px 15px" : "12px 20px", display: "flex", flexDirection: isMobile ? "column" : "row", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 100, marginBottom: isMobile ? "20px" : "40px", gap: isMobile ? "20px" : "15px", boxSizing: "border-box" },
+    statusGroup: { display: "flex", gap: isMobile ? "15px" : "25px", fontSize: "10px", fontFamily: "monospace", textAlign: "center", flexWrap: "wrap", justifyContent: "center" },
+    adminBtnGroup: { display: "flex", gap: "6px", flexWrap: "wrap", justifyContent: "center", width: isMobile ? "100%" : "auto" },
+    adminBtn: { padding: "8px 12px", borderRadius: "6px", fontSize: "9px", fontWeight: "bold", textDecoration: "none", color: "white", border: "1px solid rgba(255,255,255,0.1)", transition: "0.2s", cursor: "pointer", whiteSpace: "nowrap", boxSizing: "border-box", textTransform: "uppercase" },
     masterBadge: { background: "linear-gradient(90deg, #fbbf24, #f59e0b)", color: "#000", padding: "5px 15px", borderRadius: "20px", fontSize: "12px", fontWeight: "bold", letterSpacing: "2px", marginBottom: "20px", marginTop: isMobile ? "40px" : "20px", boxShadow: "0 0 20px rgba(251, 191, 36, 0.3)" },
-    title: { fontSize: isMobile ? "1.8rem" : "2.8rem", marginBottom: "10px", fontWeight: "800" },
-    grid: { display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: "20px", width: "100%", maxWidth: "1100px", marginTop: "30px" },
-    card: { background: "rgba(30, 41, 59, 0.4)", border: "1px solid rgba(255, 255, 255, 0.1)", borderRadius: "24px", padding: isMobile ? "25px 15px" : "40px 30px", cursor: "pointer", transition: "all 0.3s ease", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" },
-    commentSection: { width: "100%", maxWidth: "850px", marginTop: "60px", padding: "30px", borderRadius: "24px", background: "rgba(15, 23, 42, 0.6)", border: "1px solid rgba(56,189,248,0.2)", textAlign: "left" },
-    commentCard: { display: "flex", gap: "15px", padding: "15px", borderBottom: "1px solid rgba(255,255,255,0.05)", position: "relative" }
+    title: { fontSize: isMobile ? "1.8rem" : "2.8rem", marginBottom: "10px", fontWeight: "800", padding: "0 10px", boxSizing: "border-box", maxWidth: "100%" },
+    grid: { display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: "20px", width: "100%", maxWidth: "1100px", marginTop: "30px", padding: "0 10px", boxSizing: "border-box" },
+    card: { background: "rgba(30, 41, 59, 0.4)", border: "1px solid rgba(255, 255, 255, 0.1)", borderRadius: "24px", padding: isMobile ? "25px 15px" : "40px 30px", cursor: "pointer", transition: "all 0.3s ease", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", boxSizing: "border-box", width: "100%" },
+    commentSection: { width: "100%", maxWidth: "850px", marginTop: "60px", padding: "30px", borderRadius: "24px", background: "rgba(15, 23, 42, 0.6)", border: "1px solid rgba(56,189,248,0.2)", boxSizing: "border-box", textAlign: "left" },
+    commentCard: { display: "flex", gap: "15px", padding: "15px", borderBottom: "1px solid rgba(255,255,255,0.05)", position: "relative", alignItems: "flex-start" }
   };
 
   return (
@@ -98,16 +99,23 @@ export default function PremiumHub() {
             <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#22c55e", boxShadow: "0 0 10px #22c55e" }}></div>
             <span style={{ fontSize: "10px", fontWeight: "bold", color: "#f59e0b", letterSpacing: "1px" }}>WAI MASTER SYSTEM</span>
           </div>
+
           <div style={styles.statusGroup}>
             <div><div style={{ color: "#64748b" }}>STRIPE</div><div style={{ color: "#22c55e" }}>{stats.stripe}</div></div>
+            <div><div style={{ color: "#64748b" }}>PH STATUS</div><div style={{ color: "#fbbf24" }}>{stats.ph_status}</div></div>
             <div><div style={{ color: "#64748b" }}>TRAFFIC</div><div style={{ color: "#3b82f6" }}>LIVE</div></div>
           </div>
+
           <div style={styles.adminBtnGroup}>
-            <button onClick={() => openSecure('sb')} style={{ ...styles.adminBtn, backgroundColor: "#3ecf8e", color: "#000" }}>SUPABASE DATABASE</button>
             <button onClick={() => openSecure('cf')} style={{ ...styles.adminBtn, backgroundColor: "#f38020" }}>CLOUDFLARE</button>
-            <button onClick={() => openSecure('ve')} style={{ ...styles.adminBtn, backgroundColor: "#000000" }}>VERCEL</button>
+            <button onClick={() => openSecure('ph')} style={{ ...styles.adminBtn, backgroundColor: "#da552f" }}>PH PROFIL</button>
+            <button onClick={() => openSecure('zo')} style={{ ...styles.adminBtn, backgroundColor: "#1e3a8a" }}>ZOHO</button>
+            <button onClick={() => openSecure('li')} style={{ ...styles.adminBtn, backgroundColor: "#0a66c2" }}>LINKEDIN</button>
+            <button onClick={() => openSecure('re')} style={{ ...styles.adminBtn, backgroundColor: "#ff4500" }}>REDDIT</button>
+            <button onClick={() => openSecure('ve')} style={{ ...styles.adminBtn, backgroundColor: "#000000" }}>ANALYTICS</button>
             <button onClick={() => openSecure('st')} style={{ ...styles.adminBtn, backgroundColor: "#4338ca" }}>STRIPE</button>
             <button onClick={() => openSecure('az')} style={{ ...styles.adminBtn, backgroundColor: "#2563eb" }}>AZURE</button>
+            <button onClick={() => openSecure('sb')} style={{ ...styles.adminBtn, backgroundColor: "#3ecf8e", color: "#000" }}>SUPABASE DB</button>
           </div>
         </div>
       )}
@@ -116,28 +124,28 @@ export default function PremiumHub() {
       <h1 style={styles.title}>WealthyAI Control Hub</h1>
       
       <div style={styles.grid}>
-        <div style={styles.card} onClick={() => navigateTo("/day")}><div style={{ fontSize: "40px" }}>⚡</div><h2 style={{ margin: 0 }}>Daily</h2></div>
-        <div style={styles.card} onClick={() => navigateTo("/premium-week")}><div style={{ fontSize: "40px" }}>📊</div><h2 style={{ margin: 0 }}>Weekly</h2></div>
-        <div style={styles.card} onClick={() => navigateTo("/premium-month")}><div style={{ fontSize: "40px" }}>🧠</div><h2 style={{ margin: 0 }}>Monthly</h2></div>
+        <div style={styles.card} onClick={() => navigateTo("/day")}><div style={{ fontSize: "40px" }}>⚡</div><h2 style={{ margin: 0 }}>Daily</h2><p style={{ fontSize: "14px", opacity: 0.7 }}>Immediate Snapshots</p></div>
+        <div style={styles.card} onClick={() => navigateTo("/premium-week")}><div style={{ fontSize: "40px" }}>📊</div><h2 style={{ margin: 0 }}>Weekly</h2><p style={{ fontSize: "14px", opacity: 0.7 }}>Behavioral Patterns</p></div>
+        <div style={styles.card} onClick={() => navigateTo("/premium-month")}><div style={{ fontSize: "40px" }}>🧠</div><h2 style={{ margin: 0 }}>Monthly</h2><p style={{ fontSize: "14px", opacity: 0.7 }}>Full Strategy Engine</p></div>
       </div>
 
       <div style={styles.commentSection}>
-        <h3 style={{ color: "#38bdf8", marginBottom: "20px", display: "flex", justifyContent: "space-between" }}>
+        <h3 style={{ color: "#38bdf8", marginBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           GLOBAL FEED MODERATION
           <span style={{ fontSize: "10px", color: "#64748b" }}>{comments.length} ACTIVE MESSAGES</span>
         </h3>
         {comments.map((c) => (
           <div key={c.id} style={styles.commentCard}>
-            <img src={c.avatar} alt="A" style={{ width: "32px", height: "32px", borderRadius: "8px" }} />
+            <img src={c.avatar} alt="A" style={{ width: "32px", height: "32px", borderRadius: "8px", background: "#020617" }} />
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: "12px", fontWeight: "bold", color: c.role === "ADMIN" ? "#a78bfa" : "#38bdf8" }}>
-                {c.user_name} <span style={{ opacity: 0.4, fontWeight: "normal", marginLeft: "10px" }}>{new Date(c.created_at).toLocaleDateString()}</span>
+                {c.user_name} <span style={{ opacity: 0.4, fontWeight: "normal", marginLeft: "10px" }}>{new Date(c.created_at).toLocaleString('hu-HU')}</span>
               </div>
-              <div style={{ fontSize: "13px", marginTop: "4px", opacity: 0.9 }}>{c.text}</div>
+              <div style={{ fontSize: "13px", marginTop: "4px", opacity: 0.9, lineHeight: "1.4" }}>{c.text}</div>
             </div>
             <button 
               onClick={() => deleteComment(c.id)} 
-              style={{ background: "none", border: "1px solid #ef4444", color: "#ef4444", borderRadius: "4px", padding: "2px 8px", fontSize: "9px", cursor: "pointer", height: "fit-content" }}
+              style={{ background: "none", border: "1px solid #ef4444", color: "#ef4444", borderRadius: "4px", padding: "4px 8px", fontSize: "9px", cursor: "pointer" }}
             >
               [ DELETE ]
             </button>
@@ -145,7 +153,7 @@ export default function PremiumHub() {
         ))}
       </div>
 
-      <button onClick={() => navigateTo("/")} style={{ marginTop: "60px", background: "none", border: "1px solid rgba(255,255,255,0.2)", color: "white", padding: "12px 24px", borderRadius: "12px", cursor: "pointer", fontSize: "13px", opacity: 0.6 }}>
+      <button onClick={() => navigateTo("/")} style={{ marginTop: "60px", background: "none", border: "1px solid rgba(255,255,255,0.2)", color: "white", padding: "12px 24px", borderRadius: "8px", cursor: "pointer", fontSize: "13px", opacity: 0.6 }}>
         ← Back to Base Dashboard
       </button>
     </div>
