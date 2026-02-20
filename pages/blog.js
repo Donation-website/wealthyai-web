@@ -1,27 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
 export default function Blog() {
-  useEffect(() => {
-    // 1. Disqus Embed
-    const d = document;
-    if (!d.getElementById('disqus-embed-script')) {
-      const s = d.createElement('script');
-      s.id = 'disqus-embed-script';
-      s.src = 'https://mywealthyai.disqus.com/embed.js';
-      s.setAttribute('data-timestamp', +new Date());
-      (d.head || d.body).appendChild(s);
-    }
-
-    // 2. Disqus Count
-    if (!d.getElementById('dsq-count-scr')) {
-      const sCount = d.createElement('script');
-      sCount.id = 'dsq-count-scr';
-      sCount.src = '//mywealthyai.disqus.com/count.js';
-      sCount.async = true;
-      (d.head || d.body).appendChild(sCount);
-    }
-  }, []);
-
   return (
     <div style={page}>
       <div style={bgGrid} />
@@ -62,7 +41,7 @@ export default function Blog() {
               <h3 style={stepTitle}>01. Visualizing Fragility</h3>
               <img src="/wealthyai/icons/blog1.jpg" alt="Financial Structure" style={vlogImage} />
               <p style={caption}>
-                Why are we showing you a 43.8% fragility score? Because an account balance doesn't show you how "breakable" your system is. We focus on the structural integrity of your wealth.
+                Why are we showing you a 43.8% fragility score? Because an account balance doesn't show you how "breakable" your system is.
               </p>
             </div>
 
@@ -71,7 +50,7 @@ export default function Blog() {
               <h3 style={stepTitle}>02. The AI Interpretation</h3>
               <img src="/wealthyai/icons/blog2.jpg" alt="AI Logic" style={vlogImage} />
               <p style={caption}>
-                Instead of rigid advice, our AI interprets recurring rigidities. It builds buffers against market fluctuations by analyzing your unique financial DNA.
+                Our AI builds buffers against market fluctuations by analyzing your unique financial DNA.
               </p>
             </div>
 
@@ -80,41 +59,37 @@ export default function Blog() {
               <h3 style={stepTitle}>03. Strategic Path</h3>
               <img src="/wealthyai/icons/blog3.jpg" alt="90 Day Roadmap" style={vlogImage} />
               <p style={caption}>
-                90-day direction: Cash reserve management and energy exposure mitigation. We provide the interpretation, you maintain the control.
+                90-day direction: Cash reserve management and energy exposure mitigation.
               </p>
             </div>
 
             <div style={ctaBox}>
               <h3 style={{ color: '#fff', marginBottom: '10px' }}>A Different Perspective</h3>
               <p style={sectionText}>
-                In 2026, you don't need more data—you need a better lens to see it through. 
-                This is why WealthyAI is the choice for those who seek clarity over pressure. 
-                <strong> How do you see your financial fragility today?</strong>
+                <strong>How do you see your financial fragility today?</strong>
               </p>
             </div>
           </div>
 
-          {/* Disqus Section with Guest Guide */}
-          <div style={{ ...section, background: 'rgba(15, 23, 42, 0.4)', marginTop: '40px', minHeight: '400px', overflow: 'visible' }}>
+          {/* CUSDIS KOMMENT RENDSZER - GYORS ÉS EGYSZERŰ */}
+          <div style={{ ...section, background: 'rgba(15, 23, 42, 0.4)', marginTop: '40px', minHeight: '300px' }}>
             <h2 style={sectionTitle}>Discussion</h2>
-            
-            {/* GUEST GUIDE BOX */}
-            <div style={guestGuide}>
-              <p style={{ fontWeight: '700', color: '#38bdf8', marginBottom: '8px', fontSize: '14px' }}>💬 QUICK GUEST ACCESS:</p>
-              <ol style={{ margin: 0, paddingLeft: '18px', color: '#cbd5e1', fontSize: '13px', lineHeight: '1.6' }}>
-                <li>Write your comment below.</li>
-                <li>Click the <strong>Name</strong> field.</li>
-                <li>Check the <strong>"I'd rather post as a guest"</strong> box that appears under Email.</li>
-                <li>No password or registration required!</li>
-              </ol>
-            </div>
-
             <p style={{ color: '#94a3b8', marginBottom: '30px', fontSize: '0.9rem' }}>
-              Join the conversation. Share your thoughts on how AI should interpret financial states.
+              Leave a comment below. No registration required.
             </p>
-
-            {/* Disqus Thread with fixed overflow */}
-            <div id="disqus_thread" style={{ width: '100%', overflow: 'visible' }}></div>
+            
+            <div 
+              id="cusdis_thread"
+              data-host="https://cusdis.com"
+              data-app-id="fdc77be5-f980-42fe-9c7c-033266be161a" 
+              data-page-id="blog-genesis-01"
+              data-page-url="https://mywealthyai.vercel.app/blog"
+              data-page-title="WealthyAI Genesis"
+              style={{ width: '100%', minHeight: '200px' }}
+            ></div>
+            
+            {/* Cusdis Script betöltése */}
+            <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
           </div>
 
           <p style={footer}>
@@ -145,4 +120,3 @@ const caption = { color: '#94a3b8', fontSize: '1rem', lineHeight: '1.6' };
 const ctaBox = { marginTop: '40px', padding: '25px', background: 'rgba(56,189,248,0.1)', borderRadius: '16px', border: '1px solid #38bdf8' };
 const footer = { marginTop: 60, fontSize: 14, color: "#94a3b8", textAlign: "center" };
 const back = { marginBottom: 32, padding: "8px 16px", fontSize: 13, borderRadius: 8, background: "rgba(148,163,184,0.18)", border: "1px solid rgba(148,163,184,0.35)", color: "#ffffff", cursor: "pointer", position: "relative", zIndex: 20 };
-const guestGuide = { padding: '15px', background: 'rgba(56,189,248,0.05)', border: '1px dashed rgba(56,189,248,0.3)', borderRadius: '12px', marginBottom: '20px' };
