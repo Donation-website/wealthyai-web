@@ -94,13 +94,27 @@ export default function Blog() {
             </div>
           </div>
 
-          {/* Disqus Section */}
-          <div style={{ ...section, background: 'rgba(15, 23, 42, 0.4)', marginTop: '40px', minHeight: '400px' }}>
+          {/* Disqus Section with Guest Guide */}
+          <div style={{ ...section, background: 'rgba(15, 23, 42, 0.4)', marginTop: '40px', minHeight: '400px', overflow: 'visible' }}>
             <h2 style={sectionTitle}>Discussion</h2>
+            
+            {/* GUEST GUIDE BOX */}
+            <div style={guestGuide}>
+              <p style={{ fontWeight: '700', color: '#38bdf8', marginBottom: '8px', fontSize: '14px' }}>💬 QUICK GUEST ACCESS:</p>
+              <ol style={{ margin: 0, paddingLeft: '18px', color: '#cbd5e1', fontSize: '13px', lineHeight: '1.6' }}>
+                <li>Write your comment below.</li>
+                <li>Click the <strong>Name</strong> field.</li>
+                <li>Check the <strong>"I'd rather post as a guest"</strong> box that appears under Email.</li>
+                <li>No password or registration required!</li>
+              </ol>
+            </div>
+
             <p style={{ color: '#94a3b8', marginBottom: '30px', fontSize: '0.9rem' }}>
               Join the conversation. Share your thoughts on how AI should interpret financial states.
             </p>
-            <div id="disqus_thread"></div>
+
+            {/* Disqus Thread with fixed overflow */}
+            <div id="disqus_thread" style={{ width: '100%', overflow: 'visible' }}></div>
           </div>
 
           <p style={footer}>
@@ -131,3 +145,4 @@ const caption = { color: '#94a3b8', fontSize: '1rem', lineHeight: '1.6' };
 const ctaBox = { marginTop: '40px', padding: '25px', background: 'rgba(56,189,248,0.1)', borderRadius: '16px', border: '1px solid #38bdf8' };
 const footer = { marginTop: 60, fontSize: 14, color: "#94a3b8", textAlign: "center" };
 const back = { marginBottom: 32, padding: "8px 16px", fontSize: 13, borderRadius: 8, background: "rgba(148,163,184,0.18)", border: "1px solid rgba(148,163,184,0.35)", color: "#ffffff", cursor: "pointer", position: "relative", zIndex: 20 };
+const guestGuide = { padding: '15px', background: 'rgba(56,189,248,0.05)', border: '1px dashed rgba(56,189,248,0.3)', borderRadius: '12px', marginBottom: '20px' };
