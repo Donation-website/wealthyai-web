@@ -6,20 +6,23 @@ const CommentSystem = () => {
   const [userName, setUserName] = useState("");
   const [isAdminSession, setIsAdminSession] = useState(false);
 
-  const ADMIN_SECRET = "#WAI2026";
+  // Az új titkos kód, amit kértél
+  const ADMIN_SECRET = "111"; 
+  const ADMIN_AVATAR_URL = "/wealthyai/icons/avatar.png";
 
   useEffect(() => {
     const saved = localStorage.getItem("wai_blog_comments");
     if (saved) {
       setComments(JSON.parse(saved));
     } else {
+      // Kezdő üzenet beállítása a saját ikonoddal
       setComments([{
         id: 1,
         user: "WealthyAI System",
         text: "Genesis thread initialized. Connection stable.",
         date: "2026.02.20 12:00",
         role: "ADMIN",
-        avatar: "/wealthyai/icons/avatar.png"
+        avatar: ADMIN_AVATAR_URL
       }]);
     }
   }, []);
@@ -36,6 +39,7 @@ const CommentSystem = () => {
     let name = userName.trim();
     if (!text || !name) return;
 
+    // Ellenőrizzük, hogy benne van-e a "111" a szövegben
     const isAdmin = text.includes(ADMIN_SECRET);
     if (isAdmin) {
       text = text.replace(ADMIN_SECRET, "").trim();
@@ -46,13 +50,12 @@ const CommentSystem = () => {
       id: Date.now(),
       user: name,
       text: text,
-      // Pontos időbélyeg a moderálhatósághoz
       date: new Date().toLocaleString('hu-HU', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
       role: isAdmin ? "ADMIN" : "USER",
-      // ADMIN: Saját kép | VENDÉG: 3 színű absztrakt tech minta
+      // Ha admin: saját kép | Ha vendég: az oldal színeit használó absztrakt minták
       avatar: isAdmin 
-        ? "/wealthyai/icons/avatar.png" 
-        : `https://api.dicebear.com/7.x/identicon/svg?seed=${name}&backgroundColor=020617&colors=38bdf8,a78bfa,1e293b`
+        ? ADMIN_AVATAR_URL 
+        : `https://api.dicebear.com/7.x/shapes/svg?seed=${name}&backgroundColor=020617&shape1Color=38bdf8&shape2Color=a78bfa&shape3Color=1e293b`
     };
 
     const updated = [commentObj, ...comments];
@@ -64,11 +67,11 @@ const CommentSystem = () => {
   const styles = {
     section: { marginTop: "40px", padding: "30px", background: "rgba(15, 23, 42, 0.5)", borderRadius: "24px", border: "1px solid rgba(56, 189, 248, 0.2)", backdropFilter: "blur(12px)", color: "#fff" },
     input: { width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(56, 189, 248, 0.3)", borderRadius: "12px", padding: "12px 15px", color: "white", marginBottom: "10px", outline: "none", boxSizing: "border-box" },
-    button: { background: "linear-gradient(90deg, #38bdf8, #a78bfa)", color: "white", border: "none", padding: "14px", borderRadius: "12px", fontWeight: "bold", cursor: "pointer", width: "100%", textTransform: "uppercase" },
-    card: { display: "flex", gap: "15px", marginTop: "20px", padding: "18px", borderRadius: "20px", background: "rgba(255,255,255,0.02)", borderLeft: "4px solid #38bdf8", position: "relative" },
+    button: { background: "linear-gradient(90deg, #38bdf8, #a78bfa)", color: "white", border: "none", padding: "14px", borderRadius: "12px", fontWeight: "bold", cursor: "pointer", width: "100%", textTransform: "uppercase", transition: "0.3s opacity" },
+    card: { display: "flex", gap: "15px", marginTop: "20px", padding: "18px", borderRadius: "20px", background: "rgba(255,255,255,0.02)", borderLeft: "4px solid #38bdf8", position: "relative", alignItems: "flex-start" },
     adminCard: { borderLeft: "4px solid #a78bfa", background: "rgba(167, 139, 250, 0.05)" },
-    avatar: { width: "48px", height: "48px", borderRadius: "12px", background: "#020617", objectFit: "cover" },
-    delBtn: { position: "absolute", top: "15px", right: "15px", background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontSize: "12px", opacity: 0.6 }
+    avatar: { width: "48px", height: "48px", borderRadius: "12px", background: "#020617", objectFit: "cover", flexShrink: 0 },
+    delBtn: { position: "absolute", top: "15px", right: "15px", background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontSize: "10px", opacity: 0.6, textTransform: "uppercase" }
   };
 
   return (
@@ -84,16 +87,17 @@ const CommentSystem = () => {
           <div key={c.id} style={{ ...styles.card, ...(c.role === "ADMIN" ? styles.adminCard : {}) }}>
             <img 
               src={c.avatar} 
-              alt="P" 
+              alt="Avatar" 
               style={styles.avatar} 
-              onError={(e) => e.target.src = "https://api.dicebear.com/7.x/initials/svg?seed=" + c.user} 
+              onError={(e) => { e.target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${c.user}`; }}
             />
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: "14px", fontWeight: "700", color: c.role === "ADMIN" ? "#a78bfa" : "#38bdf8" }}>
-                {c.user} {c.role === "ADMIN" && <span style={{ fontSize: "9px", background: "#a78bfa", color: "#000", padding: "1px 5px", borderRadius: "4px", marginLeft: "5px" }}>CORE</span>}
+              <div style={{ fontSize: "14px", fontWeight: "700", color: c.role === "ADMIN" ? "#a78bfa" : "#38bdf8", display: "flex", alignItems: "center" }}>
+                {c.user} 
+                {c.role === "ADMIN" && <span style={{ fontSize: "9px", background: "#a78bfa", color: "#000", padding: "1px 5px", borderRadius: "4px", marginLeft: "8px" }}>CORE</span>}
                 <span style={{ fontWeight: "400", opacity: 0.4, fontSize: "11px", marginLeft: "10px" }}>{c.date}</span>
               </div>
-              <div style={{ fontSize: "15px", marginTop: "6px", lineHeight: "1.6", color: "rgba(255,255,255,0.85)" }}>{c.text}</div>
+              <div style={{ fontSize: "15px", marginTop: "6px", lineHeight: "1.6", color: "rgba(255,255,255,0.85)", wordBreak: "break-word" }}>{c.text}</div>
             </div>
             {isAdminSession && (
               <button onClick={() => deleteComment(c.id)} style={styles.delBtn}>[ Delete ]</button>
