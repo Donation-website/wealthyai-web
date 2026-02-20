@@ -11,38 +11,36 @@ export default async function handler(req, res) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "llama3-8b-8192", 
+        // FRISSÍTETT MODELL: llama-3.1-8b-instant
+        model: "llama-3.1-8b-instant", 
         messages: [
           { 
             role: "system", 
-            content: "You are WealthyAI CORE. Be analytical, brief (max 2 sentences), and cold. Use terms: 'Structural Fragility', 'Financial Geometry'. Reply to the user's comment." 
+            content: "You are WealthyAI CORE. Be analytical, brief (max 2 sentences), and cold. Use terms: 'Structural Fragility', 'Financial Geometry'. Respond to the user's insight as a high-tech financial lens." 
           },
           { role: "user", content: `Comment from ${userName}: ${userComment}` }
         ],
-        temperature: 0.5
+        temperature: 0.4
       })
     });
 
     const data = await response.json();
 
-    // ELLENŐRZÉS: Ha a Groq hibát küld (pl. Auth hiba vagy Rate limit)
     if (!response.ok || data.error) {
       console.error("Groq API Error Detail:", data);
       return res.status(response.status || 500).json({ 
-        error: data.error?.message || "Groq API returned an error" 
+        error: data.error?.message || "Groq API error" 
       });
     }
 
-    // ELLENŐRZÉS: Van-e benne válasz?
     if (data.choices && data.choices.length > 0) {
       res.status(200).json({ reply: data.choices[0].message.content });
     } else {
-      console.error("Empty choices from Groq:", data);
-      res.status(500).json({ error: "No response generated from AI" });
+      res.status(500).json({ error: "AI produced no output" });
     }
 
   } catch (error) {
-    console.error("Server Crash Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error("Server Side Error:", error);
+    res.status(500).json({ error: "Internal server crash" });
   }
 }
