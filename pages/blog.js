@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 export default function Blog() {
   return (
@@ -71,13 +71,29 @@ export default function Blog() {
             </div>
           </div>
 
-          {/* CUSDIS KOMMENT RENDSZER - GYORS ÉS EGYSZERŰ */}
-          <div style={{ ...section, background: 'rgba(15, 23, 42, 0.4)', marginTop: '40px', minHeight: '300px' }}>
+          {/* CUSDIS KOMMENT RENDSZER - JAVÍTOTT ÉS VILÁGOSABB */}
+          <div style={{ ...section, background: 'rgba(15, 23, 42, 0.8)', marginTop: '40px', minHeight: '400px', border: '1px solid rgba(56,189,248,0.4)' }}>
             <h2 style={sectionTitle}>Discussion</h2>
+            <p style={{ color: '#38bdf8', marginBottom: '10px', fontSize: '1.1rem', fontWeight: '600' }}>
+              Tell us your thoughts! 
+            </p>
             <p style={{ color: '#94a3b8', marginBottom: '30px', fontSize: '0.9rem' }}>
-              Leave a comment below. No registration required.
+              No email or registration required. Just enter a nickname and post.
             </p>
             
+            {/* CSS a beviteli mezők láthatóságáért */}
+            <style>{`
+              #cusdis_thread iframe { 
+                color-scheme: dark !important;
+                filter: brightness(1.3) contrast(1.1);
+              }
+              #cusdis_thread {
+                background: rgba(15, 23, 42, 0.5);
+                padding: 15px;
+                border-radius: 12px;
+              }
+            `}</style>
+
             <div 
               id="cusdis_thread"
               data-host="https://cusdis.com"
@@ -88,7 +104,6 @@ export default function Blog() {
               style={{ width: '100%', minHeight: '200px' }}
             ></div>
             
-            {/* Cusdis Script betöltése */}
             <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
           </div>
 
@@ -101,7 +116,7 @@ export default function Blog() {
   );
 }
 
-// STYLES
+// STYLES - Minden változatlan marad
 const page = { position: "relative", minHeight: "100vh", background: "#020617", overflow: "hidden", fontFamily: "Inter, system-ui" };
 const content = { position: "relative", zIndex: 10, padding: "80px 24px", display: "flex", justifyContent: "center" };
 const container = { width: "100%", maxWidth: 850 };
