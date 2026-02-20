@@ -1,40 +1,54 @@
 import React, { useState, useEffect } from "react";
 
+// Vercel-barát megoldás: Nem kell npm install, behúzzuk a böngészőből
+const SUPABASE_URL = "https://csfaqnsuhhnposhyfxmk.supabase.co";
+const SUPABASE_KEY = "sb_publishable_wjDPUzwhkqApZWEHWrvalQ_bSJr8iT0";
+
 const CommentSystem = () => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [userName, setUserName] = useState("");
   const [isAdminSession, setIsAdminSession] = useState(false);
+  const [supabase, setSupabase] = useState(null);
 
-  // Kért módosítások: kód 111 és a pontos elérési út
   const ADMIN_SECRET = "111"; 
   const CORE_AVATAR = "/wealthyai/icons/avatar.png";
 
+  // Supabase kliens betöltése telepítés nélkül
   useEffect(() => {
-    const saved = localStorage.getItem("wai_blog_comments");
-    if (saved) {
-      setComments(JSON.parse(saved));
-    } else {
-      // Itt a kezdő üzenet: NINCS ROBOT, csak a CORE_AVATAR hivatkozás
-      setComments([{
-        id: 1,
-        user: "WealthyAI System",
-        text: "Genesis thread initialized. Connection stable.",
-        date: "2026.02.20 12:00",
-        role: "ADMIN",
-        avatar: CORE_AVATAR
-      }]);
-    }
+    const loadSupabase = async () => {
+      const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm');
+      const client = createClient(SUPABASE_URL, SUPABASE_KEY);
+      setSupabase(client);
+    };
+    loadSupabase();
   }, []);
 
-  const deleteComment = (id) => {
-    const updated = comments.filter(c => c.id !== id);
-    setComments(updated);
-    localStorage.setItem("wai_blog_comments", JSON.stringify(updated));
+  // Kommentek betöltése a felhőből
+  const fetchComments = async () => {
+    if (!supabase) return;
+    const { data, error } = await supabase
+      .from('comments')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (!error && data) setComments(data);
   };
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    if (supabase) fetchComments();
+  }, [supabase]);
+
+  const deleteComment = async (id) => {
+    if (!supabase) return;
+    const { error } = await supabase.from('comments').delete().eq('id', id);
+    if (!error) fetchComments();
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!supabase) return;
+
     let text = newComment.trim();
     let name = userName.trim();
     if (!text || !name) return;
@@ -46,21 +60,19 @@ const CommentSystem = () => {
     }
 
     const commentObj = {
-      id: Date.now(),
-      user: name,
+      user_name: name, // Javítva az adatbázis oszlopnévhez
       text: text,
-      date: new Date().toLocaleString('hu-HU', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
       role: isAdmin ? "ADMIN" : "USER",
-      // Ha Admin, akkor a te képed, ha vendég, akkor egy stílusos sötét absztrakt forma
       avatar: isAdmin 
         ? CORE_AVATAR 
         : `https://api.dicebear.com/7.x/shapes/svg?seed=${name}&backgroundColor=020617&shape1Color=38bdf8&shape2Color=a78bfa&shape3Color=1e293b`
     };
 
-    const updated = [commentObj, ...comments];
-    setComments(updated);
-    localStorage.setItem("wai_blog_comments", JSON.stringify(updated));
-    setNewComment("");
+    const { error } = await supabase.from('comments').insert([commentObj]);
+    if (!error) {
+      setNewComment("");
+      fetchComments();
+    }
   };
 
   const styles = {
@@ -88,14 +100,15 @@ const CommentSystem = () => {
               src={c.avatar} 
               alt="WAI" 
               style={styles.avatar} 
-              // Ha nem találja a képedet, akkor sem dob be robotot, csak egy sötét hátteret
-              onError={(e) => { e.target.onerror = null; e.target.src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"; }}
+              onError={(e) => { e.target.onerror = null; e.target.src="/wealthyai/icons/avatar.png"; }}
             />
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: "14px", fontWeight: "700", color: c.role === "ADMIN" ? "#a78bfa" : "#38bdf8", display: "flex", alignItems: "center" }}>
-                {c.user} 
+                {c.user_name} 
                 {c.role === "ADMIN" && <span style={{ fontSize: "9px", background: "#a78bfa", color: "#000", padding: "1px 5px", borderRadius: "4px", marginLeft: "8px" }}>CORE</span>}
-                <span style={{ fontWeight: "400", opacity: 0.4, fontSize: "11px", marginLeft: "10px" }}>{c.date}</span>
+                <span style={{ fontWeight: "400", opacity: 0.4, fontSize: "11px", marginLeft: "10px" }}>
+                   {new Date(c.created_at).toLocaleString('hu-HU')}
+                </span>
               </div>
               <div style={{ fontSize: "15px", marginTop: "6px", lineHeight: "1.6", color: "rgba(255,255,255,0.85)", wordBreak: "break-word" }}>{c.text}</div>
             </div>
