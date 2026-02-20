@@ -6,7 +6,7 @@ const CommentSystem = () => {
   const [userName, setUserName] = useState("");
   const [isAdminSession, setIsAdminSession] = useState(false);
 
-  // A kért módosítások: kód 111 és a profi elérési út
+  // Kért módosítások: kód 111 és a pontos elérési út
   const ADMIN_SECRET = "111"; 
   const CORE_AVATAR = "/wealthyai/icons/avatar.png";
 
@@ -15,7 +15,7 @@ const CommentSystem = () => {
     if (saved) {
       setComments(JSON.parse(saved));
     } else {
-      // Itt is javítva: a kezdő üzenet már a CORE avatart használja, nem a robotot
+      // Itt a kezdő üzenet: NINCS ROBOT, csak a CORE_AVATAR hivatkozás
       setComments([{
         id: 1,
         user: "WealthyAI System",
@@ -51,7 +51,7 @@ const CommentSystem = () => {
       text: text,
       date: new Date().toLocaleString('hu-HU', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
       role: isAdmin ? "ADMIN" : "USER",
-      // ADMIN: A te saját képed | VENDÉG: Modern, sötét tónusú absztrakt minta
+      // Ha Admin, akkor a te képed, ha vendég, akkor egy stílusos sötét absztrakt forma
       avatar: isAdmin 
         ? CORE_AVATAR 
         : `https://api.dicebear.com/7.x/shapes/svg?seed=${name}&backgroundColor=020617&shape1Color=38bdf8&shape2Color=a78bfa&shape3Color=1e293b`
@@ -86,10 +86,10 @@ const CommentSystem = () => {
           <div key={c.id} style={{ ...styles.card, ...(c.role === "ADMIN" ? styles.adminCard : {}) }}>
             <img 
               src={c.avatar} 
-              alt="WealthyAI" 
+              alt="WAI" 
               style={styles.avatar} 
-              // Ha valamiért nem töltene be a kép, egy elegáns absztrakt mintát adunk, nem a sárga VF-et
-              onError={(e) => { e.target.src = `https://api.dicebear.com/7.x/shapes/svg?seed=fallback&backgroundColor=020617&shape1Color=38bdf8`; }}
+              // Ha nem találja a képedet, akkor sem dob be robotot, csak egy sötét hátteret
+              onError={(e) => { e.target.onerror = null; e.target.src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"; }}
             />
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: "14px", fontWeight: "700", color: c.role === "ADMIN" ? "#a78bfa" : "#38bdf8", display: "flex", alignItems: "center" }}>
