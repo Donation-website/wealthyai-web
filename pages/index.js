@@ -244,6 +244,7 @@ export default function Home() {
           <a href="/philosophy" onClick={stopAudio} className="nav-link">Philosophy</a>
           <a href="/how-it-works" onClick={stopAudio} className="nav-link">How it works</a>
           <a href="/how-to-use" onClick={stopAudio} className="nav-link">How to use</a>
+          <a href="/blog" onClick={stopAudio} className="nav-link">Blog</a>
           <a href="/terms" onClick={stopAudio} className="nav-link">Terms</a>
         </div>
 
