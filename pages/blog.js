@@ -1,129 +1,75 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import CommentSystem from '../components/CommentSystem';
 
 export default function Blog() {
-  // Ez a rész gondoskodik róla, hogy a kommentmező mindig betöltsön
-  useEffect(() => {
-    if (window.Cusdis) {
-      window.Cusdis.render(document.getElementById('cusdis_thread'));
-    }
-  }, []);
-
   return (
-    <div style={page}>
-      <div style={bgGrid} />
-      <div style={bgLines} />
-      <div style={bgGlow} />
-
-      <div style={content}>
+    <div style={pageStyle}>
+      {/* DINAMIKUS HÁTTÉR - A KÓDODBÓL ÁTVÉVE */}
+      <div style={backgroundLayer} />
+      
+      <div style={contentWrapper}>
         <div style={container}>
-          
-          <button onClick={() => window.location.href = "/"} style={back}>
-            ← Back to WealthyAI
-          </button>
+          <button onClick={() => window.location.href = "/"} style={backBtn}>← Back</button>
 
-          <header style={{ marginBottom: '60px', position: 'relative', zIndex: 11 }}>
-            <h1 style={title}>The WealthyAI Genesis</h1>
-            <p style={intro}>
-              <span style={{ color: '#38bdf8', fontWeight: '700', letterSpacing: '2px', textTransform: 'uppercase', fontSize: '11px' }}>
-                February 20, 2026 • Manifest & Vlog #1
-              </span>
-            </p>
+          <header style={{ marginBottom: '40px' }}>
+            <h1 style={mainTitle}>The WealthyAI Genesis</h1>
+            <p style={subTitle}>Vlog #1 • System Interpretation</p>
           </header>
 
-          <div style={section}>
-            <p style={{ fontSize: '1.4rem', color: '#fff', marginBottom: '30px', fontWeight: '300', fontStyle: 'italic', lineHeight: '1.4' }}>
-              "We didn’t build WealthyAI to tell people what to do with their money."
-            </p>
-
-            <div style={sectionText}>
-              <p>
-                There are already countless tools that promise clarity or certainty. Most of them collapse under their own promises. 
-                <strong> WealthyAI</strong> exists to interpret the hidden structures of your finances.
-              </p>
-            </div>
-
-            <div style={vlogStep}>
-              <h3 style={stepTitle}>01. Visualizing Fragility</h3>
-              <img src="/wealthyai/icons/blog1.jpg" alt="Financial Structure" style={vlogImage} />
-              <p style={caption}>
-                Why are we showing you a 43.8% fragility score? Because an account balance doesn't show you how "breakable" your system is.
-              </p>
-            </div>
-
-            <div style={vlogStep}>
-              <h3 style={stepTitle}>02. The AI Interpretation</h3>
-              <img src="/wealthyai/icons/blog2.jpg" alt="AI Logic" style={vlogImage} />
-              <p style={caption}>
-                Our AI builds buffers against market fluctuations by analyzing your unique financial DNA.
-              </p>
-            </div>
-
-            <div style={vlogStep}>
-              <h3 style={stepTitle}>03. Strategic Path</h3>
-              <img src="/wealthyai/icons/blog3.jpg" alt="90 Day Roadmap" style={vlogImage} />
-              <p style={caption}>
-                90-day direction: Cash reserve management and energy exposure mitigation.
-              </p>
-            </div>
-
-            <div style={ctaBox}>
-              <h3 style={{ color: '#fff', marginBottom: '10px' }}>A Different Perspective</h3>
-              <p style={sectionText}>
-                <strong>How do you see your financial fragility today?</strong>
-              </p>
+          <div style={articleCard}>
+            <p style={leadText}>"Interpretation over advice. Clarity over certainty."</p>
+            <div style={bodyText}>
+              <p>We are building a system that understands the <strong>fragility</strong> of financial structures.</p>
+              <img src="/wealthyai/icons/blog1.jpg" alt="Vlog" style={imageStyle} />
+              <p>This isn't about numbers. It's about context. How much pressure can your system take before it breaks?</p>
             </div>
           </div>
 
-          {/* CUSDIS KOMMENT SZEKCIÓ - FIXÁLT BETÖLTÉSSEL */}
-          <div style={{ ...section, background: 'rgba(15, 23, 42, 0.8)', marginTop: '40px', minHeight: '450px', border: '2px solid rgba(56,189,248,0.5)' }}>
-            <h2 style={sectionTitle}>Discussion</h2>
-            
-            <style>{`
-              #cusdis_thread iframe { 
-                color-scheme: dark !important;
-                filter: brightness(1.2) contrast(1.1);
-                min-height: 400px;
-              }
-            `}</style>
+          {/* SAJÁT KOMMENT RENDSZER BEILLESZTÉSE */}
+          <CommentSystem />
 
-            <div 
-              id="cusdis_thread"
-              data-host="https://cusdis.com"
-              data-app-id="fdc77be5-f980-42fe-9c7c-033266be161a" 
-              data-page-id="blog-genesis-01"
-              data-page-url="https://mywealthyai.vercel.app/blog"
-              data-page-title="WealthyAI Genesis"
-              style={{ width: '100%', minHeight: '400px' }}
-            ></div>
-            
-            <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
-          </div>
-
-          <p style={footer}>
-            WealthyAI supports clarity — not pressure. © 2026
-          </p>
+          <footer style={footerStyle}>© 2026 WealthyAI Intelligence</footer>
         </div>
       </div>
     </div>
   );
 }
 
-// STYLES
-const page = { position: "relative", minHeight: "100vh", background: "#020617", overflow: "hidden", fontFamily: "Inter, system-ui" };
-const content = { position: "relative", zIndex: 10, padding: "80px 24px", display: "flex", justifyContent: "center" };
-const container = { width: "100%", maxWidth: 850 };
-const bgGrid = { position: "fixed", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)", backgroundSize: "80px 80px", zIndex: 1 };
-const bgLines = { position: "fixed", inset: 0, backgroundImage: "linear-gradient(120deg, transparent 40%, rgba(56,189,248,0.08) 50%, transparent 60%)", backgroundSize: "1200px 1200px", zIndex: 2 };
-const bgGlow = { position: "fixed", inset: 0, background: "radial-gradient(circle at 30% 20%, rgba(56,189,248,0.12), transparent 40%), radial-gradient(circle at 70% 80%, rgba(167,139,250,0.12), transparent 45%)", zIndex: 3 };
-const title = { fontSize: "3rem", marginBottom: 12, color: "#ffffff", fontWeight: "800", letterSpacing: "-1px" };
-const intro = { color: "#e5e7eb", maxWidth: 720, marginBottom: 32, fontSize: 16 };
-const section = { width: "100%", marginBottom: 28, padding: "40px", borderRadius: "24px", background: "rgba(56,189,248,0.06)", border: "1px solid rgba(125,211,252,0.2)", backdropFilter: "blur(12px)", boxSizing: "border-box", position: "relative", zIndex: 12 };
-const sectionTitle = { fontSize: "1.5rem", color: "#f0f9ff", marginBottom: 15 };
-const sectionText = { fontSize: "1.1rem", lineHeight: "1.7", color: "#f8fafc" };
-const vlogStep = { marginTop: '40px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '30px' };
-const stepTitle = { color: '#38bdf8', fontSize: '1.1rem', marginBottom: '15px', textTransform: 'uppercase', letterSpacing: '1px' };
-const vlogImage = { width: '100%', borderRadius: '12px', border: '1px solid rgba(56,189,248,0.3)', marginBottom: '15px' };
-const caption = { color: '#94a3b8', fontSize: '1rem', lineHeight: '1.6' };
-const ctaBox = { marginTop: '40px', padding: '25px', background: 'rgba(56,189,248,0.1)', borderRadius: '16px', border: '1px solid #38bdf8' };
-const footer = { marginTop: 60, fontSize: 14, color: "#94a3b8", textAlign: "center" };
-const back = { marginBottom: 32, padding: "8px 16px", fontSize: 13, borderRadius: 8, background: "rgba(148,163,184,0.18)", border: "1px solid rgba(148,163,184,0.35)", color: "#ffffff", cursor: "pointer", position: "relative", zIndex: 20 };
+// STYLING - A USERDASHBOARD STÍLUSAI ALAPJÁN
+const pageStyle = { 
+  minHeight: "100vh", 
+  backgroundColor: "#020617", 
+  position: "relative", 
+  fontFamily: "Inter, sans-serif",
+  color: "white",
+  overflowX: "hidden"
+};
+
+const backgroundLayer = {
+  position: "fixed",
+  inset: 0,
+  backgroundImage: `
+    repeating-linear-gradient(-25deg, rgba(56,189,248,0.07) 0px, rgba(56,189,248,0.07) 1px, transparent 1px, transparent 160px),
+    radial-gradient(circle at 20% 30%, rgba(56,189,248,0.15), transparent 40%),
+    url("/wealthyai/icons/generated.png")
+  `,
+  backgroundSize: "auto, 100% 100%, 420px auto",
+  zIndex: 1
+};
+
+const contentWrapper = { position: "relative", zIndex: 10, padding: "60px 20px" };
+const container = { maxWidth: "800px", margin: "0 auto" };
+const mainTitle = { fontSize: "2.5rem", fontWeight: "800", marginBottom: "10px" };
+const subTitle = { color: "#38bdf8", letterSpacing: "2px", fontSize: "12px", textTransform: "uppercase" };
+const articleCard = { 
+  background: "rgba(15,23,42,0.65)", 
+  padding: "40px", 
+  borderRadius: "24px", 
+  border: "1px solid rgba(255,255,255,0.1)",
+  backdropFilter: "blur(10px)"
+};
+const leadText = { fontSize: "1.2rem", fontStyle: "italic", marginBottom: "20px", opacity: 0.9 };
+const bodyText = { lineHeight: "1.7", fontSize: "1.1rem", opacity: 0.8 };
+const imageStyle = { width: "100%", borderRadius: "15px", margin: "25px 0", border: "1px solid rgba(56,189,248,0.3)" };
+const backBtn = { background: "rgba(255,255,255,0.1)", border: "none", color: "white", padding: "8px 16px", borderRadius: "8px", cursor: "pointer", marginBottom: "20px" };
+const footerStyle = { textAlign: "center", marginTop: "50px", opacity: 0.4, fontSize: "12px" };
