@@ -9,6 +9,8 @@ export default function PremiumHub() {
   const [isMobile, setIsMobile] = useState(false);
   const [isMaster, setIsMaster] = useState(false);
   const [comments, setComments] = useState([]);
+  // ÚJ: AI Állapot figyelő
+  const [aiStatus, setAiStatus] = useState("checking");
 
   const _K = "TUFTVEVSLURPTUlOQU5DRS0yMDI2"; 
   
@@ -17,7 +19,7 @@ export default function PremiumHub() {
     ph: { name: "PH PROFIL", color: "#da552f", url: "aHR0cHM6Ly93d3cucHJvZHVjdGh1bnQuY29tL0B6b2x0YW5faG9ydmF0aDU=" },
     zo: { name: "ZOHO MAIL", color: "#1e3a8a", url: "aHR0cHM6Ly9tYWlsLnpvaG8uZXU=" },
     li: { name: "LINKEDIN", color: "#0a66c2", url: "aHR0cHM6Ly93d3cubGlua2VkaW4uY29tL2luL3pvbHRhbi1ob3J2YXRoLTc3Mzg2YTMhOS8/bG9jYWxlPWh1" },
-    fb: { name: "FB REBOOT", color: "#1877F2", url: "aHR0cHM6Ly9kZXZlbG9wZXJzLmZhY2Vib29rLmNvbS90b29scy9kZWJ1Zy8=" }, // ÚJ FB DEBUGGER GOMB
+    fb: { name: "FB REBOOT", color: "#1877F2", url: "aHR0cHM6Ly9kZXZlbG9wZXJzLmZhY2Vib29rLmNvbS90b29scy9kZWJ1Zy8=" }, 
     re: { name: "REDDIT", color: "#ff4500", url: "aHR0cHM6Ly93d3cucmVkZGl0LmNvbS91c2VyL1B1enpsZWhlYWRlZC1TZXQ5MTg4Lw==" },
     ve: { name: "VERCEL", color: "#000000", url: "aHR0cHM6Ly92ZXJjZWwuY29tL2RvbmF0aW9uLXdlYnNpdGUtcHJvamVjdHMvd2VhbHRoeWFpLXdlYi9hbmFseXRpY3M=" },
     st: { name: "STRIPE", color: "#4338ca", url: "aHR0cHM6Ly9kYXNoYm9hcmQuc3RyaXBlLmNvbQ==" },
@@ -28,6 +30,17 @@ export default function PremiumHub() {
   const fetchComments = async () => {
     const { data, error } = await supabase.from('comments').select('*').order('created_at', { ascending: false });
     if (!error && data) setComments(data);
+  };
+
+  // ÚJ: AI Életjel ellenőrző függvény
+  const checkAiHealth = async () => {
+    try {
+      const res = await fetch('/api/ai-health-check');
+      const data = await res.json();
+      setAiStatus(data.status); // HEALTHY vagy CRITICAL
+    } catch (e) {
+      setAiStatus("OFFLINE");
+    }
   };
 
   const deleteComment = async (id) => {
@@ -41,11 +54,19 @@ export default function PremiumHub() {
     handleResize();
     window.addEventListener("resize", handleResize);
     fetchComments();
+    checkAiHealth(); // Első ellenőrzés betöltéskor
+    
+    // Automatikus ellenőrzés percenként
+    const healthInterval = setInterval(checkAiHealth, 60000);
+
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem("wai_vip_token");
       setIsMaster(token === atob(_K));
     }
-    return () => window.removeEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      clearInterval(healthInterval);
+    };
   }, []);
 
   const navigateTo = (path) => { window.location.href = path; };
@@ -57,16 +78,35 @@ export default function PremiumHub() {
     btnGroup: { display: "flex", gap: "6px", flexWrap: "wrap", justifyContent: "center" },
     adminBtn: { padding: "8px 12px", borderRadius: "6px", fontSize: "9px", fontWeight: "bold", color: "white", border: "1px solid rgba(255,255,255,0.1)", cursor: "pointer", textTransform: "uppercase" },
     grid: { display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: "20px", width: "90%", maxWidth: "1100px" },
-    card: { background: "rgba(30, 41, 59, 0.4)", border: "1px solid rgba(255, 255, 255, 0.1)", borderRadius: "24px", padding: "30px 15px", cursor: "pointer", textAlign: "center" },
+    card: { background: "rgba(30, 41, 59, 0.4)", border: "1px solid rgba(255, 255, 255, 0.1)", borderRadius: "24px", padding: "30px 15px", cursor: "pointer", textAlign: "center", transition: "transform 0.2s" },
     commentSection: { width: "90%", maxWidth: "850px", marginTop: "40px", padding: "25px", borderRadius: "24px", background: "rgba(15, 23, 42, 0.6)", border: "1px solid rgba(56,189,248,0.2)" },
-    scrollArea: { maxHeight: "400px", overflowY: "auto", marginTop: "15px" }
+    scrollArea: { maxHeight: "400px", overflowY: "auto", marginTop: "15px" },
+    // ÚJ: Státusz pötty stílusa
+    statusDot: {
+        width: "8px", height: "8px", borderRadius: "50%",
+        background: aiStatus === "HEALTHY" ? "#22c55e" : "#ef4444",
+        boxShadow: aiStatus === "HEALTHY" ? "0 0 10px #22c55e" : "0 0 15px #ef4444",
+        animation: aiStatus !== "HEALTHY" ? "blink 1s infinite" : "none"
+    }
   };
 
   return (
     <div style={styles.container}>
+      {/* CSS az animációhoz */}
+      <style>{` @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } } `}</style>
+
       {isMaster && (
         <div style={styles.adminBar}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}><span style={{ fontSize: "10px", fontWeight: "900", color: "#f59e0b" }}>MASTER HUB</span></div>
+          <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+            <span style={{ fontSize: "10px", fontWeight: "900", color: "#f59e0b" }}>MASTER HUB</span>
+            {/* AI ÁLLAPOT INDIKÁTOR */}
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(0,0,0,0.3)", padding: "4px 10px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.05)" }}>
+                <div style={styles.statusDot}></div>
+                <span style={{ fontSize: "9px", fontWeight: "bold", color: aiStatus === "HEALTHY" ? "#22c55e" : "#ef4444" }}>
+                    CORE: {aiStatus}
+                </span>
+            </div>
+          </div>
           <div style={styles.btnGroup}>
             {Object.keys(links).map(key => (
               <button key={key} onClick={() => openSecure(key)} style={{ ...styles.adminBtn, backgroundColor: links[key].color, color: key === 'sb' ? '#000' : 'white' }}>{links[key].name}</button>
@@ -75,6 +115,7 @@ export default function PremiumHub() {
         </div>
       )}
 
+      {/* A Dashboard többi része változatlan... */}
       <div style={{ background: "linear-gradient(90deg, #fbbf24, #f59e0b)", color: "#000", padding: "5px 15px", borderRadius: "20px", fontSize: "12px", fontWeight: "bold", marginBottom: "20px", marginTop: "20px" }}>UNIVERSE MASTER ACCESS</div>
       <h1 style={{ fontSize: isMobile ? "2rem" : "3rem", fontWeight: "900", marginBottom: "30px" }}>Control Hub</h1>
       
