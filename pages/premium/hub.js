@@ -9,10 +9,9 @@ export default function PremiumHub() {
     ph_status: "WARMING UP" 
   });
 
-  // MASZKOLT KULCS ÉS LINKEK (Base64)
+  // MASZKOLT KULCS ÉS LINKEK (Base64) - Szigorúan változatlan
   const _K = "TUFTVEVSLURPTUlOQU5DRS0yMDI2"; // MASTER-DOMINANCE-2026
   
-  // Admin linkek maszkolva, hogy ne látszódjanak a forráskódban
   const links = {
     cf: "aHR0cHM6Ly9kYXNoLmNsb3VkZmxhcmUuY29tL2QwMzAzZDdjNTAzOTRiMjgwYTI4YjU4ZDNjMTNmMTEvaG9tZS9kb21haW5z",
     ph: "aHR0cHM6Ly93d3cucHJvZHVjdGh1bnQuY29tL0B6b2x0YW5faG9ydmF0aDU=",
@@ -33,9 +32,7 @@ export default function PremiumHub() {
       const token = localStorage.getItem("wai_vip_token");
       const role = localStorage.getItem("wai_role");
       
-      // Összehasonlítás a dekódolt kulccsal - a kereső így nem találja meg
       const isTokenValid = token === atob(_K);
-      
       const masterStatus = isTokenValid && role !== "GUEST";
       setIsMaster(masterStatus);
 
@@ -51,6 +48,15 @@ export default function PremiumHub() {
         }))
         .catch(() => setStats({ stripe: "OFFLINE", sendgrid: "ERROR", ph_status: "LIVE" }));
       }
+
+      // DISQUS INTEGRÁCIÓ - Csak egyszer töltjük be
+      if (!document.getElementById('disqus-embed-script')) {
+        const d = document, s = d.createElement('script');
+        s.id = 'disqus-embed-script';
+        s.src = 'https://mywealthyai.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+      }
     }
 
     return () => window.removeEventListener("resize", handleResize);
@@ -60,7 +66,6 @@ export default function PremiumHub() {
     window.location.href = path;
   };
 
-  // Segédfüggvény a maszkolt linkek megnyitásához
   const openSecure = (key) => {
     window.open(atob(links[key]), "_blank", "noreferrer");
   };
@@ -176,6 +181,17 @@ export default function PremiumHub() {
       border: "1px solid rgba(99, 102, 241, 0.6)",
       background: "rgba(30, 41, 59, 0.7)",
       transform: "translateY(-5px)",
+    },
+    disqusSection: {
+      width: "100%",
+      maxWidth: "850px",
+      marginTop: "60px",
+      padding: "30px",
+      borderRadius: "24px",
+      background: "rgba(15, 23, 42, 0.6)",
+      border: "1px solid rgba(255, 255, 255, 0.05)",
+      boxSizing: "border-box",
+      textAlign: "left"
     }
   };
 
@@ -247,6 +263,12 @@ export default function PremiumHub() {
           <h2 style={{ margin: 0 }}>Monthly</h2>
           <p style={{ fontSize: "14px", opacity: 0.7 }}>Full Strategy Engine</p>
         </div>
+      </div>
+
+      {/* DISQUS SECTION - A te linked alapján */}
+      <div style={styles.disqusSection}>
+        <h3 style={{ color: "#38bdf8", marginBottom: "20px", fontSize: "1.1rem" }}>System Discussion</h3>
+        <div id="disqus_thread"></div>
       </div>
 
       <button onClick={() => navigateTo("/")}
