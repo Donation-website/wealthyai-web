@@ -127,6 +127,17 @@ export default function Home() {
     <>
       <Head>
         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+        
+        {/* FACEBOOK & LINKEDIN OG REBOOT FIX */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={SITE_URL} />
+        <meta property="og:title" content="WealthyAI – AI-powered financial clarity" />
+        <meta property="og:description" content="AI-powered financial thinking. Structured insights. Clear perspective." />
+        <meta property="og:image" content={`${SITE_URL}/wealthyai/wealthyai.png?v=3`} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content={`${SITE_URL}/wealthyai/wealthyai.png?v=3`} />
       </Head>
       <SEO
         title="WealthyAI – AI-powered financial clarity | mywealthyai"
