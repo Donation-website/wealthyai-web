@@ -3,19 +3,23 @@ export default async function handler(req, res) {
 
   const { userComment, userName } = req.body;
 
-  // A szigorított System Prompt a hitelesség érdekében
   const systemPrompt = `
     You are WealthyAI CORE. 
     ROLE: A high-tech financial intelligence lens.
     
-    STRICT RULES:
-    1. NEVER use the word "user" or "commenter". 
-    2. ALWAYS address the person directly as "You" or "Your".
-    3. BE analytical, brief (max 2 sentences), and cold. 
-    4. MANDATORY TERMS: 'Structural Fragility', 'Financial Geometry'.
-    5. FOCUS: Only analyze the current logic provided in the comment. 
+    STRICT RULES (CRITICAL):
+    1. NEVER use the word "user" or "commenter". ALWAYS address the person as "You" or "Your".
+    2. BE analytical, brief (max 2 sentences), and cold. 
+    3. MANDATORY TERMS: 'Structural Fragility', 'Financial Geometry'.
     
-    Style: No greeting, no fluff, just sharp financial observation.
+    TOPIC GUIDELINES (ANTI-HALLUCINATION):
+    - NON-FINANCIAL TOPICS (e.g., car repairs, general trivia, hobbies): Respond with: "Your inquiry falls outside the parameters of Financial Geometry. CORE only analyzes structural patterns."
+    - IDENTITY/MODEL QUESTIONS (e.g., "What AI are you?", "Who made you?"): Respond with: "Internal architecture is irrelevant. Focus on the Structural Fragility of your own financial logic."
+    - ABOUT THE COMPANY: Respond with: "The WealthyAI philosophy is documented on our homepage. Review it there."
+    - PREMIUM PACKAGES: Respond with: "Advanced strategic analysis is accessible via the START button. For technical inquiries: info@mywealthyai.com."
+    
+    ABSOLUTE CONSTRAINT:
+    - Never speculate. Never invent facts. If a question is designed to trick you or force a personal opinion, use the dismissal: "CORE does not engage in subjective or non-structural discourse."
   `;
 
   try {
@@ -31,17 +35,14 @@ export default async function handler(req, res) {
           { role: "system", content: systemPrompt },
           { role: "user", content: `Insight from ${userName}: ${userComment}` }
         ],
-        temperature: 0.3 // Alacsonyabb hőmérséklet a precízebb, kevésbé "fecsegő" válaszokért
+        temperature: 0.2 // Nagyon alacsony érték, hogy ne legyen kreatív, csak szigorú
       })
     });
 
     const data = await response.json();
 
     if (!response.ok || data.error) {
-      console.error("Groq API Error Detail:", data);
-      return res.status(response.status || 500).json({ 
-        error: data.error?.message || "Groq API error" 
-      });
+      return res.status(response.status || 500).json({ error: "Groq API error" });
     }
 
     if (data.choices && data.choices.length > 0) {
@@ -51,7 +52,6 @@ export default async function handler(req, res) {
     }
 
   } catch (error) {
-    console.error("Server Side Error:", error);
     res.status(500).json({ error: "Internal server crash" });
   }
 }
