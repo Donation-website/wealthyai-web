@@ -133,11 +133,12 @@ export default function Home() {
         <meta property="og:url" content={SITE_URL} />
         <meta property="og:title" content="WealthyAI – AI-powered financial clarity" />
         <meta property="og:description" content="AI-powered financial thinking. Structured insights. Clear perspective." />
-        <meta property="og:image" content={`${SITE_URL}/wealthyai/icons/share-card.png?v=4`} />
+        <meta property="og:image" content="https://mywealthyai.com/wealthyai/icons/share-card.png?v=5" />
+        <meta property="og:image:secure_url" content="https://mywealthyai.com/wealthyai/icons/share-card.png?v=5" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:image" content={`${SITE_URL}/wealthyai/icons/share-card.png?v=4`} />
+        <meta name="twitter:image" content="https://mywealthyai.com/wealthyai/icons/share-card.png?v=5" />
       </Head>
       <SEO
         title="WealthyAI – AI-powered financial clarity | mywealthyai"
