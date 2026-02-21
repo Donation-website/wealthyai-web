@@ -10,8 +10,7 @@ export default function PremiumHub() {
   const [isMaster, setIsMaster] = useState(false);
   const [comments, setComments] = useState([]);
   const [aiStatus, setAiStatus] = useState("checking");
-  // ÚJ: Stripe egyenleg állapot (egyelőre statikus/manuális placeholder)
-  const [stripeBalance, setStripeBalance] = useState("€0.00");
+  const [stripeBalance, setStripeBalance] = useState("FETCHING...");
 
   const _K = "TUFTVEVSLURPTUlOQU5DRS0yMDI2"; 
   
@@ -19,13 +18,31 @@ export default function PremiumHub() {
     cf: { name: "CLOUDFLARE", color: "#f38020", url: "aHR0cHM6Ly9kYXNoLmNsb3VkZmxhcmUuY29tL2QwMzAzZDdjNTAzOTRiMjgwYTI4YjU4ZDNjMTNmMTEvaG9tZS9kb21haW5z" },
     ph: { name: "PH PROFIL", color: "#da552f", url: "aHR0cHM6Ly93d3cucHJvZHVjdGh1bnQuY29tL0B6b2x0YW5faG9ydmF0aDU=" },
     zo: { name: "ZOHO MAIL", color: "#1e3a8a", url: "aHR0cHM6Ly9tYWlsLnpvaG8uZXU=" },
-    nc: { name: "NC EMAIL", color: "#de3723", url: "aHR0cHM6Ly9hcC53d3cubmFtZWNoZWFwLmNvbS9Qcm9kdWN0TGlzdC9FbWFpbFN1YnNjcmlwdGlvbnM=" }, // ÚJ: NAMECHEAP
+    nc: { name: "NC EMAIL", color: "#de3723", url: "aHR0cHM6Ly9hcC53d3cubmFtZWNoZWFwLmNvbS9Qcm9kdWN0TGlzdC9FbWFpbFN1YnNjcmlwdGlvbnM=" },
     li: { name: "LINKEDIN", color: "#0a66c2", url: "aHR0cHM6Ly93d3cubGlua2VkaW4uY29tL2luL3pvbHRhbi1ob3J2YXRoLTc3Mzg2YTMhOS8/bG9jYWxlPWh1" },
     re: { name: "REDDIT", color: "#ff4500", url: "aHR0cHM6Ly93d3cucmVkZGl0LmNvbS91c2VyL1B1enpsZWhlYWRlZC1TZXQ5MTg4Lw==" },
     ve: { name: "VERCEL", color: "#000000", url: "aHR0cHM6Ly92ZXJjZWwuY29tL2RvbmF0aW9uLXdlYnNpdGUtcHJvamVjdHMvd2VhbHRoeWFpLXdlYi9hbmFseXRpY3M=" },
     st: { name: "STRIPE", color: "#4338ca", url: "aHR0cHM6Ly9kYXNoYm9hcmQuc3RyaXBlLmNvbQ==" },
     az: { name: "AZURE", color: "#2563eb", url: "aHR0cHM6Ly9wb3J0YWwuYXp1cmUuY29tLyNob21l" },
     sb: { name: "SUPABASE", color: "#3ecf8e", url: "aHR0cHM6Ly9zdXBhYmFzZS5jb20vZGFzaGJvYXJkL29yZy91dWhvanduamJlYnVrimJmYnV3em4=" }
+  };
+
+  const fetchMasterStats = async () => {
+    try {
+      const res = await fetch('/api/master-stats', {
+        headers: {
+          'x-master-token': 'MASTER-DOMINANCE-2026'
+        }
+      });
+      const data = await res.json();
+      if (data.stripe) {
+        setStripeBalance(data.stripe);
+      } else {
+        setStripeBalance("€0.00*");
+      }
+    } catch (e) {
+      setStripeBalance("OFFLINE");
+    }
   };
 
   const fetchComments = async () => {
@@ -60,7 +77,10 @@ export default function PremiumHub() {
 
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem("wai_vip_token");
-      setIsMaster(token === atob(_K));
+      if (token === atob(_K)) {
+        setIsMaster(true);
+        fetchMasterStats();
+      }
     }
     return () => {
       window.removeEventListener("resize", handleResize);
@@ -113,9 +133,8 @@ export default function PremiumHub() {
                 </span>
             </div>
 
-            {/* STRIPE BALANCE DISPLAY */}
-            <div style={styles.balanceBadge}>
-                <span style={{ fontSize: "9px", color: "#a5b4fc", fontWeight: "bold" }}>STRIPE BALANCE:</span>
+            <div style={styles.balanceBadge} onClick={fetchMasterStats} title="Kattints a frissítéshez">
+                <span style={{ fontSize: "9px", color: "#a5b4fc", fontWeight: "bold" }}>STRIPE:</span>
                 <span style={{ fontSize: "11px", color: "#fff", fontWeight: "900", fontFamily: "monospace" }}>{stripeBalance}</span>
             </div>
           </div>
