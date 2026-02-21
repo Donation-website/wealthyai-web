@@ -11,11 +11,12 @@ export default function PremiumHub() {
   const [comments, setComments] = useState([]);
   const [aiStatus, setAiStatus] = useState("checking");
   const [stripeBalance, setStripeBalance] = useState("FETCHING...");
+  const [todayTraffic, setTodayTraffic] = useState(0); // ÚJ: Látogatók száma
 
   const _K = "TUFTVEVSLURPTUlOQU5DRS0yMDI2"; 
   
   const links = {
-    cf: { name: "CLOUDFLARE", color: "#f38020", url: "aHR0cHM6Ly9kYXNoLmNsb3VkZmxhcmUuY29tL2QwMzAzZDdjNTAzOTRiMjgwYTI4YjU4ZDNjMTNmMTEvaG9tZS9kb21haW5z" },
+    cf: { name: "CLOUDFLARE", color: "#f38020", url: "aHR0cHM6Ly9kYXNoDashLmNsb3VkZmxhcmUuY29tL2QwMzAzZDdjNTAzOTRiMjgwYTI4YjU4ZDNjMTNmMTEvaG9tZS9kb21haW5z" },
     ph: { name: "PH PROFIL", color: "#da552f", url: "aHR0cHM6Ly93d3cucHJvZHVjdGh1bnQuY29tL0B6b2x0YW5faG9ydmF0aDU=" },
     zo: { name: "ZOHO MAIL", color: "#1e3a8a", url: "aHR0cHM6Ly9tYWlsLnpvaG8uZXU=" },
     nc: { name: "NC EMAIL", color: "#de3723", url: "aHR0cHM6Ly9hcC53d3cubmFtZWNoZWFwLmNvbS9Qcm9kdWN0TGlzdC9FbWFpbFN1YnNjcmlwdGlvbnM=" },
@@ -30,16 +31,11 @@ export default function PremiumHub() {
   const fetchMasterStats = async () => {
     try {
       const res = await fetch('/api/master-stats', {
-        headers: {
-          'x-master-token': 'MASTER-DOMINANCE-2026'
-        }
+        headers: { 'x-master-token': 'MASTER-DOMINANCE-2026' }
       });
       const data = await res.json();
-      if (data.stripe) {
-        setStripeBalance(data.stripe);
-      } else {
-        setStripeBalance("€0.00*");
-      }
+      if (data.stripe) setStripeBalance(data.stripe);
+      if (data.trafficToday !== undefined) setTodayTraffic(data.trafficToday);
     } catch (e) {
       setStripeBalance("OFFLINE");
     }
@@ -74,6 +70,7 @@ export default function PremiumHub() {
     checkAiHealth();
     
     const healthInterval = setInterval(checkAiHealth, 60000);
+    const statsInterval = setInterval(fetchMasterStats, 300000); // 5 percenként frissít a háttérben
 
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem("wai_vip_token");
@@ -85,6 +82,7 @@ export default function PremiumHub() {
     return () => {
       window.removeEventListener("resize", handleResize);
       clearInterval(healthInterval);
+      clearInterval(statsInterval);
     };
   }, []);
 
@@ -99,22 +97,9 @@ export default function PremiumHub() {
     grid: { display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: "20px", width: "90%", maxWidth: "1100px" },
     card: { background: "rgba(30, 41, 59, 0.4)", border: "1px solid rgba(255, 255, 255, 0.1)", borderRadius: "24px", padding: "30px 15px", cursor: "pointer", textAlign: "center", transition: "transform 0.2s" },
     commentSection: { width: "90%", maxWidth: "850px", marginTop: "40px", padding: "25px", borderRadius: "24px", background: "rgba(15, 23, 42, 0.6)", border: "1px solid rgba(56,189,248,0.2)" },
-    statusDot: {
-        width: "8px", height: "8px", borderRadius: "50%",
-        background: aiStatus === "HEALTHY" ? "#22c55e" : "#ef4444",
-        boxShadow: aiStatus === "HEALTHY" ? "0 0 10px #22c55e" : "0 0 15px #ef4444",
-        animation: aiStatus !== "HEALTHY" ? "blink 1s infinite" : "none"
-    },
-    balanceBadge: {
-        background: "rgba(67, 56, 202, 0.2)",
-        border: "1px solid #4338ca",
-        padding: "4px 12px",
-        borderRadius: "20px",
-        display: "flex",
-        alignItems: "center",
-        gap: "8px",
-        marginLeft: isMobile ? "0" : "15px"
-    }
+    statusDot: { width: "8px", height: "8px", borderRadius: "50%", background: aiStatus === "HEALTHY" ? "#22c55e" : "#ef4444", boxShadow: aiStatus === "HEALTHY" ? "0 0 10px #22c55e" : "0 0 15px #ef4444", animation: aiStatus !== "HEALTHY" ? "blink 1s infinite" : "none" },
+    balanceBadge: { background: "rgba(67, 56, 202, 0.2)", border: "1px solid #4338ca", padding: "4px 12px", borderRadius: "20px", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" },
+    trafficBadge: { background: "rgba(56, 189, 248, 0.15)", border: "1px solid #38bdf8", padding: "4px 12px", borderRadius: "20px", display: "flex", alignItems: "center", gap: "8px" }
   };
 
   return (
@@ -123,19 +108,22 @@ export default function PremiumHub() {
 
       {isMaster && (
         <div style={styles.adminBar}>
-          <div style={{ display: "flex", alignItems: "center", gap: "15px", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
             <span style={{ fontSize: "10px", fontWeight: "900", color: "#f59e0b" }}>MASTER HUB</span>
             
             <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(0,0,0,0.3)", padding: "4px 10px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.05)" }}>
                 <div style={styles.statusDot}></div>
-                <span style={{ fontSize: "9px", fontWeight: "bold", color: aiStatus === "HEALTHY" ? "#22c55e" : "#ef4444" }}>
-                    CORE: {aiStatus}
-                </span>
+                <span style={{ fontSize: "9px", fontWeight: "bold", color: aiStatus === "HEALTHY" ? "#22c55e" : "#ef4444" }}>CORE: {aiStatus}</span>
             </div>
 
-            <div style={styles.balanceBadge} onClick={fetchMasterStats} title="Kattints a frissítéshez">
+            <div style={styles.balanceBadge} onClick={fetchMasterStats} title="Refresh stats">
                 <span style={{ fontSize: "9px", color: "#a5b4fc", fontWeight: "bold" }}>STRIPE:</span>
                 <span style={{ fontSize: "11px", color: "#fff", fontWeight: "900", fontFamily: "monospace" }}>{stripeBalance}</span>
+            </div>
+
+            <div style={styles.trafficBadge}>
+                <span style={{ fontSize: "9px", color: "#38bdf8", fontWeight: "bold" }}>VISITS TODAY:</span>
+                <span style={{ fontSize: "11px", color: "#fff", fontWeight: "900", fontFamily: "monospace" }}>{todayTraffic}</span>
             </div>
           </div>
 
