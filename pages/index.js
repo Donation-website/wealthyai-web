@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import SEO from "../components/SEO";
 import Head from "next/head";
+import TrafficTracker from "../components/TrafficTracker";
 
 export default function Home() {
   const SITE_URL = "https://mywealthyai.com";
@@ -125,6 +126,7 @@ export default function Home() {
 
   return (
     <>
+      <TrafficTracker />
       <Head>
         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
         
