@@ -130,6 +130,9 @@ export default function Home() {
       <Head>
         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
         
+        {/* GOOGLE SEARCH CONSOLE VERIFICATION */}
+        <meta name="google-site-verification" content="019m-2Ayi9dmgKh_oPI8PVpR9flMsOfX_048yySbIRQ" />
+
         {/* FACEBOOK & LINKEDIN OG REBOOT FIX */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={SITE_URL} />
