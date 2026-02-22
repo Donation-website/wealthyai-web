@@ -21,6 +21,7 @@
     "@azure/communication-email": "^1.0.0",
     "mssql": "^10.0.1",
     "@supabase/supabase-js": "^2.39.7",
-    "nextjs-obfuscator": "^1.1.0"
+    "webpack-obfuscator": "3.5.1",
+    "javascript-obfuscator": "4.0.0"
   }
 }
