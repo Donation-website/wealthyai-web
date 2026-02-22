@@ -9,17 +9,21 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 export default function TrafficTracker() {
   useEffect(() => {
     const trackVisit = async () => {
-      // Ha épp csak fejlesztesz (localhost), ne számolja bele, csak az éles oldalt
+      // Fejlesztői környezet kiszűrése
       if (window.location.hostname === "localhost") return;
 
       try {
-        await supabase.from('site_traffic').insert([
+        const { error } = await supabase.from('site_traffic').insert([
           { 
             path: window.location.pathname, 
-            referrer: document.referrer || 'direct'
+            referrer: document.referrer || 'direct',
+            // EZ AZ ÚJ RÉSZ: Beküldjük az eszköz adatait
+            user_agent: navigator.userAgent 
           }
         ]);
-        console.log("Visit tracked."); 
+        
+        if (error) throw error;
+        console.log("Visit tracked with device info."); 
       } catch (e) {
         console.error("Traffic error:", e);
       }
@@ -28,5 +32,5 @@ export default function TrafficTracker() {
     trackVisit();
   }, []);
 
-  return null; // Ez a komponens nem rajzol semmit, láthatatlan marad
+  return null;
 }
