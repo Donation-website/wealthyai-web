@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 
-// WealthyAI - Központi Adatbázis Kapcsolat
 const SUPABASE_URL = "https://csfaqnsuhhnposhyfxmk.supabase.co";
 const SUPABASE_KEY = "sb_publishable_wjDPUzwhkqApZWEHWrvalQ_bSJr8iT0";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -12,6 +11,9 @@ const CommentSystem = () => {
   const [userName, setUserName] = useState("");
   const [isAdminSession, setIsAdminSession] = useState(false);
   const [isAiGenerating, setIsAiGenerating] = useState(false);
+  
+  // --- ÚJ: AI Kapcsoló állapota (alapértelmezetten bekapcsolva) ---
+  const [isAiEnabled, setIsAiEnabled] = useState(true);
 
   const ADMIN_SECRET = "111"; 
   const CORE_AVATAR = "/wealthyai/icons/avatar.png";
@@ -46,7 +48,6 @@ const CommentSystem = () => {
       setIsAdminSession(true);
     }
 
-    // 1. Felhasználó kommentjének mentése
     const { data: insertedData, error } = await supabase.from('comments').insert([{
       user_name: name,
       text: text,
@@ -60,14 +61,13 @@ const CommentSystem = () => {
       setNewComment("");
       fetchComments();
 
-      // 2. AUTOMATIKUS AI VÁLASZ (Csak ha nem az admin írt)
-      if (!isAdmin) {
+      // --- MÓDOSÍTVA: Csak akkor triggereljük az AI-t, ha a kapcsoló BE van kapcsolva ÉS nem admin írt ---
+      if (!isAdmin && isAiEnabled) {
         triggerAiReply(text, name);
       }
     }
   };
 
-  // EZ A FÜGGVÉNY HÍVJA MEG A LLAMA-T
   const triggerAiReply = async (userComment, name) => {
     setIsAiGenerating(true);
     try {
@@ -80,7 +80,6 @@ const CommentSystem = () => {
       const data = await response.json();
 
       if (data.reply) {
-        // AI Válasz mentése a Supabase-be CORE névvel és ikonnal
         await supabase.from('comments').insert([{
           user_name: "WealthyAI CORE",
           text: data.reply,
@@ -103,7 +102,9 @@ const CommentSystem = () => {
     card: { display: "flex", gap: "15px", marginTop: "20px", padding: "18px", borderRadius: "20px", background: "rgba(255,255,255,0.02)", borderLeft: "4px solid #38bdf8", position: "relative" },
     adminCard: { borderLeft: "4px solid #a78bfa", background: "rgba(167, 139, 250, 0.05)" },
     avatar: { width: "48px", height: "48px", borderRadius: "12px", background: "#020617", objectFit: "cover" },
-    delBtn: { position: "absolute", top: "15px", right: "15px", background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontSize: "10px" }
+    delBtn: { position: "absolute", top: "15px", right: "15px", background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontSize: "10px" },
+    // --- ÚJ: Kapcsoló stílusa ---
+    toggleContainer: { display: "flex", alignItems: "center", gap: "10px", marginBottom: "15px", fontSize: "12px", cursor: "pointer", color: "rgba(255,255,255,0.7)" }
   };
 
   return (
@@ -112,10 +113,37 @@ const CommentSystem = () => {
       <form onSubmit={handleSubmit}>
         <input style={styles.input} placeholder="Nickname" value={userName} onChange={(e) => setUserName(e.target.value)} required />
         <textarea style={{ ...styles.input, minHeight: "80px" }} placeholder="Insight..." value={newComment} onChange={(e) => setNewComment(e.target.value)} required />
+        
+        {/* --- ÚJ: AI KAPCSOLÓ UI --- */}
+        <div style={styles.toggleContainer} onClick={() => setIsAiEnabled(!isAiEnabled)}>
+            <div style={{
+                width: "40px",
+                height: "20px",
+                background: isAiEnabled ? "linear-gradient(90deg, #38bdf8, #a78bfa)" : "#334155",
+                borderRadius: "20px",
+                position: "relative",
+                transition: "0.3s"
+            }}>
+                <div style={{
+                    width: "16px",
+                    height: "16px",
+                    background: "white",
+                    borderRadius: "50%",
+                    position: "absolute",
+                    top: "2px",
+                    left: isAiEnabled ? "22px" : "2px",
+                    transition: "0.3s"
+                }} />
+            </div>
+            <span>WealthyAI Response: <b>{isAiEnabled ? "ON" : "OFF"}</b></span>
+        </div>
+
         <button type="submit" style={styles.button} disabled={isAiGenerating}>
           {isAiGenerating ? "CORE is processing..." : "Post Insight"}
         </button>
       </form>
+
+      {/* Komment lista marad változatlan */}
       <div style={{ marginTop: "30px" }}>
         {comments.map((c) => (
           <div key={c.id} style={{ ...styles.card, ...(c.role === "ADMIN" ? styles.adminCard : {}) }}>
