@@ -209,6 +209,23 @@ export default function Home() {
           }}
         ></div>
 
+        {/* LEFT NAV - SEPARATED MARKET SNAPSHOT */}
+        <div
+          style={{
+            position: isMobile ? "absolute" : "absolute",
+            top: isMobile ? "15px" : "30px",
+            left: isMobile ? "20px" : "40px",
+            display: "flex",
+            alignItems: "center",
+            zIndex: 6,
+            fontSize: isMobile ? "0.8rem" : "0.95rem",
+          }}
+        >
+          <a href="/market-snapshot" onClick={stopAudio} className="nav-link market-link" style={{ color: "#38bdf8", fontWeight: "600" }}>
+            Market Snapshot
+          </a>
+        </div>
+
         {/* NARRATOR TOGGLE */}
         <div 
           onClick={toggleMute}
@@ -496,6 +513,13 @@ export default function Home() {
             filter: blur(16px); opacity: 0; transition: opacity 0.25s ease; pointer-events: none; z-index: -1;
           }
           .nav-link:hover::before, .icon-link:hover::before { opacity: 1; }
+          
+          /* Kiemelt Market Snapshot stílus */
+          .market-link:hover { opacity: 1; color: #7dd3fc !important; }
+          .market-link::before {
+            background: radial-gradient(circle, rgba(56,189,248,0.8) 0%, rgba(56,189,248,0.4) 40%, transparent 70%) !important;
+          }
+
           .start-btn:hover { 
             box-shadow: ${isVerified && !isBotTrapped ? "0 0 35px rgba(56,189,248,0.45)" : "none"}; 
           }
