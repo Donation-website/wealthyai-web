@@ -397,7 +397,7 @@ export default function DayPremium() {
               {aiOpen && (
                 <div ref={aiBoxRef} style={aiBox}>
                   <div style={aiHeader}>
-                    <strong>AI Insight ({country})</strong>
+                    <strong>AI Intelligence ({country})</strong>
                     <button onClick={() => setAiOpen(false)} style={closeBtn}>✕</button>
                   </div>
                   <pre style={aiTextStyle}>{aiText}</pre>
@@ -407,7 +407,7 @@ export default function DayPremium() {
 
             <div style={{ marginTop: '20px' }}>
               <button onClick={askAI} style={aiButton}>
-                {loading ? "ANALYZING…" : "GENERATE AI STRATEGY"}
+                {loading ? "ANALYZING…" : "GENERATE INTELLIGENCE"}
               </button>
             </div>
           </div>
@@ -417,7 +417,7 @@ export default function DayPremium() {
             <div style={inputPanel}>
               {["income", "fixed", "variable"].map((k) => (
                 <div key={k} style={inputRow}>
-                  <span>{k.toUpperCase()}</span>
+                  <span>MONTHLY {k.toUpperCase()}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <input
                       type="number"
