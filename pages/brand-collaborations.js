@@ -19,32 +19,26 @@ export default function BrandCollaborations() {
       </Head>
 
       <div style={page}>
-        {/* BACKGROUND LAYER - Consistent with Main UI */}
+        {/* FUTURISTIC BACKGROUND - From BasicHelpPage */}
         <div style={bgGrid} />
         <div style={bgLines} />
         <div style={bgGlow} />
 
         <div style={{
           ...content,
-          padding: isMobile ? "80px 20px 60px 20px" : "100px 40px"
+          padding: isMobile ? "40px 20px" : "80px 40px"
         }}>
           <div style={container}>
             <button 
               onClick={() => window.history.back()} 
               style={back}
-              onMouseEnter={(e) => e.target.style.background = "rgba(148,163,184,0.3)"}
-              onMouseLeave={(e) => e.target.style.background = "rgba(148,163,184,0.18)"}
             >
               ← Back
             </button>
 
             <h1 style={{
               ...title,
-              fontSize: isMobile ? "2.2rem" : "3.5rem",
-              background: "linear-gradient(to right, #ffffff, #94a3b8)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              letterSpacing: "-0.02em"
+              fontSize: isMobile ? "2rem" : "2.8rem"
             }}>Brand Collaborations</h1>
 
             <p style={intro}>
@@ -63,8 +57,7 @@ export default function BrandCollaborations() {
             <Section title="Audience Profile">
               Our users are characterized by their deliberate approach to wealth 
               and clarity. They value precision, privacy, and high-tier services. 
-              We offer focused access to a refined, high-net-worth demographic 
-              rather than mass-market reach.
+              We offer focused access to a refined, high-net-worth demographic.
             </Section>
 
             <Section title="Integration Tiers">
@@ -76,19 +69,24 @@ export default function BrandCollaborations() {
             </Section>
 
             <div style={contactBox}>
-              <h2 style={{ fontSize: "1.4rem", marginBottom: "12px", fontWeight: "600" }}>Partnership Inquiries</h2>
-              <p style={{ margin: 0, fontSize: "1.1rem" }}>
+              <h2 style={{ fontSize: "1.3rem", marginBottom: "12px" }}>Partnership Inquiries</h2>
+              <p style={{ margin: 0 }}>
                 Direct proposals to: <a href="mailto:info@mywealthyai.com" style={link}>info@mywealthyai.com</a>
               </p>
-              <p style={{ fontSize: "0.85rem", marginTop: "16px", opacity: 0.6, lineHeight: "1.5" }}>
-                Please include a brief overview of your brand and <br /> your proposed value proposition.
+              <p style={{ fontSize: "0.85rem", marginTop: "16px", opacity: 0.7 }}>
+                Please include a brief overview of your brand and proposed value proposition.
               </p>
             </div>
 
-            <p style={footer}>
-              WealthyAI reserves the right to decline any partnership that does not 
-              meet our internal quality and ethical benchmarks.
-            </p>
+            <div style={footerContainer}>
+              <p style={footerText}>
+                WealthyAI reserves the right to decline any partnership that does not 
+                meet our internal quality and ethical benchmarks.
+              </p>
+              <p style={copyright}>
+                © 2026 mywealthyai.com — All rights reserved.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -107,37 +105,37 @@ function Section({ title, children }) {
   );
 }
 
-/* ===== STYLES (Synchronized with WealthyAI UI) ===== */
+/* ===== STYLES (Synchronized with your Background) ===== */
 
 const page = {
   position: "relative",
   minHeight: "100vh",
-  background: "#060b13", // A főoldal sötétje
+  background: "#020617", // Mélykék háttér
   overflowX: "hidden",
-  fontFamily: "'Inter', system-ui, sans-serif",
+  fontFamily: "Inter, system-ui",
   color: "#ffffff",
 };
 
 const bgGrid = {
   position: "fixed",
   inset: 0,
-  backgroundImage: "linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)",
-  backgroundSize: "60px 60px",
+  backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
+  backgroundSize: "80px 80px",
   zIndex: 1,
 };
 
 const bgLines = {
   position: "fixed",
   inset: 0,
-  backgroundImage: "linear-gradient(120deg, transparent 40%, rgba(56,189,248,0.03) 50%, transparent 60%)",
-  backgroundSize: "100% 100%",
+  backgroundImage: "linear-gradient(120deg, transparent 40%, rgba(56,189,248,0.08) 50%, transparent 60%)",
+  backgroundSize: "1200px 1200px",
   zIndex: 2,
 };
 
 const bgGlow = {
   position: "fixed",
   inset: 0,
-  background: "radial-gradient(circle at 10% 10%, rgba(56,189,248,0.05), transparent 40%), radial-gradient(circle at 90% 90%, rgba(167,139,250,0.05), transparent 45%)",
+  background: "radial-gradient(circle at 30% 20%, rgba(56,189,248,0.12), transparent 40%), radial-gradient(circle at 70% 80%, rgba(167,139,250,0.12), transparent 45%)",
   zIndex: 3,
 };
 
@@ -150,84 +148,90 @@ const content = {
 
 const container = {
   width: "100%",
-  maxWidth: "700px",
+  maxWidth: 800,
 };
 
 const back = {
-  marginBottom: 32,
-  padding: "8px 16px",
+  marginBottom: 24,
+  padding: "6px 12px",
   fontSize: 13,
-  borderRadius: "8px",
+  borderRadius: 8,
   background: "rgba(148,163,184,0.18)",
-  border: "1px solid rgba(255,255,255,0.1)",
+  border: "1px solid rgba(148,163,184,0.35)",
   color: "#ffffff",
   cursor: "pointer",
-  transition: "all 0.3s ease",
-  fontWeight: "500",
 };
 
 const title = {
-  marginBottom: 24,
-  fontWeight: "800",
+  marginBottom: 16,
+  fontWeight: "700",
+  color: "#ffffff",
 };
 
 const intro = {
-  color: "#94a3b8",
-  marginBottom: 48,
-  fontSize: "1.2rem",
+  color: "#cbd5e1",
+  maxWidth: 720,
+  marginBottom: 40,
+  fontSize: "1.1rem",
   lineHeight: "1.6",
-  fontWeight: "300",
 };
 
 const section = {
   width: "100%",
-  marginBottom: 30,
-  padding: "32px",
-  borderRadius: "20px",
-  background: "rgba(255,255,255,0.02)",
-  border: "1px solid rgba(255,255,255,0.05)",
-  backdropFilter: "blur(20px)",
+  marginBottom: 24,
+  padding: 24,
+  borderRadius: 16,
+  background: "rgba(56,189,248,0.14)", // Kékebb áttetszőség
+  border: "1px solid rgba(125,211,252,0.35)",
+  backdropFilter: "blur(12px)",
   boxSizing: "border-box",
 };
 
 const sectionTitle = {
-  fontSize: "0.9rem",
-  color: "#38bdf8",
-  marginBottom: 14,
-  textTransform: "uppercase",
-  letterSpacing: "0.15em",
-  fontWeight: "700",
+  fontSize: "1.15rem",
+  color: "#f0f9ff",
+  marginBottom: 10,
+  fontWeight: "600",
 };
 
 const sectionText = {
-  fontSize: "1.05rem",
-  lineHeight: "1.7",
-  color: "#cbd5e1",
-  fontWeight: "300",
+  fontSize: 15,
+  lineHeight: 1.7,
+  color: "#f8fafc",
 };
 
 const contactBox = {
-  marginTop: 60,
-  padding: "40px",
-  borderRadius: "24px",
-  background: "linear-gradient(135deg, rgba(56,189,248,0.05), rgba(167,139,250,0.05))",
-  border: "1px solid rgba(56,189,248,0.2)",
+  marginTop: 40,
+  padding: "30px",
+  borderRadius: 20,
+  background: "linear-gradient(135deg, rgba(56,189,248,0.1), rgba(167,139,250,0.1))",
+  border: "1px solid rgba(56,189,248,0.3)",
   textAlign: "center",
   color: "#ffffff"
 };
 
 const link = {
   color: "#38bdf8",
-  textShadow: "0 0 15px rgba(56,189,248,0.4)",
   textDecoration: "none",
-  fontWeight: "600"
+  fontWeight: "bold"
 };
 
-const footer = {
-  marginTop: 60,
-  fontSize: "0.75rem",
-  color: "#475569",
+const footerContainer = {
+  marginTop: 48,
   textAlign: "center",
+};
+
+const footerText = {
+  fontSize: 13,
+  color: "#94a3b8",
   fontStyle: "italic",
-  letterSpacing: "0.02em"
+  marginBottom: 16,
+};
+
+const copyright = {
+  fontSize: 12,
+  color: "#64748b",
+  borderTop: "1px solid rgba(255,255,255,0.1)",
+  paddingTop: 16,
+  letterSpacing: "0.05em",
 };
