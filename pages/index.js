@@ -24,7 +24,6 @@ const AnalogClock = ({ city, timezone, speed = 1, isMobile }) => {
   const min = displayTime.getMinutes();
   const hour = displayTime.getHours();
 
-  // Mobilon kisebb órák, hogy elférjenek egy sorban
   const clockSize = isMobile ? "24px" : "32px";
 
   return (
@@ -33,7 +32,6 @@ const AnalogClock = ({ city, timezone, speed = 1, isMobile }) => {
         width: clockSize, height: clockSize, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.4)",
         position: "relative", background: "#000"
       }}>
-        {/* Óramutatók */}
         <div style={{ position: "absolute", width: "1px", height: isMobile ? "6px" : "8px", background: "white", left: "50%", bottom: "50%", transformOrigin: "bottom", transform: `translateX(-50%) rotate(${(hour % 12) * 30 + min * 0.5}deg)` }} />
         <div style={{ position: "absolute", width: "1px", height: isMobile ? "9px" : "12px", background: "white", left: "50%", bottom: "50%", transformOrigin: "bottom", transform: `translateX(-50%) rotate(${min * 6}deg)` }} />
         <div style={{ position: "absolute", width: "0.5px", height: isMobile ? "10px" : "13px", background: "#38bdf8", left: "50%", bottom: "50%", transformOrigin: "bottom", transform: `translateX(-50%) rotate(${sec * 6}deg)` }} />
@@ -206,7 +204,7 @@ export default function Home() {
       >
         <audio ref={audioRef} src="/wealthyai/icons/nyitobeszed.mp3" preload="auto" onEnded={handleAudioEnd} />
 
-        {/* WORLD CLOCKS BAR - Most már mobilon is megjelenik, vízszintesen középre igazítva */}
+        {/* WORLD CLOCKS BAR */}
         <div style={{ 
           position: "absolute", 
           top: isMobile ? "15px" : "25px", 
@@ -246,17 +244,27 @@ export default function Home() {
           </span>
         </div>
 
-        {/* Navigation - Mobilon elrejtve, hogy ne legyen zsúfolt, vagy a hamburger menübe mehetne */}
-        {!isMobile && (
-          <div style={{ position: "absolute", top: "30px", right: "40px", display: "flex", justifyContent: "center", gap: "28px", zIndex: 6, fontSize: "0.95rem" }}>
-            <a href="/philosophy" onClick={stopAudio} className="nav-link">Philosophy</a>
-            <a href="/how-it-works" onClick={stopAudio} className="nav-link">How it works</a>
-            <a href="/brand-collaborations" onClick={stopAudio} className="nav-link">Brand Collaborations</a>
-            <a href="/how-to-use" onClick={stopAudio} className="nav-link">How to use</a>
-            <a href="/blog" onClick={stopAudio} className="nav-link">Blog</a>
-            <a href="/terms" onClick={stopAudio} className="nav-link">Terms</a>
-          </div>
-        )}
+        {/* Navigation - Mobilon most már látható, flex-wrap segítségével tördelődik */}
+        <div style={{ 
+          position: isMobile ? "relative" : "absolute", 
+          top: isMobile ? "10px" : "30px", 
+          right: isMobile ? "auto" : "40px", 
+          display: "flex", 
+          justifyContent: "center", 
+          gap: isMobile ? "12px" : "28px", 
+          zIndex: 6, 
+          fontSize: isMobile ? "0.75rem" : "0.95rem",
+          flexWrap: isMobile ? "wrap" : "nowrap",
+          padding: isMobile ? "0 20px" : "0",
+          maxWidth: isMobile ? "100%" : "auto"
+        }}>
+          <a href="/philosophy" onClick={stopAudio} className="nav-link">Philosophy</a>
+          <a href="/how-it-works" onClick={stopAudio} className="nav-link">How it works</a>
+          <a href="/brand-collaborations" onClick={stopAudio} className="nav-link">Brand Collaborations</a>
+          <a href="/how-to-use" onClick={stopAudio} className="nav-link">How to use</a>
+          <a href="/blog" onClick={stopAudio} className="nav-link">Blog</a>
+          <a href="/terms" onClick={stopAudio} className="nav-link">Terms</a>
+        </div>
 
         {/* Logo and Slogan Section */}
         <div style={{ textAlign: "center", zIndex: 3, display: "flex", flexDirection: "column", alignItems: "center", width: "100%", transform: isMobile ? "none" : "translateY(-40px)" }}>
@@ -293,7 +301,6 @@ export default function Home() {
         <div style={{ position: isMobile ? "relative" : "absolute", bottom: 0, left: 0, width: "100%", padding: isMobile ? "36px 24px 24px" : "18px 24px", display: "flex", flexDirection: isMobile ? "column-reverse" : "row", justifyContent: "space-between", alignItems: isMobile ? "center" : "flex-end", zIndex: 5, boxSizing: "border-box", gap: isMobile ? "30px" : "0", background: isMobile ? "linear-gradient(to top, rgba(6,11,19,0.95) 0%, rgba(6,11,19,0.8) 50%, rgba(6,11,19,0.0) 100%)" : "transparent" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px", alignItems: isMobile ? "center" : "flex-start" }}>
             
-            {/* FB GROUP BUTTON */}
             <a href="https://www.facebook.com/profile.php?id=61588517507057" target="_blank" rel="noopener noreferrer" className="builder-btn discrete-pulse" style={{
               fontSize: "10px", textTransform: "uppercase", letterSpacing: "1.5px", color: "#38bdf8", textDecoration: "none", fontWeight: "600",
               border: "1px solid rgba(56,189,248,0.3)", padding: "6px 12px", borderRadius: "4px", marginBottom: "4px", transition: "all 0.3s ease", background: "rgba(0,0,0,0.3)",
