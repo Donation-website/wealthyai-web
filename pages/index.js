@@ -251,6 +251,7 @@ export default function Home() {
           <div style={{ position: "absolute", top: "30px", right: "40px", display: "flex", justifyContent: "center", gap: "28px", zIndex: 6, fontSize: "0.95rem" }}>
             <a href="/philosophy" onClick={stopAudio} className="nav-link">Philosophy</a>
             <a href="/how-it-works" onClick={stopAudio} className="nav-link">How it works</a>
+            <a href="/brand-collaborations" onClick={stopAudio} className="nav-link">Brand Collaborations</a>
             <a href="/how-to-use" onClick={stopAudio} className="nav-link">How to use</a>
             <a href="/blog" onClick={stopAudio} className="nav-link">Blog</a>
             <a href="/terms" onClick={stopAudio} className="nav-link">Terms</a>
