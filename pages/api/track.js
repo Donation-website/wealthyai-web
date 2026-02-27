@@ -1,20 +1,20 @@
-// api/track.js
 import { createClient } from '@supabase/supabase-js'
 
 export default async function handler(req, res) {
-  // Figyelj a nevekre: pontosan az, ami a képeden van!
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL, 
     process.env.SUPABASE_SERVICE_ROLE_KEY
   )
 
   const country = req.headers['x-vercel-ip-country'] || 'Unknown';
-  const city = req.headers['x-vercel-ip-city'] || 'Unknown';
+  // A decodeURIComponent eltünteti a %20 jeleket a városnévből
+  const rawCity = req.headers['x-vercel-ip-city'] || 'Unknown';
+  const city = decodeURIComponent(rawCity);
 
-  const { data, error } = await supabase
-    .from('visitations')
+  const { error } = await supabase
+    .from('visitations') // Ez a jó tábla!
     .insert([{ 
-      country: country, // kisbetűs legyen a Supabase-ben is!
+      country: country, 
       city: city,
       user_agent: req.headers['user-agent']
     }])
