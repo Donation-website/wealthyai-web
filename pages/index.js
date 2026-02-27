@@ -3,6 +3,47 @@ import SEO from "../components/SEO";
 import Head from "next/head";
 import TrafficTracker from "../components/TrafficTracker";
 
+// --- ÓRA KOMPONENS ---
+const AnalogClock = ({ city, timezone, speed = 1, isMobile }) => {
+  const [time, setTime] = useState(new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTime(prev => new Date(prev.getTime() + (1000 * speed)));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [speed]);
+
+  const getTimeInZone = () => {
+    if (speed !== 1) return time; // WealthyAI lassított idő
+    return new Date(new Date().toLocaleString("en-US", { timeZone: timezone }));
+  };
+
+  const displayTime = getTimeInZone();
+  const sec = displayTime.getSeconds();
+  const min = displayTime.getMinutes();
+  const hour = displayTime.getHours();
+
+  // Mobilon kisebb órák, hogy elférjenek egy sorban
+  const clockSize = isMobile ? "24px" : "32px";
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+      <div style={{
+        width: clockSize, height: clockSize, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.4)",
+        position: "relative", background: "#000"
+      }}>
+        {/* Óramutatók */}
+        <div style={{ position: "absolute", width: "1px", height: isMobile ? "6px" : "8px", background: "white", left: "50%", bottom: "50%", transformOrigin: "bottom", transform: `translateX(-50%) rotate(${(hour % 12) * 30 + min * 0.5}deg)` }} />
+        <div style={{ position: "absolute", width: "1px", height: isMobile ? "9px" : "12px", background: "white", left: "50%", bottom: "50%", transformOrigin: "bottom", transform: `translateX(-50%) rotate(${min * 6}deg)` }} />
+        <div style={{ position: "absolute", width: "0.5px", height: isMobile ? "10px" : "13px", background: "#38bdf8", left: "50%", bottom: "50%", transformOrigin: "bottom", transform: `translateX(-50%) rotate(${sec * 6}deg)` }} />
+        <div style={{ position: "absolute", width: "2px", height: "2px", background: "white", borderRadius: "50%", top: "50%", left: "50%", transform: "translate(-50%, -50%)" }} />
+      </div>
+      <span style={{ fontSize: isMobile ? "6px" : "7px", opacity: 0.6, textTransform: "uppercase", letterSpacing: "0.5px" }}>{city}</span>
+    </div>
+  );
+};
+
 export default function Home() {
   const SITE_URL = "https://mywealthyai.com";
   const SHARE_TEXT = "AI-powered financial clarity with WealthyAI";
@@ -11,8 +52,6 @@ export default function Home() {
   const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
-
-  /* ===== ROBOT TRAP STATE ===== */
   const [botValue, setBotValue] = useState("");
   const [isBotTrapped, setIsBotTrapped] = useState(false);
 
@@ -55,13 +94,10 @@ export default function Home() {
       if (audioRef.current) {
         audioRef.current.muted = true;
         audioRef.current.play()
-          .then(() => {
-            setIsPlaying(true);
-          })
+          .then(() => { setIsPlaying(true); })
           .catch(err => console.log("Interaction required"));
       }
     }, 3500);
-
     return () => {
       clearTimeout(playTimeout);
       if (audioRef.current) audioRef.current.pause();
@@ -71,9 +107,7 @@ export default function Home() {
   const handleAudioEnd = () => {
     setIsPlaying(false);
     setIsMuted(true);
-    if (audioRef.current) {
-      audioRef.current.currentTime = 0;
-    }
+    if (audioRef.current) audioRef.current.currentTime = 0;
   };
 
   const stopAudio = () => {
@@ -109,12 +143,10 @@ export default function Home() {
     }
   };
 
-  /* ===== TRAP CHECKER ===== */
   const handleStartClick = (e) => {
     if (botValue !== "") {
       e.preventDefault();
-      setIsBotTrapped(true); // Megfogtuk a kis köcsögöt
-      console.log("Bot detected and trapped.");
+      setIsBotTrapped(true);
       return;
     }
     if (!isVerified) {
@@ -129,11 +161,7 @@ export default function Home() {
       <TrafficTracker />
       <Head>
         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
-        
-        {/* GOOGLE SEARCH CONSOLE VERIFICATION */}
         <meta name="google-site-verification" content="019m-2Ayi9dmgKh_oPI8PVpR9flMsOfX_048yySbIRQ" />
-
-        {/* FACEBOOK & LINKEDIN OG REBOOT FIX */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={SITE_URL} />
         <meta property="og:title" content="WealthyAI – AI-powered financial clarity" />
@@ -164,8 +192,7 @@ export default function Home() {
           alignItems: "center",
           justifyContent: isMobile ? "flex-start" : "center",
           backgroundColor: "#060b13",
-          backgroundImage:
-            "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
+          backgroundImage: "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
           backgroundPosition: isMobile ? "center 22%" : "center",
           backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
@@ -177,67 +204,41 @@ export default function Home() {
           padding: isMobile ? "80px 0 60px 0" : 0,
         }}
       >
-        <audio 
-          ref={audioRef} 
-          src="/wealthyai/icons/nyitobeszed.mp3" 
-          preload="auto" 
-          onEnded={handleAudioEnd}
-        />
+        <audio ref={audioRef} src="/wealthyai/icons/nyitobeszed.mp3" preload="auto" onEnded={handleAudioEnd} />
 
-        {/* HONEYPOT - LÁTHATATLAN CSAPDA MEZŐ */}
-        <div style={{ opacity: 0, position: "absolute", top: 0, left: 0, height: 0, width: 0, zIndex: -1, pointerEvents: "none" }}>
-          <label>If you are human, leave this empty</label>
-          <input 
-            type="text" 
-            value={botValue} 
-            onChange={(e) => setBotValue(e.target.value)} 
-            tabIndex="-1" 
-            autoComplete="off"
-          />
+        {/* WORLD CLOCKS BAR - Most már mobilon is megjelenik, vízszintesen középre igazítva */}
+        <div style={{ 
+          position: "absolute", 
+          top: isMobile ? "15px" : "25px", 
+          left: isMobile ? "50%" : "150px", 
+          transform: isMobile ? "translateX(-50%)" : "none",
+          display: "flex", 
+          gap: isMobile ? "10px" : "20px", 
+          zIndex: 10,
+          width: isMobile ? "100%" : "auto",
+          justifyContent: isMobile ? "center" : "flex-start"
+        }}>
+          <AnalogClock city="New York" timezone="America/New_York" isMobile={isMobile} />
+          <AnalogClock city="London" timezone="Europe/London" isMobile={isMobile} />
+          <AnalogClock city="Paris" timezone="Europe/Paris" isMobile={isMobile} />
+          <AnalogClock city="Tokyo" timezone="Asia/Tokyo" isMobile={isMobile} />
+          <AnalogClock city="WealthyAI" timezone="UTC" speed={0.75} isMobile={isMobile} />
         </div>
 
-        {/* TURNSTILE WIDGET */}
-        <div 
-          id="turnstile-container" 
-          style={{ 
-            position: "fixed", 
-            top: "20px", 
-            left: "20px", 
-            zIndex: 999,
-            minHeight: "65px",
-            display: isVerified ? "none" : "block" 
-          }}
-        ></div>
+        {/* Honeypot for bots */}
+        <div style={{ opacity: 0, position: "absolute", top: 0, left: 0, height: 0, width: 0, zIndex: -1, pointerEvents: "none" }}>
+          <label>If you are human, leave this empty</label>
+          <input type="text" value={botValue} onChange={(e) => setBotValue(e.target.value)} tabIndex="-1" autoComplete="off" />
+        </div>
 
-        {/* NARRATOR TOGGLE */}
-        <div 
-          onClick={toggleMute}
-          className="narrator-toggle"
-          style={{
-            position: "fixed",
-            top: isMobile ? "60px" : "80px",
-            right: isMobile ? "20px" : "40px",
-            zIndex: 100,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            opacity: isPlaying ? 0.9 : 0.6,
-            transition: "all 0.5s ease",
-            background: "rgba(255,255,255,0.05)",
-            padding: "5px 12px",
-            borderRadius: "15px",
-            border: "1px solid rgba(255,255,255,0.1)"
-          }}
-        >
+        {/* Cloudflare Turnstile */}
+        <div id="turnstile-container" style={{ position: "fixed", top: "20px", left: "20px", zIndex: 999, minHeight: "65px", display: isVerified ? "none" : "block" }}></div>
+
+        {/* Narrator Toggle */}
+        <div onClick={toggleMute} className="narrator-toggle" style={{ position: "fixed", top: isMobile ? "65px" : "80px", right: isMobile ? "20px" : "40px", zIndex: 100, cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", opacity: isPlaying ? 0.9 : 0.6, transition: "all 0.5s ease", background: "rgba(255,255,255,0.05)", padding: "5px 12px", borderRadius: "15px", border: "1px solid rgba(255,255,255,0.1)" }}>
           <div style={{ display: "flex", gap: "2px", alignItems: "flex-end", height: "12px" }}>
             {[1, 2, 3].map(i => (
-              <div key={i} style={{
-                width: "2px",
-                height: (isPlaying && !isMuted) ? "100%" : "2px",
-                backgroundColor: "#38bdf8",
-                animation: (isPlaying && !isMuted) ? `audioBar 0.8s ease-in-out infinite alternate ${i * 0.2}s` : "none"
-              }} />
+              <div key={i} style={{ width: "2px", height: (isPlaying && !isMuted) ? "100%" : "2px", backgroundColor: "#38bdf8", animation: (isPlaying && !isMuted) ? `audioBar 0.8s ease-in-out infinite alternate ${i * 0.2}s` : "none" }} />
             ))}
           </div>
           <span style={{ fontSize: "9px", fontWeight: "700", letterSpacing: "1px", color: "#38bdf8", textTransform: "uppercase" }}>
@@ -245,90 +246,27 @@ export default function Home() {
           </span>
         </div>
 
-        {/* TOP NAV */}
-        <div
-          style={{
-            position: isMobile ? "fixed" : "absolute",
-            top: isMobile ? "15px" : "30px",
-            right: isMobile ? "40px" : "40px",
-            display: "flex",
-            justifyContent: "center",
-            gap: isMobile ? "15px" : "28px",
-            zIndex: 6,
-            fontSize: isMobile ? "0.8rem" : "0.95rem",
-          }}
-        >
-          <a href="/philosophy" onClick={stopAudio} className="nav-link">Philosophy</a>
-          <a href="/how-it-works" onClick={stopAudio} className="nav-link">How it works</a>
-          <a href="/how-to-use" onClick={stopAudio} className="nav-link">How to use</a>
-          <a href="/blog" onClick={stopAudio} className="nav-link">Blog</a>
-          <a href="/terms" onClick={stopAudio} className="nav-link">Terms</a>
-        </div>
+        {/* Navigation - Mobilon elrejtve, hogy ne legyen zsúfolt, vagy a hamburger menübe mehetne */}
+        {!isMobile && (
+          <div style={{ position: "absolute", top: "30px", right: "40px", display: "flex", justifyContent: "center", gap: "28px", zIndex: 6, fontSize: "0.95rem" }}>
+            <a href="/philosophy" onClick={stopAudio} className="nav-link">Philosophy</a>
+            <a href="/how-it-works" onClick={stopAudio} className="nav-link">How it works</a>
+            <a href="/how-to-use" onClick={stopAudio} className="nav-link">How to use</a>
+            <a href="/blog" onClick={stopAudio} className="nav-link">Blog</a>
+            <a href="/terms" onClick={stopAudio} className="nav-link">Terms</a>
+          </div>
+        )}
 
-        {/* CENTER LOGO & TEXT */}
-        <div
-          style={{
-            textAlign: "center",
-            zIndex: 3,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            width: "100%",
-            transform: isMobile ? "none" : "translateY(-40px)",
-          }}
-        >
-          <img
-            src="/wealthyai/icons/generated.png"
-            alt="WealthyAI logo"
-            className="brand-logo"
-            style={{
-              width: isMobile ? "320px" : "860px",
-              maxWidth: "95vw",
-              display: "block",
-              cursor: "pointer",
-              marginTop: isMobile ? "24px" : "0px",
-            }}
-          />
-
-          <div
-            style={{
-              color: "#FFFFFF",
-              lineHeight: "1.45",
-              textAlign: "center",
-              textShadow: "0 2px 10px rgba(0,0,0,0.5)",
-              marginTop: isMobile ? "0px" : "-110px",
-              width: "100%",
-              maxWidth: "800px",
-              padding: "0 20px",
-              letterSpacing: "0.2px",
-            }}
-          >
-            <div
-              style={{
-                fontSize: isMobile ? "1.1rem" : "1.55rem",
-                fontWeight: "300",
-                opacity: 0.9,
-                marginBottom: "15px",
-              }}
-            >
+        {/* Logo and Slogan Section */}
+        <div style={{ textAlign: "center", zIndex: 3, display: "flex", flexDirection: "column", alignItems: "center", width: "100%", transform: isMobile ? "none" : "translateY(-40px)" }}>
+          <img src="/wealthyai/icons/generated.png" alt="WealthyAI logo" className="brand-logo" style={{ width: isMobile ? "320px" : "860px", maxWidth: "95vw", display: "block", cursor: "pointer", marginTop: isMobile ? "40px" : "0px" }} />
+          <div style={{ color: "#FFFFFF", lineHeight: "1.45", textAlign: "center", textShadow: "0 2px 10px rgba(0,0,0,0.5)", marginTop: isMobile ? "0px" : "-110px", width: "100%", maxWidth: "800px", padding: "0 20px", letterSpacing: "0.2px" }}>
+            <div style={{ fontSize: isMobile ? "1.1rem" : "1.55rem", fontWeight: "300", opacity: 0.9, marginBottom: "15px" }}>
               AI-powered financial thinking.<br />
               Structured insights.<br />
               Clear perspective.
             </div>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: isMobile ? "column" : "row",
-                justifyContent: "center",
-                alignItems: "center",
-                fontSize: isMobile ? "0.7rem" : "0.85rem",
-                textTransform: "uppercase",
-                letterSpacing: "1.4px",
-                opacity: 0.8,
-                gap: isMobile ? "8px" : "15px",
-                fontWeight: "500",
-              }}
-            >
+            <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", justifyContent: "center", alignItems: "center", fontSize: isMobile ? "0.7rem" : "0.85rem", textTransform: "uppercase", letterSpacing: "1.4px", opacity: 0.8, gap: isMobile ? "8px" : "15px", fontWeight: "500" }}>
               <span className="discrete-pulse">Not advice.</span>
               <span className="discrete-pulse">Not predictions.</span>
               <span className="discrete-pulse">Financial intelligence.</span>
@@ -336,121 +274,38 @@ export default function Home() {
           </div>
         </div>
 
-        {/* START SECTION */}
-        <div
-          style={{
-            position: isMobile ? "relative" : "absolute",
-            top: isMobile ? "auto" : "45%",
-            left: isMobile ? "auto" : "10%",
-            transform: isMobile ? "none" : "translateY(-50%)",
-            marginTop: isMobile ? "40px" : "0",
-            zIndex: 20,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: isMobile ? "center" : "flex-start",
-            gap: "15px",
-            padding: isMobile ? "0 20px" : "0",
-            textAlign: isMobile ? "center" : "left",
-          }}
-        >
-          <a
-            href={isVerified && !isBotTrapped ? "/start" : "#"}
-            onClick={handleStartClick}
-            className="start-btn"
-            style={{
-              width: "130px",
-              textAlign: "center",
-              padding: "14px 0",
-              backgroundColor: isVerified ? "#1a253a" : "rgba(255,255,255,0.05)",
-              border: isVerified ? "1px solid rgba(56,189,248,0.8)" : "1px solid rgba(255,255,255,0.1)",
-              borderRadius: "10px",
-              color: isVerified ? "white" : "rgba(255,255,255,0.3)",
-              textDecoration: "none",
-              fontWeight: "bold",
-              fontSize: "1.1rem",
-              cursor: isVerified ? "pointer" : "not-allowed",
-              transition: "all 0.4s ease",
-            }}
-          >
+        {/* CTA Section (Start Button) */}
+        <div style={{ position: isMobile ? "relative" : "absolute", top: isMobile ? "auto" : "45%", left: isMobile ? "auto" : "10%", transform: isMobile ? "none" : "translateY(-50%)", marginTop: isMobile ? "40px" : "0", zIndex: 20, display: "flex", flexDirection: "column", alignItems: isMobile ? "center" : "flex-start", gap: "15px", padding: isMobile ? "0 20px" : "0", textAlign: isMobile ? "center" : "left" }}>
+          <a href={isVerified && !isBotTrapped ? "/start" : "#"} onClick={handleStartClick} className="start-btn" style={{ width: "130px", textAlign: "center", padding: "14px 0", backgroundColor: isVerified ? "#1a253a" : "rgba(255,255,255,0.05)", border: isVerified ? "1px solid rgba(56,189,248,0.8)" : "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", color: isVerified ? "white" : "rgba(255,255,255,0.3)", textDecoration: "none", fontWeight: "bold", fontSize: "1.1rem", cursor: isVerified ? "pointer" : "not-allowed", transition: "all 0.4s ease" }}>
             {isBotTrapped ? "Loading..." : "Start"}
           </a>
-
-          <div
-            style={{
-              fontSize: "0.85rem",
-              opacity: 0.75,
-              letterSpacing: "0.3px",
-              maxWidth: isMobile ? "280px" : "320px",
-            }}
-          >
+          <div style={{ fontSize: "0.85rem", opacity: 0.75, letterSpacing: "0.3px", maxWidth: isMobile ? "280px" : "320px" }}>
             {isBotTrapped ? "System congestion. Please wait..." : "Start with a simple financial snapshot. Takes less than a minute."}
           </div>
-
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-            padding: "4px 10px",
-            borderRadius: "6px",
-            background: "rgba(16, 185, 129, 0.1)",
-            border: "1px solid rgba(16, 185, 129, 0.2)",
-            marginTop: "5px"
-          }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", padding: "4px 10px", borderRadius: "6px", background: "rgba(16, 185, 129, 0.1)", border: "1px solid rgba(16, 185, 129, 0.2)", marginTop: "5px" }}>
             <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#10b981", boxShadow: "0 0 8px #10b981" }} />
-            <span style={{ fontSize: "10px", color: "#10b981", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-              No Log-In System
-            </span>
+            <span style={{ fontSize: "10px", color: "#10b981", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px" }}>No Log-In System</span>
           </div>
         </div>
 
-        {/* FOOTER */}
-        <div
-          style={{
-            position: isMobile ? "relative" : "absolute",
-            bottom: 0,
-            left: 0,
-            width: "100%",
-            padding: isMobile ? "36px 24px 24px" : "18px 24px",
-            display: "flex",
-            flexDirection: isMobile ? "column-reverse" : "row",
-            justifyContent: "space-between",
-            alignItems: isMobile ? "center" : "flex-end",
-            zIndex: 5,
-            boxSizing: "border-box",
-            gap: isMobile ? "30px" : "0",
-            background: isMobile
-              ? "linear-gradient(to top, rgba(6,11,19,0.95) 0%, rgba(6,11,19,0.8) 50%, rgba(6,11,19,0.0) 100%)"
-              : "transparent",
-          }}
-        >
+        {/* Footer Section */}
+        <div style={{ position: isMobile ? "relative" : "absolute", bottom: 0, left: 0, width: "100%", padding: isMobile ? "36px 24px 24px" : "18px 24px", display: "flex", flexDirection: isMobile ? "column-reverse" : "row", justifyContent: "space-between", alignItems: isMobile ? "center" : "flex-end", zIndex: 5, boxSizing: "border-box", gap: isMobile ? "30px" : "0", background: isMobile ? "linear-gradient(to top, rgba(6,11,19,0.95) 0%, rgba(6,11,19,0.8) 50%, rgba(6,11,19,0.0) 100%)" : "transparent" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px", alignItems: isMobile ? "center" : "flex-start" }}>
-            <div style={{ 
-              fontSize: "10px", 
-              textTransform: "uppercase", 
-              letterSpacing: "2px", 
-              color: "white", 
-              fontWeight: "400", 
-              opacity: 0.7,
-              fontFamily: "'Inter', sans-serif",
-              display: "flex",
-              alignItems: "center",
-              gap: "12px"
+            
+            {/* FB GROUP BUTTON */}
+            <a href="https://www.facebook.com/profile.php?id=61588517507057" target="_blank" rel="noopener noreferrer" className="builder-btn discrete-pulse" style={{
+              fontSize: "10px", textTransform: "uppercase", letterSpacing: "1.5px", color: "#38bdf8", textDecoration: "none", fontWeight: "600",
+              border: "1px solid rgba(56,189,248,0.3)", padding: "6px 12px", borderRadius: "4px", marginBottom: "4px", transition: "all 0.3s ease", background: "rgba(0,0,0,0.3)",
+              display: "inline-block"
             }}>
+              [ Help to Builders ]
+            </a>
+
+            <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "2px", color: "white", fontWeight: "400", opacity: 0.7, fontFamily: "'Inter', sans-serif", display: "flex", alignItems: "center", gap: "12px" }}>
               Member of Microsoft for Startups
-              <img 
-                src="/wealthyai/icons/microsoft-logo-png-2395.png" 
-                alt="Microsoft Logo" 
-                style={{ 
-                  height: "24px", 
-                  width: "auto", 
-                  display: "inline-block",
-                  filter: "drop-shadow(0 0 5px rgba(255,255,255,0.2))"
-                }} 
-              />
+              <img src="/wealthyai/icons/microsoft-logo-png-2395.png" alt="Microsoft Logo" style={{ height: "24px", width: "auto", display: "inline-block", filter: "drop-shadow(0 0 5px rgba(255,255,255,0.2))" }} />
             </div>
-            <div style={{ fontSize: "0.85rem", opacity: 0.6 }}>
-              © 2026 mywealthyai.com — All rights reserved.
-            </div>
+            <div style={{ fontSize: "0.85rem", opacity: 0.6 }}>© 2026 mywealthyai.com — All rights reserved.</div>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", alignItems: isMobile ? "center" : "flex-end", gap: "8px" }}>
@@ -459,7 +314,6 @@ export default function Home() {
               <div style={{ opacity: 0.8 }}>Media · Partnerships · Institutional use</div>
               <div style={{ fontWeight: 600 }}>info@mywealthyai.com</div>
             </a>
-
             <div style={{ display: "flex", gap: "18px", alignItems: "center", marginTop: isMobile ? "10px" : "0" }}>
               <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" onClick={stopAudio} className="icon-link">
                 <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
@@ -496,8 +350,13 @@ export default function Home() {
             filter: blur(16px); opacity: 0; transition: opacity 0.25s ease; pointer-events: none; z-index: -1;
           }
           .nav-link:hover::before, .icon-link:hover::before { opacity: 1; }
-          .start-btn:hover { 
-            box-shadow: ${isVerified && !isBotTrapped ? "0 0 35px rgba(56,189,248,0.45)" : "none"}; 
+          .start-btn:hover { box-shadow: ${isVerified && !isBotTrapped ? "0 0 35px rgba(56,189,248,0.45)" : "none"}; }
+          
+          .builder-btn:hover {
+            box-shadow: 0 0 15px rgba(56,189,248,0.6);
+            background: rgba(56,189,248,0.2) !important;
+            color: white !important;
+            border-color: rgba(56,189,248,0.8) !important;
           }
         `}</style>
       </main>
