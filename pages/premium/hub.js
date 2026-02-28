@@ -11,7 +11,8 @@ export default function PremiumHub() {
   const [comments, setComments] = useState([]);
   const [aiStatus, setAiStatus] = useState("checking");
   const [stripeBalance, setStripeBalance] = useState("FETCHING...");
-  const [todayTraffic, setTodayTraffic] = useState(0); // ÚJ: Látogatók száma
+  const [todayTraffic, setTodayTraffic] = useState(0); 
+  const [realHumans, setRealHumans] = useState(0); // ÚJ: Valódi emberek száma
 
   const _K = "TUFTVEVSLURPTUlOQU5DRS0yMDI2"; 
   
@@ -37,6 +38,7 @@ export default function PremiumHub() {
       const data = await res.json();
       if (data.stripe) setStripeBalance(data.stripe);
       if (data.trafficToday !== undefined) setTodayTraffic(data.trafficToday);
+      if (data.humansToday !== undefined) setRealHumans(data.humansToday); // ÚJ: Adat fogadása
     } catch (e) {
       setStripeBalance("OFFLINE");
     }
@@ -71,7 +73,7 @@ export default function PremiumHub() {
     checkAiHealth();
     
     const healthInterval = setInterval(checkAiHealth, 60000);
-    const statsInterval = setInterval(fetchMasterStats, 300000); // 5 percenként frissít a háttérben
+    const statsInterval = setInterval(fetchMasterStats, 300000); 
 
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem("wai_vip_token");
@@ -123,8 +125,11 @@ export default function PremiumHub() {
             </div>
 
             <div style={styles.trafficBadge}>
-                <span style={{ fontSize: "9px", color: "#38bdf8", fontWeight: "bold" }}>VISITS TODAY:</span>
+                <span style={{ fontSize: "9px", color: "#38bdf8", fontWeight: "bold" }}>VISITS:</span>
                 <span style={{ fontSize: "11px", color: "#fff", fontWeight: "900", fontFamily: "monospace" }}>{todayTraffic}</span>
+                {/* ÚJ: Valódi emberek kijelzése zöld ikonnal */}
+                <span style={{ fontSize: "9px", color: "#22c55e", fontWeight: "bold", marginLeft: "8px" }}>👤:</span>
+                <span style={{ fontSize: "11px", color: "#22c55e", fontWeight: "900", fontFamily: "monospace" }}>{realHumans}</span>
             </div>
           </div>
 
