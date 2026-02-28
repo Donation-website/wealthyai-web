@@ -45,6 +45,26 @@ export default function Terms() {
             and does not manage assets.
           </Section>
 
+          <Section title="Security & Forensic Monitoring">
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "20px", flexDirection: isMobile ? "column" : "row" }}>
+              <div style={{ flexShrink: 0 }}>
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="#38bdf8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M12 8V12" stroke="#38bdf8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="12" cy="15" r="0.5" fill="#38bdf8"/>
+                  <path d="M9 12C9 12 10 13 12 13C14 13 15 12 15 12" stroke="#38bdf8" strokeWidth="1" strokeLinecap="round"/>
+                </svg>
+              </div>
+              <div>
+                <strong>SYSTEM INTEGRITY NOTICE:</strong> All platform interactions are monitored by AI-driven forensic analysis. Any unauthorized attempt to scrape, reverse-engineer, or bypass proprietary security protocols is strictly prohibited. 
+                <br /><br />
+                Under international cybercrime statutes (including DMCA and WIPO treaties), all access attempts are logged with ISP metadata and geolocation for security and compliance purposes. 
+                <br /><br />
+                <strong>Infrastructure secured via Microsoft Azure Enterprise protocols.</strong>
+              </div>
+            </div>
+          </Section>
+
           <Section title="Privacy by Architecture (Zero-Storage)">
             WealthyAI is built on a zero-server principle. 
             <br /><br />
