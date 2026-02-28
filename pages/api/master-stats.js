@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     todayStart.setHours(0, 0, 0, 0);
 
     const { count, error: trafficError } = await supabase
-      .from('site_traffic')
+      .from('visitations') // JAVÍTVA: site_traffic-ról visitations-re
       .select('*', { count: 'exact', head: true })
       .gte('created_at', todayStart.toISOString());
 
