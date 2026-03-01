@@ -61,7 +61,7 @@ export default function Home() {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
     window.addEventListener("resize", handleResize);
-    return () => window.removeResizeListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   useEffect(() => {
@@ -95,13 +95,15 @@ export default function Home() {
       if (audioRef.current) {
         audioRef.current.muted = true;
         audioRef.current.play()
-          .then(() => { setIsPlaying(true); })
+          .then(() => { 
+            setIsPlaying(true); 
+            setIsMuted(true);
+          })
           .catch(err => console.log("Interaction required"));
       }
     }, 3500);
     return () => {
       clearTimeout(playTimeout);
-      if (audioRef.current) audioRef.current.pause();
     };
   }, []);
 
@@ -119,18 +121,20 @@ export default function Home() {
     }
   };
 
+  // JAVÍTOTT FUNKCIÓ: Pause / Resume / Unmute
   const toggleMute = () => {
     if (audioRef.current) {
-      if (!isPlaying) {
-        audioRef.current.currentTime = 0;
+      if (audioRef.current.paused) {
+        // Ha meg van állítva, elindítjuk (folytatjuk) és levesszük a némítást
         audioRef.current.muted = false;
         audioRef.current.play();
         setIsPlaying(true);
         setIsMuted(false);
       } else {
-        const newMuteState = !isMuted;
-        audioRef.current.muted = newMuteState;
-        setIsMuted(newMuteState);
+        // Ha fut, megállítjuk
+        audioRef.current.pause();
+        setIsPlaying(false);
+        // Itt nem nullázzuk a currentTime-ot, így onnan folytatja ahol abbahagyta
       }
     }
   };
@@ -178,7 +182,6 @@ export default function Home() {
     stopAudio();
   };
 
-  // Reusable Video Component for Desktop/Mobile
   const PremiumVideo = ({ size = "160px" }) => (
     <div style={{ width: size, height: `calc(${size} * 1.18)`, background: "#000", borderRadius: "30px", border: "6px solid #1a1a1a", boxShadow: "0 20px 40px rgba(0,0,0,0.6)", overflow: "hidden", position: "relative" }}>
         <video ref={videoRef} src="/wealthyai/icons/Time.mp4" autoPlay loop muted={isVideoMuted} playsInline style={{ width: "100%", height: "100%", objectFit: "contain", background: "#000" }} />
@@ -309,7 +312,7 @@ export default function Home() {
             ))}
           </div>
           <span style={{ fontSize: "9px", fontWeight: "700", letterSpacing: "1px", color: "#38bdf8", textTransform: "uppercase" }}>
-            {!isPlaying ? "Start Narrator" : isMuted ? "Unmute Narrator" : "Mute"}
+            {!isPlaying ? "Resume Narrator" : "Pause Narrator"}
           </span>
         </div>
 
