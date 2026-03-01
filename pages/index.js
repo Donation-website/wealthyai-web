@@ -64,6 +64,23 @@ export default function Home() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Browser state szinkronizáció a videóhoz (mobile Safari fix)
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const onPlay = () => setIsVideoPlaying(true);
+    const onPause = () => setIsVideoPlaying(false);
+
+    video.addEventListener("play", onPlay);
+    video.addEventListener("pause", onPause);
+
+    return () => {
+      video.removeEventListener("play", onPlay);
+      video.removeEventListener("pause", onPause);
+    };
+  }, []);
+
   useEffect(() => {
     const renderTurnstile = () => {
       if (window.turnstile && document.getElementById("turnstile-container")) {
@@ -132,18 +149,16 @@ export default function Home() {
     }
   };
 
-  // --- JAVÍTOTT VIDEÓ FUNKCIÓK ---
   const toggleVideoPlayback = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (videoRef.current) {
-      if (!videoRef.current.paused) {
-        videoRef.current.pause();
-        setIsVideoPlaying(false);
-      } else {
-        videoRef.current.play().catch(err => console.log("Playback error", err));
-        setIsVideoPlaying(true);
-      }
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (video.paused) {
+      video.play().catch(err => console.log("Playback error", err));
+    } else {
+      video.pause();
     }
   };
 
@@ -179,7 +194,6 @@ export default function Home() {
     stopAudio();
   };
 
-  // --- JAVÍTOTT PREMIUM VIDEO KOMPONENS ---
   const PremiumVideo = ({ size = "160px" }) => (
     <div style={{ 
       width: size, 
@@ -194,7 +208,6 @@ export default function Home() {
     }}>
         <video 
           ref={videoRef} 
-          key="main-video-element"
           src="/wealthyai/icons/Time.mp4" 
           autoPlay 
           loop 
