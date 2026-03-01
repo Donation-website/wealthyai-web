@@ -15,7 +15,7 @@ const AnalogClock = ({ city, timezone, speed = 1, isMobile }) => {
   }, [speed]);
 
   const getTimeInZone = () => {
-    if (speed !== 1) return time; // WealthyAI lassított idő
+    if (speed !== 1) return time;
     return new Date(new Date().toLocaleString("en-US", { timeZone: timezone }));
   };
 
@@ -71,7 +71,6 @@ export default function Home() {
           sitekey: "0x4AAAAAACfHxdcNLlIOQCJF",
           appearance: "always",
           callback: () => {
-            console.log("Verifikáció sikeres!");
             setIsVerified(true);
           },
           theme: "dark",
@@ -102,9 +101,7 @@ export default function Home() {
           .catch(err => console.log("Interaction required"));
       }
     }, 3500);
-    return () => {
-      clearTimeout(playTimeout);
-    };
+    return () => clearTimeout(playTimeout);
   }, []);
 
   const handleAudioEnd = () => {
@@ -135,21 +132,23 @@ export default function Home() {
     }
   };
 
-  // JAVÍTOTT VIDEÓ LEJÁTSZÓ FUNKCIÓ
+  // JAVÍTOTT VIDEÓ LEJÁTSZÓ FUNKCIÓK
   const toggleVideoPlayback = (e) => {
+    e.preventDefault();
     e.stopPropagation();
     if (videoRef.current) {
       if (!videoRef.current.paused) {
         videoRef.current.pause();
         setIsVideoPlaying(false);
       } else {
-        videoRef.current.play();
+        videoRef.current.play().catch(err => console.log("Playback error", err));
         setIsVideoPlaying(true);
       }
     }
   };
 
   const toggleVideoMute = (e) => {
+    e.preventDefault();
     e.stopPropagation();
     if (videoRef.current) {
       const newMute = !isVideoMuted;
@@ -181,15 +180,40 @@ export default function Home() {
   };
 
   const PremiumVideo = ({ size = "160px" }) => (
-    <div style={{ width: size, height: `calc(${size} * 1.18)`, background: "#000", borderRadius: "30px", border: "6px solid #1a1a1a", boxShadow: "0 20px 40px rgba(0,0,0,0.6)", overflow: "hidden", position: "relative" }}>
-        <video ref={videoRef} src="/wealthyai/icons/Time.mp4" autoPlay loop muted={isVideoMuted} playsInline style={{ width: "100%", height: "100%", objectFit: "contain", background: "#000" }} />
+    <div style={{ 
+      width: size, 
+      height: `calc(${size} * 1.18)`, 
+      background: "#000", 
+      borderRadius: "30px", 
+      border: "6px solid #1a1a1a", 
+      boxShadow: "0 20px 40px rgba(0,0,0,0.6)", 
+      overflow: "hidden", 
+      position: "relative",
+      userSelect: "none"
+    }}>
+        <video 
+          ref={videoRef} 
+          key="main-video-element"
+          src="/wealthyai/icons/Time.mp4" 
+          autoPlay 
+          loop 
+          muted={isVideoMuted} 
+          playsInline 
+          style={{ width: "100%", height: "100%", objectFit: "cover", background: "#000" }} 
+        />
         
-        <div style={{ position: "absolute", bottom: "10px", left: "0", width: "100%", display: "flex", justifyContent: "center", gap: "15px", zIndex: 10 }}>
-            <div onClick={toggleVideoPlayback} style={{ background: "rgba(0,0,0,0.5)", borderRadius: "50%", width: "24px", height: "24px", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.2)", cursor: "pointer" }}>
-                <span style={{ fontSize: "10px", opacity: 0.8 }}>{isVideoPlaying ? "⏸" : "▶"}</span>
+        <div style={{ position: "absolute", bottom: "10px", left: "0", width: "100%", display: "flex", justifyContent: "center", gap: "15px", zIndex: 100 }}>
+            <div 
+              onPointerDown={toggleVideoPlayback} 
+              style={{ background: "rgba(0,0,0,0.6)", borderRadius: "50%", width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.3)", cursor: "pointer" }}
+            >
+                <span style={{ fontSize: "12px", pointerEvents: "none" }}>{isVideoPlaying ? "⏸" : "▶"}</span>
             </div>
-            <div onClick={toggleVideoMute} style={{ background: "rgba(0,0,0,0.5)", borderRadius: "50%", width: "24px", height: "24px", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.2)", cursor: "pointer" }}>
-                <span style={{ fontSize: "10px", opacity: 0.8 }}>{isVideoMuted ? "🔇" : "🔊"}</span>
+            <div 
+              onPointerDown={toggleVideoMute} 
+              style={{ background: "rgba(0,0,0,0.6)", borderRadius: "50%", width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.3)", cursor: "pointer" }}
+            >
+                <span style={{ fontSize: "12px", pointerEvents: "none" }}>{isVideoMuted ? "🔇" : "🔊"}</span>
             </div>
         </div>
     </div>
@@ -219,20 +243,13 @@ export default function Home() {
             "name": "WealthyAI",
             "url": "https://mywealthyai.com",
             "logo": "https://mywealthyai.com/wealthyai/icons/generated.png",
-            "description": "WealthyAI provides financial interpretation, not advice. We aim for clearer thinking through time-based intelligence and structured insights, supporting human judgment quietly over time.",
+            "description": "WealthyAI provides financial interpretation, not advice. We aim for clearer thinking through time-based intelligence and structured insights.",
             "founder": {
               "@type": "Person",
               "name": "Zoltán Horváth",
               "jobTitle": "Founder & Owner",
-              "description": "Entrepreneur who lived and worked in the United Kingdom for a decade. He maintains a private profile and is primarily active on LinkedIn. For inquiries: info@mywealthyai.com",
               "url": "https://www.linkedin.com/sharing/share-offsite/?url=https://mywealthyai.com"
             },
-            "knowsAbout": [
-              "Financial Intelligence",
-              "AI Interpretation",
-              "Structured Thinking",
-              "Market Perspective"
-            ],
             "contactPoint": {
               "@type": "ContactPoint",
               "email": "info@mywealthyai.com",
@@ -274,7 +291,6 @@ export default function Home() {
       >
         <audio ref={audioRef} src="/wealthyai/icons/nyitobeszed.mp3" preload="auto" onEnded={handleAudioEnd} />
 
-        {/* WORLD CLOCKS BAR */}
         <div style={{ 
           position: "absolute", 
           top: isMobile ? "15px" : "25px", 
@@ -293,16 +309,13 @@ export default function Home() {
           <AnalogClock city="WealthyAI" timezone="UTC" speed={0.75} isMobile={isMobile} />
         </div>
 
-        {/* Honeypot for bots */}
         <div style={{ opacity: 0, position: "absolute", top: 0, left: 0, height: 0, width: 0, zIndex: -1, pointerEvents: "none" }}>
           <label>If you are human, leave this empty</label>
           <input type="text" value={botValue} onChange={(e) => setBotValue(e.target.value)} tabIndex="-1" autoComplete="off" />
         </div>
 
-        {/* Cloudflare Turnstile */}
         <div id="turnstile-container" style={{ position: "fixed", top: "20px", left: "20px", zIndex: 999, minHeight: "65px", display: isVerified ? "none" : "block" }}></div>
 
-        {/* Narrator Toggle */}
         <div onClick={toggleMute} className="narrator-toggle" style={{ position: "fixed", top: isMobile ? "65px" : "80px", right: isMobile ? "20px" : "40px", zIndex: 100, cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", opacity: isPlaying ? 0.9 : 0.6, transition: "all 0.5s ease", background: "rgba(255,255,255,0.05)", padding: "5px 12px", borderRadius: "15px", border: "1px solid rgba(255,255,255,0.1)" }}>
           <div style={{ display: "flex", gap: "2px", alignItems: "flex-end", height: "12px" }}>
             {[1, 2, 3].map(i => (
@@ -314,19 +327,17 @@ export default function Home() {
           </span>
         </div>
 
-        {/* DESKTOP FEATURED AD VIDEO */}
         {!isMobile && (
           <div style={{ position: "fixed", right: "40px", top: "50%", transform: "translateY(-50%)", zIndex: 100, display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
              <PremiumVideo size="160px" />
              <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: "8px", textTransform: "uppercase", letterSpacing: "1.5px", color: "white", fontWeight: "400", opacity: 0.6, fontFamily: "'Inter', sans-serif" }}>
+                <div style={{ fontSize: "8px", textTransform: "uppercase", letterSpacing: "1.5px", color: "white", fontWeight: "400", opacity: 0.6 }}>
                   Space reserved for excellence
                 </div>
              </div>
           </div>
         )}
 
-        {/* Navigation */}
         <div style={{ 
           position: isMobile ? "relative" : "absolute", 
           top: isMobile ? "10px" : "30px", 
@@ -348,7 +359,6 @@ export default function Home() {
           <a href="/terms" onClick={stopAudio} className="nav-link">Terms</a>
         </div>
 
-        {/* Logo and Slogan Section */}
         <div style={{ textAlign: "center", zIndex: 3, display: "flex", flexDirection: "column", alignItems: "center", width: "100%", transform: isMobile ? "none" : "translateY(-40px)" }}>
           <img src="/wealthyai/icons/generated.png" alt="WealthyAI logo" className="brand-logo" style={{ width: isMobile ? "320px" : "860px", maxWidth: "95vw", display: "block", cursor: "pointer", marginTop: isMobile ? "40px" : "0px" }} />
           <div style={{ color: "#FFFFFF", lineHeight: "1.45", textAlign: "center", textShadow: "0 2px 10px rgba(0,0,0,0.5)", marginTop: isMobile ? "0px" : "-110px", width: "100%", maxWidth: "800px", padding: "0 20px", letterSpacing: "0.2px" }}>
@@ -365,13 +375,11 @@ export default function Home() {
           </div>
         </div>
 
-        {/* CTA Section (Start Button) */}
         <div style={{ position: isMobile ? "relative" : "absolute", top: isMobile ? "auto" : "45%", left: isMobile ? "auto" : "10%", transform: isMobile ? "none" : "translateY(-50%)", marginTop: isMobile ? "40px" : "0", zIndex: 20, display: "flex", flexDirection: "column", alignItems: isMobile ? "center" : "flex-start", gap: "15px", padding: isMobile ? "0 20px" : "0", textAlign: isMobile ? "center" : "left" }}>
           <a href={isVerified && !isBotTrapped ? "/start" : "#"} onClick={handleStartClick} className="start-btn" style={{ width: "130px", textAlign: "center", padding: "14px 0", backgroundColor: isVerified ? "#1a253a" : "rgba(255,255,255,0.05)", border: isVerified ? "1px solid rgba(56,189,248,0.8)" : "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", color: isVerified ? "white" : "rgba(255,255,255,0.3)", textDecoration: "none", fontWeight: "bold", fontSize: "1.1rem", cursor: isVerified ? "pointer" : "not-allowed", transition: "all 0.4s ease" }}>
             {isBotTrapped ? "Loading..." : "Start"}
           </a>
           
-          {/* MOBILE VIDEO - Under Start Button */}
           {isMobile && (
             <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
                <PremiumVideo size="120px" />
@@ -387,10 +395,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Footer Section */}
         <div style={{ position: isMobile ? "relative" : "absolute", bottom: 0, left: 0, width: "100%", padding: isMobile ? "36px 24px 24px" : "18px 24px", display: "flex", flexDirection: isMobile ? "column-reverse" : "row", justifyContent: "space-between", alignItems: isMobile ? "center" : "flex-end", zIndex: 5, boxSizing: "border-box", gap: isMobile ? "30px" : "0", background: isMobile ? "linear-gradient(to top, rgba(6,11,19,0.95) 0%, rgba(6,11,19,0.8) 50%, rgba(6,11,19,0.0) 100%)" : "transparent" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px", alignItems: isMobile ? "center" : "flex-start" }}>
-            
             <a href="https://www.facebook.com/profile.php?id=61588517507057" target="_blank" rel="noopener noreferrer" className="builder-btn discrete-pulse" style={{
               fontSize: "10px", textTransform: "uppercase", letterSpacing: "1.5px", color: "#38bdf8", textDecoration: "none", fontWeight: "600",
               border: "1px solid rgba(56,189,248,0.3)", padding: "6px 12px", borderRadius: "4px", marginBottom: "4px", transition: "all 0.3s ease", background: "rgba(0,0,0,0.3)",
@@ -398,10 +404,9 @@ export default function Home() {
             }}>
               [ Help to Builders ]
             </a>
-
-            <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "2px", color: "white", fontWeight: "400", opacity: 0.7, fontFamily: "'Inter', sans-serif", display: "flex", alignItems: "center", gap: "12px" }}>
+            <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "2px", color: "white", fontWeight: "400", opacity: 0.7, display: "flex", alignItems: "center", gap: "12px" }}>
               Member of Microsoft for Startups
-              <img src="/wealthyai/icons/microsoft-logo-png-2395.png" alt="Microsoft Logo" style={{ height: "24px", width: "auto", display: "inline-block", filter: "drop-shadow(0 0 5px rgba(255,255,255,0.2))" }} />
+              <img src="/wealthyai/icons/microsoft-logo-png-2395.png" alt="Microsoft Logo" style={{ height: "24px", width: "auto", filter: "drop-shadow(0 0 5px rgba(255,255,255,0.2))" }} />
             </div>
             <div style={{ fontSize: "0.85rem", opacity: 0.6 }}>© 2026 mywealthyai.com — All rights reserved.</div>
           </div>
@@ -413,16 +418,16 @@ export default function Home() {
               <div style={{ fontWeight: 600 }}>info@mywealthyai.com</div>
             </a>
             <div style={{ display: "flex", gap: "18px", alignItems: "center", marginTop: isMobile ? "10px" : "0" }}>
-              <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" onClick={stopAudio} className="icon-link">
+              <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
                 <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
               </a>
-              <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`} target="_blank" rel="noopener noreferrer" onClick={stopAudio} className="icon-link">
+              <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
                 <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
               </a>
-              <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" onClick={stopAudio} className="icon-link">
+              <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
                 <img src="/wealthyai/icons/linkedin.png" alt="LinkedIn" style={{ width: 34 }} />
               </a>
-              <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" onClick={stopAudio} className="icon-link">
+              <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="icon-link">
                 <img src="/wealthyai/icons/insta.png" alt="Instagram" style={{ width: 34 }} />
               </a>
             </div>
@@ -449,7 +454,6 @@ export default function Home() {
           }
           .nav-link:hover::before, .icon-link:hover::before { opacity: 1; }
           .start-btn:hover { box-shadow: ${isVerified && !isBotTrapped ? "0 0 35px rgba(56,189,248,0.45)" : "none"}; }
-          
           .builder-btn:hover {
             box-shadow: 0 0 15px rgba(56,189,248,0.6);
             background: rgba(56,189,248,0.2) !important;
