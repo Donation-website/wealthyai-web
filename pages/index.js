@@ -138,6 +138,11 @@ export default function Home() {
   const toggleMute = () => {
     if (audioRef.current) {
       if (audioRef.current.paused) {
+        // Ha elindítjuk a narrátort, némítsuk el a videót, hogy ne legyen hangzavar
+        if (videoRef.current) {
+          videoRef.current.muted = true;
+          setIsVideoMuted(true);
+        }
         audioRef.current.muted = false;
         audioRef.current.play();
         setIsPlaying(true);
@@ -167,6 +172,10 @@ export default function Home() {
     e.stopPropagation();
     if (videoRef.current) {
       const newMute = !isVideoMuted;
+      // Ha a videót hangosítjuk, állítsuk meg a narrátort az ütközés elkerülésére
+      if (!newMute) {
+        stopAudio();
+      }
       videoRef.current.muted = newMute;
       setIsVideoMuted(newMute);
     }
