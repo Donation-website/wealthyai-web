@@ -121,33 +121,31 @@ export default function Home() {
     }
   };
 
-  // JAVÍTOTT FUNKCIÓ: Pause / Resume / Unmute
   const toggleMute = () => {
     if (audioRef.current) {
       if (audioRef.current.paused) {
-        // Ha meg van állítva, elindítjuk (folytatjuk) és levesszük a némítást
         audioRef.current.muted = false;
         audioRef.current.play();
         setIsPlaying(true);
         setIsMuted(false);
       } else {
-        // Ha fut, megállítjuk
         audioRef.current.pause();
         setIsPlaying(false);
-        // Itt nem nullázzuk a currentTime-ot, így onnan folytatja ahol abbahagyta
       }
     }
   };
 
+  // JAVÍTOTT VIDEÓ LEJÁTSZÓ FUNKCIÓ
   const toggleVideoPlayback = (e) => {
     e.stopPropagation();
     if (videoRef.current) {
-      if (isVideoPlaying) {
+      if (!videoRef.current.paused) {
         videoRef.current.pause();
+        setIsVideoPlaying(false);
       } else {
         videoRef.current.play();
+        setIsVideoPlaying(true);
       }
-      setIsVideoPlaying(!isVideoPlaying);
     }
   };
 
