@@ -135,7 +135,8 @@ export default function Home() {
     }
   };
 
-  const toggleVideoPlayback = () => {
+  const toggleVideoPlayback = (e) => {
+    e.stopPropagation();
     if (videoRef.current) {
       if (isVideoPlaying) {
         videoRef.current.pause();
@@ -176,6 +177,22 @@ export default function Home() {
     }
     stopAudio();
   };
+
+  // Reusable Video Component for Desktop/Mobile
+  const PremiumVideo = ({ size = "160px" }) => (
+    <div style={{ width: size, height: `calc(${size} * 1.18)`, background: "#000", borderRadius: "30px", border: "6px solid #1a1a1a", boxShadow: "0 20px 40px rgba(0,0,0,0.6)", overflow: "hidden", position: "relative" }}>
+        <video ref={videoRef} src="/wealthyai/icons/Time.mp4" autoPlay loop muted={isVideoMuted} playsInline style={{ width: "100%", height: "100%", objectFit: "contain", background: "#000" }} />
+        
+        <div style={{ position: "absolute", bottom: "10px", left: "0", width: "100%", display: "flex", justifyContent: "center", gap: "15px", zIndex: 10 }}>
+            <div onClick={toggleVideoPlayback} style={{ background: "rgba(0,0,0,0.5)", borderRadius: "50%", width: "24px", height: "24px", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.2)", cursor: "pointer" }}>
+                <span style={{ fontSize: "10px", opacity: 0.8 }}>{isVideoPlaying ? "⏸" : "▶"}</span>
+            </div>
+            <div onClick={toggleVideoMute} style={{ background: "rgba(0,0,0,0.5)", borderRadius: "50%", width: "24px", height: "24px", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.2)", cursor: "pointer" }}>
+                <span style={{ fontSize: "10px", opacity: 0.8 }}>{isVideoMuted ? "🔇" : "🔊"}</span>
+            </div>
+        </div>
+    </div>
+  );
 
   return (
     <>
@@ -296,17 +313,10 @@ export default function Home() {
           </span>
         </div>
 
-        {/* FEATURED AD VIDEO - Apple Watch style - Right side positioned */}
+        {/* DESKTOP FEATURED AD VIDEO */}
         {!isMobile && (
           <div style={{ position: "fixed", right: "40px", top: "50%", transform: "translateY(-50%)", zIndex: 100, display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
-             <div onClick={toggleVideoPlayback} style={{ width: "160px", height: "190px", background: "#000", borderRadius: "30px", border: "6px solid #1a1a1a", boxShadow: "0 20px 40px rgba(0,0,0,0.6)", overflow: "hidden", position: "relative", cursor: "pointer" }}>
-                <video ref={videoRef} src="/wealthyai/icons/Time.mp4" autoPlay loop muted={isVideoMuted} playsInline style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                
-                {/* Discrete Volume Icon */}
-                <div onClick={toggleVideoMute} style={{ position: "absolute", bottom: "10px", right: "10px", background: "rgba(0,0,0,0.5)", borderRadius: "50%", width: "24px", height: "24px", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.2)" }}>
-                   <span style={{ fontSize: "12px", opacity: 0.8 }}>{isVideoMuted ? "🔇" : "🔊"}</span>
-                </div>
-             </div>
+             <PremiumVideo size="160px" />
              <div style={{ textAlign: "center" }}>
                 <div style={{ fontSize: "8px", textTransform: "uppercase", letterSpacing: "1.5px", color: "white", fontWeight: "400", opacity: 0.6, fontFamily: "'Inter', sans-serif" }}>
                   Space reserved for excellence
@@ -315,7 +325,7 @@ export default function Home() {
           </div>
         )}
 
-        {/* Navigation - Mobilon most már látható, flex-wrap segítségével tördelődik */}
+        {/* Navigation */}
         <div style={{ 
           position: isMobile ? "relative" : "absolute", 
           top: isMobile ? "10px" : "30px", 
@@ -359,6 +369,14 @@ export default function Home() {
           <a href={isVerified && !isBotTrapped ? "/start" : "#"} onClick={handleStartClick} className="start-btn" style={{ width: "130px", textAlign: "center", padding: "14px 0", backgroundColor: isVerified ? "#1a253a" : "rgba(255,255,255,0.05)", border: isVerified ? "1px solid rgba(56,189,248,0.8)" : "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", color: isVerified ? "white" : "rgba(255,255,255,0.3)", textDecoration: "none", fontWeight: "bold", fontSize: "1.1rem", cursor: isVerified ? "pointer" : "not-allowed", transition: "all 0.4s ease" }}>
             {isBotTrapped ? "Loading..." : "Start"}
           </a>
+          
+          {/* MOBILE VIDEO - Under Start Button */}
+          {isMobile && (
+            <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+               <PremiumVideo size="120px" />
+            </div>
+          )}
+
           <div style={{ fontSize: "0.85rem", opacity: 0.75, letterSpacing: "0.3px", maxWidth: isMobile ? "280px" : "320px" }}>
             {isBotTrapped ? "System congestion. Please wait..." : "Start with a simple financial snapshot. Takes less than a minute."}
           </div>
