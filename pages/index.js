@@ -64,7 +64,6 @@ export default function Home() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Browser state szinkronizáció a videóhoz (mobile Safari fix)
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -135,10 +134,10 @@ export default function Home() {
     }
   };
 
-  const toggleMute = () => {
+  const toggleMute = (e) => {
+    if (e) e.stopPropagation();
     if (audioRef.current) {
       if (audioRef.current.paused) {
-        // Ha elindítjuk a narrátort, némítsuk el a videót, hogy ne legyen hangzavar
         if (videoRef.current) {
           videoRef.current.muted = true;
           setIsVideoMuted(true);
@@ -159,7 +158,6 @@ export default function Home() {
     e.stopPropagation();
     const video = videoRef.current;
     if (!video) return;
-
     if (video.paused) {
       video.play().catch(err => console.log("Playback error", err));
     } else {
@@ -172,7 +170,6 @@ export default function Home() {
     e.stopPropagation();
     if (videoRef.current) {
       const newMute = !isVideoMuted;
-      // Ha a videót hangosítjuk, állítsuk meg a narrátort az ütközés elkerülésére
       if (!newMute) {
         stopAudio();
       }
@@ -203,7 +200,7 @@ export default function Home() {
     stopAudio();
   };
 
-  // --- PRÉMIUM VIDEÓ KOMPONENS (FRISSÍTETT FEKETE IKONOKKAL) ---
+  // --- PRÉMIUM VIDEÓ KOMPONENS ---
   const PremiumVideo = ({ size = "160px" }) => {
     const PlayIcon = () => (
       <svg width="14" height="14" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg">
@@ -253,13 +250,13 @@ export default function Home() {
           
           <div style={{ position: "absolute", bottom: "12px", left: "0", width: "100%", display: "flex", justifyContent: "center", gap: "12px", zIndex: 100 }}>
               <div 
-                onPointerDown={toggleVideoPlayback} 
+                onClick={toggleVideoPlayback} 
                 style={{ background: "rgba(255,255,255,0.9)", borderRadius: "50%", width: "30px", height: "30px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
               >
                   {isVideoPlaying ? <PauseIcon /> : <PlayIcon />}
               </div>
               <div 
-                onPointerDown={toggleVideoMute} 
+                onClick={toggleVideoMute} 
                 style={{ background: "rgba(255,255,255,0.9)", borderRadius: "50%", width: "30px", height: "30px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
               >
                   {isVideoMuted ? <UnmuteIcon /> : <MuteIcon />}
@@ -496,13 +493,15 @@ export default function Home() {
           @keyframes audioBar { 0% { height: 20%; } 100% { height: 100%; } }
           .discrete-pulse { animation: discretePulse 3s ease-in-out infinite; }
           @keyframes discretePulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
-          .nav-link, .icon-link { position: relative; color: white; text-decoration: none; opacity: 0.85; }
-          .nav-link::before, .icon-link::before {
+          
+          .nav-link, .icon-link, .narrator-toggle { position: relative; color: white; text-decoration: none; }
+          .nav-link::before, .icon-link::before, .narrator-toggle::before {
             content: ""; position: absolute; inset: -12px -22px;
             background: radial-gradient(circle, rgba(56,189,248,0.55) 0%, rgba(56,189,248,0.25) 40%, transparent 70%);
             filter: blur(16px); opacity: 0; transition: opacity 0.25s ease; pointer-events: none; z-index: -1;
           }
-          .nav-link:hover::before, .icon-link:hover::before { opacity: 1; }
+          .nav-link:hover::before, .icon-link:hover::before, .narrator-toggle:hover::before { opacity: 1; }
+          
           .start-btn:hover { box-shadow: ${isVerified && !isBotTrapped ? "0 0 35px rgba(56,189,248,0.45)" : "none"}; }
           .builder-btn:hover {
             box-shadow: 0 0 15px rgba(56,189,248,0.6);
