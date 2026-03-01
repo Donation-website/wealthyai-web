@@ -3,6 +3,79 @@ import SEO from "../components/SEO";
 import Head from "next/head";
 import TrafficTracker from "../components/TrafficTracker";
 
+// --- PRÉMIUM VIDEÓ KOMPONENS (Kiemelve a Home elé a stabil renderelésért) ---
+const PremiumVideo = React.memo(function PremiumVideo({ 
+  size = "160px", 
+  videoRef, 
+  isVideoMuted, 
+  isVideoPlaying, 
+  toggleVideoPlayback, 
+  toggleVideoMute 
+}) {
+  const PlayIcon = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 5V19L19 12L8 5Z" />
+    </svg>
+  );
+
+  const PauseIcon = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6 19H10V5H6V19ZM14 5V19H18V5H14V5Z" />
+    </svg>
+  );
+
+  const MuteIcon = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77zM3 9v6h4l5 5V4L7 9H3z" />
+    </svg>
+  );
+
+  const UnmuteIcon = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v1.79l2.48 2.48c.01-.08.02-.16.02-.24zM19 12c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+    </svg>
+  );
+
+  return (
+    <div style={{ 
+      width: size, 
+      height: `calc(${size} * 1.18)`, 
+      background: "#000", 
+      borderRadius: "30px", 
+      border: "6px solid #1a1a1a", 
+      boxShadow: "0 20px 40px rgba(0,0,0,0.6)", 
+      overflow: "hidden", 
+      position: "relative",
+      userSelect: "none"
+    }}>
+        <video 
+          ref={videoRef} 
+          src="/wealthyai/icons/Time.mp4" 
+          autoPlay 
+          loop 
+          muted={isVideoMuted} 
+          playsInline 
+          style={{ width: "100%", height: "100%", objectFit: "contain", background: "#000" }} 
+        />
+        
+        <div style={{ position: "absolute", bottom: "12px", left: "0", width: "100%", display: "flex", justifyContent: "center", gap: "12px", zIndex: 100 }}>
+            <div 
+              onClick={toggleVideoPlayback} 
+              style={{ background: "rgba(255,255,255,1)", borderRadius: "50%", width: "30px", height: "30px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", border: "none" }}
+            >
+                {isVideoPlaying ? <PauseIcon /> : <PlayIcon />}
+            </div>
+            <div 
+              onClick={toggleVideoMute} 
+              style={{ background: "rgba(255,255,255,1)", borderRadius: "50%", width: "30px", height: "30px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", border: "none" }}
+            >
+                {isVideoMuted ? <UnmuteIcon /> : <MuteIcon />}
+            </div>
+        </div>
+    </div>
+  );
+});
+
 // --- ÓRA KOMPONENS ---
 const AnalogClock = ({ city, timezone, speed = 1, isMobile }) => {
   const [time, setTime] = useState(new Date());
@@ -200,72 +273,6 @@ export default function Home() {
     stopAudio();
   };
 
-  // --- PRÉMIUM VIDEÓ KOMPONENS ---
-  const PremiumVideo = ({ size = "160px" }) => {
-    const PlayIcon = () => (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg">
-        <path d="M8 5V19L19 12L8 5Z" />
-      </svg>
-    );
-
-    const PauseIcon = () => (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg">
-        <path d="M6 19H10V5H6V19ZM14 5V19H18V5H14V5Z" />
-      </svg>
-    );
-
-    const MuteIcon = () => (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg">
-        <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77zM3 9v6h4l5 5V4L7 9H3z" />
-      </svg>
-    );
-
-    const UnmuteIcon = () => (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg">
-        <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v1.79l2.48 2.48c.01-.08.02-.16.02-.24zM19 12c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
-      </svg>
-    );
-
-    return (
-      <div style={{ 
-        width: size, 
-        height: `calc(${size} * 1.18)`, 
-        background: "#000", 
-        borderRadius: "30px", 
-        border: "6px solid #1a1a1a", 
-        boxShadow: "0 20px 40px rgba(0,0,0,0.6)", 
-        overflow: "hidden", 
-        position: "relative",
-        userSelect: "none"
-      }}>
-          <video 
-            ref={videoRef} 
-            src="/wealthyai/icons/Time.mp4" 
-            autoPlay 
-            loop 
-            muted={isVideoMuted} 
-            playsInline 
-            style={{ width: "100%", height: "100%", objectFit: "contain", background: "#000" }} 
-          />
-          
-          <div style={{ position: "absolute", bottom: "12px", left: "0", width: "100%", display: "flex", justifyContent: "center", gap: "12px", zIndex: 100 }}>
-              <div 
-                onClick={toggleVideoPlayback} 
-                style={{ background: "rgba(255,255,255,1)", borderRadius: "50%", width: "30px", height: "30px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
-              >
-                  {isVideoPlaying ? <PauseIcon /> : <PlayIcon />}
-              </div>
-              <div 
-                onClick={toggleVideoMute} 
-                style={{ background: "rgba(255,255,255,1)", borderRadius: "50%", width: "30px", height: "30px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
-              >
-                  {isVideoMuted ? <UnmuteIcon /> : <MuteIcon />}
-              </div>
-          </div>
-      </div>
-    );
-  };
-
   return (
     <>
       <TrafficTracker />
@@ -376,7 +383,14 @@ export default function Home() {
 
         {!isMobile && (
           <div style={{ position: "fixed", right: "40px", top: "50%", transform: "translateY(-50%)", zIndex: 100, display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
-             <PremiumVideo size="160px" />
+             <PremiumVideo 
+                size="160px" 
+                videoRef={videoRef}
+                isVideoMuted={isVideoMuted}
+                isVideoPlaying={isVideoPlaying}
+                toggleVideoPlayback={toggleVideoPlayback}
+                toggleVideoMute={toggleVideoMute}
+             />
              <div style={{ textAlign: "center" }}>
                 <div style={{ fontSize: "8px", textTransform: "uppercase", letterSpacing: "1.5px", color: "white", fontWeight: "400", opacity: 0.6 }}>
                   Space reserved for excellence
@@ -429,7 +443,14 @@ export default function Home() {
           
           {isMobile && (
             <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
-               <PremiumVideo size="120px" />
+               <PremiumVideo 
+                  size="120px" 
+                  videoRef={videoRef}
+                  isVideoMuted={isVideoMuted}
+                  isVideoPlaying={isVideoPlaying}
+                  toggleVideoPlayback={toggleVideoPlayback}
+                  toggleVideoMute={toggleVideoMute}
+               />
             </div>
           )}
 
