@@ -170,6 +170,35 @@ export default function Home() {
         <meta property="og:image:height" content="630" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:image" content="https://mywealthyai.com/wealthyai/icons/share-card.png?v=5" />
+        
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "WealthyAI",
+            "url": "https://mywealthyai.com",
+            "logo": "https://mywealthyai.com/wealthyai/icons/generated.png",
+            "description": "WealthyAI provides financial interpretation, not advice. We aim for clearer thinking through time-based intelligence and structured insights, supporting human judgment quietly over time.",
+            "founder": {
+              "@type": "Person",
+              "name": "Zoltán Horváth",
+              "jobTitle": "Founder & Owner",
+              "description": "Entrepreneur who lived and worked in the United Kingdom for a decade. He maintains a private profile and is primarily active on LinkedIn. For inquiries: info@mywealthyai.com",
+              "url": "https://www.linkedin.com/sharing/share-offsite/?url=https://mywealthyai.com"
+            },
+            "knowsAbout": [
+              "Financial Intelligence",
+              "AI Interpretation",
+              "Structured Thinking",
+              "Market Perspective"
+            ],
+            "contactPoint": {
+              "@type": "ContactPoint",
+              "email": "info@mywealthyai.com",
+              "contactType": "customer support"
+            }
+          })}
+        </script>
       </Head>
       <SEO
         title="WealthyAI – AI-powered financial clarity | mywealthyai"
