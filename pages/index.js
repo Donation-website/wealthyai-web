@@ -132,7 +132,7 @@ export default function Home() {
     }
   };
 
-  // JAVÍTOTT VIDEÓ LEJÁTSZÓ FUNKCIÓK
+  // --- JAVÍTOTT VIDEÓ FUNKCIÓK ---
   const toggleVideoPlayback = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -179,6 +179,7 @@ export default function Home() {
     stopAudio();
   };
 
+  // --- JAVÍTOTT PREMIUM VIDEO KOMPONENS ---
   const PremiumVideo = ({ size = "160px" }) => (
     <div style={{ 
       width: size, 
@@ -199,21 +200,21 @@ export default function Home() {
           loop 
           muted={isVideoMuted} 
           playsInline 
-          style={{ width: "100%", height: "100%", objectFit: "cover", background: "#000" }} 
+          style={{ width: "100%", height: "100%", objectFit: "contain", background: "#000" }} 
         />
         
-        <div style={{ position: "absolute", bottom: "10px", left: "0", width: "100%", display: "flex", justifyContent: "center", gap: "15px", zIndex: 100 }}>
+        <div style={{ position: "absolute", bottom: "12px", left: "0", width: "100%", display: "flex", justifyContent: "center", gap: "15px", zIndex: 100 }}>
             <div 
               onPointerDown={toggleVideoPlayback} 
-              style={{ background: "rgba(0,0,0,0.6)", borderRadius: "50%", width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.3)", cursor: "pointer" }}
+              style={{ background: "rgba(0,0,0,0.75)", borderRadius: "50%", width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.3)", cursor: "pointer" }}
             >
-                <span style={{ fontSize: "12px", pointerEvents: "none" }}>{isVideoPlaying ? "⏸" : "▶"}</span>
+                <span style={{ fontSize: "14px", pointerEvents: "none", color: "white" }}>{isVideoPlaying ? "⏸" : "▶"}</span>
             </div>
             <div 
               onPointerDown={toggleVideoMute} 
-              style={{ background: "rgba(0,0,0,0.6)", borderRadius: "50%", width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.3)", cursor: "pointer" }}
+              style={{ background: "rgba(0,0,0,0.75)", borderRadius: "50%", width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.3)", cursor: "pointer" }}
             >
-                <span style={{ fontSize: "12px", pointerEvents: "none" }}>{isVideoMuted ? "🔇" : "🔊"}</span>
+                <span style={{ fontSize: "14px", pointerEvents: "none", color: "white" }}>{isVideoMuted ? "🔇" : "🔊"}</span>
             </div>
         </div>
     </div>
