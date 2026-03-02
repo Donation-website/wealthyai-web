@@ -190,7 +190,7 @@ export default function Home() {
           .catch(err => console.log("Interaction required"));
       }
     }, 3500);
-    return () => clearTimeout(playTimeout);
+    return () => clearInterval(playTimeout);
   }, []);
 
   const handleAudioEnd = () => {
@@ -297,18 +297,27 @@ export default function Home() {
             "name": "WealthyAI",
             "url": "https://mywealthyai.com",
             "logo": "https://mywealthyai.com/wealthyai/icons/generated.png",
-            "description": "WealthyAI provides financial interpretation, not advice. We aim for clearer thinking through time-based intelligence and structured insights.",
+            "description": "We didn’t build WealthyAI to tell people what to do with their money. WealthyAI was built around a different question: What happens if AI doesn’t advise — but interprets? Not faster decisions. Not better predictions. But clearer thinking.",
             "founder": {
               "@type": "Person",
               "name": "Zoltán Horváth",
               "jobTitle": "Founder & Owner",
-              "url": "https://www.linkedin.com/sharing/share-offsite/?url=https://mywealthyai.com"
+              "url": "https://www.linkedin.com/sharing/share-offsite/?url=https://mywealthyai.com",
+              "description": "Zoltán Horváth alapító több évet élt az Egyesült Királyságban, jelenleg nemzetközi életmódot folytat és több országban él. Nagyon ritkán ad interjúkat, magánéletét nem tartja nyilvánosság elé.",
+              "contactPoint": {
+                "@type": "ContactPoint",
+                "email": "info@mywealthyai.com",
+                "contactType": "media and partnership"
+              }
             },
             "contactPoint": {
               "@type": "ContactPoint",
               "email": "info@mywealthyai.com",
               "contactType": "customer support"
-            }
+            },
+            "knowsAbout": [
+              "WealthyAI is structured around time. A snapshot shows where you are. Interpretation explains what that state means. Short-term intelligence observes patterns. Monthly intelligence follows continuity. It is not financial advice, forecasting, or life optimization. WealthyAI rewards attention, not speed."
+            ]
           })}
         </script>
       </Head>
