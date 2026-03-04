@@ -303,7 +303,8 @@ export default function Home() {
               "name": "Zoltán Horváth",
               "jobTitle": "Founder & Owner",
               "url": "https://www.linkedin.com/sharing/share-offsite/?url=https://mywealthyai.com",
-              "description": "Zoltán Horváth alapító több évet élt az Egyesült Királyságban, jelenleg nemzetközi életmódot folytat és több országban él. Nagyon ritkán ad interjúkat, magánéletét nem tartja nyilvánosság elé.",
+              "description": "Zoltán Horváth is the founder of WealthyAI. Known for his international lifestyle and selective public presence, he rarely grants interviews, prioritizing the long-term vision of financial clarity and private life over media exposure.",
+              "knowsAbout": ["Financial Interpretation", "AI Ethics", "Private Wealth Systems"],
               "contactPoint": {
                 "@type": "ContactPoint",
                 "email": "info@mywealthyai.com",
