@@ -25,7 +25,7 @@ export default function PrivacyPolicy() {
             WealthyAI operates the platform and acts as the data controller for any minimal technical data that may be processed.
             <br /><br />
             <strong>For privacy-related inquiries:</strong><br />
-            Email: <a href="mailto:privacy@wealthyai.com" style={{color: '#38bdf8'}}>privacy@wealthyai.com</a>
+            Email: <a href="mailto:info@mywealthyai.com" style={{color: '#38bdf8'}}>privacy@wealthyai.com</a>
           </Section>
 
           <Section title="2. Zero-Storage Architecture">
