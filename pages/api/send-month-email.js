@@ -5,86 +5,71 @@ import PDFDocument from "pdfkit";
 import path from "path";
 import fs from "fs";
 
-/* ================================
-   SIMPLE IN-MEMORY RATE LIMIT
-   3 EMAIL / IP / HOUR
-================================ */
-
 const rateLimitStore = global.rateLimitStore || new Map();
 global.rateLimitStore = rateLimitStore;
 
 function checkRateLimit(ip) {
   const now = Date.now();
   const hour = 60 * 60 * 1000;
-
   if (!rateLimitStore.has(ip)) {
     rateLimitStore.set(ip, { count: 1, firstRequest: now });
     return true;
   }
-
   const data = rateLimitStore.get(ip);
-
   if (now - data.firstRequest > hour) {
     rateLimitStore.set(ip, { count: 1, firstRequest: now });
     return true;
   }
-
-  if (data.count >= 3) {
-    return false;
-  }
-
+  if (data.count >= 3) return false;
   data.count++;
   return true;
 }
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).end();
-  }
+  if (req.method !== "POST") return res.status(405).end();
 
-  const ip =
-    req.headers["x-forwarded-for"]?.split(",")[0] ||
-    req.socket?.remoteAddress ||
-    "unknown";
+  const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.socket?.remoteAddress || "unknown";
 
   if (!checkRateLimit(ip)) {
-    return res.status(429).json({
-      error: "Too many requests. Please wait before trying again.",
-    });
+    return res.status(429).json({ error: "Too many requests. Please wait." });
   }
 
+  // 25 másodpercre emelt timeout a biztonság kedvéért
   const timeout = setTimeout(() => {
     if (!res.headersSent) {
-      console.error("TIMEOUT REACHED");
       return res.status(504).json({ error: "Gateway Timeout" });
     }
-  }, 20000);
+  }, 25000);
 
   try {
     const { text, cycleDay, region, email } = req.body;
 
     if (!text || !email) {
       clearTimeout(timeout);
-      return res.status(400).json({ error: "Missing text or email" });
+      return res.status(400).json({ error: "Missing data" });
     }
 
-    // ----- PDF GENERÁLÁS -----
+    // ----- PDF GENERÁLÁS (STABILIZÁLVA) -----
     const pdfBuffer = await new Promise((resolve, reject) => {
-      const doc = new PDFDocument({ margin: 50 });
+      const doc = new PDFDocument({ margin: 50, autoFirstPage: true });
       const chunks = [];
 
       doc.on("data", (chunk) => chunks.push(chunk));
       doc.on("end", () => resolve(Buffer.concat(chunks)));
       doc.on("error", reject);
 
+      // Logó kezelése
       const logoPath = path.join(process.cwd(), "public/wealthyai/icons/generated.png");
       if (fs.existsSync(logoPath)) {
-        doc.image(logoPath, doc.page.width - 130, 40, { width: 80 });
+        try {
+          doc.image(logoPath, doc.page.width - 130, 40, { width: 80 });
+        } catch (e) { console.error("Logo error", e); }
       }
 
-      doc.moveDown(3).fontSize(20).text("WealthyAI");
-      doc.fontSize(14).text("Monthly Strategic Briefing", { underline: true });
+      doc.moveDown(3).fontSize(24).fillColor("#38bdf8").text("MyWealthyAI");
+      doc.fontSize(14).fillColor("black").text("Monthly Strategic Briefing", { underline: true });
       doc.moveDown();
+      
       doc.fontSize(10).fillColor("gray")
         .text(`Region: ${region}`)
         .text(`Cycle Day: ${cycleDay}`)
@@ -98,48 +83,49 @@ export default async function handler(req, res) {
       doc.end();
     });
 
+    if (!pdfBuffer || pdfBuffer.length === 0) {
+        throw new Error("PDF Buffer is empty");
+    }
+
     // ----- AZURE EMAIL -----
-    const client = new EmailClient(
-      process.env.AZURE_COMMUNICATION_CONNECTION_STRING
-    );
+    const client = new EmailClient(process.env.AZURE_COMMUNICATION_CONNECTION_STRING);
 
     const message = {
       senderAddress: process.env.MAIL_FROM,
       content: {
-        subject: `Your WealthyAI Monthly Briefing - Day ${cycleDay}`,
-        plainText: "Your monthly WealthyAI briefing report is attached.",
+        subject: `MyWealthyAI Briefing - Day ${cycleDay}`,
+        plainText: `Your MyWealthyAI monthly briefing for day ${cycleDay} is attached as a PDF.`,
       },
       recipients: {
         to: [{ address: email }],
       },
       attachments: [
         {
-          name: `wealthyai-briefing-day${cycleDay}.pdf`,
+          name: "briefing.pdf", // Egyszerű név, nincsenek speciális karakterek
           contentType: "application/pdf",
           contentInBase64: pdfBuffer.toString("base64"),
         },
       ],
     };
 
+    console.log(`Sending email to ${email}... PDF size: ${pdfBuffer.length} bytes`);
+    
     const poller = await client.beginSend(message);
     const result = await poller.pollUntilDone();
 
-    if (result.status !== "Succeeded") {
-      throw new Error("Azure email send failed");
+    if (result.status === "Succeeded") {
+      clearTimeout(timeout);
+      console.log("✅ MyWealthyAI report sent successfully");
+      return res.status(200).json({ ok: true });
+    } else {
+      throw new Error(`Azure status: ${result.status}`);
     }
-
-    clearTimeout(timeout);
-    console.log("✅ Azure email sent to", email);
-    return res.status(200).json({ ok: true });
 
   } catch (err) {
     clearTimeout(timeout);
-    console.error("AZURE ERROR:", err);
+    console.error("CRITICAL ERROR:", err.message);
     if (!res.headersSent) {
-      return res.status(500).json({
-        error: "Email sending failed",
-        details: err.message,
-      });
+      return res.status(500).json({ error: "Failed to send email", details: err.message });
     }
   }
 }
