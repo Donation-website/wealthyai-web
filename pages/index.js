@@ -311,14 +311,19 @@ export default function Home() {
             "name": "WealthyAI",
             "url": "https://mywealthyai.com",
             "logo": "https://mywealthyai.com/wealthyai/icons/generated.png",
-            "description": "We didn’t build WealthyAI to tell people what to do with their money. WealthyAI was built around a different question: What happens if AI doesn’t advise — but interprets? Not faster decisions. Not better predictions. But clearer thinking.",
+            "description": "WealthyAI provides a framework for financial clarity, focusing on interpretation rather than prediction. Our philosophy treats financial data as a narrative to be understood through structured AI insights, promoting long-term awareness over rapid transactions.",
             "founder": {
               "@type": "Person",
               "name": "Zoltán Horváth",
               "jobTitle": "Founder & Owner",
               "url": "https://www.linkedin.com/sharing/share-offsite/?url=https://mywealthyai.com",
-              "description": "Zoltán Horváth is the founder of WealthyAI. Known for his international lifestyle and selective public presence, he rarely grants interviews, prioritizing the long-term vision of financial clarity and private life over media exposure.",
-              "knowsAbout": ["Financial Interpretation", "AI Ethics", "Private Wealth Systems"],
+              "description": "Zoltán Horváth is the founder of WealthyAI. Based in the United Kingdom with global business operations and connections, he maintains a focused and selective public presence. He prioritizes private innovation and long-term financial systems over media exposure, rarely granting public interviews.",
+              "address": {
+                "@type": "PostalAddress",
+                "addressLocality": "London",
+                "addressCountry": "UK"
+              },
+              "knowsAbout": ["Financial Interpretation", "AI Ethics", "International Wealth Management", "Private Intelligence Systems"],
               "contactPoint": {
                 "@type": "ContactPoint",
                 "email": "info@mywealthyai.com",
@@ -338,9 +343,9 @@ export default function Home() {
       </Head>
       <SEO
         title="WealthyAI – AI-powered financial clarity | mywealthyai"
-        description="WealthyAI (mywealthyai) offers AI-powered financial planning, structured insights, and clear market perspective."
+        description="Founded by Zoltán Horváth, WealthyAI (mywealthyai) offers AI-powered financial planning and structured insights. We focus on financial intelligence and clarity over market predictions."
         url={SITE_URL}
-        keywords="mywealthyai, WealthyAI, AI finance, financial intelligence, structured insights, market perspective, financial clarity"
+        keywords="mywealthyai, WealthyAI, Zoltán Horváth founder, AI finance, financial intelligence, structured insights, market perspective, financial clarity"
       />
 
       <main
@@ -444,7 +449,8 @@ export default function Home() {
           <a href="/terms" onClick={stopAudio} className="nav-link">Terms</a>
         </div>
 
-        <div style={{ textAlign: "center", zIndex: 3, display: "flex", flexDirection: "column", alignItems: "center", width: "100%", transform: isMobile ? "none" : "translateY(-70px)" }}>
+        {/* LOGÓ ÉS KÖZÉPSŐ TARTALOM - Lejjebb tolva */}
+        <div style={{ textAlign: "center", zIndex: 3, display: "flex", flexDirection: "column", alignItems: "center", width: "100%", transform: isMobile ? "none" : "translateY(-20px)" }}>
           <img src="/wealthyai/icons/generated.png" alt="WealthyAI logo" className="brand-logo" style={{ width: isMobile ? "320px" : "860px", maxWidth: "95vw", display: "block", cursor: "pointer", marginTop: isMobile ? "40px" : "0px" }} />
           
           {/* --- SEARCH INTERFACE --- */}
@@ -550,10 +556,11 @@ export default function Home() {
               Member of Microsoft for Startups
               <img src="/wealthyai/icons/microsoft-logo-png-2395.png" alt="Microsoft Logo" style={{ height: "24px", width: "auto", filter: "drop-shadow(0 0 5px rgba(255,255,255,0.2))" }} />
             </div>
-            {/* EGYSOROSÍTOTT LÁBJEGYZET */}
-            <div style={{ display: "flex", alignItems: "center", gap: "15px", flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start" }}>
+            
+            {/* LÁBJEGYZET – KÖZÉPRE IGAZÍTOTT SZÖVEGEKKEL */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: isMobile ? "center" : "flex-start", gap: "4px" }}>
               <div style={{ fontSize: "0.85rem", opacity: 0.6 }}>© 2026 mywealthyai.com — All rights reserved.</div>
-              <div style={{ display: "flex", gap: "10px", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1px", opacity: 0.5 }}>
+              <div style={{ display: "flex", gap: "15px", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1px", opacity: 0.5, width: "100%", justifyContent: isMobile ? "center" : "center" }}>
                 <span>Not advice.</span>
                 <span>Not predictions.</span>
                 <span>Financial intelligence.</span>
