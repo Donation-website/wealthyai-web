@@ -128,9 +128,6 @@ export default function Home() {
   const [isVerified, setIsVerified] = useState(false);
   const [botValue, setBotValue] = useState("");
   const [isBotTrapped, setIsBotTrapped] = useState(false);
-  
-  // MOTOR LOGIKA
-  const [searchQuery, setSearchQuery] = useState("");
 
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -440,33 +437,7 @@ export default function Home() {
 
         <div style={{ textAlign: "center", zIndex: 3, display: "flex", flexDirection: "column", alignItems: "center", width: "100%", transform: isMobile ? "none" : "translateY(-40px)" }}>
           <img src="/wealthyai/icons/generated.png" alt="WealthyAI logo" className="brand-logo" style={{ width: isMobile ? "320px" : "860px", maxWidth: "95vw", display: "block", cursor: "pointer", marginTop: isMobile ? "40px" : "0px" }} />
-          
-          {/* --- A MOTOR / KERESŐSÁV INTEGRÁCIÓJA --- */}
-          <div style={{ width: "100%", maxWidth: "580px", position: "relative", marginTop: isMobile ? "10px" : "-80px", marginBottom: "40px", padding: "0 20px", zIndex: 25 }}>
-            <input 
-              type="text" 
-              placeholder="PRIVATE $EARCH..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ 
-                width: "100%", 
-                padding: isMobile ? "12px 20px" : "15px 25px", 
-                background: "rgba(0,0,0,0.7)", 
-                border: "1px solid rgba(56,189,248,0.3)", 
-                borderRadius: "30px", 
-                color: "white", 
-                fontSize: "1rem", 
-                letterSpacing: "2px", 
-                outline: "none", 
-                backdropFilter: "blur(12px)",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
-                textAlign: "center"
-              }} 
-            />
-            <button style={{ position: "absolute", right: "35px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#38bdf8", fontWeight: "bold", cursor: "pointer", letterSpacing: "1px", fontSize: "0.8rem" }}>GO</button>
-          </div>
-
-          <div style={{ color: "#FFFFFF", lineHeight: "1.45", textAlign: "center", textShadow: "0 2px 10px rgba(0,0,0,0.5)", marginTop: "0px", width: "100%", maxWidth: "800px", padding: "0 20px", letterSpacing: "0.2px" }}>
+          <div style={{ color: "#FFFFFF", lineHeight: "1.45", textAlign: "center", textShadow: "0 2px 10px rgba(0,0,0,0.5)", marginTop: isMobile ? "0px" : "-110px", width: "100%", maxWidth: "800px", padding: "0 20px", letterSpacing: "0.2px" }}>
             <div style={{ fontSize: isMobile ? "1.1rem" : "1.55rem", fontWeight: "300", opacity: 0.9, marginBottom: "15px" }}>
               AI-powered financial thinking.<br />
               Structured insights.<br />
@@ -574,7 +545,6 @@ export default function Home() {
             color: white !important;
             border-color: rgba(56,189,248,0.8) !important;
           }
-          input::placeholder { color: rgba(255,255,255,0.3); }
         `}</style>
       </main>
     </>
