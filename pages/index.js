@@ -3,7 +3,7 @@ import SEO from "../components/SEO";
 import Head from "next/head";
 import TrafficTracker from "../components/TrafficTracker";
 
-// --- PRÉMIUM VIDEÓ KOMPONENS (Kiemelve a Home elé a stabil renderelésért) ---
+// --- PRÉMIUM VIDEÓ KOMPONENS ---
 const PremiumVideo = React.memo(function PremiumVideo({ 
   size = "160px", 
   videoRef, 
@@ -344,16 +344,19 @@ export default function Home() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: isMobile ? "flex-start" : "center",
-          backgroundColor: "#030b1a",
+          backgroundColor: "#020617",
+          /* PRÉMIUM HIGH-TECH ADATVONALAS HÁTTÉR KÓDDAL */
           backgroundImage: `
-            radial-gradient(circle at 50% 50%, rgba(0, 102, 204, 0.1) 0%, transparent 80%),
-            linear-gradient(rgba(3, 11, 26, 0.4), rgba(3, 11, 26, 0.6)),
-            linear-gradient(90deg, rgba(56, 189, 248, 0.04) 1px, transparent 1px),
-            linear-gradient(rgba(56, 189, 248, 0.04) 1px, transparent 1px)
+            radial-gradient(circle at 50% 50%, rgba(3, 105, 161, 0.15) 0%, transparent 85%),
+            radial-gradient(circle at 10% 10%, rgba(7, 89, 133, 0.1) 0%, transparent 40%),
+            linear-gradient(rgba(2, 6, 23, 0.8), rgba(2, 6, 23, 0.8)),
+            url("data:image/svg+xml,%3Csvg width='1000' height='600' viewBox='0 0 1000 600' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 500 Q 250 400 500 500 T 1000 450' stroke='rgba(56, 189, 248, 0.1)' stroke-width='2' fill='none'/%3E%3Cpath d='M0 450 Q 300 350 600 450 T 1000 350' stroke='rgba(56, 189, 248, 0.05)' stroke-width='1' fill='none'/%3E%3Cpath d='M0 550 Q 200 450 400 550 T 1000 500' stroke='rgba(56, 189, 248, 0.08)' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"),
+            linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px),
+            linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px)
           `,
           backgroundPosition: "center",
-          backgroundSize: isMobile ? "100% 100%, 100% 100%, 30px 30px, 30px 30px" : "100% 100%, 100% 100%, 60px 60px, 60px 60px",
-          backgroundRepeat: "repeat",
+          backgroundSize: isMobile ? "100% 100%, 100% 100%, 100% 100%, 200% 100%, 30px 30px, 30px 30px" : "100% 100%, 100% 100%, 100% 100%, 100% 100%, 60px 60px, 60px 60px",
+          backgroundRepeat: "no-repeat, no-repeat, no-repeat, repeat-x, repeat, repeat",
           color: "white",
           fontFamily: "'Inter', system-ui, Arial, sans-serif",
           position: "relative",
@@ -483,7 +486,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div style={{ position: isMobile ? "relative" : "absolute", bottom: 0, left: 0, width: "100%", padding: isMobile ? "36px 24px 24px" : "18px 24px", display: "flex", flexDirection: isMobile ? "column-reverse" : "row", justifyContent: "space-between", alignItems: isMobile ? "center" : "flex-end", zIndex: 5, boxSizing: "border-box", gap: isMobile ? "30px" : "0", background: isMobile ? "linear-gradient(to top, rgba(3,11,26,0.95) 0%, rgba(3,11,26,0.8) 50%, rgba(3,11,26,0.0) 100%)" : "transparent" }}>
+        <div style={{ position: isMobile ? "relative" : "absolute", bottom: 0, left: 0, width: "100%", padding: isMobile ? "36px 24px 24px" : "18px 24px", display: "flex", flexDirection: isMobile ? "column-reverse" : "row", justifyContent: "space-between", alignItems: isMobile ? "center" : "flex-end", zIndex: 5, boxSizing: "border-box", gap: isMobile ? "30px" : "0", background: isMobile ? "linear-gradient(to top, rgba(2,6,23,0.95) 0%, rgba(2,6,23,0.8) 50%, rgba(2,6,23,0.0) 100%)" : "transparent" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px", alignItems: isMobile ? "center" : "flex-start" }}>
             <a href="https://www.facebook.com/profile.php?id=61588517507057" target="_blank" rel="noopener noreferrer" className="builder-btn discrete-pulse" style={{
               fontSize: "10px", textTransform: "uppercase", letterSpacing: "1.5px", color: "#38bdf8", textDecoration: "none", fontWeight: "600",
