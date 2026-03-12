@@ -344,11 +344,16 @@ export default function Home() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: isMobile ? "flex-start" : "center",
-          backgroundColor: "#060b13",
-          backgroundImage: "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
-          backgroundPosition: isMobile ? "center 22%" : "center",
-          backgroundSize: "cover",
-          backgroundRepeat: "no-repeat",
+          backgroundColor: "#030b1a",
+          backgroundImage: `
+            radial-gradient(circle at 50% 50%, rgba(0, 102, 204, 0.1) 0%, transparent 80%),
+            linear-gradient(rgba(3, 11, 26, 0.4), rgba(3, 11, 26, 0.6)),
+            linear-gradient(90deg, rgba(56, 189, 248, 0.04) 1px, transparent 1px),
+            linear-gradient(rgba(56, 189, 248, 0.04) 1px, transparent 1px)
+          `,
+          backgroundPosition: "center",
+          backgroundSize: isMobile ? "100% 100%, 100% 100%, 30px 30px, 30px 30px" : "100% 100%, 100% 100%, 60px 60px, 60px 60px",
+          backgroundRepeat: "repeat",
           color: "white",
           fontFamily: "'Inter', system-ui, Arial, sans-serif",
           position: "relative",
@@ -478,7 +483,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div style={{ position: isMobile ? "relative" : "absolute", bottom: 0, left: 0, width: "100%", padding: isMobile ? "36px 24px 24px" : "18px 24px", display: "flex", flexDirection: isMobile ? "column-reverse" : "row", justifyContent: "space-between", alignItems: isMobile ? "center" : "flex-end", zIndex: 5, boxSizing: "border-box", gap: isMobile ? "30px" : "0", background: isMobile ? "linear-gradient(to top, rgba(6,11,19,0.95) 0%, rgba(6,11,19,0.8) 50%, rgba(6,11,19,0.0) 100%)" : "transparent" }}>
+        <div style={{ position: isMobile ? "relative" : "absolute", bottom: 0, left: 0, width: "100%", padding: isMobile ? "36px 24px 24px" : "18px 24px", display: "flex", flexDirection: isMobile ? "column-reverse" : "row", justifyContent: "space-between", alignItems: isMobile ? "center" : "flex-end", zIndex: 5, boxSizing: "border-box", gap: isMobile ? "30px" : "0", background: isMobile ? "linear-gradient(to top, rgba(3,11,26,0.95) 0%, rgba(3,11,26,0.8) 50%, rgba(3,11,26,0.0) 100%)" : "transparent" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px", alignItems: isMobile ? "center" : "flex-start" }}>
             <a href="https://www.facebook.com/profile.php?id=61588517507057" target="_blank" rel="noopener noreferrer" className="builder-btn discrete-pulse" style={{
               fontSize: "10px", textTransform: "uppercase", letterSpacing: "1.5px", color: "#38bdf8", textDecoration: "none", fontWeight: "600",
@@ -541,9 +546,9 @@ export default function Home() {
           .start-btn:hover { box-shadow: ${isVerified && !isBotTrapped ? "0 0 35px rgba(56,189,248,0.45)" : "none"}; }
           .builder-btn:hover {
             box-shadow: 0 0 15px rgba(56,189,248,0.6);
-            background: rgba(56,189,248,0.2) !important;
+            background: rgba(56, 189, 248, 0.2) !important;
             color: white !important;
-            border-color: rgba(56,189,248,0.8) !important;
+            border-color: rgba(56, 189, 248, 0.8) !important;
           }
         `}</style>
       </main>
