@@ -3,7 +3,7 @@ import SEO from "../components/SEO";
 import Head from "next/head";
 import TrafficTracker from "../components/TrafficTracker";
 
-// --- PRÉMIUM VIDEÓ KOMPONENS ---
+// --- PRÉMIUM VIDEÓ KOMPONENS (Kiemelve a Home elé a stabil renderelésért) ---
 const PremiumVideo = React.memo(function PremiumVideo({ 
   size = "160px", 
   videoRef, 
@@ -128,7 +128,6 @@ export default function Home() {
   const [isVerified, setIsVerified] = useState(false);
   const [botValue, setBotValue] = useState("");
   const [isBotTrapped, setIsBotTrapped] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
 
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -274,19 +273,6 @@ export default function Home() {
     stopAudio();
   };
 
-  const launchSearch = () => {
-    if (searchQuery.trim() !== "") {
-      const searchUrl = `https://duckduckgo.com/?q=${encodeURIComponent(searchQuery)}&kp=-2`;
-      window.open(searchUrl, '_blank');
-    }
-  };
-
-  const handleSearchKey = (e) => {
-    if (e.key === "Enter") {
-      launchSearch();
-    }
-  };
-
   return (
     <>
       <TrafficTracker />
@@ -311,19 +297,18 @@ export default function Home() {
             "name": "WealthyAI",
             "url": "https://mywealthyai.com",
             "logo": "https://mywealthyai.com/wealthyai/icons/generated.png",
-            "description": "WealthyAI provides a framework for financial clarity, focusing on interpretation rather than prediction. Our philosophy treats financial data as a narrative to be understood through structured AI insights, promoting long-term awareness over rapid transactions.",
+            "description": "We didn’t build WealthyAI to tell people what to do with their money. WealthyAI was built around a different question: What happens if AI doesn’t advise — but interprets? Not faster decisions. Not better predictions. But clearer thinking.",
             "founder": {
               "@type": "Person",
               "name": "Zoltán Horváth",
               "jobTitle": "Founder & Owner",
               "url": "https://www.linkedin.com/sharing/share-offsite/?url=https://mywealthyai.com",
-              "description": "Zoltán Horváth is the founder of WealthyAI. Based in the United Kingdom with global business operations and connections, he maintains a focused and selective public presence. He prioritizes private innovation and long-term financial systems over media exposure, rarely granting public interviews.",
+              "description": "Zoltán Horváth is the founder of WealthyAI. Based in the United Kingdom and operating internationally, he is known for his selective public presence and rarely grants interviews, prioritizing the long-term vision of financial clarity and a private personal life over media exposure.",
               "address": {
                 "@type": "PostalAddress",
-                "addressLocality": "London",
-                "addressCountry": "UK"
+                "addressCountry": "United Kingdom"
               },
-              "knowsAbout": ["Financial Interpretation", "AI Ethics", "International Wealth Management", "Private Intelligence Systems"],
+              "knowsAbout": ["Financial Interpretation", "AI Ethics", "Private Wealth Systems"],
               "contactPoint": {
                 "@type": "ContactPoint",
                 "email": "info@mywealthyai.com",
@@ -343,15 +328,16 @@ export default function Home() {
       </Head>
       <SEO
         title="WealthyAI – AI-powered financial clarity | mywealthyai"
-        description="Founded by Zoltán Horváth, WealthyAI (mywealthyai) offers AI-powered financial planning and structured insights. We focus on financial intelligence and clarity over market predictions."
+        description="WealthyAI (mywealthyai) offers AI-powered financial planning, structured insights, and clear market perspective."
         url={SITE_URL}
-        keywords="mywealthyai, WealthyAI, Zoltán Horváth founder, AI finance, financial intelligence, structured insights, market perspective, financial clarity"
+        keywords="mywealthyai, WealthyAI, AI finance, financial intelligence, structured insights, market perspective, financial clarity"
       />
 
       <main
         onMouseDown={clearSelectionIfNeeded}
         style={{
-          height: "100vh",
+          height: isMobile ? "auto" : "100vh",
+          minHeight: "100vh",
           width: "100%",
           boxSizing: "border-box",
           display: "flex",
@@ -366,7 +352,7 @@ export default function Home() {
           color: "white",
           fontFamily: "'Inter', system-ui, Arial, sans-serif",
           position: "relative",
-          overflow: "hidden",
+          overflowX: "hidden",
           margin: 0,
           padding: isMobile ? "80px 0 60px 0" : 0,
         }}
@@ -449,74 +435,23 @@ export default function Home() {
           <a href="/terms" onClick={stopAudio} className="nav-link">Terms</a>
         </div>
 
-        {/* LOGÓ ÉS KÖZÉPSŐ TARTALOM - Lejjebb tolva */}
-        <div style={{ textAlign: "center", zIndex: 3, display: "flex", flexDirection: "column", alignItems: "center", width: "100%", transform: isMobile ? "none" : "translateY(-20px)" }}>
+        <div style={{ textAlign: "center", zIndex: 3, display: "flex", flexDirection: "column", alignItems: "center", width: "100%", transform: isMobile ? "none" : "translateY(-40px)" }}>
           <img src="/wealthyai/icons/generated.png" alt="WealthyAI logo" className="brand-logo" style={{ width: isMobile ? "320px" : "860px", maxWidth: "95vw", display: "block", cursor: "pointer", marginTop: isMobile ? "40px" : "0px" }} />
-          
-          {/* --- SEARCH INTERFACE --- */}
-          <div style={{ 
-            margin: isMobile ? "20px auto" : "0 auto 40px auto", 
-            width: "100%", 
-            maxWidth: isMobile ? "300px" : "500px", 
-            position: "relative",
-            zIndex: 50,
-            marginTop: isMobile ? "20px" : "-100px"
-          }}>
-            <input 
-              type="text" 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={handleSearchKey}
-              placeholder="PRIVATE SEARCH..." 
-              style={{
-                width: "100%",
-                padding: isMobile ? "12px 20px" : "15px 25px",
-                borderRadius: "30px",
-                border: "1px solid rgba(255,255,255,0.3)",
-                background: "rgba(0, 0, 0, 0.4)",
-                backdropFilter: "blur(10px)",
-                color: "#fff",
-                fontSize: "14px",
-                outline: "none",
-                transition: "all 0.3s ease",
-                boxSizing: "border-box",
-                textAlign: "center",
-                letterSpacing: "1px"
-              }}
-              className="search-input-field"
-            />
-            <button 
-              onClick={launchSearch}
-              style={{
-                position: "absolute",
-                right: "8px",
-                top: "50%",
-                transform: "translateY(-50%)",
-                background: "rgba(255,255,255,0.1)",
-                color: "#fff",
-                border: "1px solid rgba(255,255,255,0.2)",
-                padding: "6px 15px",
-                borderRadius: "20px",
-                fontSize: "10px",
-                fontWeight: "700",
-                cursor: "pointer",
-                transition: "0.3s"
-              }}
-            >
-              GO
-            </button>
-          </div>
-
-          <div style={{ color: "#FFFFFF", lineHeight: "1.45", textAlign: "center", textShadow: "0 2px 10px rgba(0,0,0,0.5)", marginTop: "20px", width: "100%", maxWidth: "800px", padding: "0 20px", letterSpacing: "0.2px" }}>
+          <div style={{ color: "#FFFFFF", lineHeight: "1.45", textAlign: "center", textShadow: "0 2px 10px rgba(0,0,0,0.5)", marginTop: isMobile ? "0px" : "-110px", width: "100%", maxWidth: "800px", padding: "0 20px", letterSpacing: "0.2px" }}>
             <div style={{ fontSize: isMobile ? "1.1rem" : "1.55rem", fontWeight: "300", opacity: 0.9, marginBottom: "15px" }}>
               AI-powered financial thinking.<br />
               Structured insights.<br />
               Clear perspective.
             </div>
+            <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", justifyContent: "center", alignItems: "center", fontSize: isMobile ? "0.7rem" : "0.85rem", textTransform: "uppercase", letterSpacing: "1.4px", opacity: 0.8, gap: isMobile ? "8px" : "15px", fontWeight: "500" }}>
+              <span className="discrete-pulse">Not advice.</span>
+              <span className="discrete-pulse">Not predictions.</span>
+              <span className="discrete-pulse">Financial intelligence.</span>
+            </div>
           </div>
         </div>
 
-        <div style={{ position: isMobile ? "relative" : "absolute", top: isMobile ? "auto" : "50%", left: isMobile ? "auto" : "10%", transform: isMobile ? "none" : "translateY(-50%)", marginTop: isMobile ? "40px" : "0", zIndex: 20, display: "flex", flexDirection: "column", alignItems: isMobile ? "center" : "flex-start", gap: "15px", padding: isMobile ? "0 20px" : "0", textAlign: isMobile ? "center" : "left" }}>
+        <div style={{ position: isMobile ? "relative" : "absolute", top: isMobile ? "auto" : "45%", left: isMobile ? "auto" : "10%", transform: isMobile ? "none" : "translateY(-50%)", marginTop: isMobile ? "40px" : "0", zIndex: 20, display: "flex", flexDirection: "column", alignItems: isMobile ? "center" : "flex-start", gap: "15px", padding: isMobile ? "0 20px" : "0", textAlign: isMobile ? "center" : "left" }}>
           <a href={isVerified && !isBotTrapped ? "/start" : "#"} onClick={handleStartClick} className="start-btn" style={{ width: "130px", textAlign: "center", padding: "14px 0", backgroundColor: isVerified ? "#1a253a" : "rgba(255,255,255,0.05)", border: isVerified ? "1px solid rgba(56,189,248,0.8)" : "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", color: isVerified ? "white" : "rgba(255,255,255,0.3)", textDecoration: "none", fontWeight: "bold", fontSize: "1.1rem", cursor: isVerified ? "pointer" : "not-allowed", transition: "all 0.4s ease" }}>
             {isBotTrapped ? "Loading..." : "Start"}
           </a>
@@ -556,16 +491,7 @@ export default function Home() {
               Member of Microsoft for Startups
               <img src="/wealthyai/icons/microsoft-logo-png-2395.png" alt="Microsoft Logo" style={{ height: "24px", width: "auto", filter: "drop-shadow(0 0 5px rgba(255,255,255,0.2))" }} />
             </div>
-            
-            {/* LÁBJEGYZET – KÖZÉPRE IGAZÍTOTT SZÖVEGEKKEL */}
-            <div style={{ display: "flex", flexDirection: "column", alignItems: isMobile ? "center" : "flex-start", gap: "4px" }}>
-              <div style={{ fontSize: "0.85rem", opacity: 0.6 }}>© 2026 mywealthyai.com — All rights reserved.</div>
-              <div style={{ display: "flex", gap: "15px", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1px", opacity: 0.5, width: "100%", justifyContent: isMobile ? "center" : "center" }}>
-                <span>Not advice.</span>
-                <span>Not predictions.</span>
-                <span>Financial intelligence.</span>
-              </div>
-            </div>
+            <div style={{ fontSize: "0.85rem", opacity: 0.6 }}>© 2026 mywealthyai.com — All rights reserved.</div>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", alignItems: isMobile ? "center" : "flex-end", gap: "8px" }}>
@@ -618,11 +544,6 @@ export default function Home() {
             background: rgba(56,189,248,0.2) !important;
             color: white !important;
             border-color: rgba(56,189,248,0.8) !important;
-          }
-
-          .search-input-field:focus {
-            border-color: rgba(56,189,248,0.8) !important;
-            box-shadow: 0 0 15px rgba(56,189,248,0.3);
           }
         `}</style>
       </main>
