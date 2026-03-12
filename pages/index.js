@@ -346,8 +346,7 @@ export default function Home() {
       <main
         onMouseDown={clearSelectionIfNeeded}
         style={{
-          height: isMobile ? "auto" : "100vh",
-          minHeight: "100vh",
+          height: "100vh",
           width: "100%",
           boxSizing: "border-box",
           display: "flex",
@@ -362,7 +361,7 @@ export default function Home() {
           color: "white",
           fontFamily: "'Inter', system-ui, Arial, sans-serif",
           position: "relative",
-          overflowX: "hidden",
+          overflow: "hidden",
           margin: 0,
           padding: isMobile ? "80px 0 60px 0" : 0,
         }}
@@ -445,7 +444,7 @@ export default function Home() {
           <a href="/terms" onClick={stopAudio} className="nav-link">Terms</a>
         </div>
 
-        <div style={{ textAlign: "center", zIndex: 3, display: "flex", flexDirection: "column", alignItems: "center", width: "100%", transform: isMobile ? "none" : "translateY(-40px)" }}>
+        <div style={{ textAlign: "center", zIndex: 3, display: "flex", flexDirection: "column", alignItems: "center", width: "100%", transform: isMobile ? "none" : "translateY(-70px)" }}>
           <img src="/wealthyai/icons/generated.png" alt="WealthyAI logo" className="brand-logo" style={{ width: isMobile ? "320px" : "860px", maxWidth: "95vw", display: "block", cursor: "pointer", marginTop: isMobile ? "40px" : "0px" }} />
           
           {/* --- SEARCH INTERFACE --- */}
@@ -455,7 +454,7 @@ export default function Home() {
             maxWidth: isMobile ? "300px" : "500px", 
             position: "relative",
             zIndex: 50,
-            marginTop: isMobile ? "20px" : "-60px"
+            marginTop: isMobile ? "20px" : "-100px"
           }}>
             <input 
               type="text" 
@@ -508,15 +507,10 @@ export default function Home() {
               Structured insights.<br />
               Clear perspective.
             </div>
-            <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", justifyContent: "center", alignItems: "center", fontSize: isMobile ? "0.7rem" : "0.85rem", textTransform: "uppercase", letterSpacing: "1.4px", opacity: 0.8, gap: isMobile ? "8px" : "15px", fontWeight: "500" }}>
-              <span className="discrete-pulse">Not advice.</span>
-              <span className="discrete-pulse">Not predictions.</span>
-              <span className="discrete-pulse">Financial intelligence.</span>
-            </div>
           </div>
         </div>
 
-        <div style={{ position: isMobile ? "relative" : "absolute", top: isMobile ? "auto" : "45%", left: isMobile ? "auto" : "10%", transform: isMobile ? "none" : "translateY(-50%)", marginTop: isMobile ? "40px" : "0", zIndex: 20, display: "flex", flexDirection: "column", alignItems: isMobile ? "center" : "flex-start", gap: "15px", padding: isMobile ? "0 20px" : "0", textAlign: isMobile ? "center" : "left" }}>
+        <div style={{ position: isMobile ? "relative" : "absolute", top: isMobile ? "auto" : "50%", left: isMobile ? "auto" : "10%", transform: isMobile ? "none" : "translateY(-50%)", marginTop: isMobile ? "40px" : "0", zIndex: 20, display: "flex", flexDirection: "column", alignItems: isMobile ? "center" : "flex-start", gap: "15px", padding: isMobile ? "0 20px" : "0", textAlign: isMobile ? "center" : "left" }}>
           <a href={isVerified && !isBotTrapped ? "/start" : "#"} onClick={handleStartClick} className="start-btn" style={{ width: "130px", textAlign: "center", padding: "14px 0", backgroundColor: isVerified ? "#1a253a" : "rgba(255,255,255,0.05)", border: isVerified ? "1px solid rgba(56,189,248,0.8)" : "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", color: isVerified ? "white" : "rgba(255,255,255,0.3)", textDecoration: "none", fontWeight: "bold", fontSize: "1.1rem", cursor: isVerified ? "pointer" : "not-allowed", transition: "all 0.4s ease" }}>
             {isBotTrapped ? "Loading..." : "Start"}
           </a>
@@ -556,7 +550,15 @@ export default function Home() {
               Member of Microsoft for Startups
               <img src="/wealthyai/icons/microsoft-logo-png-2395.png" alt="Microsoft Logo" style={{ height: "24px", width: "auto", filter: "drop-shadow(0 0 5px rgba(255,255,255,0.2))" }} />
             </div>
-            <div style={{ fontSize: "0.85rem", opacity: 0.6 }}>© 2026 mywealthyai.com — All rights reserved.</div>
+            {/* EGYSOROSÍTOTT LÁBJEGYZET */}
+            <div style={{ display: "flex", alignItems: "center", gap: "15px", flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start" }}>
+              <div style={{ fontSize: "0.85rem", opacity: 0.6 }}>© 2026 mywealthyai.com — All rights reserved.</div>
+              <div style={{ display: "flex", gap: "10px", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1px", opacity: 0.5 }}>
+                <span>Not advice.</span>
+                <span>Not predictions.</span>
+                <span>Financial intelligence.</span>
+              </div>
+            </div>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", alignItems: isMobile ? "center" : "flex-end", gap: "8px" }}>
