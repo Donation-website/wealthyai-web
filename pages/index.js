@@ -3,6 +3,115 @@ import SEO from "../components/SEO";
 import Head from "next/head";
 import TrafficTracker from "../components/TrafficTracker";
 
+// --- DINAMIKUS FINTECH HÁTTÉR (GRAFIKONOKKAL ÉS RAGYOGÁSSAL) ---
+const FinancialIntelligenceBackground = () => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let animationFrameId;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+
+    // Véletlenszerű, de összefüggő adatvonalak generálása
+    const createLine = (color, opacity, speedMultiplier) => ({
+      points: Array.from({ length: 12 }, (_, i) => ({
+        x: (window.innerWidth / 11) * i,
+        y: Math.random() * 200 + window.innerHeight * 0.4,
+        baseY: Math.random() * 200 + window.innerHeight * 0.4,
+        offset: Math.random() * Math.PI * 2
+      })),
+      color,
+      opacity,
+      speedMultiplier
+    });
+
+    const lines = [
+      createLine('#38bdf8', 0.2, 0.001),
+      createLine('#0ea5e9', 0.1, 0.0007),
+      createLine('#ffffff', 0.05, 0.0012)
+    ];
+
+    const draw = (time) => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // 1. Mély gradiens alap
+      const bgGradient = ctx.createRadialGradient(
+        canvas.width / 2, canvas.height / 2, 0,
+        canvas.width / 2, canvas.height / 2, canvas.width
+      );
+      bgGradient.addColorStop(0, '#041023');
+      bgGradient.addColorStop(1, '#020617');
+      ctx.fillStyle = bgGradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 2. Halvány technikai háló (Grid)
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.04)';
+      ctx.lineWidth = 1;
+      const gridSize = 80;
+      for(let i = 0; i < canvas.width; i += gridSize) {
+        ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+      }
+      for(let i = 0; i < canvas.height; i += gridSize) {
+        ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
+      }
+
+      // 3. Mozgó grafikonvonalak rajzolása
+      lines.forEach(line => {
+        ctx.beginPath();
+        ctx.strokeStyle = line.color;
+        ctx.globalAlpha = line.opacity;
+        ctx.lineWidth = 2;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = line.color;
+
+        line.points.forEach((p, i) => {
+          const move = Math.sin(time * line.speedMultiplier + p.offset) * 40;
+          const currentY = p.baseY + move;
+          
+          if (i === 0) ctx.moveTo(p.x, currentY);
+          else {
+            const prevP = line.points[i-1];
+            const prevY = prevP.baseY + Math.sin(time * line.speedMultiplier + prevP.offset) * 40;
+            // Görbített vonalvezetés
+            ctx.bezierCurveTo(prevP.x + (p.x - prevP.x)/2, prevY, prevP.x + (p.x - prevP.x)/2, currentY, p.x, currentY);
+          }
+        });
+        ctx.stroke();
+
+        // Apró adatpontok a csomópontokon
+        line.points.forEach(p => {
+          const currentY = p.baseY + Math.sin(time * line.speedMultiplier + p.offset) * 40;
+          ctx.globalAlpha = line.opacity * 2;
+          ctx.beginPath();
+          ctx.arc(p.x, currentY, 2, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      });
+
+      ctx.globalAlpha = 1.0;
+      ctx.shadowBlur = 0;
+      animationFrameId = requestAnimationFrame(draw);
+    };
+
+    window.addEventListener('resize', resize);
+    resize();
+    draw(0);
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0, zIndex: 0, pointerEvents: 'none' }} />;
+};
+
 // --- PRÉMIUM VIDEÓ KOMPONENS ---
 const PremiumVideo = React.memo(function PremiumVideo({ 
   size = "160px", 
@@ -345,18 +454,6 @@ export default function Home() {
           alignItems: "center",
           justifyContent: isMobile ? "flex-start" : "center",
           backgroundColor: "#020617",
-          /* PRÉMIUM HIGH-TECH ADATVONALAS HÁTTÉR KÓDDAL */
-          backgroundImage: `
-            radial-gradient(circle at 50% 50%, rgba(3, 105, 161, 0.15) 0%, transparent 85%),
-            radial-gradient(circle at 10% 10%, rgba(7, 89, 133, 0.1) 0%, transparent 40%),
-            linear-gradient(rgba(2, 6, 23, 0.8), rgba(2, 6, 23, 0.8)),
-            url("data:image/svg+xml,%3Csvg width='1000' height='600' viewBox='0 0 1000 600' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 500 Q 250 400 500 500 T 1000 450' stroke='rgba(56, 189, 248, 0.1)' stroke-width='2' fill='none'/%3E%3Cpath d='M0 450 Q 300 350 600 450 T 1000 350' stroke='rgba(56, 189, 248, 0.05)' stroke-width='1' fill='none'/%3E%3Cpath d='M0 550 Q 200 450 400 550 T 1000 500' stroke='rgba(56, 189, 248, 0.08)' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"),
-            linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px),
-            linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px)
-          `,
-          backgroundPosition: "center",
-          backgroundSize: isMobile ? "100% 100%, 100% 100%, 100% 100%, 200% 100%, 30px 30px, 30px 30px" : "100% 100%, 100% 100%, 100% 100%, 100% 100%, 60px 60px, 60px 60px",
-          backgroundRepeat: "no-repeat, no-repeat, no-repeat, repeat-x, repeat, repeat",
           color: "white",
           fontFamily: "'Inter', system-ui, Arial, sans-serif",
           position: "relative",
@@ -365,6 +462,9 @@ export default function Home() {
           padding: isMobile ? "80px 0 60px 0" : 0,
         }}
       >
+        {/* ÉLŐ FINTECH HÁTTÉR KOMPONENS */}
+        <FinancialIntelligenceBackground />
+
         <audio ref={audioRef} src="/wealthyai/icons/nyitobeszed.mp3" preload="auto" onEnded={handleAudioEnd} />
 
         <div style={{ 
