@@ -3,7 +3,7 @@ import SEO from "../components/SEO";
 import Head from "next/head";
 import TrafficTracker from "../components/TrafficTracker";
 
-// --- PRÉMIUM VIDEÓ KOMPONENS (Kiemelve a Home elé a stabil renderelésért) ---
+// --- PRÉMIUM VIDEÓ KOMPONENS ---
 const PremiumVideo = React.memo(function PremiumVideo({ 
   size = "160px", 
   videoRef, 
@@ -128,6 +128,7 @@ export default function Home() {
   const [isVerified, setIsVerified] = useState(false);
   const [botValue, setBotValue] = useState("");
   const [isBotTrapped, setIsBotTrapped] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -271,6 +272,19 @@ export default function Home() {
       return;
     }
     stopAudio();
+  };
+
+  const launchSearch = () => {
+    if (searchQuery.trim() !== "") {
+      const searchUrl = `https://duckduckgo.com/?q=${encodeURIComponent(searchQuery)}&kp=-2`;
+      window.open(searchUrl, '_blank');
+    }
+  };
+
+  const handleSearchKey = (e) => {
+    if (e.key === "Enter") {
+      launchSearch();
+    }
   };
 
   return (
@@ -433,7 +447,62 @@ export default function Home() {
 
         <div style={{ textAlign: "center", zIndex: 3, display: "flex", flexDirection: "column", alignItems: "center", width: "100%", transform: isMobile ? "none" : "translateY(-40px)" }}>
           <img src="/wealthyai/icons/generated.png" alt="WealthyAI logo" className="brand-logo" style={{ width: isMobile ? "320px" : "860px", maxWidth: "95vw", display: "block", cursor: "pointer", marginTop: isMobile ? "40px" : "0px" }} />
-          <div style={{ color: "#FFFFFF", lineHeight: "1.45", textAlign: "center", textShadow: "0 2px 10px rgba(0,0,0,0.5)", marginTop: isMobile ? "0px" : "-110px", width: "100%", maxWidth: "800px", padding: "0 20px", letterSpacing: "0.2px" }}>
+          
+          {/* --- SEARCH INTERFACE --- */}
+          <div style={{ 
+            margin: isMobile ? "20px auto" : "0 auto 40px auto", 
+            width: "100%", 
+            maxWidth: isMobile ? "300px" : "500px", 
+            position: "relative",
+            zIndex: 50,
+            marginTop: isMobile ? "20px" : "-60px"
+          }}>
+            <input 
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={handleSearchKey}
+              placeholder="PRIVATE SEARCH..." 
+              style={{
+                width: "100%",
+                padding: isMobile ? "12px 20px" : "15px 25px",
+                borderRadius: "30px",
+                border: "1px solid rgba(255,255,255,0.3)",
+                background: "rgba(0, 0, 0, 0.4)",
+                backdropFilter: "blur(10px)",
+                color: "#fff",
+                fontSize: "14px",
+                outline: "none",
+                transition: "all 0.3s ease",
+                boxSizing: "border-box",
+                textAlign: "center",
+                letterSpacing: "1px"
+              }}
+              className="search-input-field"
+            />
+            <button 
+              onClick={launchSearch}
+              style={{
+                position: "absolute",
+                right: "8px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "rgba(255,255,255,0.1)",
+                color: "#fff",
+                border: "1px solid rgba(255,255,255,0.2)",
+                padding: "6px 15px",
+                borderRadius: "20px",
+                fontSize: "10px",
+                fontWeight: "700",
+                cursor: "pointer",
+                transition: "0.3s"
+              }}
+            >
+              GO
+            </button>
+          </div>
+
+          <div style={{ color: "#FFFFFF", lineHeight: "1.45", textAlign: "center", textShadow: "0 2px 10px rgba(0,0,0,0.5)", marginTop: "20px", width: "100%", maxWidth: "800px", padding: "0 20px", letterSpacing: "0.2px" }}>
             <div style={{ fontSize: isMobile ? "1.1rem" : "1.55rem", fontWeight: "300", opacity: 0.9, marginBottom: "15px" }}>
               AI-powered financial thinking.<br />
               Structured insights.<br />
@@ -540,6 +609,11 @@ export default function Home() {
             background: rgba(56,189,248,0.2) !important;
             color: white !important;
             border-color: rgba(56,189,248,0.8) !important;
+          }
+
+          .search-input-field:focus {
+            border-color: rgba(56,189,248,0.8) !important;
+            box-shadow: 0 0 15px rgba(56,189,248,0.3);
           }
         `}</style>
       </main>
