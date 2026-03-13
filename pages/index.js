@@ -368,13 +368,19 @@ export default function Home() {
           gap: isMobile ? "10px" : "20px", 
           zIndex: 10,
           width: isMobile ? "100%" : "auto",
-          justifyContent: isMobile ? "center" : "flex-start"
+          justifyContent: isMobile ? "center" : "flex-start",
+          alignItems: "center"
         }}>
-          <AnalogClock city="New York" timezone="America/New_York" isMobile={isMobile} />
-          <AnalogClock city="London" timezone="Europe/London" isMobile={isMobile} />
-          <AnalogClock city="Paris" timezone="Europe/Paris" isMobile={isMobile} />
-          <AnalogClock city="Tokyo" timezone="Asia/Tokyo" isMobile={isMobile} />
-          <AnalogClock city="WealthyAI" timezone="UTC" speed={0.75} isMobile={isMobile} />
+          <div style={{ display: "flex", gap: isMobile ? "10px" : "20px" }}>
+            <AnalogClock city="New York" timezone="America/New_York" isMobile={isMobile} />
+            <AnalogClock city="London" timezone="Europe/London" isMobile={isMobile} />
+            <AnalogClock city="Paris" timezone="Europe/Paris" isMobile={isMobile} />
+            <AnalogClock city="Tokyo" timezone="Asia/Tokyo" isMobile={isMobile} />
+            <AnalogClock city="WealthyAI" timezone="UTC" speed={0.75} isMobile={isMobile} />
+          </div>
+          {!isMobile && (
+            <a href="/insights" onClick={stopAudio} className="nav-link" style={{ fontSize: "0.95rem", marginLeft: "20px", fontWeight: "400" }}>Insights</a>
+          )}
         </div>
 
         <div style={{ opacity: 0, position: "absolute", top: 0, left: 0, height: 0, width: 0, zIndex: -1, pointerEvents: "none" }}>
@@ -426,6 +432,7 @@ export default function Home() {
           padding: isMobile ? "0 20px" : "0",
           maxWidth: isMobile ? "100%" : "auto"
         }}>
+          {isMobile && <a href="/insights" onClick={stopAudio} className="nav-link">Insights</a>}
           <a href="/PrivacyPolicy" onClick={stopAudio} className="nav-link">Privacy Policy</a>
           <a href="/philosophy" onClick={stopAudio} className="nav-link">Philosophy</a>
           <a href="/how-it-works" onClick={stopAudio} className="nav-link">How it works</a>
