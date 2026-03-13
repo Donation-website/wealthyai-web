@@ -1,5 +1,3 @@
-export const runtime = 'edge';
-
 export default async function handler(req) {
   const symbols = ["^GSPC", "^IXIC", "BTC-USD", "GC=F", "EURUSD=X"];
   const symbolString = symbols.join(",");
