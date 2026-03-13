@@ -1,8 +1,8 @@
 import Head from "next/head";
 
-const DEFAULT_SITE_URL = "https://wealthyai-web.vercel.app";
+const DEFAULT_SITE_URL = "https://mywealthyai.com";
 const DEFAULT_OG_IMAGE =
-  "https://wealthyai-web.vercel.app/wealthyai/icons/megosztas.png";
+  "https://mywealthyai.com/wealthyai/icons/megosztas.png";
 
 export default function SEO({
   title = "WealthyAI – AI-powered financial clarity",
