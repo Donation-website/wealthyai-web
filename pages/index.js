@@ -3,7 +3,7 @@ import SEO from "../components/SEO";
 import Head from "head";
 import TrafficTracker from "../components/TrafficTracker";
 
-// --- PRÉMIUM VIDEÓ KOMPONENS (Kiemelve a Home elé a stabil renderelésért) ---
+// --- PRÉMIUM VIDEÓ KOMPONENS ---
 const PremiumVideo = React.memo(function PremiumVideo({ 
   size = "160px", 
   videoRef, 
@@ -371,11 +371,10 @@ export default function Home() {
           justifyContent: isMobile ? "center" : "flex-start",
           alignItems: "center"
         }}>
-          {/* Insights gomb az órák előtt */}
+          {/* INSIGHTS FELIRAT AZ ÓRÁK ELŐTT */}
           <a href="/insights" onClick={stopAudio} className="nav-link" style={{ 
             fontSize: isMobile ? "0.75rem" : "0.95rem", 
             fontWeight: "400",
-            textTransform: isMobile ? "none" : "none",
             whiteSpace: "nowrap"
           }}>Insights</a>
 
@@ -437,7 +436,7 @@ export default function Home() {
           padding: isMobile ? "0 20px" : "0",
           maxWidth: isMobile ? "100%" : "auto"
         }}>
-          {/* Insights törölve innen, mert felülre került az órákhoz */}
+          {/* INNEN TÖRÖLVE AZ INSIGHTS, CSAK A TÖBBI MARADT */}
           <a href="/PrivacyPolicy" onClick={stopAudio} className="nav-link">Privacy Policy</a>
           <a href="/philosophy" onClick={stopAudio} className="nav-link">Philosophy</a>
           <a href="/how-it-works" onClick={stopAudio} className="nav-link">How it works</a>
