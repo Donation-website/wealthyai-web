@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import SEO from "../components/SEO";
-import Head from "head";
+import Head from "next/head";
 import TrafficTracker from "../components/TrafficTracker";
 
-// --- PRÉMIUM VIDEÓ KOMPONENS ---
+// --- PRÉMIUM VIDEÓ KOMPONENS (Kiemelve a Home elé a stabil renderelésért) ---
 const PremiumVideo = React.memo(function PremiumVideo({ 
   size = "160px", 
   videoRef, 
@@ -365,26 +365,23 @@ export default function Home() {
           left: isMobile ? "50%" : "150px", 
           transform: isMobile ? "translateX(-50%)" : "none",
           display: "flex", 
-          gap: isMobile ? "15px" : "30px", 
+          gap: isMobile ? "15px" : "25px", 
           zIndex: 10,
           width: isMobile ? "100%" : "auto",
           justifyContent: isMobile ? "center" : "flex-start",
           alignItems: "center"
         }}>
-          {/* INSIGHTS FELIRAT SZIGORÚAN LEVÁLASZTVA A TÖBBI MENÜRŐL */}
-          <div style={{ display: "block" }}>
-            <a href="/insights" onClick={stopAudio} className="nav-link" style={{ 
-              fontSize: isMobile ? "0.75rem" : "0.95rem", 
-              fontWeight: "400",
-              whiteSpace: "nowrap",
-              display: "inline-block"
-            }}>Insights</a>
-          </div>
+          {/* Insights link áthelyezve a New York óra elé, vízszintesen egy sorba */}
+          <a href="/insights" onClick={stopAudio} className="nav-link" style={{ 
+            fontSize: isMobile ? "0.75rem" : "0.95rem", 
+            fontWeight: "400",
+            whiteSpace: "nowrap"
+          }}>Insights</a>
 
           <div style={{ display: "flex", gap: isMobile ? "10px" : "20px", alignItems: "center" }}>
             <AnalogClock city="New York" timezone="America/New_York" isMobile={isMobile} />
             <AnalogClock city="London" timezone="Europe/London" isMobile={isMobile} />
-            <AnalogClock city="Budapest" timezone="Europe/Budapest" isMobile={isMobile} />
+            <AnalogClock city="Paris" timezone="Europe/Paris" isMobile={isMobile} />
             <AnalogClock city="Tokyo" timezone="Asia/Tokyo" isMobile={isMobile} />
             <AnalogClock city="WealthyAI" timezone="UTC" speed={0.75} isMobile={isMobile} />
           </div>
