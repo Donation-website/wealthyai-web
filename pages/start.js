@@ -627,8 +627,27 @@ const WealthyTicker = () => {
           </div>
         </div>
 
+        {/* CUSTOM INQUIRY SECTION */}
         <div style={{ 
-          marginTop: "50px", 
+          marginTop: "40px", 
+          textAlign: "center", 
+          padding: "0 20px" 
+        }}>
+          <p style={{ 
+            fontSize: isMobile ? "13px" : "15px", 
+            opacity: 0.85, 
+            maxWidth: "800px", 
+            margin: "0 auto", 
+            lineHeight: "1.6" 
+          }}>
+            <strong>Looking for a custom deep-dive?</strong><br />
+            If our standard plans don't cover your specific needs, contact us for a personalized data interpretation request at <a href="mailto:info@mywealthyai.com" style={{ color: "#7dd3fc", textDecoration: "none" }}>info@mywealthyai.com</a>. We provide technical insights and analytical clarity to help you understand your financial data better.<br />
+            <span style={{ fontSize: "11px", opacity: 0.6 }}>*Note: This service constitutes data interpretation and information services only, not financial or investment advice.</span>
+          </p>
+        </div>
+
+        <div style={{ 
+          marginTop: "30px", 
           textAlign: "center", 
           paddingBottom: "20px" 
         }}>
