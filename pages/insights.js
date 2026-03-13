@@ -1,8 +1,35 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { createClient } from "@supabase/supabase-js";
+
+// Kapcsolódás a meglévő Supabase adatbázishoz
+const SUPABASE_URL = "https://csfaqnsuhhnposhyfxmk.supabase.co";
+const SUPABASE_KEY = "sb_publishable_wjDPUzwhkqApZWEHWrvalQ_bSJr8iT0";
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 export default function InsightPage() {
-  // Ez a tömb lesz majd a Supabase-ből érkező adatok helye
-  const articles = []; 
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Cikkek lekérése az oldal betöltésekor
+  useEffect(() => {
+    const fetchInsights = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('posts')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setArticles(data || []);
+      } catch (err) {
+        console.error("Error fetching insights:", err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInsights();
+  }, []);
 
   return (
     <div style={page}>
@@ -24,14 +51,21 @@ export default function InsightPage() {
 
           {/* DINAMIKUS TARTALOM HELYE */}
           <div style={articleWrapper}>
-            {articles.length > 0 ? (
-              articles.map((article, index) => (
-                <Section key={index} title={article.title}>
+            {loading ? (
+              <p style={{ color: "#38bdf8", textAlign: "center" }}>Scanning database...</p>
+            ) : articles.length > 0 ? (
+              articles.map((article) => (
+                <Section 
+                  key={article.id} 
+                  title={article.title} 
+                  image={article.image_url}
+                  date={new Date(article.created_at).toLocaleDateString()}
+                >
                   {article.content}
                 </Section>
               ))
             ) : (
-              <p style={{ color: "#64748b", fontStyle: "italic" }}>
+              <p style={{ color: "#64748b", fontStyle: "italic", textAlign: "center" }}>
                 No insights published yet. New articles will appear here.
               </p>
             )}
@@ -48,23 +82,43 @@ export default function InsightPage() {
 
 /* ===== DINAMIKUS SZEKCIÓ KOMPONENS ===== */
 
-function Section({ title, children }) {
+function Section({ title, image, date, children }) {
   return (
     <div style={section}>
+      {image && (
+        <img 
+          src={image} 
+          alt={title} 
+          style={{ 
+            width: "100%", 
+            height: "250px", 
+            objectFit: "cover", 
+            borderRadius: "12px", 
+            marginBottom: "20px",
+            border: "1px solid rgba(255,255,255,0.1)" 
+          }} 
+        />
+      )}
+      <div style={{ fontSize: "11px", color: "#38bdf8", fontWeight: "bold", marginBottom: "8px", textTransform: "uppercase" }}>
+        {date}
+      </div>
       <h2 style={sectionTitle}>{title}</h2>
-      <div style={sectionText}>{children}</div>
+      <div style={sectionText}>
+        {/* Sortörések megtartása a tartalomnál */}
+        <div style={{ whiteSpace: "pre-wrap" }}>{children}</div>
+      </div>
     </div>
   );
 }
 
-/* ===== STYLES (Konzisztens a többi oldallal) ===== */
+/* ===== STYLES ===== */
 
 const page = {
   position: "relative",
   minHeight: "100vh",
   background: "#020617",
-  overflowX: "hidden", // Csak függőleges görgetés engedélyezett
-  fontFamily: "Inter, system-ui",
+  overflowX: "hidden",
+  fontFamily: "Inter, system-ui, sans-serif",
 };
 
 const bgGrid = {
@@ -103,64 +157,70 @@ const content = {
 
 const container = {
   width: "100%",
-  maxWidth: 900,
+  maxWidth: 800,
 };
 
 const back = {
   marginBottom: 24,
-  padding: "6px 12px",
+  padding: "8px 16px",
   fontSize: 13,
   borderRadius: 8,
-  background: "rgba(148,163,184,0.18)",
-  border: "1px solid rgba(148,163,184,0.35)",
+  background: "rgba(148,163,184,0.12)",
+  border: "1px solid rgba(148,163,184,0.25)",
   color: "#ffffff",
   cursor: "pointer",
+  fontWeight: "bold",
 };
 
 const title = {
-  fontSize: "2.5rem",
+  fontSize: "3rem",
+  fontWeight: "900",
   marginBottom: 12,
   color: "#ffffff",
+  letterSpacing: "-1px",
 };
 
 const intro = {
-  color: "#e5e7eb",
-  maxWidth: 720,
-  marginBottom: 48,
-  fontSize: 16,
+  color: "#94a3b8",
+  maxWidth: 600,
+  marginBottom: 64,
+  fontSize: 18,
+  lineHeight: "1.6",
 };
 
 const articleWrapper = {
   display: "flex",
   flexDirection: "column",
-  gap: "24px", // Távolság a cikkek között
+  gap: "32px",
 };
 
 const section = {
   width: "100%",
-  padding: 24,
-  borderRadius: 16,
-  background: "rgba(56,189,248,0.14)",
-  border: "1px solid rgba(125,211,252,0.35)",
-  backdropFilter: "blur(12px)",
+  padding: "32px",
+  borderRadius: "24px",
+  background: "rgba(15, 23, 42, 0.65)",
+  border: "1px solid rgba(56, 189, 248, 0.2)",
+  backdropFilter: "blur(16px)",
+  boxSizing: "border-box",
 };
 
 const sectionTitle = {
-  fontSize: "1.25rem",
-  color: "#f0f9ff",
-  marginBottom: 10,
+  fontSize: "1.5rem",
+  color: "#ffffff",
+  marginBottom: "16px",
+  fontWeight: "700",
 };
 
 const sectionText = {
-  fontSize: 15,
-  lineHeight: 1.65,
-  color: "#f8fafc",
+  fontSize: "16px",
+  lineHeight: "1.7",
+  color: "#cbd5e1",
 };
 
 const footer = {
-  marginTop: 64,
-  paddingBottom: 40,
-  fontSize: 14,
-  color: "#e5e7eb",
-  maxWidth: 720,
+  marginTop: "80px",
+  paddingBottom: "40px",
+  fontSize: "14px",
+  color: "#64748b",
+  textAlign: "center",
 };
