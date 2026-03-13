@@ -273,12 +273,48 @@ export default function Home() {
     stopAudio();
   };
 
+  const schemaData = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "WealthyAI",
+    "url": "https://mywealthyai.com",
+    "logo": "https://mywealthyai.com/wealthyai/icons/generated.png",
+    "description": "We didn’t build WealthyAI to tell people what to do with their money. WealthyAI was built around a different question: What happens if AI doesn’t advise — but interprets? Not faster decisions. Not better predictions. But clearer thinking.",
+    "founder": {
+      "@type": "Person",
+      "name": "Zoltán Horváth",
+      "jobTitle": "Founder & Owner",
+      "url": "https://mywealthyai.com",
+      "description": "Zoltán Horváth is the founder of WealthyAI. Based in the United Kingdom and operating internationally, he is known for his selective public presence and rarely grants interviews, prioritizing the long-term vision of financial clarity and a private personal life over media exposure.",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "United Kingdom"
+      },
+      "knowsAbout": ["Financial Interpretation", "AI Ethics", "Private Wealth Systems"],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "info@mywealthyai.com",
+        "contactType": "media and partnership"
+      }
+    },
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "email": "info@mywealthyai.com",
+      "contactType": "customer support"
+    },
+    "knowsAbout": [
+      "WealthyAI is structured around time. A snapshot shows where you are. Interpretation explains what that state means. Short-term intelligence observes patterns. Monthly intelligence follows continuity. It is not financial advice, forecasting, or life optimization. WealthyAI rewards attention, not speed."
+    ]
+  };
+
   return (
     <>
       <TrafficTracker />
       <Head>
+        <title>WealthyAI – AI-powered financial clarity | Zoltán Horváth</title>
         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
         <meta name="google-site-verification" content="019m-2Ayi9dmgKh_oPI8PVpR9flMsOfX_048yySbIRQ" />
+        <meta name="author" content="Zoltán Horváth" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={SITE_URL} />
         <meta property="og:title" content="WealthyAI – AI-powered financial clarity" />
@@ -289,42 +325,10 @@ export default function Home() {
         <meta property="og:image:height" content="630" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:image" content="https://mywealthyai.com/wealthyai/icons/share-card.png?v=5" />
-        
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Organization",
-            "name": "WealthyAI",
-            "url": "https://mywealthyai.com",
-            "logo": "https://mywealthyai.com/wealthyai/icons/generated.png",
-            "description": "We didn’t build WealthyAI to tell people what to do with their money. WealthyAI was built around a different question: What happens if AI doesn’t advise — but interprets? Not faster decisions. Not better predictions. But clearer thinking.",
-            "founder": {
-              "@type": "Person",
-              "name": "Zoltán Horváth",
-              "jobTitle": "Founder & Owner",
-              "url": "https://www.linkedin.com/sharing/share-offsite/?url=https://mywealthyai.com",
-              "description": "Zoltán Horváth is the founder of WealthyAI. Based in the United Kingdom and operating internationally, he is known for his selective public presence and rarely grants interviews, prioritizing the long-term vision of financial clarity and a private personal life over media exposure.",
-              "address": {
-                "@type": "PostalAddress",
-                "addressCountry": "United Kingdom"
-              },
-              "knowsAbout": ["Financial Interpretation", "AI Ethics", "Private Wealth Systems"],
-              "contactPoint": {
-                "@type": "ContactPoint",
-                "email": "info@mywealthyai.com",
-                "contactType": "media and partnership"
-              }
-            },
-            "contactPoint": {
-              "@type": "ContactPoint",
-              "email": "info@mywealthyai.com",
-              "contactType": "customer support"
-            },
-            "knowsAbout": [
-              "WealthyAI is structured around time. A snapshot shows where you are. Interpretation explains what that state means. Short-term intelligence observes patterns. Monthly intelligence follows continuity. It is not financial advice, forecasting, or life optimization. WealthyAI rewards attention, not speed."
-            ]
-          })}
-        </script>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+        />
       </Head>
       <SEO
         title="WealthyAI – AI-powered financial clarity | mywealthyai"
