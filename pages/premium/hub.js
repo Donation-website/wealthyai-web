@@ -12,10 +12,10 @@ export default function PremiumHub() {
   const [aiStatus, setAiStatus] = useState("checking");
   const [stripeBalance, setStripeBalance] = useState("FETCHING...");
   const [todayTraffic, setTodayTraffic] = useState(0); 
-  const [realHumans, setRealHumans] = useState(0); // ÚJ: Valódi emberek száma
+  const [realHumans, setRealHumans] = useState(0); 
   
-  // ÚJ: Cikk kezelő állapotok
   const [newPost, setNewPost] = useState({ title: "", content: "", image_url: "" });
+  const [uploading, setUploading] = useState(false);
 
   const _K = "TUFTVEVSLURPTUlOQU5DRS0yMDI2"; 
   
@@ -69,7 +69,32 @@ export default function PremiumHub() {
     if (!error) fetchComments();
   };
 
-  // ÚJ: Cikk mentése funkció
+  // ÚJ: Kép feltöltése a Supabase Storage-ba
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    setUploading(true);
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    let { error: uploadError } = await supabase.storage
+      .from('blog-images')
+      .upload(filePath, file);
+
+    if (uploadError) {
+      alert("Upload failed: " + uploadError.message);
+      setUploading(false);
+      return;
+    }
+
+    const { data } = supabase.storage.from('blog-images').getPublicUrl(filePath);
+    setNewPost({ ...newPost, image_url: data.publicUrl });
+    setUploading(false);
+    alert("Image uploaded and linked!");
+  };
+
   const publishArticle = async () => {
     if (!newPost.title || !newPost.content) return alert("Title and Content are required!");
     const { error } = await supabase.from('posts').insert([
@@ -126,8 +151,7 @@ export default function PremiumHub() {
     statusDot: { width: "8px", height: "8px", borderRadius: "50%", background: aiStatus === "HEALTHY" ? "#22c55e" : "#ef4444", boxShadow: aiStatus === "HEALTHY" ? "0 0 10px #22c55e" : "0 0 15px #ef4444", animation: aiStatus !== "HEALTHY" ? "blink 1s infinite" : "none" },
     balanceBadge: { background: "rgba(67, 56, 202, 0.2)", border: "1px solid #4338ca", padding: "4px 12px", borderRadius: "20px", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" },
     trafficBadge: { background: "rgba(56, 189, 248, 0.15)", border: "1px solid #38bdf8", padding: "4px 12px", borderRadius: "20px", display: "flex", alignItems: "center", gap: "8px" },
-    // ÚJ: Input stílusok az adminhoz
-    input: { width: "100%", padding: "12px", marginBottom: "10px", borderRadius: "8px", background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.1)", color: "white", fontSize: "14px" }
+    input: { width: "100%", padding: "12px", marginBottom: "10px", borderRadius: "8px", background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.1)", color: "white", fontSize: "14px", boxSizing: "border-box" }
   };
 
   return (
@@ -168,33 +192,42 @@ export default function PremiumHub() {
       <div style={{ background: "linear-gradient(90deg, #fbbf24, #f59e0b)", color: "#000", padding: "5px 15px", borderRadius: "20px", fontSize: "12px", fontWeight: "bold", marginBottom: "20px", marginTop: "20px" }}>UNIVERSE MASTER ACCESS</div>
       <h1 style={{ fontSize: isMobile ? "2rem" : "3rem", fontWeight: "900", marginBottom: "30px" }}>Control Hub</h1>
       
-      {/* ÚJ: ARTICLE EDITOR SZEKCIÓ (Csak Master módban látható) */}
       {isMaster && (
         <div style={{ ...styles.commentSection, borderColor: "#f59e0b", marginBottom: "40px" }}>
           <h3 style={{ color: "#f59e0b", marginTop: 0, marginBottom: "20px" }}>🚀 PUBLISH NEW INSIGHT</h3>
+          
           <input 
             style={styles.input} 
             placeholder="Article Title..." 
             value={newPost.title} 
             onChange={(e) => setNewPost({...newPost, title: e.target.value})} 
           />
-          <input 
-            style={styles.input} 
-            placeholder="Image URL (LinkedIn image link)..." 
-            value={newPost.image_url} 
-            onChange={(e) => setNewPost({...newPost, image_url: e.target.value})} 
-          />
+
+          <div style={{ marginBottom: "10px" }}>
+            <label style={{ fontSize: "11px", color: "#f59e0b", display: "block", marginBottom: "5px" }}>COVER IMAGE (LOCAL UPLOAD):</label>
+            <input 
+              type="file" 
+              accept="image/*" 
+              onChange={handleImageUpload} 
+              style={{ ...styles.input, padding: "8px" }}
+            />
+            {uploading && <span style={{ fontSize: "10px", color: "#38bdf8" }}>Uploading image...</span>}
+            {newPost.image_url && <div style={{ fontSize: "10px", color: "#22c55e" }}>✓ Image linked: {newPost.image_url.substring(0, 40)}...</div>}
+          </div>
+
           <textarea 
             style={{ ...styles.input, minHeight: "150px", fontFamily: "inherit" }} 
             placeholder="Paste your LinkedIn content here..." 
             value={newPost.content} 
             onChange={(e) => setNewPost({...newPost, content: e.target.value})} 
           />
+
           <button 
             onClick={publishArticle} 
-            style={{ width: "100%", padding: "15px", background: "#f59e0b", color: "black", border: "none", borderRadius: "12px", fontWeight: "900", cursor: "pointer", fontSize: "14px" }}
+            disabled={uploading}
+            style={{ width: "100%", padding: "15px", background: uploading ? "#334155" : "#f59e0b", color: "black", border: "none", borderRadius: "12px", fontWeight: "900", cursor: uploading ? "not-allowed" : "pointer", fontSize: "14px" }}
           >
-            CONFIRM & PUBLISH INSIGHT
+            {uploading ? "WAITING FOR UPLOAD..." : "CONFIRM & PUBLISH INSIGHT"}
           </button>
         </div>
       )}
