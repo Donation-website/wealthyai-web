@@ -1,4 +1,6 @@
-export default async function handler(req, res) {
+export const runtime = 'edge';
+
+export default async function handler(req) {
   const symbols = ["^GSPC", "^IXIC", "BTC-USD", "GC=F", "EURUSD=X"];
   const symbolString = symbols.join(",");
   
@@ -22,14 +24,21 @@ export default async function handler(req, res) {
       up: quote.regularMarketChangePercent >= 0,
     }));
 
-    res.status(200).json(formattedData);
+    return new Response(JSON.stringify(formattedData), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    });
   } catch (error) {
-    // FALLBACK: Ha a Yahoo blokkol, ezeket fogod látni, hogy ne legyen hiba
+    // FALLBACK: Ugyanaz a logika, de Cloudflare-kompatibilis válaszban
     const fallback = [
       { symbol: "^GSPC", name: "S&P 500", price: "5,123.42", change: "+0.45%", up: true },
       { symbol: "BTC-USD", name: "Bitcoin", price: "64,210.00", change: "-1.24%", up: false },
       { symbol: "GC=F", name: "Gold", price: "2,165.40", change: "+0.12%", up: true }
     ];
-    res.status(200).json(fallback);
+    
+    return new Response(JSON.stringify(fallback), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    });
   }
 }
