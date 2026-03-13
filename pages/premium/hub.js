@@ -13,6 +13,9 @@ export default function PremiumHub() {
   const [stripeBalance, setStripeBalance] = useState("FETCHING...");
   const [todayTraffic, setTodayTraffic] = useState(0); 
   const [realHumans, setRealHumans] = useState(0); // ÚJ: Valódi emberek száma
+  
+  // ÚJ: Cikk kezelő állapotok
+  const [newPost, setNewPost] = useState({ title: "", content: "", image_url: "" });
 
   const _K = "TUFTVEVSLURPTUlOQU5DRS0yMDI2"; 
   
@@ -39,7 +42,7 @@ export default function PremiumHub() {
       const data = await res.json();
       if (data.stripe) setStripeBalance(data.stripe);
       if (data.trafficToday !== undefined) setTodayTraffic(data.trafficToday);
-      if (data.humansToday !== undefined) setRealHumans(data.humansToday); // ÚJ: Adat fogadása
+      if (data.humansToday !== undefined) setRealHumans(data.humansToday); 
     } catch (e) {
       setStripeBalance("OFFLINE");
     }
@@ -64,6 +67,25 @@ export default function PremiumHub() {
     if (!window.confirm("Biztosan törlöd?")) return;
     const { error } = await supabase.from('comments').delete().eq('id', id);
     if (!error) fetchComments();
+  };
+
+  // ÚJ: Cikk mentése funkció
+  const publishArticle = async () => {
+    if (!newPost.title || !newPost.content) return alert("Title and Content are required!");
+    const { error } = await supabase.from('posts').insert([
+      { 
+        title: newPost.title, 
+        content: newPost.content, 
+        image_url: newPost.image_url, 
+        created_at: new Date() 
+      }
+    ]);
+    if (error) {
+      alert("Error: " + error.message);
+    } else {
+      alert("INSIGHT PUBLISHED SUCCESSFULLY!");
+      setNewPost({ title: "", content: "", image_url: "" });
+    }
   };
 
   useEffect(() => {
@@ -103,7 +125,9 @@ export default function PremiumHub() {
     commentSection: { width: "90%", maxWidth: "850px", marginTop: "40px", padding: "25px", borderRadius: "24px", background: "rgba(15, 23, 42, 0.6)", border: "1px solid rgba(56,189,248,0.2)" },
     statusDot: { width: "8px", height: "8px", borderRadius: "50%", background: aiStatus === "HEALTHY" ? "#22c55e" : "#ef4444", boxShadow: aiStatus === "HEALTHY" ? "0 0 10px #22c55e" : "0 0 15px #ef4444", animation: aiStatus !== "HEALTHY" ? "blink 1s infinite" : "none" },
     balanceBadge: { background: "rgba(67, 56, 202, 0.2)", border: "1px solid #4338ca", padding: "4px 12px", borderRadius: "20px", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" },
-    trafficBadge: { background: "rgba(56, 189, 248, 0.15)", border: "1px solid #38bdf8", padding: "4px 12px", borderRadius: "20px", display: "flex", alignItems: "center", gap: "8px" }
+    trafficBadge: { background: "rgba(56, 189, 248, 0.15)", border: "1px solid #38bdf8", padding: "4px 12px", borderRadius: "20px", display: "flex", alignItems: "center", gap: "8px" },
+    // ÚJ: Input stílusok az adminhoz
+    input: { width: "100%", padding: "12px", marginBottom: "10px", borderRadius: "8px", background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.1)", color: "white", fontSize: "14px" }
   };
 
   return (
@@ -128,7 +152,6 @@ export default function PremiumHub() {
             <div style={styles.trafficBadge}>
                 <span style={{ fontSize: "9px", color: "#38bdf8", fontWeight: "bold" }}>VISITS:</span>
                 <span style={{ fontSize: "11px", color: "#fff", fontWeight: "900", fontFamily: "monospace" }}>{todayTraffic}</span>
-                {/* ÚJ: Valódi emberek kijelzése zöld ikonnal */}
                 <span style={{ fontSize: "9px", color: "#22c55e", fontWeight: "bold", marginLeft: "8px" }}>👤:</span>
                 <span style={{ fontSize: "11px", color: "#22c55e", fontWeight: "900", fontFamily: "monospace" }}>{realHumans}</span>
             </div>
@@ -145,7 +168,39 @@ export default function PremiumHub() {
       <div style={{ background: "linear-gradient(90deg, #fbbf24, #f59e0b)", color: "#000", padding: "5px 15px", borderRadius: "20px", fontSize: "12px", fontWeight: "bold", marginBottom: "20px", marginTop: "20px" }}>UNIVERSE MASTER ACCESS</div>
       <h1 style={{ fontSize: isMobile ? "2rem" : "3rem", fontWeight: "900", marginBottom: "30px" }}>Control Hub</h1>
       
+      {/* ÚJ: ARTICLE EDITOR SZEKCIÓ (Csak Master módban látható) */}
+      {isMaster && (
+        <div style={{ ...styles.commentSection, borderColor: "#f59e0b", marginBottom: "40px" }}>
+          <h3 style={{ color: "#f59e0b", marginTop: 0, marginBottom: "20px" }}>🚀 PUBLISH NEW INSIGHT</h3>
+          <input 
+            style={styles.input} 
+            placeholder="Article Title..." 
+            value={newPost.title} 
+            onChange={(e) => setNewPost({...newPost, title: e.target.value})} 
+          />
+          <input 
+            style={styles.input} 
+            placeholder="Image URL (LinkedIn image link)..." 
+            value={newPost.image_url} 
+            onChange={(e) => setNewPost({...newPost, image_url: e.target.value})} 
+          />
+          <textarea 
+            style={{ ...styles.input, minHeight: "150px", fontFamily: "inherit" }} 
+            placeholder="Paste your LinkedIn content here..." 
+            value={newPost.content} 
+            onChange={(e) => setNewPost({...newPost, content: e.target.value})} 
+          />
+          <button 
+            onClick={publishArticle} 
+            style={{ width: "100%", padding: "15px", background: "#f59e0b", color: "black", border: "none", borderRadius: "12px", fontWeight: "900", cursor: "pointer", fontSize: "14px" }}
+          >
+            CONFIRM & PUBLISH INSIGHT
+          </button>
+        </div>
+      )}
+
       <div style={styles.grid}>
+        <div style={styles.card} onClick={() => navigateTo("/insights")}>📖 <h2>Insights</h2></div>
         <div style={styles.card} onClick={() => navigateTo("/day")}>⚡ <h2>Daily</h2></div>
         <div style={styles.card} onClick={() => navigateTo("/premium-week")}>📊 <h2>Weekly</h2></div>
         <div style={styles.card} onClick={() => navigateTo("/premium-month")}>🧠 <h2>Monthly</h2></div>
