@@ -437,7 +437,7 @@ export default function Home() {
           padding: isMobile ? "0 20px" : "0",
           maxWidth: isMobile ? "100%" : "auto"
         }}>
-          {/* Mobilról kiszedve az Insights, mert fent már szerepel a sorrendben */}
+          {/* Insights törölve innen, mert felülre került az órákhoz */}
           <a href="/PrivacyPolicy" onClick={stopAudio} className="nav-link">Privacy Policy</a>
           <a href="/philosophy" onClick={stopAudio} className="nav-link">Philosophy</a>
           <a href="/how-it-works" onClick={stopAudio} className="nav-link">How it works</a>
