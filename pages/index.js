@@ -371,12 +371,15 @@ export default function Home() {
           justifyContent: isMobile ? "center" : "flex-start",
           alignItems: "center"
         }}>
-          {/* INSIGHTS FELIRAT AZ ÓRÁK ELŐTT */}
-          <a href="/insights" onClick={stopAudio} className="nav-link" style={{ 
-            fontSize: isMobile ? "0.75rem" : "0.95rem", 
-            fontWeight: "400",
-            whiteSpace: "nowrap"
-          }}>Insights</a>
+          {/* INSIGHTS FELIRAT SZIGORÚAN LEVÁLASZTVA A TÖBBI MENÜRŐL */}
+          <div style={{ display: "block" }}>
+            <a href="/insights" onClick={stopAudio} className="nav-link" style={{ 
+              fontSize: isMobile ? "0.75rem" : "0.95rem", 
+              fontWeight: "400",
+              whiteSpace: "nowrap",
+              display: "inline-block"
+            }}>Insights</a>
+          </div>
 
           <div style={{ display: "flex", gap: isMobile ? "10px" : "20px", alignItems: "center" }}>
             <AnalogClock city="New York" timezone="America/New_York" isMobile={isMobile} />
@@ -436,7 +439,6 @@ export default function Home() {
           padding: isMobile ? "0 20px" : "0",
           maxWidth: isMobile ? "100%" : "auto"
         }}>
-          {/* INNEN TÖRÖLVE AZ INSIGHTS, CSAK A TÖBBI MARADT */}
           <a href="/PrivacyPolicy" onClick={stopAudio} className="nav-link">Privacy Policy</a>
           <a href="/philosophy" onClick={stopAudio} className="nav-link">Philosophy</a>
           <a href="/how-it-works" onClick={stopAudio} className="nav-link">How it works</a>
