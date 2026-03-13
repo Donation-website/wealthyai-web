@@ -1,8 +1,5 @@
 import Stripe from "stripe";
 
-// Ez mondja meg a Cloudflare-nek, hogy Edge módban fusson
-export const runtime = 'edge';
-
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export default async function handler(req) {
