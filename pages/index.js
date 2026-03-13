@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import SEO from "../components/SEO";
-import Head from "next/head";
+import Head from "head";
 import TrafficTracker from "../components/TrafficTracker";
 
 // --- PRÉMIUM VIDEÓ KOMPONENS (Kiemelve a Home elé a stabil renderelésért) ---
@@ -365,22 +365,27 @@ export default function Home() {
           left: isMobile ? "50%" : "150px", 
           transform: isMobile ? "translateX(-50%)" : "none",
           display: "flex", 
-          gap: isMobile ? "10px" : "20px", 
+          gap: isMobile ? "15px" : "30px", 
           zIndex: 10,
           width: isMobile ? "100%" : "auto",
           justifyContent: isMobile ? "center" : "flex-start",
           alignItems: "center"
         }}>
-          <div style={{ display: "flex", gap: isMobile ? "10px" : "20px" }}>
+          {/* Insights gomb az órák előtt */}
+          <a href="/insights" onClick={stopAudio} className="nav-link" style={{ 
+            fontSize: isMobile ? "0.75rem" : "0.95rem", 
+            fontWeight: "400",
+            textTransform: isMobile ? "none" : "none",
+            whiteSpace: "nowrap"
+          }}>Insights</a>
+
+          <div style={{ display: "flex", gap: isMobile ? "10px" : "20px", alignItems: "center" }}>
             <AnalogClock city="New York" timezone="America/New_York" isMobile={isMobile} />
             <AnalogClock city="London" timezone="Europe/London" isMobile={isMobile} />
-            <AnalogClock city="Paris" timezone="Europe/Paris" isMobile={isMobile} />
+            <AnalogClock city="Budapest" timezone="Europe/Budapest" isMobile={isMobile} />
             <AnalogClock city="Tokyo" timezone="Asia/Tokyo" isMobile={isMobile} />
             <AnalogClock city="WealthyAI" timezone="UTC" speed={0.75} isMobile={isMobile} />
           </div>
-          {!isMobile && (
-            <a href="/insights" onClick={stopAudio} className="nav-link" style={{ fontSize: "0.95rem", marginLeft: "20px", fontWeight: "400" }}>Insights</a>
-          )}
         </div>
 
         <div style={{ opacity: 0, position: "absolute", top: 0, left: 0, height: 0, width: 0, zIndex: -1, pointerEvents: "none" }}>
@@ -432,7 +437,7 @@ export default function Home() {
           padding: isMobile ? "0 20px" : "0",
           maxWidth: isMobile ? "100%" : "auto"
         }}>
-          {isMobile && <a href="/insights" onClick={stopAudio} className="nav-link">Insights</a>}
+          {/* Mobilról kiszedve az Insights, mert fent már szerepel a sorrendben */}
           <a href="/PrivacyPolicy" onClick={stopAudio} className="nav-link">Privacy Policy</a>
           <a href="/philosophy" onClick={stopAudio} className="nav-link">Philosophy</a>
           <a href="/how-it-works" onClick={stopAudio} className="nav-link">How it works</a>
