@@ -362,20 +362,21 @@ export default function Home() {
         <div style={{ 
           position: "absolute", 
           top: isMobile ? "15px" : "25px", 
-          left: isMobile ? "50%" : "150px", 
+          left: isMobile ? "50%" : "40px", 
           transform: isMobile ? "translateX(-50%)" : "none",
           display: "flex", 
-          gap: isMobile ? "15px" : "25px", 
+          gap: isMobile ? "15px" : "35px", 
           zIndex: 10,
           width: isMobile ? "100%" : "auto",
           justifyContent: isMobile ? "center" : "flex-start",
           alignItems: "center"
         }}>
-          {/* Insights link áthelyezve a New York óra elé, vízszintesen egy sorba */}
+          {/* Insights link */}
           <a href="/insights" onClick={stopAudio} className="nav-link" style={{ 
             fontSize: isMobile ? "0.75rem" : "0.95rem", 
             fontWeight: "400",
-            whiteSpace: "nowrap"
+            whiteSpace: "nowrap",
+            marginTop: isMobile ? "0" : "2px"
           }}>Insights</a>
 
           <div style={{ display: "flex", gap: isMobile ? "10px" : "20px", alignItems: "center" }}>
