@@ -9,12 +9,14 @@ export default function PremiumHub() {
   const [isMobile, setIsMobile] = useState(false);
   const [isMaster, setIsMaster] = useState(false);
   const [comments, setComments] = useState([]);
+  const [posts, setPosts] = useState([]); // ÚJ: cikkek tárolása
   const [aiStatus, setAiStatus] = useState("checking");
   const [stripeBalance, setStripeBalance] = useState("FETCHING...");
   const [todayTraffic, setTodayTraffic] = useState(0); 
   const [realHumans, setRealHumans] = useState(0); 
   
   const [newPost, setNewPost] = useState({ title: "", content: "", image_url: "" });
+  const [editingId, setEditingId] = useState(null); // ÚJ: szerkesztés állapota
   const [uploading, setUploading] = useState(false);
 
   const _K = "TUFTVEVSLURPTUlOQU5DRS0yMDI2"; 
@@ -53,6 +55,12 @@ export default function PremiumHub() {
     if (!error && data) setComments(data);
   };
 
+  // ÚJ: Cikkek lekérése
+  const fetchPosts = async () => {
+    const { data, error } = await supabase.from('posts').select('*').order('created_at', { ascending: false });
+    if (!error && data) setPosts(data);
+  };
+
   const checkAiHealth = async () => {
     try {
       const res = await fetch('/api/ai-health-check');
@@ -69,7 +77,20 @@ export default function PremiumHub() {
     if (!error) fetchComments();
   };
 
-  // ÚJ: Kép feltöltése a Supabase Storage-ba
+  // ÚJ: Cikk törlése
+  const deletePost = async (id) => {
+    if (!window.confirm("Biztosan törlöd ezt az insight-ot?")) return;
+    const { error } = await supabase.from('posts').delete().eq('id', id);
+    if (!error) fetchPosts();
+  };
+
+  // ÚJ: Cikk betöltése szerkesztésre
+  const startEdit = (post) => {
+    setEditingId(post.id);
+    setNewPost({ title: post.title, content: post.content, image_url: post.image_url });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -97,19 +118,40 @@ export default function PremiumHub() {
 
   const publishArticle = async () => {
     if (!newPost.title || !newPost.content) return alert("Title and Content are required!");
-    const { error } = await supabase.from('posts').insert([
-      { 
+    
+    if (editingId) {
+      // UPDATE meglévő cikk
+      const { error } = await supabase.from('posts').update({ 
         title: newPost.title, 
         content: newPost.content, 
-        image_url: newPost.image_url, 
-        created_at: new Date() 
+        image_url: newPost.image_url 
+      }).eq('id', editingId);
+
+      if (error) {
+        alert("Update Error: " + error.message);
+      } else {
+        alert("INSIGHT UPDATED SUCCESSFULLY!");
+        setEditingId(null);
+        setNewPost({ title: "", content: "", image_url: "" });
+        fetchPosts();
       }
-    ]);
-    if (error) {
-      alert("Error: " + error.message);
     } else {
-      alert("INSIGHT PUBLISHED SUCCESSFULLY!");
-      setNewPost({ title: "", content: "", image_url: "" });
+      // INSERT új cikk
+      const { error } = await supabase.from('posts').insert([
+        { 
+          title: newPost.title, 
+          content: newPost.content, 
+          image_url: newPost.image_url, 
+          created_at: new Date() 
+        }
+      ]);
+      if (error) {
+        alert("Error: " + error.message);
+      } else {
+        alert("INSIGHT PUBLISHED SUCCESSFULLY!");
+        setNewPost({ title: "", content: "", image_url: "" });
+        fetchPosts();
+      }
     }
   };
 
@@ -118,6 +160,7 @@ export default function PremiumHub() {
     handleResize();
     window.addEventListener("resize", handleResize);
     fetchComments();
+    fetchPosts();
     checkAiHealth();
     
     const healthInterval = setInterval(checkAiHealth, 60000);
@@ -194,7 +237,7 @@ export default function PremiumHub() {
       
       {isMaster && (
         <div style={{ ...styles.commentSection, borderColor: "#f59e0b", marginBottom: "40px" }}>
-          <h3 style={{ color: "#f59e0b", marginTop: 0, marginBottom: "20px" }}>🚀 PUBLISH NEW INSIGHT</h3>
+          <h3 style={{ color: "#f59e0b", marginTop: 0, marginBottom: "20px" }}>{editingId ? "✍️ EDITING INSIGHT" : "🚀 PUBLISH NEW INSIGHT"}</h3>
           
           <input 
             style={styles.input} 
@@ -222,13 +265,41 @@ export default function PremiumHub() {
             onChange={(e) => setNewPost({...newPost, content: e.target.value})} 
           />
 
-          <button 
-            onClick={publishArticle} 
-            disabled={uploading}
-            style={{ width: "100%", padding: "15px", background: uploading ? "#334155" : "#f59e0b", color: "black", border: "none", borderRadius: "12px", fontWeight: "900", cursor: uploading ? "not-allowed" : "pointer", fontSize: "14px" }}
-          >
-            {uploading ? "WAITING FOR UPLOAD..." : "CONFIRM & PUBLISH INSIGHT"}
-          </button>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button 
+              onClick={publishArticle} 
+              disabled={uploading}
+              style={{ flex: 2, padding: "15px", background: uploading ? "#334155" : "#f59e0b", color: "black", border: "none", borderRadius: "12px", fontWeight: "900", cursor: uploading ? "not-allowed" : "pointer", fontSize: "14px" }}
+            >
+              {uploading ? "WAITING..." : editingId ? "UPDATE INSIGHT" : "CONFIRM & PUBLISH INSIGHT"}
+            </button>
+            {editingId && (
+              <button 
+                onClick={() => { setEditingId(null); setNewPost({ title: "", content: "", image_url: "" }); }}
+                style={{ flex: 1, padding: "15px", background: "rgba(255,255,255,0.1)", color: "white", border: "1px solid rgba(255,255,255,0.2)", borderRadius: "12px", fontWeight: "bold", cursor: "pointer" }}
+              >
+                CANCEL
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ÚJ: Insight-ok kezelése szakasz */}
+      {isMaster && posts.length > 0 && (
+        <div style={{ ...styles.commentSection, borderColor: "#38bdf8", marginBottom: "40px" }}>
+          <h3 style={{ color: "#38bdf8", marginTop: 0, marginBottom: "20px" }}>📑 MANAGE INSIGHTS</h3>
+          <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+            {posts.map((p) => (
+              <div key={p.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                <span style={{ fontSize: "13px", fontWeight: "bold", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "60%" }}>{p.title}</span>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <button onClick={() => startEdit(p)} style={{ background: "none", border: "1px solid #38bdf8", color: "#38bdf8", borderRadius: "4px", padding: "4px 8px", fontSize: "10px", cursor: "pointer" }}>EDIT</button>
+                  <button onClick={() => deletePost(p.id)} style={{ background: "none", border: "1px solid #ef4444", color: "#ef4444", borderRadius: "4px", padding: "4px 8px", fontSize: "10px", cursor: "pointer" }}>DEL</button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
