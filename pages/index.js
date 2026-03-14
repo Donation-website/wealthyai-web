@@ -328,6 +328,7 @@ top:0;
 left:0;
 width:100%;
 height:100%;
+image-rendering: pixelated;
 }
 
 </style>
@@ -342,157 +343,118 @@ height:100%;
 const canvas=document.getElementById("bg")
 const ctx=canvas.getContext("2d")
 
-canvas.width=window.innerWidth
-canvas.height=window.innerHeight
+function resize() {
+  canvas.width=window.innerWidth
+  canvas.height=window.innerHeight
+}
+window.onresize = resize;
+resize();
 
 const w=canvas.width
 const h=canvas.height
-
 
 // BACKGROUND
 ctx.fillStyle="#020617"
 ctx.fillRect(0,0,w,h)
 
-
-// GRID
-ctx.strokeStyle="rgba(0,255,255,0.25)"
-ctx.lineWidth=1
+// GRID - Élesebb kontraszt, tiszta vonalak
+ctx.strokeStyle="rgba(0,255,255,0.3)"
+ctx.lineWidth=0.5
 
 for(let x=0;x<w;x+=40){
-
 ctx.beginPath()
 ctx.moveTo(x,0)
 ctx.lineTo(x,h)
 ctx.stroke()
-
 }
 
 for(let y=0;y<h;y+=40){
-
 ctx.beginPath()
 ctx.moveTo(0,y)
 ctx.lineTo(w,y)
 ctx.stroke()
-
 }
 
-
-// WORLD MAP (DOT MATRIX SIMULATION)
-
-ctx.fillStyle="rgba(0,255,255,0.9)"
+// WORLD MAP - Ultra éles pontok
+ctx.fillStyle="#00ffff" // Nincs alfa, tiszta neon
 
 for(let x=300;x<1200;x+=12){
-
 for(let y=120;y<420;y+=12){
-
 if(
 (x>320 && x<1150 && y>160 && y<340) &&
 Math.sin(x*0.01)+Math.cos(y*0.01)>0
 ){
-
-ctx.fillRect(x,y,3,3)
-
+ctx.fillRect(x,y,3,3) // Kicsit nagyobb, de éles négyszög
+}
+}
 }
 
-}
-
-}
-
-
-// VOLUME BARS
-
+// VOLUME BARS - Éles élek
 const volume=[80,120,100,160,140,180,150,200,170,210,180,220]
-
-ctx.fillStyle="rgba(0,255,255,0.5)"
+ctx.fillStyle="rgba(0,255,255,0.7)"
 
 volume.forEach((v,i)=>{
-
 let x=200+i*90
 let y=h-140-v
-
 ctx.fillRect(x,y,40,v)
-
+// Kontúrvonal az élességért
+ctx.strokeStyle="#00ffff"
+ctx.lineWidth=1
+ctx.strokeRect(x,y,40,v)
 })
-
 
 // CHART DATA
+const data=[120,150,130,180,160,200,240,220,260,300,280,320,350,380,420,460]
 
-const data=[
-
-120,150,130,180,160,200,240,220,260,300,
-280,320,350,380,420,460
-
-]
-
-
-// GLOW LINE CHART
-
-ctx.strokeStyle="#00f7ff"
-ctx.lineWidth=4
+// GLOW LINE CHART - Dupla vonal az élességért (egy éles mag, egy glow)
 ctx.shadowBlur=40
 ctx.shadowColor="#00f7ff"
+ctx.strokeStyle="#00f7ff"
+ctx.lineWidth=4
 
 ctx.beginPath()
-
 data.forEach((v,i)=>{
-
 let x=250+i*80
 let y=h-300-v
-
-if(i===0){
-ctx.moveTo(x,y)
-}else{
-ctx.lineTo(x,y)
-}
-
+if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
 })
+ctx.stroke()
 
+// Plusz éles fehér magvonal a közepére (ez adja meg a penge hatást)
+ctx.shadowBlur=0
+ctx.strokeStyle="#ffffff"
+ctx.lineWidth=1.5
 ctx.stroke()
 
 // Plusz glow a chart alatt
-ctx.strokeStyle="rgba(0,255,255,0.25)"
-ctx.lineWidth=10
-
-ctx.beginPath()
-
-data.forEach((v,i)=>{
-
-let x=250+i*80
-let y=h-300-v
-
-if(i===0){
-ctx.moveTo(x,y)
-}else{
-ctx.lineTo(x,y)
-}
-
-})
-
+ctx.strokeStyle="rgba(0,255,255,0.4)"
+ctx.lineWidth=12
 ctx.stroke()
 
-ctx.shadowBlur=0
-
-// CANDLESTICKS
+// CANDLESTICKS - Pengeéles gyertyák
 ctx.shadowBlur=25
 ctx.shadowColor="#00ffff"
 
 data.forEach((v,i)=>{
-
 let x=250+i*80
-
 let open=h-300-v
 let close=open+(i%2===0 ? -50 : 50)
 
-ctx.strokeStyle="#00eaff"
-
+// Kanóc
+ctx.strokeStyle="#00ffff"
+ctx.lineWidth=2
 ctx.beginPath()
 ctx.moveTo(x,open-25)
 ctx.lineTo(x,close+25)
 ctx.stroke()
 
-ctx.fillStyle="#00eaff"
-ctx.fillRect(x-6,open,12,close-open)
-
+// Test
+ctx.fillStyle="#00ffff"
+ctx.fillRect(x-8,open,16,close-open)
+// Fehér keret a testnek a maximális kontrasztért
+ctx.strokeStyle="#ffffff"
+ctx.lineWidth=0.5
+ctx.strokeRect(x-8,open,16,close-open)
 })
 
 ctx.shadowBlur=0
@@ -577,7 +539,6 @@ ctx.shadowBlur=0
           padding: isMobile ? "80px 0 60px 0" : 0,
         }}
       >
-        {/* AZ ELSŐ KÓD (HÁTTÉR) MEGJELENÍTÉSE RÉTEGKÉNT */}
         <iframe
           srcDoc={backgroundSnippet}
           style={{
@@ -589,7 +550,7 @@ ctx.shadowBlur=0
             border: "none",
             zIndex: 0,
             pointerEvents: "none",
-            opacity: 0.4 // Állítható átlátszóság a meglévő háttérképhez
+            opacity: 0.5 // Kicsit emeltem az átlátszóságon az élesség miatt
           }}
           scrolling="no"
         />
@@ -608,7 +569,6 @@ ctx.shadowBlur=0
           justifyContent: isMobile ? "center" : "flex-start",
           alignItems: "center"
         }}>
-          {/* Insights link */}
           <a href="/insights" onClick={stopAudio} className="nav-link" style={{ 
             fontSize: isMobile ? "0.75rem" : "0.95rem", 
             fontWeight: "400",
