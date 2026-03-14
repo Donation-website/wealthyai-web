@@ -1,10 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
-
-// Supabase inicializálása - biztonsági ellenőrzéssel a build error ellen
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-key";
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function UserDashboard() {
   const [data, setData] = useState({
@@ -17,28 +11,6 @@ export default function UserDashboard() {
     internet: 80,
     subscriptions: 120,
   });
-
-  /* ===== SUPABASE LOGGING (NEW) ===== */
-  useEffect(() => {
-    const logVisit = async () => {
-      // Csak akkor fut le, ha nem a placeholder adatok vannak megadva
-      if (supabaseUrl.includes("placeholder")) return;
-
-      try {
-        await supabase
-          .from('2_page_visits')
-          .insert([
-            { 
-              user_agent: navigator.userAgent,
-              created_at: new Date().toISOString()
-            }
-          ]);
-      } catch (err) {
-        console.error("Logging failed", err);
-      }
-    };
-    logVisit();
-  }, []);
 
   /* ===== VIP ACCESS STATES ===== */
   const [showVipInputDay, setShowVipInputDay] = useState(false);
@@ -532,7 +504,7 @@ const WealthyTicker = () => {
                 flexWrap: "wrap",
               }}
             >
-              {/* --- DAY CARD --- */}
+              {/* --- DAY CARD (ID FRISSÍTVE) --- */}
               <div style={{ ...priceCard, cursor: "default" }}>
                 <div 
                   onClick={() => handleCheckout("price_1T0LCDDyLtejYlZimOucadbT")}
@@ -572,7 +544,7 @@ const WealthyTicker = () => {
                 </div>
               </div>
 
-              {/* --- WEEK CARD --- */}
+              {/* --- WEEK CARD (ID FRISSÍTVE) --- */}
               <div style={{ ...priceCard, cursor: "default" }}>
                 <div 
                   onClick={() => handleCheckout("price_1T0LBQDyLtejYlZiXKn0PmGP")}
@@ -612,7 +584,7 @@ const WealthyTicker = () => {
                 </div>
               </div>
 
-              {/* --- MONTH CARD --- */}
+              {/* --- MONTH CARD (ID FRISSÍTVE) --- */}
               <div style={{ ...priceCard, cursor: "default" }}>
                 <div 
                   onClick={() => handleCheckout("price_1T0L8aDyLtejYlZik3nH3Uft")}
