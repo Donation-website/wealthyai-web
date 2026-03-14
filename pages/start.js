@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 
-// Supabase inicializálása - a környezeti változókat használd a saját projektid alapján
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+// Supabase inicializálása - biztonsági ellenőrzéssel a build error ellen
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-key";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function UserDashboard() {
@@ -21,6 +21,9 @@ export default function UserDashboard() {
   /* ===== SUPABASE LOGGING (NEW) ===== */
   useEffect(() => {
     const logVisit = async () => {
+      // Csak akkor fut le, ha nem a placeholder adatok vannak megadva
+      if (supabaseUrl.includes("placeholder")) return;
+
       try {
         await supabase
           .from('2_page_visits')
@@ -529,7 +532,7 @@ const WealthyTicker = () => {
                 flexWrap: "wrap",
               }}
             >
-              {/* --- DAY CARD (ID FRISSÍTVE) --- */}
+              {/* --- DAY CARD --- */}
               <div style={{ ...priceCard, cursor: "default" }}>
                 <div 
                   onClick={() => handleCheckout("price_1T0LCDDyLtejYlZimOucadbT")}
@@ -569,7 +572,7 @@ const WealthyTicker = () => {
                 </div>
               </div>
 
-              {/* --- WEEK CARD (ID FRISSÍTVE) --- */}
+              {/* --- WEEK CARD --- */}
               <div style={{ ...priceCard, cursor: "default" }}>
                 <div 
                   onClick={() => handleCheckout("price_1T0LBQDyLtejYlZiXKn0PmGP")}
@@ -609,7 +612,7 @@ const WealthyTicker = () => {
                 </div>
               </div>
 
-              {/* --- MONTH CARD (ID FRISSÍTVE) --- */}
+              {/* --- MONTH CARD --- */}
               <div style={{ ...priceCard, cursor: "default" }}>
                 <div 
                   onClick={() => handleCheckout("price_1T0L8aDyLtejYlZik3nH3Uft")}
