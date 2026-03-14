@@ -307,6 +307,177 @@ export default function Home() {
     ]
   };
 
+  // --- AZ ELSŐ KÓD (HÁTTÉR) BEILLESZTÉSE ---
+  const backgroundSnippet = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Pro Trading Background</title>
+
+<style>
+
+body{
+margin:0;
+background:#020617;
+overflow:hidden;
+}
+
+canvas{
+position:absolute;
+top:0;
+left:0;
+width:100%;
+height:100%;
+}
+
+</style>
+</head>
+
+<body>
+
+<canvas id="bg"></canvas>
+
+<script>
+
+const canvas=document.getElementById("bg")
+const ctx=canvas.getContext("2d")
+
+canvas.width=window.innerWidth
+canvas.height=window.innerHeight
+
+const w=canvas.width
+const h=canvas.height
+
+
+// BACKGROUND
+ctx.fillStyle="#020617"
+ctx.fillRect(0,0,w,h)
+
+
+// GRID
+ctx.strokeStyle="rgba(0,200,255,0.08)"
+ctx.lineWidth=1
+
+for(let x=0;x<w;x+=40){
+
+ctx.beginPath()
+ctx.moveTo(x,0)
+ctx.lineTo(x,h)
+ctx.stroke()
+
+}
+
+for(let y=0;y<h;y+=40){
+
+ctx.beginPath()
+ctx.moveTo(0,y)
+ctx.lineTo(w,y)
+ctx.stroke()
+
+}
+
+
+// WORLD MAP (DOT MATRIX SIMULATION)
+
+ctx.fillStyle="rgba(0,255,255,0.35)"
+
+for(let x=300;x<1200;x+=12){
+
+for(let y=120;y<420;y+=12){
+
+if(
+(x>320 && x<1150 && y>160 && y<340) &&
+Math.sin(x*0.01)+Math.cos(y*0.01)>0
+){
+
+ctx.fillRect(x,y,2,2)
+
+}
+
+}
+
+}
+
+
+// VOLUME BARS
+
+const volume=[80,120,100,160,140,180,150,200,170,210,180,220]
+
+ctx.fillStyle="rgba(0,200,255,0.2)"
+
+volume.forEach((v,i)=>{
+
+let x=200+i*90
+let y=h-140-v
+
+ctx.fillRect(x,y,40,v)
+
+})
+
+
+// CHART DATA
+
+const data=[
+
+120,150,130,180,160,200,240,220,260,300,
+280,320,350,380,420,460
+
+]
+
+
+// GLOW LINE CHART
+
+ctx.strokeStyle="#00f7ff"
+ctx.lineWidth=3
+ctx.shadowBlur=20
+ctx.shadowColor="#00f7ff"
+
+ctx.beginPath()
+
+data.forEach((v,i)=>{
+
+let x=250+i*80
+let y=h-300-v
+
+if(i===0){
+ctx.moveTo(x,y)
+}else{
+ctx.lineTo(x,y)
+}
+
+})
+
+ctx.stroke()
+
+ctx.shadowBlur=0
+
+
+// CANDLESTICKS
+
+data.forEach((v,i)=>{
+
+let x=250+i*80
+
+let open=h-300-v
+let close=open+(i%2===0 ? -50 : 50)
+
+ctx.strokeStyle="#00eaff"
+
+ctx.beginPath()
+ctx.moveTo(x,open-25)
+ctx.lineTo(x,close+25)
+ctx.stroke()
+
+ctx.fillStyle="#00eaff"
+ctx.fillRect(x-6,open,12,close-open)
+
+})
+
+</script>
+
+</body>
+</html>`;
+
   return (
     <>
       <TrafficTracker />
@@ -382,6 +553,23 @@ export default function Home() {
           padding: isMobile ? "80px 0 60px 0" : 0,
         }}
       >
+        {/* AZ ELSŐ KÓD (HÁTTÉR) MEGJELENÍTÉSE RÉTEGKÉNT */}
+        <iframe
+          srcDoc={backgroundSnippet}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            border: "none",
+            zIndex: 0,
+            pointerEvents: "none",
+            opacity: 0.4 // Állítható átlátszóság a meglévő háttérképhez
+          }}
+          scrolling="no"
+        />
+
         <audio ref={audioRef} src="/wealthyai/icons/nyitobeszed.mp3" preload="auto" onEnded={handleAudioEnd} />
 
         <div style={{ 
