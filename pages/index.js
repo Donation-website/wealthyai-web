@@ -355,7 +355,7 @@ ctx.fillRect(0,0,w,h)
 
 
 // GRID
-ctx.strokeStyle="rgba(0,200,255,0.08)"
+ctx.strokeStyle="rgba(0,255,255,0.25)"
 ctx.lineWidth=1
 
 for(let x=0;x<w;x+=40){
@@ -379,7 +379,7 @@ ctx.stroke()
 
 // WORLD MAP (DOT MATRIX SIMULATION)
 
-ctx.fillStyle="rgba(0,255,255,0.35)"
+ctx.fillStyle="rgba(0,255,255,0.9)"
 
 for(let x=300;x<1200;x+=12){
 
@@ -390,7 +390,7 @@ if(
 Math.sin(x*0.01)+Math.cos(y*0.01)>0
 ){
 
-ctx.fillRect(x,y,2,2)
+ctx.fillRect(x,y,3,3)
 
 }
 
@@ -403,7 +403,7 @@ ctx.fillRect(x,y,2,2)
 
 const volume=[80,120,100,160,140,180,150,200,170,210,180,220]
 
-ctx.fillStyle="rgba(0,200,255,0.2)"
+ctx.fillStyle="rgba(0,255,255,0.5)"
 
 volume.forEach((v,i)=>{
 
@@ -428,9 +428,30 @@ const data=[
 // GLOW LINE CHART
 
 ctx.strokeStyle="#00f7ff"
-ctx.lineWidth=3
-ctx.shadowBlur=20
+ctx.lineWidth=4
+ctx.shadowBlur=40
 ctx.shadowColor="#00f7ff"
+
+ctx.beginPath()
+
+data.forEach((v,i)=>{
+
+let x=250+i*80
+let y=h-300-v
+
+if(i===0){
+ctx.moveTo(x,y)
+}else{
+ctx.lineTo(x,y)
+}
+
+})
+
+ctx.stroke()
+
+// Plusz glow a chart alatt
+ctx.strokeStyle="rgba(0,255,255,0.25)"
+ctx.lineWidth=10
 
 ctx.beginPath()
 
@@ -451,8 +472,9 @@ ctx.stroke()
 
 ctx.shadowBlur=0
 
-
 // CANDLESTICKS
+ctx.shadowBlur=25
+ctx.shadowColor="#00ffff"
 
 data.forEach((v,i)=>{
 
@@ -472,6 +494,8 @@ ctx.fillStyle="#00eaff"
 ctx.fillRect(x-6,open,12,close-open)
 
 })
+
+ctx.shadowBlur=0
 
 </script>
 
