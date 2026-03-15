@@ -6,14 +6,27 @@ import TrafficTracker from "../components/TrafficTracker";
 /* ===== SPIDERNET ANIMATION COMPONENT ===== */
 function SpiderNet() {
   const canvasRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    const handleResizeCheck = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResizeCheck();
+    window.addEventListener("resize", handleResizeCheck);
+    return () => window.removeEventListener("resize", handleResizeCheck);
+  }, []);
+
+  useEffect(() => {
+    if (isMobile) return;
+
     const canvas = canvasRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext("2d");
     let animationFrameId;
 
     let particles = [];
-    const particleCount = 200; 
+    const particleCount = 280; 
     const connectionDistance = 150; 
     const mouse = { x: null, y: null, radius: 150 };
 
@@ -124,7 +137,9 @@ function SpiderNet() {
       window.removeEventListener("mouseleave", handleMouseLeave);
       cancelAnimationFrame(animationFrameId);
     };
-  }, []);
+  }, [isMobile]);
+
+  if (isMobile) return null;
 
   return (
     <canvas 
