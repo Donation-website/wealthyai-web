@@ -3,6 +3,146 @@ import SEO from "../components/SEO";
 import Head from "next/head";
 import TrafficTracker from "../components/TrafficTracker";
 
+/* ===== SPIDERNET ANIMATION COMPONENT ===== */
+function SpiderNet() {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    let animationFrameId;
+
+    let particles = [];
+    const particleCount = 200; 
+    const connectionDistance = 150; 
+    const mouse = { x: null, y: null, radius: 150 };
+
+    const resize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      ctx.scale(dpr, dpr);
+      canvas.style.width = `${window.innerWidth}px`;
+      canvas.style.height = `${window.innerHeight}px`;
+    };
+
+    window.addEventListener("resize", resize);
+    resize();
+
+    const handleMouseMove = (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    };
+
+    const handleMouseLeave = () => {
+      mouse.x = null;
+      mouse.y = null;
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseleave", handleMouseLeave);
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * window.innerWidth;
+        this.y = Math.random() * window.innerHeight;
+        this.size = Math.random() * 1.5 + 0.5;
+        this.vx = (Math.random() - 0.5) * 0.4;
+        this.vy = (Math.random() - 0.5) * 0.4;
+      }
+
+      draw() {
+        ctx.fillStyle = "rgba(56, 189, 248, 0.8)";
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+
+        if (this.x < 0 || this.x > window.innerWidth) this.vx *= -1;
+        if (this.y < 0 || this.y > window.innerHeight) this.vy *= -1;
+
+        if (mouse.x !== null && mouse.y !== null) {
+          let dx = mouse.x - this.x;
+          let dy = mouse.y - this.y;
+          let distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < mouse.radius) {
+            const force = (mouse.radius - distance) / mouse.radius;
+            this.x -= (dx / distance) * force * 3;
+            this.y -= (dy / distance) * force * 3;
+          }
+        }
+      }
+    }
+
+    const init = () => {
+      particles = [];
+      for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+      }
+    };
+
+    const connect = () => {
+      for (let a = 0; a < particles.length; a++) {
+        for (let b = a; b < particles.length; b++) {
+          let dx = particles[a].x - particles[b].x;
+          let dy = particles[a].y - particles[b].y;
+          let distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < connectionDistance) {
+            let opacity = 1 - (distance / connectionDistance);
+            ctx.strokeStyle = `rgba(56, 189, 248, ${opacity * 0.3})`;
+            ctx.lineWidth = 0.8;
+            ctx.beginPath();
+            ctx.moveTo(particles[a].x, particles[a].y);
+            ctx.lineTo(particles[b].x, particles[b].y);
+            ctx.stroke();
+          }
+        }
+      }
+    };
+
+    const animate = () => {
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      connect();
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    init();
+    animate();
+
+    return () => {
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseleave", handleMouseLeave);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  return (
+    <canvas 
+      ref={canvasRef} 
+      style={{ 
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        zIndex: 1, 
+        pointerEvents: 'none', 
+        background: 'transparent'
+      }} 
+    />
+  );
+}
+
 // --- PRÉMIUM VIDEÓ KOMPONENS (Kiemelve a Home elé a stabil renderelésért) ---
 const PremiumVideo = React.memo(function PremiumVideo({ 
   size = "160px", 
@@ -382,6 +522,7 @@ export default function Home() {
           padding: isMobile ? "80px 0 60px 0" : 0,
         }}
       >
+        <SpiderNet />
         <audio ref={audioRef} src="/wealthyai/icons/nyitobeszed.mp3" preload="auto" onEnded={handleAudioEnd} />
 
         <div style={{ 
@@ -456,7 +597,7 @@ export default function Home() {
           display: "flex", 
           justifyContent: "center", 
           gap: isMobile ? "12px" : "28px", 
-          zIndex: 6, 
+          zIndex: 10, 
           fontSize: isMobile ? "0.75rem" : "0.95rem",
           flexWrap: isMobile ? "wrap" : "nowrap",
           padding: isMobile ? "0 20px" : "0",
@@ -555,7 +696,7 @@ export default function Home() {
         </div>
 
         <style>{`
-          .brand-logo { animation: logoFloat 9s ease-in-out infinite; transition: filter 0.4s ease; }
+          .brand-logo { animation: logoFloat 9s ease-in-out infinite; transition: filter 0.4s ease; z-index: 10; position: relative; }
           .brand-logo:hover { filter: drop-shadow(0 0 18px rgba(56,189,248,0.55)); }
           @keyframes logoFloat {
             0% { transform: scale(1) translateY(0); opacity: 0.92; }
@@ -567,7 +708,7 @@ export default function Home() {
           .discrete-pulse { animation: discretePulse 3s ease-in-out infinite; }
           @keyframes discretePulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
           
-          .nav-link, .icon-link, .narrator-toggle { position: relative; color: white; text-decoration: none; }
+          .nav-link, .icon-link, .narrator-toggle { position: relative; color: white; text-decoration: none; z-index: 20; }
           .nav-link::before, .icon-link::before, .narrator-toggle::before {
             content: ""; position: absolute; inset: -12px -22px;
             background: radial-gradient(circle, rgba(56,189,248,0.55) 0%, rgba(56,189,248,0.25) 40%, transparent 70%);
@@ -575,6 +716,7 @@ export default function Home() {
           }
           .nav-link:hover::before, .icon-link:hover::before, .narrator-toggle:hover::before { opacity: 1; }
           
+          .start-btn { position: relative; z-index: 25; }
           .start-btn:hover { box-shadow: ${isVerified && !isBotTrapped ? "0 0 35px rgba(56,189,248,0.45)" : "none"}; }
           .builder-btn:hover {
             box-shadow: 0 0 15px rgba(56,189,248,0.6);
