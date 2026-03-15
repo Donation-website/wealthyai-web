@@ -121,7 +121,6 @@ export default function Home() {
 
   const audioRef = useRef(null);
   const videoRef = useRef(null);
-  const chartRef = useRef(null);
   const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isVideoMuted, setIsVideoMuted] = useState(true);
@@ -136,43 +135,6 @@ export default function Home() {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  // Particles.js and Chart.js initialization
-  useEffect(() => {
-    if (window.particlesJS) {
-      window.particlesJS("particles-js", {
-        particles: {
-          number: { value: 120 },
-          color: { value: "#00c8ff" },
-          shape: { type: "circle" },
-          opacity: { value: 0.5 },
-          size: { value: 2 },
-          move: { enable: true, speed: 1 }
-        }
-      });
-    }
-
-    if (window.Chart && document.getElementById("financeChart")) {
-      const ctx = document.getElementById("financeChart").getContext("2d");
-      new window.Chart(ctx, {
-        type: "line",
-        data: {
-          labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-          datasets: [{
-            data: [20, 35, 40, 55, 60, 72],
-            borderColor: "#00c8ff",
-            borderWidth: 2,
-            tension: 0.4,
-            fill: false
-          }]
-        },
-        options: {
-          plugins: { legend: { display: false } },
-          scales: { x: { display: false }, y: { display: false } }
-        }
-      });
-    }
   }, []);
 
   useEffect(() => {
@@ -309,7 +271,6 @@ export default function Home() {
       return;
     }
     stopAudio();
-    alert("Starting financial snapshot...");
   };
 
   const schemaData = {
@@ -352,8 +313,6 @@ export default function Home() {
       <Head>
         <title>WealthyAI – AI-powered financial clarity | Zoltán Horváth</title>
         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
-        <script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         
         {/* --- Favicon & App Icons --- */}
         <link rel="apple-touch-icon" sizes="57x57" href="/wealthyai/icons/apple-icon-57x57.png" />
@@ -423,8 +382,6 @@ export default function Home() {
           padding: isMobile ? "80px 0 60px 0" : 0,
         }}
       >
-        <div id="particles-js" style={{ position: "fixed", width: "100%", height: "100%", zIndex: 0 }}></div>
-        
         <audio ref={audioRef} src="/wealthyai/icons/nyitobeszed.mp3" preload="auto" onEnded={handleAudioEnd} />
 
         <div style={{ 
@@ -474,49 +431,6 @@ export default function Home() {
           </span>
         </div>
 
-        {/* --- UI OVERLAY FROM HTML CONTENT --- */}
-        <div className="container" style={{ position: "relative", zIndex: 5, pointerEvents: "auto" }}>
-          {/* LEFT PANEL */}
-          <div className="panel left">
-            <h3 className="panel-title">NO LOG-IN SYSTEM</h3>
-            <p className="panel-text">Start with a simple financial snapshot</p>
-            <button className="start-btn" onClick={handleStartClick} disabled={!isVerified || isBotTrapped}>
-              {isBotTrapped ? "Loading..." : "Start"}
-            </button>
-            <div className="lock">🔒</div>
-            <p className="small-text">
-              We didn't build WealthyAI to tell people what to do with their money.
-            </p>
-          </div>
-
-          {/* CENTER CORE */}
-          <div className="center">
-            <img src="assets/core.png" className="core" alt="AI Core" />
-            <h1 className="logo">Wealthy<span>AI</span></h1>
-            <h2 className="tagline">Interpretation, Not Advice</h2>
-            <p className="description">Time-based intelligence • Clarity over certainty</p>
-          </div>
-
-          {/* RIGHT PANEL */}
-          <div className="panel right">
-            <div className="score">
-              <h2>51.2%</h2>
-              <p>Structural Stability</p>
-            </div>
-            <div className="ai-brief">
-              <h3>AI Briefing</h3>
-              <p>With a net balance of $2300 you are currently in a surplus state.</p>
-              <p>Your structural resilience stands at 51.2%.</p>
-            </div>
-            <canvas id="financeChart"></canvas>
-            <div className="pricing">
-              <button>$9.99 / Day</button>
-              <button>$14.99 / Week</button>
-              <button>$49.99 / Month</button>
-            </div>
-          </div>
-        </div>
-
         {!isMobile && (
           <div style={{ position: "fixed", right: "40px", top: "50%", transform: "translateY(-50%)", zIndex: 100, display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
              <PremiumVideo 
@@ -555,6 +469,50 @@ export default function Home() {
           <a href="/how-to-use" onClick={stopAudio} className="nav-link">How to use</a>
           <a href="/blog" onClick={stopAudio} className="nav-link">Blog</a>
           <a href="/terms" onClick={stopAudio} className="nav-link">Terms</a>
+        </div>
+
+        <div style={{ textAlign: "center", zIndex: 3, display: "flex", flexDirection: "column", alignItems: "center", width: "100%", transform: isMobile ? "none" : "translateY(-40px)" }}>
+          <img src="/wealthyai/icons/generated.png" alt="WealthyAI logo" className="brand-logo" style={{ width: isMobile ? "320px" : "860px", maxWidth: "95vw", display: "block", cursor: "pointer", marginTop: isMobile ? "40px" : "0px" }} />
+          <div style={{ color: "#FFFFFF", lineHeight: "1.45", textAlign: "center", textShadow: "0 2px 10px rgba(0,0,0,0.5)", marginTop: isMobile ? "0px" : "-110px", width: "100%", maxWidth: "800px", padding: "0 20px", letterSpacing: "0.2px" }}>
+            <div style={{ fontSize: isMobile ? "1.1rem" : "1.55rem", fontWeight: "300", opacity: 0.9, marginBottom: "15px" }}>
+              AI-powered financial thinking.<br />
+              Structured insights.<br />
+              Clear perspective.
+            </div>
+            <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", justifyContent: "center", alignItems: "center", fontSize: isMobile ? "0.7rem" : "0.85rem", textTransform: "uppercase", letterSpacing: "1.4px", opacity: 0.8, gap: isMobile ? "8px" : "15px", fontWeight: "500" }}>
+              <span className="discrete-pulse">Not advice.</span>
+              <span className="discrete-pulse">Not predictions.</span>
+              <span className="discrete-pulse">Financial intelligence.</span>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ position: isMobile ? "relative" : "absolute", top: isMobile ? "auto" : "45%", left: isMobile ? "auto" : "10%", transform: isMobile ? "none" : "translateY(-50%)", marginTop: isMobile ? "40px" : "0", zIndex: 20, display: "flex", flexDirection: "column", alignItems: isMobile ? "center" : "flex-start", gap: "15px", padding: isMobile ? "0 20px" : "0", textAlign: isMobile ? "center" : "left" }}>
+          <a href={isVerified && !isBotTrapped ? "/start" : "#"} onClick={handleStartClick} className="start-btn" style={{ width: "130px", textAlign: "center", padding: "14px 0", backgroundColor: isVerified ? "#1a253a" : "rgba(255,255,255,0.05)", border: isVerified ? "1px solid rgba(56,189,248,0.8)" : "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", color: isVerified ? "white" : "rgba(255,255,255,0.3)", textDecoration: "none", fontWeight: "bold", cursor: isVerified ? "pointer" : "not-allowed", transition: "all 0.4s ease", display: "flex", flexDirection: "column", alignItems: "center", gap: "2px" }}>
+            <span style={{ fontSize: "1.1rem" }}>{isBotTrapped ? "Loading..." : "Start"}</span>
+            <span style={{ fontSize: "0.6rem", fontWeight: "400", opacity: 0.8 }}>START FOR FREE</span>
+          </a>
+          
+          {isMobile && (
+            <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+               <PremiumVideo 
+                  size="120px" 
+                  videoRef={videoRef}
+                  isVideoMuted={isVideoMuted}
+                  isVideoPlaying={isVideoPlaying}
+                  toggleVideoPlayback={toggleVideoPlayback}
+                  toggleVideoMute={toggleVideoMute}
+               />
+            </div>
+          )}
+
+          <div style={{ fontSize: "0.85rem", opacity: 0.75, letterSpacing: "0.3px", maxWidth: isMobile ? "280px" : "320px" }}>
+            {isBotTrapped ? "System congestion. Please wait..." : "Start with a simple financial snapshot. Takes less than a minute."}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", padding: "4px 10px", borderRadius: "6px", background: "rgba(16, 185, 129, 0.1)", border: "1px solid rgba(16, 185, 129, 0.2)", marginTop: "5px" }}>
+            <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#10b981", boxShadow: "0 0 8px #10b981" }} />
+            <span style={{ fontSize: "10px", color: "#10b981", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px" }}>No Log-In System</span>
+          </div>
         </div>
 
         <div style={{ position: isMobile ? "relative" : "absolute", bottom: 0, left: 0, width: "100%", padding: isMobile ? "36px 24px 24px" : "18px 24px", display: "flex", flexDirection: isMobile ? "column-reverse" : "row", justifyContent: "space-between", alignItems: isMobile ? "center" : "flex-end", zIndex: 5, boxSizing: "border-box", gap: isMobile ? "30px" : "0", background: isMobile ? "linear-gradient(to top, rgba(6,11,19,0.95) 0%, rgba(6,11,19,0.8) 50%, rgba(6,11,19,0.0) 100%)" : "transparent" }}>
@@ -597,31 +555,8 @@ export default function Home() {
         </div>
 
         <style>{`
-          .container{ display:grid; grid-template-columns:1fr 2fr 1fr; gap:40px; width:100%; height:100%; padding:40px; }
-          .panel{ background:rgba(5,15,35,0.65); border:1px solid rgba(0,200,255,0.25); border-radius:12px; padding:30px; backdrop-filter:blur(10px); box-shadow: 0 0 20px rgba(0,200,255,0.25), inset 0 0 20px rgba(0,200,255,0.08); }
-          .panel-title{ color:#59d7ff; letter-spacing:2px; margin-bottom:20px; }
-          .panel-text{ opacity:.85; margin-bottom:30px; }
-          .start-btn{ padding:14px 30px; font-size:18px; border:none; border-radius:10px; cursor:pointer; background:linear-gradient(90deg,#00c6ff,#0072ff); box-shadow:0 0 15px rgba(0,200,255,0.6); transition:.3s; color: white; font-weight: bold; }
-          .start-btn:hover:not(:disabled){ transform:scale(1.05); box-shadow:0 0 25px rgba(0,200,255,0.9); }
-          .start-btn:disabled{ opacity: 0.5; cursor: not-allowed; }
-          .lock{ font-size:26px; margin-top:20px; }
-          .small-text{ margin-top:20px; opacity:.65; font-size:13px; line-height:1.4; }
-          .center{ display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
-          .core{ width:420px; filter:drop-shadow(0 0 30px rgba(0,200,255,.7)); animation:rotateCore 40s linear infinite; margin-bottom:25px; }
-          @keyframes rotateCore{ 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
-          .logo{ font-size:58px; letter-spacing:3px; margin-bottom:8px; }
-          .logo span{ color:#59d7ff; }
-          .tagline{ font-weight:300; margin-bottom:8px; }
-          .description{ opacity:.8; }
-          .score{ font-size:44px; color:#59d7ff; margin-bottom:20px; }
-          .ai-brief{ margin-bottom:20px; opacity:.85; line-height:1.4; }
-          .ai-brief h3{ margin-bottom:8px; }
-          #financeChart{ margin-top:15px; margin-bottom:20px; }
-          .pricing button{ width:100%; padding:12px; margin-top:10px; border-radius:8px; border:1px solid rgba(0,200,255,0.25); background:#081425; color:white; cursor:pointer; transition:.2s; }
-          .pricing button:hover{ background:#0e203a; box-shadow:0 0 15px rgba(0,200,255,.45); }
-          @media(max-width:1100px){ .container{ grid-template-columns:1fr; overflow:auto; padding: 20px; } .core{ width:300px; } }
-          
           .brand-logo { animation: logoFloat 9s ease-in-out infinite; transition: filter 0.4s ease; }
+          .brand-logo:hover { filter: drop-shadow(0 0 18px rgba(56,189,248,0.55)); }
           @keyframes logoFloat {
             0% { transform: scale(1) translateY(0); opacity: 0.92; }
             35% { transform: scale(1.035) translateY(-6px); opacity: 1; }
@@ -631,8 +566,22 @@ export default function Home() {
           @keyframes audioBar { 0% { height: 20%; } 100% { height: 100%; } }
           .discrete-pulse { animation: discretePulse 3s ease-in-out infinite; }
           @keyframes discretePulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+          
           .nav-link, .icon-link, .narrator-toggle { position: relative; color: white; text-decoration: none; }
+          .nav-link::before, .icon-link::before, .narrator-toggle::before {
+            content: ""; position: absolute; inset: -12px -22px;
+            background: radial-gradient(circle, rgba(56,189,248,0.55) 0%, rgba(56,189,248,0.25) 40%, transparent 70%);
+            filter: blur(16px); opacity: 0; transition: opacity 0.25s ease; pointer-events: none; z-index: -1;
+          }
           .nav-link:hover::before, .icon-link:hover::before, .narrator-toggle:hover::before { opacity: 1; }
+          
+          .start-btn:hover { box-shadow: ${isVerified && !isBotTrapped ? "0 0 35px rgba(56,189,248,0.45)" : "none"}; }
+          .builder-btn:hover {
+            box-shadow: 0 0 15px rgba(56,189,248,0.6);
+            background: rgba(56,189,248,0.2) !important;
+            color: white !important;
+            border-color: rgba(56,189,248,0.8) !important;
+          }
         `}</style>
       </main>
     </>
