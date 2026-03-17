@@ -12,6 +12,10 @@ export default function UserDashboard() {
     subscriptions: 120,
   });
 
+  /* ===== AI BRIEFING STATES ===== */
+  const [briefing, setBriefing] = useState("");
+  const [showBriefing, setShowBriefing] = useState(false);
+
   /* ===== VIP ACCESS STATES ===== */
   const [showVipInputDay, setShowVipInputDay] = useState(false);
   const [vipCodeDay, setVipCodeDay] = useState("");
@@ -46,6 +50,7 @@ export default function UserDashboard() {
 
   const savingsScore = Math.max(
     0,
+    // math variables [cite: 3, 4]
     Math.min(100, Math.round((savingsRate / 30) * 100))
   );
 
@@ -88,7 +93,6 @@ export default function UserDashboard() {
     if (!code.trim()) return;
     
     try {
-      // Itt az új API fájlt hívjuk meg: verify-priority
       const res = await fetch("/api/verify-priority", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -116,7 +120,6 @@ export default function UserDashboard() {
   const handleCheckout = async (priceId) => {
     localStorage.setItem("userFinancials", JSON.stringify(data));
 
-    // A Monthly Price ID ellenőrzése a visszatérő vásárlókhoz (FRISSÍTVE)
     if (priceId === "price_1T0L8aDyLtejYlZik3nH3Uft") {
       const hasHadMonth = localStorage.getItem("hadMonthSubscription");
       if (hasHadMonth) {
@@ -267,7 +270,8 @@ export default function UserDashboard() {
     background: "rgba(2,6,23,0.6)",
     zIndex: 15,
   };
-const WealthyTicker = () => {
+
+  const WealthyTicker = () => {
     if (isMobile) return null;
 
     const tickerText = "WealthyAI interprets your financial state over time — not advice, not prediction, just clarity • Interpretation over advice • Clarity over certainty • Insight unfolds over time • Financial understanding isn’t instant • Context changes • Insight follows time • Clarity over certainty • Built on time, not urgency • ";
@@ -345,11 +349,11 @@ const WealthyTicker = () => {
               gap: 20,
             }}
           >
-            <div style={card}>
+            <div style={{ ...card, position: "relative" }}>
               <h3>Income & Expenses</h3>
 
               {[
-                ["Monthly Income ($)", "income"],
+                ["Monthly Income (units)", "income"],
                 ["Fixed Expenses", "fixed"],
                 ["Variable Expenses", "variable"],
               ].map(([label, key]) => (
@@ -365,6 +369,41 @@ const WealthyTicker = () => {
                   />
                 </div>
               ))}
+
+              {/* AI BRIEFING BOX - EZ AZ ÚJ RÉSZ */}
+              {showBriefing && (
+                <div style={{
+                  marginTop: "20px",
+                  padding: "15px",
+                  background: "rgba(99,102,241,0.1)",
+                  border: "1px solid rgba(99,102,241,0.3)",
+                  borderRadius: "12px",
+                  position: "relative",
+                  animation: "fadeIn 0.4s ease-out"
+                }}>
+                  <span 
+                    onClick={() => setShowBriefing(false)}
+                    style={{
+                      position: "absolute",
+                      right: "10px",
+                      top: "8px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      opacity: 0.6
+                    }}
+                  >✕</span>
+                  <h5 style={{ margin: "0 0 8px 0", color: "#7dd3fc", fontSize: "13px", letterSpacing: "0.05em" }}>AI QUICK BRIEFING</h5>
+                  <p style={{ 
+                    margin: 0, 
+                    fontSize: "14px", 
+                    lineHeight: "1.5", 
+                    color: "rgba(255,255,255,0.9)",
+                    fontStyle: "italic"
+                  }}>
+                    {briefing || "Analyzing your units..."}
+                  </p>
+                </div>
+              )}
             </div>
 
             <div style={card}>
@@ -504,7 +543,7 @@ const WealthyTicker = () => {
                 flexWrap: "wrap",
               }}
             >
-              {/* --- DAY CARD (ID FRISSÍTVE) --- */}
+              {/* --- DAY CARD --- */}
               <div style={{ ...priceCard, cursor: "default" }}>
                 <div 
                   onClick={() => handleCheckout("price_1T0LCDDyLtejYlZimOucadbT")}
@@ -544,7 +583,7 @@ const WealthyTicker = () => {
                 </div>
               </div>
 
-              {/* --- WEEK CARD (ID FRISSÍTVE) --- */}
+              {/* --- WEEK CARD --- */}
               <div style={{ ...priceCard, cursor: "default" }}>
                 <div 
                   onClick={() => handleCheckout("price_1T0LBQDyLtejYlZiXKn0PmGP")}
@@ -584,7 +623,7 @@ const WealthyTicker = () => {
                 </div>
               </div>
 
-              {/* --- MONTH CARD (ID FRISSÍTVE) --- */}
+              {/* --- MONTH CARD --- */}
               <div style={{ ...priceCard, cursor: "default" }}>
                 <div 
                   onClick={() => handleCheckout("price_1T0L8aDyLtejYlZik3nH3Uft")}
@@ -668,6 +707,10 @@ const WealthyTicker = () => {
           @keyframes waiScroll {
             from { transform: translateX(0); }
             to   { transform: translateX(-50%); }
+          }
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
           }
         `}</style>
       </main>
