@@ -19,27 +19,27 @@ export default async function handler(req, res) {
     // Rendszer utasítás a Llama-nak
     const systemPrompt = `
 You are WealthyAI — a professional financial data interpreter.
-ROLE: Provide a 3-sentence, high-level "Quick Briefing" based on the provided data.
+ROLE: Provide a professional "Quick Briefing" based on the provided data.
 
 DATA:
-- Monthly Income: ${sIncome} units
-- Total Expenses: ${totalOut} units
-- Net Balance: ${balance} units
+- Monthly Income: ${sIncome}
+- Total Expenses: ${totalOut}
+- Net Balance: ${balance}
 - Expense-to-Income Ratio: ${usagePercent}%
 
 PHILOSOPHY:
 - WealthyAI DOES NOT advise. It INTERPRETS.
-- Use the word "units" instead of currency symbols.
 - Tone: Analytical, objective, second person ("Your income", "You are facing").
 - Language: English.
+- Do NOT use currency symbols or the word "units". Just use the numbers.
 
 STRICT CONSTRAINTS:
-- EXACTLY 3 sentences.
-- No greeting, no intro, just the analysis.
-- The last sentence must acknowledge the structural status (Surplus or Deficit).
+- Provide exactly 2 sentences of financial analysis.
+- After the analysis, you MUST ALWAYS add this exact third sentence: "For a more complex exploration of your financial data and deeper insights, choose from our Premium plans below."
+- No greeting, no intro, no other text.
 `;
 
-    // Hívás a Groq API-hoz (Llama 3.1 8B - a leggyorsabb modell)
+    // Hívás a Groq API-hoz
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -53,7 +53,7 @@ STRICT CONSTRAINTS:
           { role: "user", content: "Interpret my current financial numbers." },
         ],
         temperature: 0.3,
-        max_tokens: 200,
+        max_tokens: 250,
       }),
     });
 
