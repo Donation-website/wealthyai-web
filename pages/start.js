@@ -50,7 +50,7 @@ export default function UserDashboard() {
 
   const savingsScore = Math.max(
     0,
-    // math variables [cite: 3, 4]
+    // math variables
     Math.min(100, Math.round((savingsRate / 30) * 100))
   );
 
@@ -86,6 +86,29 @@ export default function UserDashboard() {
       "Your savings rate is modest. Small adjustments could improve resilience."
     );
   }
+
+  /* ===== QUICK AI BRIEFING HANDLER ===== */
+  const handleQuickBriefing = async () => {
+    setBriefing(""); // Reset earlier briefing
+    setShowBriefing(true); // Show the briefing box immediately
+
+    try {
+      const res = await fetch("/api/quick-briefing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          income: data.income,
+          fixed: data.fixed,
+          variable: data.variable,
+        }),
+      });
+
+      const result = await res.json();
+      setBriefing(result.briefing);
+    } catch (err) {
+      setBriefing("AI synchronization error. Please try again.");
+    }
+  };
 
   /* ===== VIP SUBMIT HANDLER (JAVÍTOTT ÚTVONAL) ===== */
 
@@ -370,7 +393,30 @@ export default function UserDashboard() {
                 </div>
               ))}
 
-              {/* AI BRIEFING BOX - EZ AZ ÚJ RÉSZ */}
+              {/* ÚJ ELEMZÉS GOMB */}
+              <button
+                onClick={handleQuickBriefing}
+                style={{
+                  width: "100%",
+                  marginTop: "10px",
+                  padding: "12px",
+                  background: "rgba(99,102,241,0.2)",
+                  border: "1px solid rgba(99,102,241,0.4)",
+                  borderRadius: "10px",
+                  color: "#7dd3fc",
+                  fontSize: "13px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  letterSpacing: "0.05em",
+                  transition: "all 0.3s ease"
+                }}
+                onMouseOver={(e) => e.target.style.background = "rgba(99,102,241,0.3)"}
+                onMouseOut={(e) => e.target.style.background = "rgba(99,102,241,0.2)"}
+              >
+                INTERPRET DATA (AI)
+              </button>
+
+              {/* AI BRIEFING BOX */}
               {showBriefing && (
                 <div style={{
                   marginTop: "20px",
