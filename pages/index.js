@@ -429,8 +429,7 @@ export default function Home() {
     }
     stopAudio();
   };
-
-  const schemaData = {
+const schemaData = {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "WealthyAI",
@@ -476,8 +475,9 @@ export default function Home() {
         <meta property="og:url" content="https://mywealthyai.com/" />
         <meta property="og:title" content="WealthyAI – Financial Intelligence" />
         <meta property="og:description" content="AI-powered financial thinking. Structured insights. Clear perspective." />
-        <meta property="og:image" content="https://mywealthyai.com/wealthyai/icons/share-card-v2.png" />
-        <meta property="og:image:secure_url" content="https://mywealthyai.com/wealthyai/icons/share-card-v2.png" />
+        {/* JAVÍTÁS: Direkt GitHub elérési út a közösségi oldalaknak */}
+        <meta property="og:image" content="https://raw.githubusercontent.com/Donation-website/wealthyai-web/main/public/wealthyai/icons/share-card-v2.png" />
+        <meta property="og:image:secure_url" content="https://raw.githubusercontent.com/Donation-website/wealthyai-web/main/public/wealthyai/icons/share-card-v2.png" />
         <meta property="og:image:type" content="image/png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
@@ -486,7 +486,8 @@ export default function Home() {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="WealthyAI – Financial Intelligence" />
         <meta name="twitter:description" content="AI-powered financial thinking. Structured insights. Clear perspective." />
-        <meta name="twitter:image" content="https://mywealthyai.com/wealthyai/icons/share-card-v2.png" />
+        {/* JAVÍTÁS: Direkt GitHub elérési út */}
+        <meta name="twitter:image" content="https://raw.githubusercontent.com/Donation-website/wealthyai-web/main/public/wealthyai/icons/share-card-v2.png" />
 
         {/* --- CLOUDFLARE --- */}
         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
