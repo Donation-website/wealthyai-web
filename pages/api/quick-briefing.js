@@ -16,7 +16,7 @@ export default async function handler(req, res) {
     const balance = sIncome - totalOut;
     const usagePercent = sIncome > 0 ? ((totalOut / sIncome) * 100).toFixed(1) : 100;
 
-    // Rendszer utasítás a Llama-nak
+    // Rendszer utasítás a Llama-nak - Javított pontossági korlátokkal
     const systemPrompt = `
 You are WealthyAI — a professional financial data interpreter.
 ROLE: Provide a professional "Quick Briefing" based on the provided data.
@@ -35,6 +35,7 @@ PHILOSOPHY:
 
 STRICT CONSTRAINTS:
 - Provide exactly 2 sentences of financial analysis.
+- ACCURACY: Be mathematically precise. Do NOT use metaphors like "double" unless the ratio is at least 200%. If expenses exceed income, state it as a deficit or a percentage over 100%.
 - After the analysis, you MUST ALWAYS add this exact third sentence: "For a more complex exploration of your financial data and deeper insights, choose from our Premium plans below."
 - No greeting, no intro, no other text.
 `;
@@ -52,7 +53,7 @@ STRICT CONSTRAINTS:
           { role: "system", content: systemPrompt },
           { role: "user", content: "Interpret my current financial numbers." },
         ],
-        temperature: 0.3,
+        temperature: 0.1, // Alacsonyabb hőmérséklet a nagyobb precizitásért
         max_tokens: 250,
       }),
     });
