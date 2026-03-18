@@ -525,7 +525,6 @@ export default function Home() {
           alignItems: "center",
           justifyContent: isMobile ? "flex-start" : "center",
           backgroundColor: "#060b13",
-          // Egyszerű kockás háttér CSS-szel generálva
           backgroundImage: `
             linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), 
             linear-gradient(rgba(56,189,248,0.05) 1px, transparent 1px), 
@@ -545,12 +544,11 @@ export default function Home() {
         <SpiderNet />
         <audio ref={audioRef} src="/wealthyai/icons/nyitobeszed.mp3" preload="auto" onEnded={handleAudioEnd} />
 
-        {/* --- TOP NAVBAR WITH MODERN BORDER --- */}
+        {/* --- LEFT TOP NAVBAR (CLOCK & INSIGHTS) --- */}
         <div style={{ 
-          position: "absolute", 
+          position: isMobile ? "relative" : "absolute", 
           top: isMobile ? "15px" : "25px", 
-          left: isMobile ? "50%" : "40px", 
-          transform: isMobile ? "translateX(-50%)" : "none",
+          left: isMobile ? "auto" : "40px", 
           display: "flex", 
           gap: isMobile ? "15px" : "35px", 
           zIndex: 10,
@@ -562,9 +560,9 @@ export default function Home() {
           backdropFilter: "blur(10px)",
           borderRadius: "15px",
           border: "1px solid rgba(255, 255, 255, 0.1)",
-          boxShadow: "0 4px 30px rgba(0, 0, 0, 0.1)"
+          boxShadow: "0 4px 30px rgba(0, 0, 0, 0.1)",
+          margin: isMobile ? "0 auto" : "0"
         }}>
-          {/* Insights link */}
           <a href="/insights" onClick={stopAudio} className="nav-link" style={{ 
             fontSize: isMobile ? "0.75rem" : "0.95rem", 
             fontWeight: "400",
@@ -590,7 +588,6 @@ export default function Home() {
 
         <div onClick={toggleMute} className="narrator-toggle" style={{ position: "fixed", top: isMobile ? "100px" : "80px", right: isMobile ? "20px" : "40px", zIndex: 100, cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", opacity: isPlaying ? 0.9 : 0.6, transition: "all 0.5s ease", background: "rgba(255,255,255,0.05)", padding: "5px 12px", borderRadius: "15px", border: "1px solid rgba(255,255,255,0.1)", width: "140px", justifyContent: "center" }}>
           <div style={{ display: "flex", gap: "2px", alignItems: "flex-end", height: "12px" }}>
-            {/* Audio animációs sávok */}
             {[1, 2, 3].map(i => (
               <div key={i} style={{ width: "2px", height: (isPlaying && !isMuted) ? "100%" : "2px", backgroundColor: "#38bdf8", animation: (isPlaying && !isMuted) ? `audioBar 0.8s ease-in-out infinite alternate ${i * 0.2}s` : "none" }} />
             ))}
@@ -618,10 +615,10 @@ export default function Home() {
           </div>
         )}
 
-        {/* --- SECONDARY TOP NAV WITH MODERN BORDER --- */}
+        {/* --- RIGHT TOP NAV (PAGES) --- */}
         <div style={{ 
           position: isMobile ? "relative" : "absolute", 
-          top: isMobile ? "10px" : "30px", 
+          top: isMobile ? "10px" : "25px", 
           right: isMobile ? "auto" : "40px", 
           display: "flex", 
           justifyContent: "center", 
@@ -635,7 +632,8 @@ export default function Home() {
           backdropFilter: "blur(10px)",
           borderRadius: "15px",
           border: "1px solid rgba(255, 255, 255, 0.1)",
-          boxShadow: "0 4px 30px rgba(0, 0, 0, 0.1)"
+          boxShadow: "0 4px 30px rgba(0, 0, 0, 0.1)",
+          margin: isMobile ? "10px auto" : "0"
         }}>
           <a href="/PrivacyPolicy" onClick={stopAudio} className="nav-link">Privacy Policy</a>
           <a href="/philosophy" onClick={stopAudio} className="nav-link">Philosophy</a>
