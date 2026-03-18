@@ -42,7 +42,7 @@ function SpiderNet() {
     window.addEventListener("resize", resize);
     resize();
 
-    const handleMouseMove = () => {
+    const handleMouseMove = (e) => {
       mouse.x = e.clientX;
       mouse.y = e.clientY;
     };
@@ -495,12 +495,12 @@ export default function Home() {
         <meta property="og:url" content={SITE_URL} />
         <meta property="og:title" content="WealthyAI – AI-powered financial clarity" />
         <meta property="og:description" content="AI-powered financial thinking. Structured insights. Clear perspective." />
-        <meta property="og:image" content="https://mywealthyai.com/wealthyai/icons/share-card.png?v=5" />
-        <meta property="og:image:secure_url" content="https://mywealthyai.com/wealthyai/icons/share-card.png?v=5" />
+        <meta property="og:image" content="https://mywealthyai.com/wealthyai/icons/share-card-v2.png" />
+        <meta property="og:image:secure_url" content="https://mywealthyai.com/wealthyai/icons/share-card-v2.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:image" content="https://mywealthyai.com/wealthyai/icons/share-card.png?v=5" />
+        <meta name="twitter:image" content="https://mywealthyai.com/wealthyai/icons/share-card-v2.png" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
@@ -525,7 +525,6 @@ export default function Home() {
           alignItems: "center",
           justifyContent: isMobile ? "flex-start" : "center",
           backgroundColor: "#060b13",
-          // Dinamikus háttér: PC-n rács, Mobilon prémium gradiens + kockás textúra
           backgroundImage: isMobile 
             ? `linear-gradient(rgba(56,189,248,0.03) 1px, transparent 1px), 
                linear-gradient(90deg, rgba(56,189,248,0.03) 1px, transparent 1px),
@@ -542,7 +541,7 @@ export default function Home() {
           position: "relative",
           overflowX: "hidden",
           margin: 0,
-          padding: isMobile ? "20px 0 0 0" : 0, // Az alja rugalmas
+          padding: isMobile ? "20px 0 0 0" : 0,
         }}
       >
         <SpiderNet />
@@ -590,7 +589,7 @@ export default function Home() {
 
         <div id="turnstile-container" style={{ position: "fixed", top: "20px", left: "20px", zIndex: 999, minHeight: "65px", display: isVerified ? "none" : "block" }}></div>
 
-        {/* NARRATOR TOGGLE - Mobilon jobban elhelyezve */}
+        {/* NARRATOR TOGGLE */}
         <div onClick={toggleMute} className="narrator-toggle" style={{ 
           position: isMobile ? "relative" : "fixed", 
           top: isMobile ? "15px" : "80px", 
@@ -711,7 +710,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* FOOTER - Alsó sáv javítva, margin-top: auto biztosítja a kitöltést */}
+        {/* FOOTER */}
         <div style={{ 
           marginTop: "auto",
           position: isMobile ? "relative" : "absolute", 
