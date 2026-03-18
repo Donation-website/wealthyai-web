@@ -466,41 +466,36 @@ export default function Home() {
     <>
       <TrafficTracker />
       <Head>
+        <title>WealthyAI – Financial Intelligence</title>
+        <meta name="description" content="AI-powered financial thinking. Structured insights. Clear perspective." />
+        
+        {/* --- FACEBOOK / OG TAGS (FIXED POSITION) --- */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://mywealthyai.com/" />
+        <meta property="og:title" content="WealthyAI – Financial Intelligence" />
+        <meta property="og:description" content="AI-powered financial thinking. Structured insights. Clear perspective." />
+        <meta property="og:image" content="https://mywealthyai.com/wealthyai/icons/share-card-v2.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+
+        {/* --- CLOUDFLARE --- */}
         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
         
-        {/* --- Favicon & App Icons --- */}
-        <link rel="apple-touch-icon" sizes="57x57" href="/wealthyai/icons/apple-icon-57x57.png" />
-        <link rel="apple-touch-icon" sizes="60x60" href="/wealthyai/icons/apple-icon-60x60.png" />
-        <link rel="apple-touch-icon" sizes="72x72" href="/wealthyai/icons/apple-icon-72x72.png" />
-        <link rel="apple-touch-icon" sizes="76x76" href="/wealthyai/icons/apple-icon-76x76.png" />
-        <link rel="apple-touch-icon" sizes="114x114" href="/wealthyai/icons/apple-icon-114x114.png" />
-        <link rel="apple-touch-icon" sizes="120x120" href="/wealthyai/icons/apple-icon-120x120.png" />
-        <link rel="apple-touch-icon" sizes="144x144" href="/wealthyai/icons/apple-icon-144x144.png" />
-        <link rel="apple-touch-icon" sizes="152x152" href="/wealthyai/icons/apple-icon-152x152.png" />
+        {/* --- ICONS --- */}
         <link rel="apple-touch-icon" sizes="180x180" href="/wealthyai/icons/apple-icon-180x180.png" />
-        <link rel="icon" type="image/png" sizes="192x192" href="/wealthyai/icons/android-icon-192x192.png" />
         <link rel="icon" type="image/png" sizes="32x32" href="/wealthyai/icons/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="96x96" href="/wealthyai/icons/favicon-96x96.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/wealthyai/icons/favicon-16x16.png" />
         <link rel="manifest" href="/wealthyai/icons/manifest.json" />
-        <meta name="msapplication-TileColor" content="#ffffff" />
-        <meta name="msapplication-TileImage" content="/wealthyai/icons/ms-icon-144x144.png" />
-        <meta name="theme-color" content="#ffffff" />
-        {/* --- End Favicon --- */}
+        <meta name="theme-color" content="#060b13" />
 
         <meta name="google-site-verification" content="019m-2Ayi9dmgKh_oPI8PVpR9flMsOfX_048yySbIRQ" />
+        
+        {/* --- SCHEMA DATA (BOTS ONLY) --- */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
         />
       </Head>
-
-      <SEO
-        title="WealthyAI – Financial Intelligence by Zoltán Horváth"
-        description="Founded by Zoltán Horváth, a London-based expert with decades in the UK. Operating globally but maintaining high privacy, he rarely grants interviews."
-        url={SITE_URL}
-        ogImage="https://mywealthyai.com/wealthyai/icons/share-card-v2.png"
-      />
 
       <main
         onMouseDown={clearSelectionIfNeeded}
@@ -792,7 +787,6 @@ export default function Home() {
             border-color: rgba(56,189,248,0.8) !important;
           }
           
-          /* Mobile Random Glitch Lines */
           @media (max-width: 767px) {
             main {
               animation: mobileBgPulse 10s ease-in-out infinite alternate;
