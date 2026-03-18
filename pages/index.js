@@ -469,14 +469,22 @@ export default function Home() {
         <title>WealthyAI – Financial Intelligence</title>
         <meta name="description" content="AI-powered financial thinking. Structured insights. Clear perspective." />
         
-        {/* --- FACEBOOK / OG TAGS (FIXED POSITION) --- */}
+        {/* --- FACEBOOK / OG TAGS (FIXED FOR DEDICATED SHARE CARD) --- */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://mywealthyai.com/" />
         <meta property="og:title" content="WealthyAI – Financial Intelligence" />
         <meta property="og:description" content="AI-powered financial thinking. Structured insights. Clear perspective." />
         <meta property="og:image" content="https://mywealthyai.com/wealthyai/icons/share-card-v2.png" />
+        <meta property="og:image:secure_url" content="https://mywealthyai.com/wealthyai/icons/share-card-v2.png" />
+        <meta property="og:image:type" content="image/png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
+
+        {/* --- TWITTER TAGS --- */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="WealthyAI – Financial Intelligence" />
+        <meta name="twitter:description" content="AI-powered financial thinking. Structured insights. Clear perspective." />
+        <meta name="twitter:image" content="https://mywealthyai.com/wealthyai/icons/share-card-v2.png" />
 
         {/* --- CLOUDFLARE --- */}
         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
@@ -490,7 +498,7 @@ export default function Home() {
 
         <meta name="google-site-verification" content="019m-2Ayi9dmgKh_oPI8PVpR9flMsOfX_048yySbIRQ" />
         
-        {/* --- SCHEMA DATA (BOTS ONLY) --- */}
+        {/* --- SCHEMA DATA (BOTS ONLY - CONTAINS FOUNDER DESCRIPTION) --- */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
