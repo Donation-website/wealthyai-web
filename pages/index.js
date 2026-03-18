@@ -42,7 +42,7 @@ function SpiderNet() {
     window.addEventListener("resize", resize);
     resize();
 
-    const handleMouseMove = (e) => {
+    const handleMouseMove = () => {
       mouse.x = e.clientX;
       mouse.y = e.clientY;
     };
@@ -525,22 +525,24 @@ export default function Home() {
           alignItems: "center",
           justifyContent: isMobile ? "flex-start" : "center",
           backgroundColor: "#060b13",
-          // Dinamikus háttér: PC-n rács, Mobilon prémium gradiens
+          // Dinamikus háttér: PC-n rács, Mobilon prémium gradiens + kockás textúra
           backgroundImage: isMobile 
-            ? `radial-gradient(circle at 50% -20%, rgba(56,189,248,0.15) 0%, transparent 50%),
+            ? `linear-gradient(rgba(56,189,248,0.03) 1px, transparent 1px), 
+               linear-gradient(90deg, rgba(56,189,248,0.03) 1px, transparent 1px),
+               radial-gradient(circle at 50% -20%, rgba(56,189,248,0.15) 0%, transparent 50%),
                radial-gradient(circle at 0% 100%, rgba(56,189,248,0.05) 0%, transparent 40%)`
             : `linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), 
                linear-gradient(rgba(56,189,248,0.05) 1px, transparent 1px), 
                linear-gradient(90deg, rgba(56,189,248,0.05) 1px, transparent 1px)`,
-          backgroundSize: isMobile ? "100% 100%" : "cover, 40px 40px, 40px 40px",
+          backgroundSize: isMobile ? "30px 30px, 30px 30px, 100% 100%, 100% 100%" : "cover, 40px 40px, 40px 40px",
           backgroundPosition: "center",
-          backgroundRepeat: "no-repeat, repeat, repeat",
+          backgroundRepeat: isMobile ? "repeat, repeat, no-repeat, no-repeat" : "no-repeat, repeat, repeat",
           color: "white",
           fontFamily: "'Inter', system-ui, Arial, sans-serif",
           position: "relative",
           overflowX: "hidden",
           margin: 0,
-          padding: isMobile ? "20px 0 60px 0" : 0,
+          padding: isMobile ? "20px 0 0 0" : 0, // Az alja rugalmas
         }}
       >
         <SpiderNet />
@@ -709,13 +711,14 @@ export default function Home() {
           </div>
         </div>
 
-        {/* FOOTER - Mobilon optimalizált távolságokkal */}
+        {/* FOOTER - Alsó sáv javítva, margin-top: auto biztosítja a kitöltést */}
         <div style={{ 
+          marginTop: "auto",
           position: isMobile ? "relative" : "absolute", 
           bottom: 0, 
           left: 0, 
           width: "100%", 
-          padding: isMobile ? "50px 24px 40px" : "18px 24px", 
+          padding: isMobile ? "60px 24px 40px" : "18px 24px", 
           display: "flex", 
           flexDirection: isMobile ? "column-reverse" : "row", 
           justifyContent: "space-between", 
@@ -723,8 +726,11 @@ export default function Home() {
           zIndex: 5, 
           boxSizing: "border-box", 
           gap: isMobile ? "35px" : "0", 
-          background: isMobile ? "linear-gradient(to top, rgba(6,11,19,1) 0%, rgba(6,11,19,0.8) 70%, transparent 100%)" : "transparent" 
+          background: isMobile ? "linear-gradient(to top, rgba(6,11,19,1) 30%, rgba(6,11,19,0.8) 80%, transparent 100%)" : "transparent" 
         }}>
+          {/* Mobile Random Glitch Lines Layer */}
+          {isMobile && <div className="mobile-lines-overlay" />}
+
           <div style={{ display: "flex", flexDirection: "column", gap: "10px", alignItems: isMobile ? "center" : "flex-start" }}>
             <a href="https://www.facebook.com/profile.php?id=61588517507057" target="_blank" rel="noopener noreferrer" className="builder-btn discrete-pulse" style={{
               fontSize: "10px", textTransform: "uppercase", letterSpacing: "1.5px", color: "#38bdf8", textDecoration: "none", fontWeight: "600",
@@ -798,12 +804,43 @@ export default function Home() {
             border-color: rgba(56,189,248,0.8) !important;
           }
           
-          /* Külön stílus a mobil háttér pulzáláshoz */
+          /* Mobile Random Glitch Lines */
           @media (max-width: 767px) {
             main {
               animation: mobileBgPulse 10s ease-in-out infinite alternate;
             }
+            .mobile-lines-overlay {
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              pointer-events: none;
+              z-index: 1;
+              overflow: hidden;
+            }
+            .mobile-lines-overlay::after {
+              content: "";
+              position: absolute;
+              width: 200%;
+              height: 1px;
+              background: rgba(56, 189, 248, 0.2);
+              top: 20%;
+              left: -50%;
+              box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+              animation: mobileLines 4s linear infinite;
+            }
           }
+
+          @keyframes mobileLines {
+            0% { top: -10%; opacity: 0; }
+            10% { opacity: 1; }
+            20% { top: 40%; opacity: 0; }
+            40% { top: 90%; opacity: 1; }
+            50% { opacity: 0; }
+            100% { top: 110%; opacity: 0; }
+          }
+
           @keyframes mobileBgPulse {
             0% { background-color: #060b13; }
             100% { background-color: #0a1422; }
