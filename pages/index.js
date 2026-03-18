@@ -525,12 +525,14 @@ export default function Home() {
           alignItems: "center",
           justifyContent: isMobile ? "flex-start" : "center",
           backgroundColor: "#060b13",
-          backgroundImage: `
-            linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), 
-            linear-gradient(rgba(56,189,248,0.05) 1px, transparent 1px), 
-            linear-gradient(90deg, rgba(56,189,248,0.05) 1px, transparent 1px)
-          `,
-          backgroundSize: "cover, 40px 40px, 40px 40px",
+          // Dinamikus háttér: PC-n rács, Mobilon prémium gradiens
+          backgroundImage: isMobile 
+            ? `radial-gradient(circle at 50% -20%, rgba(56,189,248,0.15) 0%, transparent 50%),
+               radial-gradient(circle at 0% 100%, rgba(56,189,248,0.05) 0%, transparent 40%)`
+            : `linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), 
+               linear-gradient(rgba(56,189,248,0.05) 1px, transparent 1px), 
+               linear-gradient(90deg, rgba(56,189,248,0.05) 1px, transparent 1px)`,
+          backgroundSize: isMobile ? "100% 100%" : "cover, 40px 40px, 40px 40px",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat, repeat, repeat",
           color: "white",
@@ -538,7 +540,7 @@ export default function Home() {
           position: "relative",
           overflowX: "hidden",
           margin: 0,
-          padding: isMobile ? "80px 0 60px 0" : 0,
+          padding: isMobile ? "20px 0 60px 0" : 0,
         }}
       >
         <SpiderNet />
@@ -548,14 +550,14 @@ export default function Home() {
         <div style={{ 
           position: isMobile ? "relative" : "absolute", 
           top: isMobile ? "15px" : "25px", 
-          left: isMobile ? "auto" : "20px", // Bal szélre tolva
+          left: isMobile ? "auto" : "20px",
           display: "flex", 
           gap: isMobile ? "15px" : "35px", 
           zIndex: 10,
           width: isMobile ? "90%" : "auto",
           justifyContent: isMobile ? "center" : "flex-start",
           alignItems: "center",
-          padding: "10px 20px",
+          padding: isMobile ? "12px 15px" : "10px 20px",
           background: "rgba(255, 255, 255, 0.03)",
           backdropFilter: "blur(10px)",
           borderRadius: "15px",
@@ -586,13 +588,32 @@ export default function Home() {
 
         <div id="turnstile-container" style={{ position: "fixed", top: "20px", left: "20px", zIndex: 999, minHeight: "65px", display: isVerified ? "none" : "block" }}></div>
 
-        <div onClick={toggleMute} className="narrator-toggle" style={{ position: "fixed", top: isMobile ? "120px" : "80px", right: isMobile ? "20px" : "40px", zIndex: 100, cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", opacity: isPlaying ? 0.9 : 0.6, transition: "all 0.5s ease", background: "rgba(255,255,255,0.05)", padding: "5px 12px", borderRadius: "15px", border: "1px solid rgba(255,255,255,0.1)", width: "140px", justifyContent: "center" }}>
+        {/* NARRATOR TOGGLE - Mobilon jobban elhelyezve */}
+        <div onClick={toggleMute} className="narrator-toggle" style={{ 
+          position: isMobile ? "relative" : "fixed", 
+          top: isMobile ? "15px" : "80px", 
+          right: isMobile ? "auto" : "40px", 
+          zIndex: 100, 
+          cursor: "pointer", 
+          display: "flex", 
+          alignItems: "center", 
+          gap: "10px", 
+          opacity: isPlaying ? 0.9 : 0.6, 
+          transition: "all 0.5s ease", 
+          background: "rgba(255,255,255,0.05)", 
+          padding: "8px 15px", 
+          borderRadius: "15px", 
+          border: "1px solid rgba(255,255,255,0.1)", 
+          width: "160px", 
+          justifyContent: "center",
+          margin: isMobile ? "10px auto" : "0"
+        }}>
           <div style={{ display: "flex", gap: "2px", alignItems: "flex-end", height: "12px" }}>
             {[1, 2, 3].map(i => (
               <div key={i} style={{ width: "2px", height: (isPlaying && !isMuted) ? "100%" : "2px", backgroundColor: "#38bdf8", animation: (isPlaying && !isMuted) ? `audioBar 0.8s ease-in-out infinite alternate ${i * 0.2}s` : "none" }} />
             ))}
           </div>
-          <span style={{ fontSize: "9px", fontWeight: "700", letterSpacing: "1px", color: "#38bdf8", textTransform: "uppercase" }}>
+          <span style={{ fontSize: "10px", fontWeight: "700", letterSpacing: "1px", color: "#38bdf8", textTransform: "uppercase" }}>
             {!isPlaying ? "Resume Narrator" : "Pause Narrator"}
           </span>
         </div>
@@ -619,15 +640,15 @@ export default function Home() {
         <div style={{ 
           position: isMobile ? "relative" : "absolute", 
           top: isMobile ? "10px" : "25px", 
-          right: isMobile ? "auto" : "20px", // Jobb szélre tolva
+          right: isMobile ? "auto" : "20px",
           display: "flex", 
           justifyContent: "center", 
-          gap: isMobile ? "12px" : "28px", 
+          gap: isMobile ? "10px" : "28px", 
           zIndex: 10, 
-          fontSize: isMobile ? "0.75rem" : "0.95rem",
-          flexWrap: isMobile ? "wrap" : "nowrap",
-          padding: "10px 20px",
-          width: isMobile ? "90%" : "auto", // maxWidth helyett width
+          fontSize: isMobile ? "0.7rem" : "0.95rem",
+          flexWrap: "wrap",
+          padding: isMobile ? "12px 15px" : "10px 20px",
+          width: isMobile ? "90%" : "auto",
           background: "rgba(255, 255, 255, 0.03)",
           backdropFilter: "blur(10px)",
           borderRadius: "15px",
@@ -645,14 +666,14 @@ export default function Home() {
         </div>
 
         <div style={{ textAlign: "center", zIndex: 3, display: "flex", flexDirection: "column", alignItems: "center", width: "100%", transform: isMobile ? "none" : "translateY(-40px)" }}>
-          <img src="/wealthyai/icons/generated.png" alt="WealthyAI logo" className="brand-logo" style={{ width: isMobile ? "320px" : "860px", maxWidth: "95vw", display: "block", cursor: "pointer", marginTop: isMobile ? "40px" : "0px" }} />
-          <div style={{ color: "#FFFFFF", lineHeight: "1.45", textAlign: "center", textShadow: "0 2px 10px rgba(0,0,0,0.5)", marginTop: isMobile ? "0px" : "-110px", width: "100%", maxWidth: "800px", padding: "0 20px", letterSpacing: "0.2px" }}>
-            <div style={{ fontSize: isMobile ? "1.1rem" : "1.55rem", fontWeight: "300", opacity: 0.9, marginBottom: "15px" }}>
+          <img src="/wealthyai/icons/generated.png" alt="WealthyAI logo" className="brand-logo" style={{ width: isMobile ? "280px" : "860px", maxWidth: "95vw", display: "block", cursor: "pointer", marginTop: isMobile ? "30px" : "0px" }} />
+          <div style={{ color: "#FFFFFF", lineHeight: "1.45", textAlign: "center", textShadow: "0 2px 10px rgba(0,0,0,0.5)", marginTop: isMobile ? "-10px" : "-110px", width: "100%", maxWidth: "800px", padding: "0 20px", letterSpacing: "0.2px" }}>
+            <div style={{ fontSize: isMobile ? "1.0rem" : "1.55rem", fontWeight: "300", opacity: 0.9, marginBottom: "15px" }}>
               AI-powered financial thinking.<br />
               Structured insights.<br />
               Clear perspective.
             </div>
-            <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", justifyContent: "center", alignItems: "center", fontSize: isMobile ? "0.7rem" : "0.85rem", textTransform: "uppercase", letterSpacing: "1.4px", opacity: 0.8, gap: isMobile ? "8px" : "15px", fontWeight: "500" }}>
+            <div style={{ display: "flex", flexDirection: isMobile ? "row" : "row", flexWrap: "wrap", justifyContent: "center", alignItems: "center", fontSize: isMobile ? "0.6rem" : "0.85rem", textTransform: "uppercase", letterSpacing: "1.4px", opacity: 0.8, gap: isMobile ? "10px" : "15px", fontWeight: "500" }}>
               <span className="discrete-pulse">Not advice.</span>
               <span className="discrete-pulse">Not predictions.</span>
               <span className="discrete-pulse">Financial intelligence.</span>
@@ -661,66 +682,82 @@ export default function Home() {
         </div>
 
         <div style={{ position: isMobile ? "relative" : "absolute", top: isMobile ? "auto" : "45%", left: isMobile ? "auto" : "10%", transform: isMobile ? "none" : "translateY(-50%)", marginTop: isMobile ? "40px" : "0", zIndex: 20, display: "flex", flexDirection: "column", alignItems: isMobile ? "center" : "flex-start", gap: "15px", padding: isMobile ? "0 20px" : "0", textAlign: isMobile ? "center" : "left" }}>
-          <a href={isVerified && !isBotTrapped ? "/start" : "#"} onClick={handleStartClick} className="start-btn" style={{ width: "150px", textAlign: "center", padding: "14px 0", backgroundColor: isVerified ? "#1a253a" : "rgba(255,255,255,0.05)", border: isVerified ? "1px solid rgba(56,189,248,0.8)" : "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", color: isVerified ? "white" : "rgba(255,255,255,0.3)", textDecoration: "none", fontWeight: "bold", cursor: isVerified ? "pointer" : "not-allowed", transition: "all 0.4s ease", display: "flex", flexDirection: "column", alignItems: "center", gap: "2px" }}>
-            <span style={{ fontSize: "1.0rem", letterSpacing: "1px" }}>{isBotTrapped ? "LOADING..." : "START FOR FREE"}</span>
+          <a href={isVerified && !isBotTrapped ? "/start" : "#"} onClick={handleStartClick} className="start-btn" style={{ width: "180px", textAlign: "center", padding: "16px 0", backgroundColor: isVerified ? "#1a253a" : "rgba(255,255,255,0.05)", border: isVerified ? "2px solid rgba(56,189,248,0.8)" : "1px solid rgba(255,255,255,0.1)", borderRadius: "12px", color: isVerified ? "white" : "rgba(255,255,255,0.3)", textDecoration: "none", fontWeight: "bold", cursor: isVerified ? "pointer" : "not-allowed", transition: "all 0.4s ease", display: "flex", flexDirection: "column", alignItems: "center", gap: "2px" }}>
+            <span style={{ fontSize: "1.1rem", letterSpacing: "1.5px" }}>{isBotTrapped ? "LOADING..." : "START FOR FREE"}</span>
           </a>
           
           {isMobile && (
-            <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+            <div style={{ marginTop: "15px", display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
                <PremiumVideo 
-                  size="120px" 
+                  size="130px" 
                   videoRef={videoRef}
                   isVideoMuted={isVideoMuted}
                   isVideoPlaying={isVideoPlaying}
                   toggleVideoPlayback={toggleVideoPlayback}
                   toggleVideoMute={toggleVideoMute}
                />
+               <div style={{ fontSize: "7px", textTransform: "uppercase", letterSpacing: "1px", opacity: 0.5 }}>Space reserved for excellence</div>
             </div>
           )}
 
-          <div style={{ fontSize: "0.85rem", opacity: 0.75, letterSpacing: "0.3px", maxWidth: isMobile ? "280px" : "320px" }}>
+          <div style={{ fontSize: isMobile ? "0.75rem" : "0.85rem", opacity: 0.75, letterSpacing: "0.3px", maxWidth: isMobile ? "260px" : "320px", marginTop: "10px" }}>
             {isBotTrapped ? "System congestion. Please wait..." : "Start with a simple financial snapshot. Takes less than a minute."}
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", padding: "4px 10px", borderRadius: "6px", background: "rgba(16, 185, 129, 0.1)", border: "1px solid rgba(16, 185, 129, 0.2)", marginTop: "5px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", padding: "6px 12px", borderRadius: "8px", background: "rgba(16, 185, 129, 0.1)", border: "1px solid rgba(16, 185, 129, 0.2)", marginTop: "5px" }}>
             <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#10b981", boxShadow: "0 0 8px #10b981" }} />
             <span style={{ fontSize: "10px", color: "#10b981", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px" }}>No Log-In System</span>
           </div>
         </div>
 
-        <div style={{ position: isMobile ? "relative" : "absolute", bottom: 0, left: 0, width: "100%", padding: isMobile ? "36px 24px 24px" : "18px 24px", display: "flex", flexDirection: isMobile ? "column-reverse" : "row", justifyContent: "space-between", alignItems: isMobile ? "center" : "flex-end", zIndex: 5, boxSizing: "border-box", gap: isMobile ? "30px" : "0", background: isMobile ? "linear-gradient(to top, rgba(6,11,19,0.95) 0%, rgba(6,11,19,0.8) 50%, rgba(6,11,19,0.0) 100%)" : "transparent" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px", alignItems: isMobile ? "center" : "flex-start" }}>
+        {/* FOOTER - Mobilon optimalizált távolságokkal */}
+        <div style={{ 
+          position: isMobile ? "relative" : "absolute", 
+          bottom: 0, 
+          left: 0, 
+          width: "100%", 
+          padding: isMobile ? "50px 24px 40px" : "18px 24px", 
+          display: "flex", 
+          flexDirection: isMobile ? "column-reverse" : "row", 
+          justifyContent: "space-between", 
+          alignItems: isMobile ? "center" : "flex-end", 
+          zIndex: 5, 
+          boxSizing: "border-box", 
+          gap: isMobile ? "35px" : "0", 
+          background: isMobile ? "linear-gradient(to top, rgba(6,11,19,1) 0%, rgba(6,11,19,0.8) 70%, transparent 100%)" : "transparent" 
+        }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", alignItems: isMobile ? "center" : "flex-start" }}>
             <a href="https://www.facebook.com/profile.php?id=61588517507057" target="_blank" rel="noopener noreferrer" className="builder-btn discrete-pulse" style={{
               fontSize: "10px", textTransform: "uppercase", letterSpacing: "1.5px", color: "#38bdf8", textDecoration: "none", fontWeight: "600",
-              border: "1px solid rgba(56,189,248,0.3)", padding: "6px 12px", borderRadius: "4px", marginBottom: "4px", transition: "all 0.3s ease", background: "rgba(0,0,0,0.3)",
+              border: "1px solid rgba(56,189,248,0.3)", padding: "8px 16px", borderRadius: "6px", marginBottom: "4px", transition: "all 0.3s ease", background: "rgba(0,0,0,0.3)",
               display: "inline-block"
             }}>
               [ Help to Builders ]
             </a>
             <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "2px", color: "white", fontWeight: "400", opacity: 0.7, display: "flex", alignItems: "center", gap: "12px" }}>
               Member of Microsoft for Startups
-              <img src="/wealthyai/icons/microsoft-logo-png-2395.png" alt="Microsoft Logo" style={{ height: "24px", width: "auto", filter: "drop-shadow(0 0 5px rgba(255,255,255,0.2))" }} />
+              <img src="/wealthyai/icons/microsoft-logo-png-2395.png" alt="Microsoft Logo" style={{ height: "20px", width: "auto", filter: "drop-shadow(0 0 5px rgba(255,255,255,0.2))" }} />
             </div>
-            <div style={{ fontSize: "0.85rem", opacity: 0.6 }}>© 2026 mywealthyai.com — All rights reserved.</div>
+            <div style={{ fontSize: "0.75rem", opacity: 0.5 }}>© 2026 mywealthyai.com — All rights reserved.</div>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", alignItems: isMobile ? "center" : "flex-end", gap: "8px" }}>
-            <a href="mailto:info@mywealthyai.com" onClick={stopAudio} className="nav-link" style={{ fontSize: "0.82rem", textAlign: isMobile ? "center" : "right", lineHeight: "1.4", cursor: "pointer", textDecoration: "none" }}>
-              <div style={{ fontWeight: 500 }}>Contact & Partnerships</div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: isMobile ? "center" : "flex-end", gap: "12px" }}>
+            <a href="mailto:info@mywealthyai.com" onClick={stopAudio} className="nav-link" style={{ fontSize: "0.82rem", textAlign: isMobile ? "center" : "right", lineHeight: "1.5", cursor: "pointer", textDecoration: "none" }}>
+              <div style={{ fontWeight: 600, color: "#38bdf8" }}>Contact & Partnerships</div>
               <div style={{ opacity: 0.8 }}>Media · Partnerships · Institutional use</div>
               <div style={{ fontWeight: 600 }}>info@mywealthyai.com</div>
             </a>
-            <div style={{ display: "flex", gap: "18px", alignItems: "center", marginTop: isMobile ? "10px" : "0" }}>
+            <div style={{ display: "flex", gap: "22px", alignItems: "center", marginTop: isMobile ? "10px" : "0" }}>
               <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
-                <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
+                <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 32 }} />
               </a>
               <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
-                <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
+                <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 32 }} />
               </a>
               <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
-                <img src="/wealthyai/icons/linkedin.png" alt="LinkedIn" style={{ width: 34 }} />
+                <img src="/wealthyai/icons/linkedin.png" alt="LinkedIn" style={{ width: 32 }} />
               </a>
               <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="icon-link">
-                <img src="/wealthyai/icons/insta.png" alt="Instagram" style={{ width: 34 }} />
+                <img src="/wealthyai/icons/insta.png" alt="Instagram" style={{ width: 32 }} />
               </a>
             </div>
           </div>
@@ -759,6 +796,17 @@ export default function Home() {
             background: rgba(56,189,248,0.2) !important;
             color: white !important;
             border-color: rgba(56,189,248,0.8) !important;
+          }
+          
+          /* Külön stílus a mobil háttér pulzáláshoz */
+          @media (max-width: 767px) {
+            main {
+              animation: mobileBgPulse 10s ease-in-out infinite alternate;
+            }
+          }
+          @keyframes mobileBgPulse {
+            0% { background-color: #060b13; }
+            100% { background-color: #0a1422; }
           }
         `}</style>
       </main>
