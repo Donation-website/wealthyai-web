@@ -273,6 +273,8 @@ const AnalogClock = ({ city, timezone, speed = 1, isMobile }) => {
 export default function Home() {
   const SITE_URL = "https://mywealthyai.com";
   const SHARE_TEXT = "AI-powered financial clarity with WealthyAI";
+  // JAVÍTÁS: A képen látható direkt elérési út beállítása
+  const SHARE_IMAGE = "https://raw.githubusercontent.com/Donation-website/wealthyai-web/main/public/wealthyai/icons/share-card-v2.png";
 
   const audioRef = useRef(null);
   const videoRef = useRef(null);
