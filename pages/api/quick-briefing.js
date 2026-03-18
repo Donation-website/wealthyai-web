@@ -15,12 +15,12 @@ export default async function handler(req, res) {
     const totalOut = sFixed + sVariable;
     const balance = sIncome - totalOut;
     
-    // Százalékos mutatók kiszámítása előre
-    const usagePercent = sIncome > 0 ? ((totalOut / sIncome) * 100).toFixed(1) : (totalOut > 0 ? "100+" : "0");
+    // Százalékos mutatók kiszámítása
+    const usagePercentVal = sIncome > 0 ? (totalOut / sIncome) * 100 : (totalOut > 0 ? 100.1 : 0);
+    const usagePercentStr = usagePercentVal.toFixed(1);
     const deficitAmount = balance < 0 ? Math.abs(balance) : 0;
-    const deficitPercent = (sIncome > 0 && balance < 0) ? ((deficitAmount / sIncome) * 100).toFixed(1) : "0";
 
-    // Rendszer utasítás a Llama-nak - Drasztikusan leegyszerűsítve a hiba elkerülésére
+    // Rendszer utasítás a Llama-nak - Beszédesebb, de szigorúbb logika
     const systemPrompt = `
 You are WealthyAI — a professional financial data interpreter.
 ROLE: Provide a professional "Quick Briefing" based on the provided data.
@@ -29,20 +29,23 @@ DATA:
 - Monthly Income: ${sIncome}
 - Total Expenses: ${totalOut}
 - Net Balance: ${balance}
-- Expense-to-Income Ratio: ${usagePercent}%
-- Deficit as % of Income: ${deficitPercent}%
+- Expense-to-Income Ratio: ${usagePercentStr}%
 
 PHILOSOPHY:
 - WealthyAI DOES NOT advise. It INTERPRETS.
-- Tone: Analytical, objective, second person ("Your income", "You are facing").
+- Tone: Analytical, objective, second person.
 - Language: English.
-- Do NOT use currency symbols or the word "units". Just use the numbers.
+- Do NOT use currency symbols or "units". Just numbers.
 
-STRICT CONSTRAINTS:
-- Provide exactly 2 sentences of financial analysis.
-- ACCURACY: Stick to the provided numbers. If there is a deficit, you may state that expenses exceed income by ${usagePercent}% or mention the net deficit of ${deficitAmount}. 
-- Do NOT use metaphors like "double" or "triple" unless the Expense-to-Income Ratio is exactly 200% or 300%.
-- After the analysis, you MUST ALWAYS add this exact third sentence: "For a more complex exploration of your financial data and deeper insights, choose from our Premium plans below."
+LOGIC CONSTRAINTS:
+- If Ratio < 100%: State that expenses account for ${usagePercentStr}% of income, leaving a surplus of ${balance}.
+- If Ratio > 100%: State that expenses exceed income by ${usagePercentStr}%, resulting in a deficit of ${deficitAmount}.
+- NEVER use "exceeds" if the Ratio is below 100%.
+- NEVER use metaphors like "double" unless the ratio is exactly 200%.
+
+STRICT FORMATTING:
+- Provide exactly 2 or 3 concise sentences of financial analysis.
+- After the analysis, you MUST ALWAYS add this exact last sentence: "For a more complex exploration of your financial data and deeper insights, choose from our Premium plans below."
 - No greeting, no intro, no other text.
 `;
 
@@ -59,8 +62,8 @@ STRICT CONSTRAINTS:
           { role: "system", content: systemPrompt },
           { role: "user", content: "Interpret my current financial numbers." },
         ],
-        temperature: 0.1, // Minimális kreativitás, maximális pontosság
-        max_tokens: 250,
+        temperature: 0.1, 
+        max_tokens: 200, // Kicsit korlátozva, hogy beférjen a boxba
       }),
     });
 
