@@ -1,8 +1,8 @@
 import Head from "next/head";
 
 const DEFAULT_SITE_URL = "https://mywealthyai.com";
-const DEFAULT_OG_IMAGE =
-  "https://mywealthyai.com/wealthyai/icons/megosztas.png";
+// Frissítve a share-card-v2.png-re
+const DEFAULT_OG_IMAGE = "https://mywealthyai.com/wealthyai/icons/share-card-v2.png";
 
 export default function SEO({
   title = "WealthyAI – AI-powered financial clarity",
@@ -16,7 +16,7 @@ export default function SEO({
       <meta name="description" content={description} />
       <link rel="canonical" href={url} />
 
-      {/* Open Graph */}
+      {/* Open Graph / Facebook */}
       <meta property="og:type" content="website" />
       <meta property="og:url" content={url} />
       <meta property="og:title" content={title} />
@@ -24,6 +24,7 @@ export default function SEO({
       <meta property="og:image" content={ogImage} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
+      <meta property="og:image:type" content="image/png" />
 
       {/* Twitter / X */}
       <meta name="twitter:card" content="summary_large_image" />
