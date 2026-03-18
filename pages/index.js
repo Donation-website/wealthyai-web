@@ -548,7 +548,7 @@ export default function Home() {
         <div style={{ 
           position: isMobile ? "relative" : "absolute", 
           top: isMobile ? "15px" : "25px", 
-          left: isMobile ? "auto" : "40px", 
+          left: isMobile ? "auto" : "20px", // Bal szélre tolva
           display: "flex", 
           gap: isMobile ? "15px" : "35px", 
           zIndex: 10,
@@ -619,7 +619,7 @@ export default function Home() {
         <div style={{ 
           position: isMobile ? "relative" : "absolute", 
           top: isMobile ? "10px" : "25px", 
-          right: isMobile ? "auto" : "40px", 
+          right: isMobile ? "auto" : "20px", // Jobb szélre tolva
           display: "flex", 
           justifyContent: "center", 
           gap: isMobile ? "12px" : "28px", 
@@ -627,7 +627,7 @@ export default function Home() {
           fontSize: isMobile ? "0.75rem" : "0.95rem",
           flexWrap: isMobile ? "wrap" : "nowrap",
           padding: "10px 20px",
-          maxWidth: isMobile ? "90%" : "auto",
+          width: isMobile ? "90%" : "auto", // maxWidth helyett width
           background: "rgba(255, 255, 255, 0.03)",
           backdropFilter: "blur(10px)",
           borderRadius: "15px",
