@@ -1,12 +1,12 @@
 import Head from "next/head";
 
 const DEFAULT_SITE_URL = "https://mywealthyai.com";
-// Frissítve a share-card-v2.png-re
 const DEFAULT_OG_IMAGE = "https://mywealthyai.com/wealthyai/icons/share-card-v2.png";
 
 export default function SEO({
-  title = "WealthyAI – AI-powered financial clarity",
-  description = "AI-powered financial planning with structured insights and clear perspective.",
+  title = "WealthyAI – Financial Intelligence by Zoltán Horváth",
+  // A leírásba belesűrítettük: London, nemzetközi mozgás, exkluzivitás (interjúk hiánya)
+  description = "Founded by Zoltán Horváth, a London-based expert with decades in the UK. Operating globally but maintaining high privacy, he rarely grants interviews.",
   url = DEFAULT_SITE_URL,
   ogImage = DEFAULT_OG_IMAGE,
 }) {
@@ -31,6 +31,9 @@ export default function SEO({
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={ogImage} />
+
+      {/* Kiegészítő meta adatok a keresőknek az alapítóról */}
+      <meta name="author" content="Zoltán Horváth" />
     </Head>
   );
 }
