@@ -14,9 +14,13 @@ export default async function handler(req, res) {
     
     const totalOut = sFixed + sVariable;
     const balance = sIncome - totalOut;
-    const usagePercent = sIncome > 0 ? ((totalOut / sIncome) * 100).toFixed(1) : 100;
+    
+    // Százalékos mutatók kiszámítása előre
+    const usagePercent = sIncome > 0 ? ((totalOut / sIncome) * 100).toFixed(1) : (totalOut > 0 ? "100+" : "0");
+    const deficitAmount = balance < 0 ? Math.abs(balance) : 0;
+    const deficitPercent = (sIncome > 0 && balance < 0) ? ((deficitAmount / sIncome) * 100).toFixed(1) : "0";
 
-    // Rendszer utasítás a Llama-nak - Javított pontossági korlátokkal
+    // Rendszer utasítás a Llama-nak - Drasztikusan leegyszerűsítve a hiba elkerülésére
     const systemPrompt = `
 You are WealthyAI — a professional financial data interpreter.
 ROLE: Provide a professional "Quick Briefing" based on the provided data.
@@ -26,6 +30,7 @@ DATA:
 - Total Expenses: ${totalOut}
 - Net Balance: ${balance}
 - Expense-to-Income Ratio: ${usagePercent}%
+- Deficit as % of Income: ${deficitPercent}%
 
 PHILOSOPHY:
 - WealthyAI DOES NOT advise. It INTERPRETS.
@@ -35,7 +40,8 @@ PHILOSOPHY:
 
 STRICT CONSTRAINTS:
 - Provide exactly 2 sentences of financial analysis.
-- ACCURACY: Be mathematically precise. Do NOT use metaphors like "double" unless the ratio is at least 200%. If expenses exceed income, state it as a deficit or a percentage over 100%.
+- ACCURACY: Stick to the provided numbers. If there is a deficit, you may state that expenses exceed income by ${usagePercent}% or mention the net deficit of ${deficitAmount}. 
+- Do NOT use metaphors like "double" or "triple" unless the Expense-to-Income Ratio is exactly 200% or 300%.
 - After the analysis, you MUST ALWAYS add this exact third sentence: "For a more complex exploration of your financial data and deeper insights, choose from our Premium plans below."
 - No greeting, no intro, no other text.
 `;
@@ -53,7 +59,7 @@ STRICT CONSTRAINTS:
           { role: "system", content: systemPrompt },
           { role: "user", content: "Interpret my current financial numbers." },
         ],
-        temperature: 0.1, // Alacsonyabb hőmérséklet a nagyobb precizitásért
+        temperature: 0.1, // Minimális kreativitás, maximális pontosság
         max_tokens: 250,
       }),
     });
