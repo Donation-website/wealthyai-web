@@ -158,7 +158,7 @@ function SpiderNet() {
   );
 }
 
-// --- PRÉMIUM VIDEÓ KOMPONENS (Kiemelve a Home elé a stabil renderelésért) ---
+// --- PRÉMIUM VIDEÓ KOMPONENS ---
 const PremiumVideo = React.memo(function PremiumVideo({ 
   size = "160px", 
   videoRef, 
@@ -525,10 +525,15 @@ export default function Home() {
           alignItems: "center",
           justifyContent: isMobile ? "flex-start" : "center",
           backgroundColor: "#060b13",
-          backgroundImage: "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
-          backgroundPosition: isMobile ? "center 22%" : "center",
-          backgroundSize: "cover",
-          backgroundRepeat: "no-repeat",
+          // Egyszerű kockás háttér CSS-szel generálva
+          backgroundImage: `
+            linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), 
+            linear-gradient(rgba(56,189,248,0.05) 1px, transparent 1px), 
+            linear-gradient(90deg, rgba(56,189,248,0.05) 1px, transparent 1px)
+          `,
+          backgroundSize: "cover, 40px 40px, 40px 40px",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat, repeat, repeat",
           color: "white",
           fontFamily: "'Inter', system-ui, Arial, sans-serif",
           position: "relative",
@@ -540,6 +545,7 @@ export default function Home() {
         <SpiderNet />
         <audio ref={audioRef} src="/wealthyai/icons/nyitobeszed.mp3" preload="auto" onEnded={handleAudioEnd} />
 
+        {/* --- TOP NAVBAR WITH MODERN BORDER --- */}
         <div style={{ 
           position: "absolute", 
           top: isMobile ? "15px" : "25px", 
@@ -548,9 +554,15 @@ export default function Home() {
           display: "flex", 
           gap: isMobile ? "15px" : "35px", 
           zIndex: 10,
-          width: isMobile ? "100%" : "auto",
+          width: isMobile ? "90%" : "auto",
           justifyContent: isMobile ? "center" : "flex-start",
-          alignItems: "center"
+          alignItems: "center",
+          padding: "10px 20px",
+          background: "rgba(255, 255, 255, 0.03)",
+          backdropFilter: "blur(10px)",
+          borderRadius: "15px",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+          boxShadow: "0 4px 30px rgba(0, 0, 0, 0.1)"
         }}>
           {/* Insights link */}
           <a href="/insights" onClick={stopAudio} className="nav-link" style={{ 
@@ -576,8 +588,9 @@ export default function Home() {
 
         <div id="turnstile-container" style={{ position: "fixed", top: "20px", left: "20px", zIndex: 999, minHeight: "65px", display: isVerified ? "none" : "block" }}></div>
 
-        <div onClick={toggleMute} className="narrator-toggle" style={{ position: "fixed", top: isMobile ? "65px" : "80px", right: isMobile ? "20px" : "40px", zIndex: 100, cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", opacity: isPlaying ? 0.9 : 0.6, transition: "all 0.5s ease", background: "rgba(255,255,255,0.05)", padding: "5px 12px", borderRadius: "15px", border: "1px solid rgba(255,255,255,0.1)", width: "140px", justifyContent: "center" }}>
+        <div onClick={toggleMute} className="narrator-toggle" style={{ position: "fixed", top: isMobile ? "100px" : "80px", right: isMobile ? "20px" : "40px", zIndex: 100, cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", opacity: isPlaying ? 0.9 : 0.6, transition: "all 0.5s ease", background: "rgba(255,255,255,0.05)", padding: "5px 12px", borderRadius: "15px", border: "1px solid rgba(255,255,255,0.1)", width: "140px", justifyContent: "center" }}>
           <div style={{ display: "flex", gap: "2px", alignItems: "flex-end", height: "12px" }}>
+            {/* Audio animációs sávok */}
             {[1, 2, 3].map(i => (
               <div key={i} style={{ width: "2px", height: (isPlaying && !isMuted) ? "100%" : "2px", backgroundColor: "#38bdf8", animation: (isPlaying && !isMuted) ? `audioBar 0.8s ease-in-out infinite alternate ${i * 0.2}s` : "none" }} />
             ))}
@@ -605,6 +618,7 @@ export default function Home() {
           </div>
         )}
 
+        {/* --- SECONDARY TOP NAV WITH MODERN BORDER --- */}
         <div style={{ 
           position: isMobile ? "relative" : "absolute", 
           top: isMobile ? "10px" : "30px", 
@@ -615,8 +629,13 @@ export default function Home() {
           zIndex: 10, 
           fontSize: isMobile ? "0.75rem" : "0.95rem",
           flexWrap: isMobile ? "wrap" : "nowrap",
-          padding: isMobile ? "0 20px" : "0",
-          maxWidth: isMobile ? "100%" : "auto"
+          padding: "10px 20px",
+          maxWidth: isMobile ? "90%" : "auto",
+          background: "rgba(255, 255, 255, 0.03)",
+          backdropFilter: "blur(10px)",
+          borderRadius: "15px",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+          boxShadow: "0 4px 30px rgba(0, 0, 0, 0.1)"
         }}>
           <a href="/PrivacyPolicy" onClick={stopAudio} className="nav-link">Privacy Policy</a>
           <a href="/philosophy" onClick={stopAudio} className="nav-link">Philosophy</a>
@@ -644,9 +663,8 @@ export default function Home() {
         </div>
 
         <div style={{ position: isMobile ? "relative" : "absolute", top: isMobile ? "auto" : "45%", left: isMobile ? "auto" : "10%", transform: isMobile ? "none" : "translateY(-50%)", marginTop: isMobile ? "40px" : "0", zIndex: 20, display: "flex", flexDirection: "column", alignItems: isMobile ? "center" : "flex-start", gap: "15px", padding: isMobile ? "0 20px" : "0", textAlign: isMobile ? "center" : "left" }}>
-          <a href={isVerified && !isBotTrapped ? "/start" : "#"} onClick={handleStartClick} className="start-btn" style={{ width: "130px", textAlign: "center", padding: "14px 0", backgroundColor: isVerified ? "#1a253a" : "rgba(255,255,255,0.05)", border: isVerified ? "1px solid rgba(56,189,248,0.8)" : "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", color: isVerified ? "white" : "rgba(255,255,255,0.3)", textDecoration: "none", fontWeight: "bold", cursor: isVerified ? "pointer" : "not-allowed", transition: "all 0.4s ease", display: "flex", flexDirection: "column", alignItems: "center", gap: "2px" }}>
-            <span style={{ fontSize: "1.1rem" }}>{isBotTrapped ? "Loading..." : "Start"}</span>
-            <span style={{ fontSize: "0.6rem", fontWeight: "400", opacity: 0.8 }}>START FOR FREE</span>
+          <a href={isVerified && !isBotTrapped ? "/start" : "#"} onClick={handleStartClick} className="start-btn" style={{ width: "150px", textAlign: "center", padding: "14px 0", backgroundColor: isVerified ? "#1a253a" : "rgba(255,255,255,0.05)", border: isVerified ? "1px solid rgba(56,189,248,0.8)" : "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", color: isVerified ? "white" : "rgba(255,255,255,0.3)", textDecoration: "none", fontWeight: "bold", cursor: isVerified ? "pointer" : "not-allowed", transition: "all 0.4s ease", display: "flex", flexDirection: "column", alignItems: "center", gap: "2px" }}>
+            <span style={{ fontSize: "1.0rem", letterSpacing: "1px" }}>{isBotTrapped ? "LOADING..." : "START FOR FREE"}</span>
           </a>
           
           {isMobile && (
@@ -723,7 +741,9 @@ export default function Home() {
           .discrete-pulse { animation: discretePulse 3s ease-in-out infinite; }
           @keyframes discretePulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
           
-          .nav-link, .icon-link, .narrator-toggle { position: relative; color: white; text-decoration: none; z-index: 20; }
+          .nav-link, .icon-link, .narrator-toggle { position: relative; color: white; text-decoration: none; z-index: 20; transition: all 0.3s ease; }
+          .nav-link:hover { color: #38bdf8; }
+          
           .nav-link::before, .icon-link::before, .narrator-toggle::before {
             content: ""; position: absolute; inset: -12px -22px;
             background: radial-gradient(circle, rgba(56,189,248,0.55) 0%, rgba(56,189,248,0.25) 40%, transparent 70%);
@@ -732,7 +752,10 @@ export default function Home() {
           .nav-link:hover::before, .icon-link:hover::before, .narrator-toggle:hover::before { opacity: 1; }
           
           .start-btn { position: relative; z-index: 25; }
-          .start-btn:hover { box-shadow: ${isVerified && !isBotTrapped ? "0 0 35px rgba(56,189,248,0.45)" : "none"}; }
+          .start-btn:hover { 
+            box-shadow: ${isVerified && !isBotTrapped ? "0 0 35px rgba(56,189,248,0.45)" : "none"};
+            transform: translateY(-2px);
+          }
           .builder-btn:hover {
             box-shadow: 0 0 15px rgba(56,189,248,0.6);
             background: rgba(56,189,248,0.2) !important;
