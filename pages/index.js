@@ -466,7 +466,6 @@ export default function Home() {
     <>
       <TrafficTracker />
       <Head>
-        <title>WealthyAI – AI-powered financial clarity | Zoltán Horváth</title>
         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
         
         {/* --- Favicon & App Icons --- */}
@@ -490,27 +489,17 @@ export default function Home() {
         {/* --- End Favicon --- */}
 
         <meta name="google-site-verification" content="019m-2Ayi9dmgKh_oPI8PVpR9flMsOfX_048yySbIRQ" />
-        <meta name="author" content="Zoltán Horváth" />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={SITE_URL} />
-        <meta property="og:title" content="WealthyAI – AI-powered financial clarity" />
-        <meta property="og:description" content="AI-powered financial thinking. Structured insights. Clear perspective." />
-        <meta property="og:image" content="https://mywealthyai.com/wealthyai/icons/share-card-v2.png" />
-        <meta property="og:image:secure_url" content="https://mywealthyai.com/wealthyai/icons/share-card-v2.png" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:image" content="https://mywealthyai.com/wealthyai/icons/share-card-v2.png" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
         />
       </Head>
+
       <SEO
-        title="WealthyAI – AI-powered financial clarity | mywealthyai"
-        description="WealthyAI (mywealthyai) offers AI-powered financial planning, structured insights, and clear market perspective."
+        title="WealthyAI – Financial Intelligence by Zoltán Horváth"
+        description="Founded by Zoltán Horváth, a London-based expert with decades in the UK. Operating globally but maintaining high privacy, he rarely grants interviews."
         url={SITE_URL}
-        keywords="mywealthyai, WealthyAI, AI finance, financial intelligence, structured insights, market perspective, financial clarity"
+        ogImage="https://mywealthyai.com/wealthyai/icons/share-card-v2.png"
       />
 
       <main
