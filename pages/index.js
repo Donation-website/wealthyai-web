@@ -26,8 +26,8 @@ function SpiderNet() {
     let animationFrameId;
 
     let particles = [];
-    const particleCount = 280; 
-    const connectionDistance = 150; 
+    const particleCount = 180; 
+    const connectionDistance = 140; 
     const mouse = { x: null, y: null, radius: 150 };
 
     const resize = () => {
@@ -59,13 +59,13 @@ function SpiderNet() {
       constructor() {
         this.x = Math.random() * window.innerWidth;
         this.y = Math.random() * window.innerHeight;
-        this.size = Math.random() * 1.5 + 0.5;
-        this.vx = (Math.random() - 0.5) * 0.4;
-        this.vy = (Math.random() - 0.5) * 0.4;
+        this.size = Math.random() * 1.2 + 0.3;
+        this.vx = (Math.random() - 0.5) * 0.3;
+        this.vy = (Math.random() - 0.5) * 0.3;
       }
 
       draw() {
-        ctx.fillStyle = "rgba(56, 189, 248, 0.8)";
+        ctx.fillStyle = "rgba(56, 189, 248, 0.4)";
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
@@ -74,7 +74,6 @@ function SpiderNet() {
       update() {
         this.x += this.vx;
         this.y += this.vy;
-
         if (this.x < 0 || this.x > window.innerWidth) this.vx *= -1;
         if (this.y < 0 || this.y > window.innerHeight) this.vy *= -1;
 
@@ -84,8 +83,8 @@ function SpiderNet() {
           let distance = Math.sqrt(dx * dx + dy * dy);
           if (distance < mouse.radius) {
             const force = (mouse.radius - distance) / mouse.radius;
-            this.x -= (dx / distance) * force * 3;
-            this.y -= (dy / distance) * force * 3;
+            this.x -= (dx / distance) * force * 2;
+            this.y -= (dy / distance) * force * 2;
           }
         }
       }
@@ -104,11 +103,10 @@ function SpiderNet() {
           let dx = particles[a].x - particles[b].x;
           let dy = particles[a].y - particles[b].y;
           let distance = Math.sqrt(dx * dx + dy * dy);
-
           if (distance < connectionDistance) {
             let opacity = 1 - (distance / connectionDistance);
-            ctx.strokeStyle = `rgba(56, 189, 248, ${opacity * 0.3})`;
-            ctx.lineWidth = 0.8;
+            ctx.strokeStyle = `rgba(56, 189, 248, ${opacity * 0.15})`;
+            ctx.lineWidth = 0.5;
             ctx.beginPath();
             ctx.moveTo(particles[a].x, particles[a].y);
             ctx.lineTo(particles[b].x, particles[b].y);
@@ -120,17 +118,13 @@ function SpiderNet() {
 
     const animate = () => {
       ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-      particles.forEach(p => {
-        p.update();
-        p.draw();
-      });
+      particles.forEach(p => { p.update(); p.draw(); });
       connect();
       animationFrameId = requestAnimationFrame(animate);
     };
 
     init();
     animate();
-
     return () => {
       window.removeEventListener("resize", resize);
       window.removeEventListener("mousemove", handleMouseMove);
@@ -140,105 +134,44 @@ function SpiderNet() {
   }, [isMobile]);
 
   if (isMobile) return null;
-
   return (
     <canvas 
       ref={canvasRef} 
-      style={{ 
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        zIndex: 1, 
-        pointerEvents: 'none', 
-        background: 'transparent'
-      }} 
+      style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1, pointerEvents: 'none', background: 'transparent' }} 
     />
   );
 }
 
-// --- PRÉMIUM VIDEÓ KOMPONENS (Kiemelve a Home elé a stabil renderelésért) ---
 const PremiumVideo = React.memo(function PremiumVideo({ 
-  size = "160px", 
-  videoRef, 
-  isVideoMuted, 
-  isVideoPlaying, 
-  toggleVideoPlayback, 
-  toggleVideoMute 
+  size = "160px", videoRef, isVideoMuted, isVideoPlaying, toggleVideoPlayback, toggleVideoMute 
 }) {
-  const PlayIcon = () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg">
-      <path d="M8 5V19L19 12L8 5Z" />
-    </svg>
-  );
-
-  const PauseIcon = () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg">
-      <path d="M6 19H10V5H6V19ZM14 5V19H18V5H14V5Z" />
-    </svg>
-  );
-
-  const MuteIcon = () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg">
-      <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77zM3 9v6h4l5 5V4L7 9H3z" />
-    </svg>
-  );
-
-  const UnmuteIcon = () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg">
-      <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v1.79l2.48 2.48c.01-.08.02-.16.02-.24zM19 12c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
-    </svg>
-  );
+  const PlayIcon = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="black"><path d="M8 5V19L19 12L8 5Z" /></svg>);
+  const PauseIcon = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="black"><path d="M6 19H10V5H6V19ZM14 5V19H18V5H14V5Z" /></svg>);
+  const MuteIcon = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="black"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77zM3 9v6h4l5 5V4L7 9H3z" /></svg>);
+  const UnmuteIcon = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="black"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v1.79l2.48 2.48c.01-.08.02-.16.02-.24zM19 12c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" /></svg>);
 
   return (
     <div style={{ 
-      width: size, 
-      height: `calc(${size} * 1.18)`, 
-      background: "#000", 
-      borderRadius: "30px", 
-      border: "6px solid #1a1a1a", 
-      boxShadow: "0 20px 40px rgba(0,0,0,0.6)", 
-      overflow: "hidden", 
-      position: "relative",
-      userSelect: "none"
+      width: size, height: `calc(${size} * 1.18)`, background: "rgba(0,0,0,0.8)", borderRadius: "24px", 
+      border: "1px solid rgba(255,255,255,0.1)", backdropFilter: "blur(10px)", overflow: "hidden", position: "relative"
     }}>
-        <video 
-          ref={videoRef} 
-          src="/wealthyai/icons/Time.mp4" 
-          autoPlay 
-          loop 
-          muted={isVideoMuted} 
-          playsInline 
-          style={{ width: "100%", height: "100%", objectFit: "contain", background: "#000" }} 
-        />
-        
-        <div style={{ position: "absolute", bottom: "12px", left: "0", width: "100%", display: "flex", justifyContent: "center", gap: "12px", zIndex: 100 }}>
-            <div 
-              onClick={toggleVideoPlayback} 
-              style={{ background: "rgba(255,255,255,1)", borderRadius: "50%", width: "30px", height: "30px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", border: "none" }}
-            >
-                {isVideoPlaying ? <PauseIcon /> : <PlayIcon />}
+        <video ref={videoRef} src="/wealthyai/icons/Time.mp4" autoPlay loop muted={isVideoMuted} playsInline style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+        <div style={{ position: "absolute", bottom: "10px", left: "0", width: "100%", display: "flex", justifyContent: "center", gap: "8px" }}>
+            <div onClick={toggleVideoPlayback} style={{ background: "white", borderRadius: "50%", width: "26px", height: "26px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+              {isVideoPlaying ? <PauseIcon /> : <PlayIcon />}
             </div>
-            <div 
-              onClick={toggleVideoMute} 
-              style={{ background: "rgba(255,255,255,1)", borderRadius: "50%", width: "30px", height: "30px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", border: "none" }}
-            >
-                {isVideoMuted ? <UnmuteIcon /> : <MuteIcon />}
+            <div onClick={toggleVideoMute} style={{ background: "white", borderRadius: "50%", width: "26px", height: "26px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+              {isVideoMuted ? <UnmuteIcon /> : <MuteIcon />}
             </div>
         </div>
     </div>
   );
 });
 
-// --- ÓRA KOMPONENS ---
 const AnalogClock = ({ city, timezone, speed = 1, isMobile }) => {
   const [time, setTime] = useState(new Date());
-
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTime(prev => new Date(prev.getTime() + (1000 * speed)));
-    }, 1000);
+    const interval = setInterval(() => { setTime(prev => new Date(prev.getTime() + (1000 * speed))); }, 1000);
     return () => clearInterval(interval);
   }, [speed]);
 
@@ -251,21 +184,19 @@ const AnalogClock = ({ city, timezone, speed = 1, isMobile }) => {
   const sec = displayTime.getSeconds();
   const min = displayTime.getMinutes();
   const hour = displayTime.getHours();
-
-  const clockSize = isMobile ? "24px" : "32px";
+  const clockSize = isMobile ? "22px" : "28px";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2px" }}>
       <div style={{
-        width: clockSize, height: clockSize, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.4)",
-        position: "relative", background: "#000"
+        width: clockSize, height: clockSize, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.2)",
+        position: "relative", background: "rgba(0,0,0,0.3)"
       }}>
-        <div style={{ position: "absolute", width: "1px", height: isMobile ? "6px" : "8px", background: "white", left: "50%", bottom: "50%", transformOrigin: "bottom", transform: `translateX(-50%) rotate(${(hour % 12) * 30 + min * 0.5}deg)` }} />
-        <div style={{ position: "absolute", width: "1px", height: isMobile ? "9px" : "12px", background: "white", left: "50%", bottom: "50%", transformOrigin: "bottom", transform: `translateX(-50%) rotate(${min * 6}deg)` }} />
-        <div style={{ position: "absolute", width: "0.5px", height: isMobile ? "10px" : "13px", background: "#38bdf8", left: "50%", bottom: "50%", transformOrigin: "bottom", transform: `translateX(-50%) rotate(${sec * 6}deg)` }} />
-        <div style={{ position: "absolute", width: "2px", height: "2px", background: "white", borderRadius: "50%", top: "50%", left: "50%", transform: "translate(-50%, -50%)" }} />
+        <div style={{ position: "absolute", width: "1px", height: "30%", background: "white", left: "50%", bottom: "50%", transformOrigin: "bottom", transform: `translateX(-50%) rotate(${(hour % 12) * 30 + min * 0.5}deg)` }} />
+        <div style={{ position: "absolute", width: "1px", height: "40%", background: "white", left: "50%", bottom: "50%", transformOrigin: "bottom", transform: `translateX(-50%) rotate(${min * 6}deg)` }} />
+        <div style={{ position: "absolute", width: "0.5px", height: "45%", background: "#38bdf8", left: "50%", bottom: "50%", transformOrigin: "bottom", transform: `translateX(-50%) rotate(${sec * 6}deg)` }} />
       </div>
-      <span style={{ fontSize: isMobile ? "6px" : "7px", opacity: 0.6, textTransform: "uppercase", letterSpacing: "0.5px" }}>{city}</span>
+      <span style={{ fontSize: "6px", opacity: 0.5, textTransform: "uppercase", letterSpacing: "1px" }}>{city}</span>
     </div>
   );
 };
@@ -283,8 +214,8 @@ export default function Home() {
   const [isVerified, setIsVerified] = useState(false);
   const [botValue, setBotValue] = useState("");
   const [isBotTrapped, setIsBotTrapped] = useState(false);
-
   const [isMobile, setIsMobile] = useState(false);
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
@@ -295,13 +226,10 @@ export default function Home() {
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-
     const onPlay = () => setIsVideoPlaying(true);
     const onPause = () => setIsVideoPlaying(false);
-
     video.addEventListener("play", onPlay);
     video.addEventListener("pause", onPause);
-
     return () => {
       video.removeEventListener("play", onPlay);
       video.removeEventListener("pause", onPause);
@@ -314,119 +242,32 @@ export default function Home() {
         window.turnstile.render("#turnstile-container", {
           sitekey: "0x4AAAAAACfHxdcNLlIOQCJF",
           appearance: "always",
-          callback: () => {
-            setIsVerified(true);
-          },
+          callback: () => { setIsVerified(true); },
           theme: "dark",
         });
         return true;
       }
       return false;
     };
-
-    const scriptInterval = setInterval(() => {
-      if (renderTurnstile()) {
-        clearInterval(scriptInterval);
-      }
-    }, 500);
-
+    const scriptInterval = setInterval(() => { if (renderTurnstile()) clearInterval(scriptInterval); }, 500);
     return () => clearInterval(scriptInterval);
   }, []);
 
-  useEffect(() => {
-    const playTimeout = setTimeout(() => {
-      if (audioRef.current) {
-        audioRef.current.muted = true;
-        audioRef.current.play()
-          .then(() => { 
-            setIsPlaying(true); 
-            setIsMuted(true);
-          })
-          .catch(err => console.log("Interaction required"));
-      }
-    }, 3500);
-    return () => clearInterval(playTimeout);
-  }, []);
-
-  const handleAudioEnd = () => {
-    setIsPlaying(false);
-    setIsMuted(true);
-    if (audioRef.current) audioRef.current.currentTime = 0;
-  };
-
-  const stopAudio = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      setIsPlaying(false);
-    }
-  };
-
+  const handleAudioEnd = () => { setIsPlaying(false); setIsMuted(true); if (audioRef.current) audioRef.current.currentTime = 0; };
+  const stopAudio = () => { if (audioRef.current) { audioRef.current.pause(); audioRef.current.currentTime = 0; setIsPlaying(false); } };
   const toggleMute = (e) => {
     if (e) e.stopPropagation();
     if (audioRef.current) {
       if (audioRef.current.paused) {
-        if (videoRef.current) {
-          videoRef.current.muted = true;
-          setIsVideoMuted(true);
-        }
-        audioRef.current.muted = false;
-        audioRef.current.play();
-        setIsPlaying(true);
-        setIsMuted(false);
-      } else {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      }
+        if (videoRef.current) { videoRef.current.muted = true; setIsVideoMuted(true); }
+        audioRef.current.muted = false; audioRef.current.play(); setIsPlaying(true); setIsMuted(false);
+      } else { audioRef.current.pause(); setIsPlaying(false); }
     }
   };
-
-  const toggleVideoPlayback = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const video = videoRef.current;
-    if (!video) return;
-    if (video.paused) {
-      video.play().catch(err => console.log("Playback error", err));
-    } else {
-      video.pause();
-    }
-  };
-
-  const toggleVideoMute = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (videoRef.current) {
-      const newMute = !isVideoMuted;
-      if (!newMute) {
-        stopAudio();
-      }
-      videoRef.current.muted = newMute;
-      setIsVideoMuted(newMute);
-    }
-  };
-
-  const clearSelectionIfNeeded = (e) => {
-    const tag = e.target.tagName.toLowerCase();
-    const interactive = ["a", "button", "input", "textarea", "select", "label"];
-    if (!interactive.includes(tag)) {
-      const sel = window.getSelection();
-      if (sel && sel.toString()) sel.removeAllRanges();
-    }
-  };
-
-  const handleStartClick = (e) => {
-    if (botValue !== "") {
-      e.preventDefault();
-      setIsBotTrapped(true);
-      return;
-    }
-    if (!isVerified) {
-      e.preventDefault();
-      return;
-    }
-    stopAudio();
-  };
+  const toggleVideoPlayback = (e) => { e.preventDefault(); e.stopPropagation(); const video = videoRef.current; if (!video) return; if (video.paused) { video.play().catch(err => {}); } else { video.pause(); } };
+  const toggleVideoMute = (e) => { e.preventDefault(); e.stopPropagation(); if (videoRef.current) { const newMute = !isVideoMuted; if (!newMute) stopAudio(); videoRef.current.muted = newMute; setIsVideoMuted(newMute); } };
+  const clearSelectionIfNeeded = (e) => { if (!["a", "button", "input"].includes(e.target.tagName.toLowerCase())) { const sel = window.getSelection(); if (sel) sel.removeAllRanges(); } };
+  const handleStartClick = (e) => { if (botValue !== "") { e.preventDefault(); setIsBotTrapped(true); return; } if (!isVerified) { e.preventDefault(); return; } stopAudio(); };
 
   const schemaData = {
     "@context": "https://schema.org",
@@ -434,32 +275,14 @@ export default function Home() {
     "name": "WealthyAI",
     "url": "https://mywealthyai.com",
     "logo": "https://mywealthyai.com/wealthyai/icons/generated.png",
-    "description": "We didn’t build WealthyAI to tell people what to do with their money. WealthyAI was built around a different question: What happens if AI doesn’t advise — but interprets? Not faster decisions. Not better predictions. But clearer thinking.",
+    "description": "We didn’t build WealthyAI to tell people what to do with their money. WealthyAI was built around a different question: What happens if AI doesn’t advise — but interprets?",
     "founder": {
       "@type": "Person",
       "name": "Zoltán Horváth",
       "jobTitle": "Founder & Owner",
       "url": "https://mywealthyai.com",
-      "description": "Zoltán Horváth is the founder of WealthyAI. Based in the United Kingdom and operating internationally, he is known for his selective public presence and rarely grants interviews, prioritizing the long-term vision of financial clarity and a private personal life over media exposure.",
-      "address": {
-        "@type": "PostalAddress",
-        "addressCountry": "United Kingdom"
-      },
-      "knowsAbout": ["Financial Interpretation", "AI Ethics", "Private Wealth Systems"],
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "email": "info@mywealthyai.com",
-        "contactType": "media and partnership"
-      }
-    },
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "email": "info@mywealthyai.com",
-      "contactType": "customer support"
-    },
-    "knowsAbout": [
-      "WealthyAI is structured around time. A snapshot shows where you are. Interpretation explains what that state means. Short-term intelligence observes patterns. Monthly intelligence follows continuity. It is not financial advice, forecasting, or life optimization. WealthyAI rewards attention, not speed."
-    ]
+      "address": { "@type": "PostalAddress", "addressCountry": "United Kingdom" }
+    }
   };
 
   return (
@@ -468,276 +291,215 @@ export default function Home() {
       <Head>
         <title>WealthyAI – AI-powered financial clarity | Zoltán Horváth</title>
         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
-        
-        {/* --- Favicon & App Icons --- */}
-        <link rel="apple-touch-icon" sizes="57x57" href="/wealthyai/icons/apple-icon-57x57.png" />
-        <link rel="apple-touch-icon" sizes="60x60" href="/wealthyai/icons/apple-icon-60x60.png" />
-        <link rel="apple-touch-icon" sizes="72x72" href="/wealthyai/icons/apple-icon-72x72.png" />
-        <link rel="apple-touch-icon" sizes="76x76" href="/wealthyai/icons/apple-icon-76x76.png" />
-        <link rel="apple-touch-icon" sizes="114x114" href="/wealthyai/icons/apple-icon-114x114.png" />
-        <link rel="apple-touch-icon" sizes="120x120" href="/wealthyai/icons/apple-icon-120x120.png" />
-        <link rel="apple-touch-icon" sizes="144x144" href="/wealthyai/icons/apple-icon-144x144.png" />
-        <link rel="apple-touch-icon" sizes="152x152" href="/wealthyai/icons/apple-icon-152x152.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/wealthyai/icons/apple-icon-180x180.png" />
-        <link rel="icon" type="image/png" sizes="192x192" href="/wealthyai/icons/android-icon-192x192.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/wealthyai/icons/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="96x96" href="/wealthyai/icons/favicon-96x96.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/wealthyai/icons/favicon-16x16.png" />
-        <link rel="manifest" href="/wealthyai/icons/manifest.json" />
-        <meta name="msapplication-TileColor" content="#ffffff" />
-        <meta name="msapplication-TileImage" content="/wealthyai/icons/ms-icon-144x144.png" />
-        <meta name="theme-color" content="#ffffff" />
-        {/* --- End Favicon --- */}
-
-        <meta name="google-site-verification" content="019m-2Ayi9dmgKh_oPI8PVpR9flMsOfX_048yySbIRQ" />
-        <meta name="author" content="Zoltán Horváth" />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={SITE_URL} />
-        <meta property="og:title" content="WealthyAI – AI-powered financial clarity" />
-        <meta property="og:description" content="AI-powered financial thinking. Structured insights. Clear perspective." />
-        <meta property="og:image" content="https://mywealthyai.com/wealthyai/icons/share-card.png?v=5" />
-        <meta property="og:image:secure_url" content="https://mywealthyai.com/wealthyai/icons/share-card.png?v=5" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:image" content="https://mywealthyai.com/wealthyai/icons/share-card.png?v=5" />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
-        />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }} />
       </Head>
-      <SEO
-        title="WealthyAI – AI-powered financial clarity | mywealthyai"
-        description="WealthyAI (mywealthyai) offers AI-powered financial planning, structured insights, and clear market perspective."
-        url={SITE_URL}
-        keywords="mywealthyai, WealthyAI, AI finance, financial intelligence, structured insights, market perspective, financial clarity"
-      />
+      <SEO title="WealthyAI – AI-powered financial clarity" description="AI-powered financial thinking. Structured insights." url={SITE_URL} />
 
-      <main
-        onMouseDown={clearSelectionIfNeeded}
-        style={{
-          height: isMobile ? "auto" : "100vh",
-          minHeight: "100vh",
-          width: "100%",
-          boxSizing: "border-box",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: isMobile ? "flex-start" : "center",
-          backgroundColor: "#060b13",
-          backgroundImage: "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/wealthyai/wealthyai.png')",
-          backgroundPosition: isMobile ? "center 22%" : "center",
-          backgroundSize: "cover",
-          backgroundRepeat: "no-repeat",
-          color: "white",
-          fontFamily: "'Inter', system-ui, Arial, sans-serif",
-          position: "relative",
-          overflowX: "hidden",
-          margin: 0,
-          padding: isMobile ? "80px 0 60px 0" : 0,
-        }}
-      >
+      <main onMouseDown={clearSelectionIfNeeded} className="main-container">
         <SpiderNet />
+        <div className="animated-bg"></div>
         <audio ref={audioRef} src="/wealthyai/icons/nyitobeszed.mp3" preload="auto" onEnded={handleAudioEnd} />
 
-        <div style={{ 
-          position: "absolute", 
-          top: isMobile ? "15px" : "25px", 
-          left: isMobile ? "50%" : "40px", 
-          transform: isMobile ? "translateX(-50%)" : "none",
-          display: "flex", 
-          gap: isMobile ? "15px" : "35px", 
-          zIndex: 10,
-          width: isMobile ? "100%" : "auto",
-          justifyContent: isMobile ? "center" : "flex-start",
-          alignItems: "center"
-        }}>
-          {/* Insights link */}
-          <a href="/insights" onClick={stopAudio} className="nav-link" style={{ 
-            fontSize: isMobile ? "0.75rem" : "0.95rem", 
-            fontWeight: "400",
-            whiteSpace: "nowrap",
-            marginTop: isMobile ? "0" : "2px"
-          }}>Insights</a>
+        {/* HEADER AREA */}
+        <div className="header-wrapper">
+          <div className="top-nav">
+             <a href="/insights" onClick={stopAudio} className="glass-link">Insights</a>
+             <div className="clock-group">
+                <AnalogClock city="New York" timezone="America/New_York" isMobile={isMobile} />
+                <AnalogClock city="London" timezone="Europe/London" isMobile={isMobile} />
+                <AnalogClock city="Paris" timezone="Europe/Paris" isMobile={isMobile} />
+                <AnalogClock city="Tokyo" timezone="Asia/Tokyo" isMobile={isMobile} />
+                <AnalogClock city="WealthyAI" timezone="UTC" speed={0.75} isMobile={isMobile} />
+             </div>
+          </div>
 
-          <div style={{ display: "flex", gap: isMobile ? "10px" : "20px", alignItems: "center" }}>
-            <AnalogClock city="New York" timezone="America/New_York" isMobile={isMobile} />
-            <AnalogClock city="London" timezone="Europe/London" isMobile={isMobile} />
-            <AnalogClock city="Paris" timezone="Europe/Paris" isMobile={isMobile} />
-            <AnalogClock city="Tokyo" timezone="Asia/Tokyo" isMobile={isMobile} />
-            <AnalogClock city="WealthyAI" timezone="UTC" speed={0.75} isMobile={isMobile} />
+          <div className="secondary-nav">
+            <a href="/PrivacyPolicy" onClick={stopAudio} className="glass-link">Privacy</a>
+            <a href="/philosophy" onClick={stopAudio} className="glass-link">Philosophy</a>
+            <a href="/how-it-works" onClick={stopAudio} className="glass-link">How it works</a>
+            <a href="/blog" onClick={stopAudio} className="glass-link">Blog</a>
           </div>
         </div>
 
-        <div style={{ opacity: 0, position: "absolute", top: 0, left: 0, height: 0, width: 0, zIndex: -1, pointerEvents: "none" }}>
-          <label>If you are human, leave this empty</label>
-          <input type="text" value={botValue} onChange={(e) => setBotValue(e.target.value)} tabIndex="-1" autoComplete="off" />
-        </div>
-
-        <div id="turnstile-container" style={{ position: "fixed", top: "20px", left: "20px", zIndex: 999, minHeight: "65px", display: isVerified ? "none" : "block" }}></div>
-
-        <div onClick={toggleMute} className="narrator-toggle" style={{ position: "fixed", top: isMobile ? "65px" : "80px", right: isMobile ? "20px" : "40px", zIndex: 100, cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", opacity: isPlaying ? 0.9 : 0.6, transition: "all 0.5s ease", background: "rgba(255,255,255,0.05)", padding: "5px 12px", borderRadius: "15px", border: "1px solid rgba(255,255,255,0.1)", width: "140px", justifyContent: "center" }}>
-          <div style={{ display: "flex", gap: "2px", alignItems: "flex-end", height: "12px" }}>
+        {/* NARRATOR BOX */}
+        <div onClick={toggleMute} className="narrator-glass">
+          <div className="audio-visualizer">
             {[1, 2, 3].map(i => (
-              <div key={i} style={{ width: "2px", height: (isPlaying && !isMuted) ? "100%" : "2px", backgroundColor: "#38bdf8", animation: (isPlaying && !isMuted) ? `audioBar 0.8s ease-in-out infinite alternate ${i * 0.2}s` : "none" }} />
+              <div key={i} className={`bar ${isPlaying && !isMuted ? 'active' : ''}`} style={{ animationDelay: `${i * 0.2}s` }} />
             ))}
           </div>
-          <span style={{ fontSize: "9px", fontWeight: "700", letterSpacing: "1px", color: "#38bdf8", textTransform: "uppercase" }}>
-            {!isPlaying ? "Resume Narrator" : "Pause Narrator"}
-          </span>
+          <span className="narrator-text">{!isPlaying ? "Resume Narrator" : "Pause Narrator"}</span>
         </div>
 
+        {/* CENTER CONTENT */}
+        <div className="hero-section">
+          <img src="/wealthyai/icons/generated.png" alt="WealthyAI logo" className="brand-logo" />
+          <div className="hero-text-container">
+            <h1 className="hero-title">
+              AI-powered financial thinking.<br />
+              Structured insights.
+            </h1>
+            <div className="hero-subline">
+              <span>Not advice.</span>
+              <span className="dot">•</span>
+              <span>Not predictions.</span>
+              <span className="dot">•</span>
+              <span>Financial intelligence.</span>
+            </div>
+          </div>
+        </div>
+
+        {/* LEFT ACTION AREA */}
+        <div className="action-area">
+          <a href={isVerified && !isBotTrapped ? "/start" : "#"} onClick={handleStartClick} className="start-btn-modern">
+            <span className="btn-label">Start</span>
+            <span className="btn-subtext">START FOR FREE</span>
+          </a>
+          
+          <div className="status-badge">
+            <div className="status-dot"></div>
+            <span>No Log-In System</span>
+          </div>
+
+          <p className="helper-text">
+            {isBotTrapped ? "System congestion..." : "Start with a simple financial snapshot. Under a minute."}
+          </p>
+        </div>
+
+        {/* VIDEO BOX (RIGHT) */}
         {!isMobile && (
-          <div style={{ position: "fixed", right: "40px", top: "50%", transform: "translateY(-50%)", zIndex: 100, display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
-             <PremiumVideo 
-                size="160px" 
-                videoRef={videoRef}
-                isVideoMuted={isVideoMuted}
-                isVideoPlaying={isVideoPlaying}
-                toggleVideoPlayback={toggleVideoPlayback}
-                toggleVideoMute={toggleVideoMute}
-             />
-             <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: "8px", textTransform: "uppercase", letterSpacing: "1.5px", color: "white", fontWeight: "400", opacity: 0.6 }}>
-                  Space reserved for excellence
-                </div>
-             </div>
+          <div className="video-sidebar">
+              <PremiumVideo 
+                size="150px" videoRef={videoRef} isVideoMuted={isVideoMuted}
+                isVideoPlaying={isVideoPlaying} toggleVideoPlayback={toggleVideoPlayback} toggleVideoMute={toggleVideoMute}
+              />
+              <span className="video-caption">Space reserved for excellence</span>
           </div>
         )}
 
-        <div style={{ 
-          position: isMobile ? "relative" : "absolute", 
-          top: isMobile ? "10px" : "30px", 
-          right: isMobile ? "auto" : "40px", 
-          display: "flex", 
-          justifyContent: "center", 
-          gap: isMobile ? "12px" : "28px", 
-          zIndex: 10, 
-          fontSize: isMobile ? "0.75rem" : "0.95rem",
-          flexWrap: isMobile ? "wrap" : "nowrap",
-          padding: isMobile ? "0 20px" : "0",
-          maxWidth: isMobile ? "100%" : "auto"
-        }}>
-          <a href="/PrivacyPolicy" onClick={stopAudio} className="nav-link">Privacy Policy</a>
-          <a href="/philosophy" onClick={stopAudio} className="nav-link">Philosophy</a>
-          <a href="/how-it-works" onClick={stopAudio} className="nav-link">How it works</a>
-          <a href="/brand-collaborations" onClick={stopAudio} className="nav-link">Brand Collaborations</a>
-          <a href="/how-to-use" onClick={stopAudio} className="nav-link">How to use</a>
-          <a href="/blog" onClick={stopAudio} className="nav-link">Blog</a>
-          <a href="/terms" onClick={stopAudio} className="nav-link">Terms</a>
-        </div>
-
-        <div style={{ textAlign: "center", zIndex: 3, display: "flex", flexDirection: "column", alignItems: "center", width: "100%", transform: isMobile ? "none" : "translateY(-40px)" }}>
-          <img src="/wealthyai/icons/generated.png" alt="WealthyAI logo" className="brand-logo" style={{ width: isMobile ? "320px" : "860px", maxWidth: "95vw", display: "block", cursor: "pointer", marginTop: isMobile ? "40px" : "0px" }} />
-          <div style={{ color: "#FFFFFF", lineHeight: "1.45", textAlign: "center", textShadow: "0 2px 10px rgba(0,0,0,0.5)", marginTop: isMobile ? "0px" : "-110px", width: "100%", maxWidth: "800px", padding: "0 20px", letterSpacing: "0.2px" }}>
-            <div style={{ fontSize: isMobile ? "1.1rem" : "1.55rem", fontWeight: "300", opacity: 0.9, marginBottom: "15px" }}>
-              AI-powered financial thinking.<br />
-              Structured insights.<br />
-              Clear perspective.
+        {/* FOOTER */}
+        <footer className="footer-modern">
+          <div className="footer-left">
+            <a href="https://www.facebook.com/profile.php?id=61588517507057" target="_blank" className="builder-tag">[ Help to Builders ]</a>
+            <div className="ms-partner">
+              <span>Member of Microsoft for Startups</span>
+              <img src="/wealthyai/icons/microsoft-logo-png-2395.png" alt="MS" />
             </div>
-            <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", justifyContent: "center", alignItems: "center", fontSize: isMobile ? "0.7rem" : "0.85rem", textTransform: "uppercase", letterSpacing: "1.4px", opacity: 0.8, gap: isMobile ? "8px" : "15px", fontWeight: "500" }}>
-              <span className="discrete-pulse">Not advice.</span>
-              <span className="discrete-pulse">Not predictions.</span>
-              <span className="discrete-pulse">Financial intelligence.</span>
-            </div>
+            <p className="copyright">© 2026 mywealthyai.com</p>
           </div>
-        </div>
 
-        <div style={{ position: isMobile ? "relative" : "absolute", top: isMobile ? "auto" : "45%", left: isMobile ? "auto" : "10%", transform: isMobile ? "none" : "translateY(-50%)", marginTop: isMobile ? "40px" : "0", zIndex: 20, display: "flex", flexDirection: "column", alignItems: isMobile ? "center" : "flex-start", gap: "15px", padding: isMobile ? "0 20px" : "0", textAlign: isMobile ? "center" : "left" }}>
-          <a href={isVerified && !isBotTrapped ? "/start" : "#"} onClick={handleStartClick} className="start-btn" style={{ width: "130px", textAlign: "center", padding: "14px 0", backgroundColor: isVerified ? "#1a253a" : "rgba(255,255,255,0.05)", border: isVerified ? "1px solid rgba(56,189,248,0.8)" : "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", color: isVerified ? "white" : "rgba(255,255,255,0.3)", textDecoration: "none", fontWeight: "bold", cursor: isVerified ? "pointer" : "not-allowed", transition: "all 0.4s ease", display: "flex", flexDirection: "column", alignItems: "center", gap: "2px" }}>
-            <span style={{ fontSize: "1.1rem" }}>{isBotTrapped ? "Loading..." : "Start"}</span>
-            <span style={{ fontSize: "0.6rem", fontWeight: "400", opacity: 0.8 }}>START FOR FREE</span>
-          </a>
-          
-          {isMobile && (
-            <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
-               <PremiumVideo 
-                  size="120px" 
-                  videoRef={videoRef}
-                  isVideoMuted={isVideoMuted}
-                  isVideoPlaying={isVideoPlaying}
-                  toggleVideoPlayback={toggleVideoPlayback}
-                  toggleVideoMute={toggleVideoMute}
-               />
-            </div>
-          )}
-
-          <div style={{ fontSize: "0.85rem", opacity: 0.75, letterSpacing: "0.3px", maxWidth: isMobile ? "280px" : "320px" }}>
-            {isBotTrapped ? "System congestion. Please wait..." : "Start with a simple financial snapshot. Takes less than a minute."}
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", padding: "4px 10px", borderRadius: "6px", background: "rgba(16, 185, 129, 0.1)", border: "1px solid rgba(16, 185, 129, 0.2)", marginTop: "5px" }}>
-            <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#10b981", boxShadow: "0 0 8px #10b981" }} />
-            <span style={{ fontSize: "10px", color: "#10b981", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px" }}>No Log-In System</span>
-          </div>
-        </div>
-
-        <div style={{ position: isMobile ? "relative" : "absolute", bottom: 0, left: 0, width: "100%", padding: isMobile ? "36px 24px 24px" : "18px 24px", display: "flex", flexDirection: isMobile ? "column-reverse" : "row", justifyContent: "space-between", alignItems: isMobile ? "center" : "flex-end", zIndex: 5, boxSizing: "border-box", gap: isMobile ? "30px" : "0", background: isMobile ? "linear-gradient(to top, rgba(6,11,19,0.95) 0%, rgba(6,11,19,0.8) 50%, rgba(6,11,19,0.0) 100%)" : "transparent" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px", alignItems: isMobile ? "center" : "flex-start" }}>
-            <a href="https://www.facebook.com/profile.php?id=61588517507057" target="_blank" rel="noopener noreferrer" className="builder-btn discrete-pulse" style={{
-              fontSize: "10px", textTransform: "uppercase", letterSpacing: "1.5px", color: "#38bdf8", textDecoration: "none", fontWeight: "600",
-              border: "1px solid rgba(56,189,248,0.3)", padding: "6px 12px", borderRadius: "4px", marginBottom: "4px", transition: "all 0.3s ease", background: "rgba(0,0,0,0.3)",
-              display: "inline-block"
-            }}>
-              [ Help to Builders ]
+          <div className="footer-right">
+            <a href="mailto:info@mywealthyai.com" className="contact-link">
+              <strong>Partnerships</strong><br/>
+              <span>info@mywealthyai.com</span>
             </a>
-            <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "2px", color: "white", fontWeight: "400", opacity: 0.7, display: "flex", alignItems: "center", gap: "12px" }}>
-              Member of Microsoft for Startups
-              <img src="/wealthyai/icons/microsoft-logo-png-2395.png" alt="Microsoft Logo" style={{ height: "24px", width: "auto", filter: "drop-shadow(0 0 5px rgba(255,255,255,0.2))" }} />
+            <div className="social-row">
+              <a href="#"><img src="/wealthyai/icons/fb.png" alt="FB" /></a>
+              <a href="#"><img src="/wealthyai/icons/x.png" alt="X" /></a>
+              <a href="#"><img src="/wealthyai/icons/linkedin.png" alt="IN" /></a>
             </div>
-            <div style={{ fontSize: "0.85rem", opacity: 0.6 }}>© 2026 mywealthyai.com — All rights reserved.</div>
           </div>
+        </footer>
 
-          <div style={{ display: "flex", flexDirection: "column", alignItems: isMobile ? "center" : "flex-end", gap: "8px" }}>
-            <a href="mailto:info@mywealthyai.com" onClick={stopAudio} className="nav-link" style={{ fontSize: "0.82rem", textAlign: isMobile ? "center" : "right", lineHeight: "1.4", cursor: "pointer", textDecoration: "none" }}>
-              <div style={{ fontWeight: 500 }}>Contact & Partnerships</div>
-              <div style={{ opacity: 0.8 }}>Media · Partnerships · Institutional use</div>
-              <div style={{ fontWeight: 600 }}>info@mywealthyai.com</div>
-            </a>
-            <div style={{ display: "flex", gap: "18px", alignItems: "center", marginTop: isMobile ? "10px" : "0" }}>
-              <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
-                <img src="/wealthyai/icons/fb.png" alt="Facebook" style={{ width: 34 }} />
-              </a>
-              <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
-                <img src="/wealthyai/icons/x.png" alt="X" style={{ width: 34 }} />
-              </a>
-              <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`} target="_blank" rel="noopener noreferrer" className="icon-link">
-                <img src="/wealthyai/icons/linkedin.png" alt="LinkedIn" style={{ width: 34 }} />
-              </a>
-              <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="icon-link">
-                <img src="/wealthyai/icons/insta.png" alt="Instagram" style={{ width: 34 }} />
-              </a>
-            </div>
-          </div>
+        {/* BOT TRAP */}
+        <div style={{ opacity: 0, position: "absolute", zIndex: -1 }} aria-hidden="true">
+          <input type="text" value={botValue} onChange={(e) => setBotValue(e.target.value)} tabIndex="-1" />
         </div>
+        <div id="turnstile-container" style={{ position: "fixed", bottom: "20px", left: "20px", zIndex: 999, display: isVerified ? "none" : "block" }}></div>
 
         <style>{`
-          .brand-logo { animation: logoFloat 9s ease-in-out infinite; transition: filter 0.4s ease; z-index: 10; position: relative; }
-          .brand-logo:hover { filter: drop-shadow(0 0 18px rgba(56,189,248,0.55)); }
-          @keyframes logoFloat {
-            0% { transform: scale(1) translateY(0); opacity: 0.92; }
-            35% { transform: scale(1.035) translateY(-6px); opacity: 1; }
-            70% { transform: scale(1.02) translateY(3px); opacity: 0.97; }
-            100% { transform: scale(1) translateY(0); opacity: 0.92; }
+          .main-container {
+            height: 100vh; width: 100%; position: relative; overflow: hidden;
+            background: #04080f; color: white; display: flex; flex-direction: column;
+            font-family: 'Inter', sans-serif;
           }
-          @keyframes audioBar { 0% { height: 20%; } 100% { height: 100%; } }
-          .discrete-pulse { animation: discretePulse 3s ease-in-out infinite; }
-          @keyframes discretePulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
-          
-          .nav-link, .icon-link, .narrator-toggle { position: relative; color: white; text-decoration: none; z-index: 20; }
-          .nav-link::before, .icon-link::before, .narrator-toggle::before {
-            content: ""; position: absolute; inset: -12px -22px;
-            background: radial-gradient(circle, rgba(56,189,248,0.55) 0%, rgba(56,189,248,0.25) 40%, transparent 70%);
-            filter: blur(16px); opacity: 0; transition: opacity 0.25s ease; pointer-events: none; z-index: -1;
+          .animated-bg {
+            position: absolute; top: 0; left: 0; width: 200%; height: 200%;
+            background: radial-gradient(circle at 50% 50%, #0a1a2f 0%, #04080f 70%);
+            animation: drift 30s linear infinite; z-index: 0; opacity: 0.6;
           }
-          .nav-link:hover::before, .icon-link:hover::before, .narrator-toggle:hover::before { opacity: 1; }
+          @keyframes drift {
+            from { transform: translate(-25%, -25%) rotate(0deg); }
+            to { transform: translate(-25%, -25%) rotate(360deg); }
+          }
           
-          .start-btn { position: relative; z-index: 25; }
-          .start-btn:hover { box-shadow: ${isVerified && !isBotTrapped ? "0 0 35px rgba(56,189,248,0.45)" : "none"}; }
-          .builder-btn:hover {
-            box-shadow: 0 0 15px rgba(56,189,248,0.6);
-            background: rgba(56,189,248,0.2) !important;
-            color: white !important;
-            border-color: rgba(56,189,248,0.8) !important;
+          .header-wrapper { position: absolute; top: 20px; left: 40px; right: 40px; z-index: 20; display: flex; flex-direction: column; gap: 15px; }
+          .top-nav { display: flex; align-items: center; gap: 30px; }
+          .clock-group { display: flex; gap: 15px; }
+          .secondary-nav { display: flex; gap: 20px; }
+
+          .glass-link {
+            font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.6);
+            text-decoration: none; padding: 6px 12px; border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(5px); transition: all 0.3s ease;
+          }
+          .glass-link:hover { color: white; border-color: rgba(56,189,248,0.5); background: rgba(56,189,248,0.05); }
+
+          .narrator-glass {
+            position: fixed; top: 20px; right: 40px; z-index: 100;
+            display: flex; align-items: center; gap: 12px; cursor: pointer;
+            padding: 8px 16px; border-radius: 20px; background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+          }
+          .narrator-glass:hover { border-color: rgba(56,189,248,0.6); background: rgba(56,189,248,0.05); }
+          .audio-visualizer { display: flex; gap: 3px; height: 12px; align-items: flex-end; }
+          .bar { width: 2px; height: 3px; background: #38bdf8; }
+          .bar.active { animation: barGrow 0.8s ease-in-out infinite alternate; }
+          @keyframes barGrow { from { height: 3px; } to { height: 12px; } }
+          .narrator-text { font-size: 9px; font-weight: 700; color: #38bdf8; text-transform: uppercase; }
+
+          .hero-section { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5; text-align: center; margin-top: -5vh; }
+          .brand-logo { width: 800px; max-width: 85vw; animation: float 8s ease-in-out infinite; }
+          @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+          
+          .hero-text-container { margin-top: -60px; }
+          .hero-title { font-size: 1.8rem; font-weight: 200; opacity: 0.9; line-height: 1.3; }
+          .hero-subline { display: flex; gap: 10px; justify-content: center; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; opacity: 0.5; margin-top: 20px; }
+
+          .action-area { position: absolute; bottom: 120px; left: 40px; z-index: 20; display: flex; flex-direction: column; gap: 15px; }
+          .start-btn-modern {
+            width: 140px; padding: 12px 0; background: #1a253a; border: 1px solid rgba(56,189,248,0.6);
+            border-radius: 12px; color: white; text-decoration: none; text-align: center;
+            display: flex; flex-direction: column; transition: all 0.4s ease;
+            box-shadow: 0 0 20px rgba(56,189,248,0.1);
+          }
+          .start-btn-modern:hover { transform: translateY(-3px); box-shadow: 0 0 30px rgba(56,189,248,0.3); border-color: #38bdf8; }
+          .btn-label { font-size: 1.2rem; font-weight: 700; }
+          .btn-subtext { font-size: 7px; letter-spacing: 1px; opacity: 0.7; }
+
+          .status-badge { display: flex; align-items: center; gap: 8px; font-size: 9px; color: #10b981; font-weight: 700; text-transform: uppercase; }
+          .status-dot { width: 6px; height: 6px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; }
+          .helper-text { font-size: 11px; opacity: 0.4; max-width: 200px; }
+
+          .video-sidebar { position: absolute; right: 40px; bottom: 120px; z-index: 20; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+          .video-caption { font-size: 8px; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.4; }
+
+          .footer-modern {
+            position: absolute; bottom: 0; left: 0; width: 100%; padding: 25px 40px;
+            display: flex; justify-content: space-between; align-items: flex-end; z-index: 10;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+          }
+          .builder-tag { color: #38bdf8; text-decoration: none; font-size: 10px; font-weight: 600; border: 1px solid rgba(56,189,248,0.3); padding: 4px 8px; border-radius: 4px; }
+          .ms-partner { display: flex; align-items: center; gap: 10px; font-size: 10px; opacity: 0.6; margin: 10px 0; }
+          .ms-partner img { height: 18px; }
+          .copyright { font-size: 10px; opacity: 0.3; }
+
+          .contact-link { text-decoration: none; color: white; text-align: right; font-size: 11px; }
+          .social-row { display: flex; gap: 15px; margin-top: 15px; }
+          .social-row img { width: 24px; opacity: 0.6; transition: opacity 0.3s; }
+          .social-row img:hover { opacity: 1; }
+
+          @media (max-width: 768px) {
+            .header-wrapper { top: 10px; left: 10px; right: 10px; align-items: center; }
+            .top-nav { flex-direction: column; gap: 10px; }
+            .hero-section { margin-top: 20px; }
+            .hero-title { font-size: 1.2rem; }
+            .action-area { position: relative; bottom: auto; left: auto; align-items: center; margin-bottom: 40px; }
+            .footer-modern { flex-direction: column; align-items: center; text-align: center; gap: 20px; position: relative; }
+            .contact-link { text-align: center; }
           }
         `}</style>
       </main>
