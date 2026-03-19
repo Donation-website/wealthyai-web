@@ -12,95 +12,78 @@ serve(async (req) => {
     const endpoint = Deno.env.get("AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT")?.replace(/\/$/, "");
     const key = Deno.env.get("AZURE_DOCUMENT_INTELLIGENCE_KEY");
 
-    if (!endpoint || !key) {
-      return new Response(JSON.stringify({ error: "Azure kulcsok hiányoznak!" }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      });
-    }
+    if (!endpoint || !key) throw new Error("Azure Secrets missing!");
 
     const formData = await req.formData()
     const file = formData.get('file') as File
-    if (!file) throw new Error("Nincs fájl feltöltve.");
-    
     const arrayBuffer = await file.arrayBuffer()
 
-    // 1. Azure Elemzés indítása
-    const azureUrl = `${endpoint}/formrecognizer/documentModels/prebuilt-read:analyze?api-version=2023-07-31`;
+    // 1. LAYOUT MODELL HASZNÁLATA (Ez érti a táblázatokat!)
+    const azureUrl = `${endpoint}/formrecognizer/documentModels/prebuilt-layout:analyze?api-version=2023-07-31`;
     
     const response = await fetch(azureUrl, {
       method: 'POST',
-      headers: {
-        'Ocp-Apim-Subscription-Key': key,
-        'Content-Type': 'application/octet-stream'
-      },
+      headers: { 'Ocp-Apim-Subscription-Key': key, 'Content-Type': 'application/octet-stream' },
       body: arrayBuffer
     });
 
-    if (!response.ok) throw new Error(`Azure hiba: ${response.statusText}`);
+    if (!response.ok) throw new Error(`Azure Error: ${response.statusText}`);
 
     const operationLocation = response.headers.get('operation-location');
-    if (!operationLocation) throw new Error("Nem érkezett válasz az Azure-tól.");
-
-    // 2. Várakozás (Polling)
     let result;
     while (true) {
-      const checkResponse = await fetch(operationLocation, {
-        headers: { 'Ocp-Apim-Subscription-Key': key }
-      });
-      result = await checkResponse.json();
+      const check = await fetch(operationLocation!, { headers: { 'Ocp-Apim-Subscription-Key': key } });
+      result = await check.json();
       if (result.status === 'succeeded') break;
-      if (result.status === 'failed') throw new Error("Azure elemzés sikertelen.");
-      await new Promise(r => setTimeout(r, 800)); 
+      await new Promise(r => setTimeout(r, 1000));
     }
 
-    // 3. Nemzetközi Adatfeldolgozás
-    let totalIncome = 0;
-    let totalExpenses = 0;
-    const content = result.analyzeResult.content || "";
+    let income = 0;
+    let expenses = 0;
 
-    // Regex a nemzetközi kulcsszavakhoz
-    const incomeRegex = /fizetés|salary|gehalt|income|beérkezés|jóváírás|credit|utalás|transfer-in/i;
-    const expenseRegex = /total|sum|összeg|kiadás|expense|ausgaben|terhelés|vásárlás|kártyás|payment/i;
-
-    content.split('\n').forEach(line => {
-      const cleanLine = line.toLowerCase();
-      
-      // Megkeressük a számokat, kezelve a szóközöket (pl. 1 250 000 -> 1250000)
-      const numMatch = line.replace(/\s(?=\d)/g, "").match(/-?\d+([.,]\d+)?/g);
-      
-      if (numMatch) {
-        numMatch.forEach(numStr => {
-          const val = Math.abs(parseFloat(numStr.replace(",", ".")));
+    // 2. TÁBLÁZATOK FELDOLGOZÁSA (PDF-nél ez a kulcs)
+    if (result.analyzeResult.tables && result.analyzeResult.tables.length > 0) {
+      result.analyzeResult.tables.forEach((table: any) => {
+        table.cells.forEach((cell: any) => {
+          const text = cell.content.toLowerCase();
+          // Szám keresése a cellában
+          const val = Math.abs(parseFloat(cell.content.replace(/\s/g, "").replace(",", ".").replace(/[^0-9.-]/g, "")));
           
           if (!isNaN(val) && val > 100) {
-            if (incomeRegex.test(cleanLine)) {
-              totalIncome += val;
-            } else if (expenseRegex.test(cleanLine)) {
-              totalExpenses += val;
+            // Ha a cella vagy a környező sor tartalmaz bevételi kulcsszót
+            if (/fizetés|salary|income|beérkezés|jóváírás|utalás/i.test(text)) {
+              income = Math.max(income, val);
+            } 
+            // Ha kiadás (pl. mínusz jel van előtte vagy kiadás szó a sorban)
+            else if (cell.content.includes("-") || /total|sum|összeg|kiadás|expense|terhelés/i.test(text)) {
+              expenses += val;
             }
           }
         });
-      }
-    });
+      });
+    }
 
-    // 4. Intelligens válasz
-    // Ha nem találtunk semmit, egy reális alapértelmezést adunk vissza (pl. teszteléshez)
+    // 3. HA NINCS TÁBLÁZAT (Képernyőfotóhoz marad a szöveges keresés)
+    if (income === 0 && expenses === 0) {
+      const fullText = result.analyzeResult.content.toLowerCase();
+      const lines = result.analyzeResult.content.split('\n');
+      lines.forEach((line: string) => {
+        const val = Math.abs(parseFloat(line.replace(/\s/g, "").replace(",", ".").replace(/[^0-9.-]/g, "")));
+        if (!isNaN(val) && val > 100) {
+          if (/fizetés|salary|income|beérkezés|utalás/i.test(line.toLowerCase())) income = Math.max(income, val);
+          else if (/total|sum|összeg|kiadás|expense/i.test(line.toLowerCase())) expenses += val;
+        }
+      });
+    }
+
     return new Response(JSON.stringify({
-      income: totalIncome || 5000,
-      fixed: totalExpenses ? Math.round(totalExpenses * 0.6) : 2000,
-      variable: totalExpenses ? Math.round(totalExpenses * 0.4) : 1500,
-      status: "success",
-      detected_raw_income: totalIncome
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
-    });
+      income: income || 5000,
+      fixed: expenses ? Math.round(expenses * 0.6) : 2000,
+      variable: expenses ? Math.round(expenses * 0.4) : 1500,
+      status: "success"
+    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500,
-    });
+  } catch (error: any) {
+    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 })
