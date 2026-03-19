@@ -3,20 +3,20 @@ import Busboy from 'busboy';
 
 export const config = {
   api: {
-    bodyParser: false, // Ez marad false, mi kezeljük a streamet
+    bodyParser: false, // Fontos: a Busboy kezeli a nyers adatfolyamot
   },
 };
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ message: "Method not allowed" });
 
-  // JAVÍTVA: A Vercel dashboard alapján a változóid neve INTELLIGENCE
+  // A Vercel dashboard alapján a pontos nevek:
   const endpoint = process.env.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT;
   const key = process.env.AZURE_DOCUMENT_INTELLIGENCE_KEY;
 
   if (!endpoint || !key) {
-    console.error("HIÁNYZÓ KULCSOK A VERCELBEN!");
-    return res.status(500).json({ error: "Azure credentials missing in Vercel settings." });
+    console.error("HIBA: Azure környezeti változók hiányoznak!");
+    return res.status(500).json({ error: "Szerver konfigurációs hiba (hiányzó kulcsok)." });
   }
 
   try {
@@ -24,7 +24,7 @@ export default async function handler(req, res) {
       const busboy = Busboy({ headers: req.headers });
       let chunks = [];
 
-      busboy.on('file', (name, file, info) => {
+      busboy.on('file', (name, file) => {
         file.on('data', (data) => chunks.push(data));
         file.on('end', () => resolve(Buffer.concat(chunks)));
       });
@@ -32,11 +32,13 @@ export default async function handler(req, res) {
       busboy.on('error', (err) => reject(err));
       req.pipe(busboy);
 
-      // Timeout biztonság kedvéért, ha nem jönne fájl
-      setTimeout(() => reject(new Error("Upload timeout")), 15000);
+      // Időtúllépés kezelése (15 másodperc)
+      setTimeout(() => reject(new Error("Feltöltési időtúllépés")), 15000);
     });
 
     const client = new DocumentAnalysisClient(endpoint, new AzureKeyCredential(key));
+    
+    // Az elemzés indítása a memóriában tárolt bufferből
     const poller = await client.beginAnalyzeDocument("prebuilt-layout", buffer);
     const result = await poller.pollUntilDone();
     
@@ -48,6 +50,7 @@ export default async function handler(req, res) {
     const parseNumber = (text) => {
       if (!text) return NaN;
       let clean = text.replace(/[^0-9.,-]/g, "");
+      // Magyar és nemzetközi formátum kezelése
       if (clean.includes(",") && clean.includes(".")) {
         const lastComma = clean.lastIndexOf(",");
         const lastDot = clean.lastIndexOf(".");
@@ -63,20 +66,22 @@ export default async function handler(req, res) {
       expense: ["kifizetés", "terhelés", "outgoing", "debit", "withdrawal", "spent", "vásárlás", "kártyás", "kiadás"]
     };
 
-    // Szöveges feldolgozás
-    content.split('\n').forEach(line => {
-      const lowerLine = line.toLowerCase();
-      const isTotal = lowerLine.includes("összesen") || lowerLine.includes("total") || lowerLine.includes("sum");
-      if (isTotal) {
-        const n = parseNumber(line);
-        if (!isNaN(n)) {
-          if (keywords.income.some(k => lowerLine.includes(k))) income = Math.max(income, n);
-          if (keywords.expense.some(k => lowerLine.includes(k))) totalExpenses = Math.max(totalExpenses, Math.abs(n));
+    // Szöveges feldolgozás soronként
+    if (content) {
+      content.split('\n').forEach(line => {
+        const lowerLine = line.toLowerCase();
+        const isTotal = lowerLine.includes("összesen") || lowerLine.includes("total") || lowerLine.includes("sum");
+        if (isTotal) {
+          const n = parseNumber(line);
+          if (!isNaN(n)) {
+            if (keywords.income.some(k => lowerLine.includes(k))) income = Math.max(income, n);
+            if (keywords.expense.some(k => lowerLine.includes(k))) totalExpenses = Math.max(totalExpenses, Math.abs(n));
+          }
         }
-      }
-    });
+      });
+    }
 
-    // Ha nincs adat, táblázat fallback
+    // Táblázatos fallback, ha a szöveges feldolgozás nem talált semmit
     if (income === 0 && totalExpenses === 0 && tables) {
       tables.forEach(table => {
         table.cells.forEach(cell => {
@@ -98,7 +103,7 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error("DETAILED_ERROR:", error);
-    return res.status(500).json({ error: error.message });
+    console.error("KRITIKUS HIBA AZ API-BAN:", error);
+    return res.status(500).json({ error: error.message || "Ismeretlen hiba a feldolgozás során." });
   }
 }
