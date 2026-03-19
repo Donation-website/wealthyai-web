@@ -2,14 +2,15 @@ import { AzureKeyCredential, DocumentAnalysisClient } from "@azure/ai-form-recog
 
 export const config = {
   api: {
-    bodyParser: false,
+    bodyParser: false, // Ez marad, mert mi kezeljük a streamet
   },
 };
 
+// Stabilabb stream-to-buffer megoldás
 async function getRawBody(readable) {
   const chunks = [];
   for await (const chunk of readable) {
-    chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+    chunks.push(chunk);
   }
   return Buffer.concat(chunks);
 }
@@ -26,14 +27,20 @@ export default async function handler(req, res) {
 
   try {
     const buffer = await getRawBody(req);
-    const contentType = req.headers["content-type"] || "application/octet-stream";
+    
+    // Validáció: Ha üres a buffer, megállunk
+    if (!buffer || buffer.length === 0) {
+      throw new Error("Empty request body");
+    }
+
     const client = new DocumentAnalysisClient(endpoint, new AzureKeyCredential(key));
     
-    const poller = await client.beginAnalyzeDocument("prebuilt-layout", buffer, {
-      contentType: contentType
-    });
+    // A "prebuilt-layout" helyett bankkivonatokhoz a "prebuilt-read" is jó, 
+    // de a layout jobb a táblázatokhoz.
+    const poller = await client.beginAnalyzeDocument("prebuilt-layout", buffer);
     
-    const { tables, content } = await poller.pollUntilDone();
+    // Itt a hiba forrása lehet: a poller eredményét destrukturálni kell
+    const { tables, content, pages } = await poller.pollUntilDone();
 
     let income = 0;
     let totalExpenses = 0;
@@ -41,77 +48,72 @@ export default async function handler(req, res) {
     // --- GOLYÓÁLLÓ SZÁM-PARSER ---
     const parseNumber = (text) => {
       if (!text) return NaN;
-      // Minden szóköz-típust kigyomlálunk (OTP-nél ez kritikus)
-      let clean = text.replace(/[\s\u00A0\u1680\u180E\u2000-\u200B\u202F\u205F\u3000\ufeff]/g, "");
-      // Vesszőt pontra cseréljük
-      clean = clean.replace(/,/g, ".");
-      // Csak a számot/mínuszjelet tartjuk meg
-      const match = clean.match(/[-?]*\d+(\.\d+)?/);
-      return match ? parseFloat(match[0]) : NaN;
+      // Tisztítás: minden, ami nem szám, vessző, pont vagy mínuszjel, az megy
+      let clean = text.replace(/[^0-9.,-]/g, "");
+      
+      // Ha magyar formátum (pl. 1.234,56), a pont ezres elválasztó, a vessző tizedes
+      // De ha csak szóköz van (1 234,56), akkor a replace már kiszedte a szóközt.
+      if (clean.includes(',') && clean.includes('.')) {
+          clean = clean.replace(/\./g, "").replace(",", ".");
+      } else if (clean.includes(',')) {
+          clean = clean.replace(",", ".");
+      }
+      
+      const val = parseFloat(clean);
+      return isNaN(val) ? NaN : val;
     };
 
-    // --- 1. KERESÉS A TÁBLÁZATOKBAN ---
+    // --- 1. TÁBLÁZAT ANALÍZIS ---
     if (tables && tables.length > 0) {
-      tables.forEach((table) => {
-        table.cells.forEach((cell) => {
+      for (const table of tables) {
+        for (const cell of table.cells) {
           const num = parseNumber(cell.content);
           if (!isNaN(num) && num !== 0) {
             const lowText = cell.content.toLowerCase();
-            // OTP és nemzetközi kulcsszavak
-            if (lowText.includes("jóváírás") || lowText.includes("credit") || lowText.includes("deposit") || lowText.includes("bej")) {
+            
+            // Logika finomítása: az OTP "Jóváírás" oszlopában a számok pozitívak
+            if (lowText.includes("jóváírás") || lowText.includes("beérkezés")) {
               income += Math.abs(num);
-            } else if (lowText.includes("terhelés") || lowText.includes("debit") || lowText.includes("kiad") || num < 0) {
+            } else if (lowText.includes("terhelés") || lowText.includes("kifizetés") || num < 0) {
               totalExpenses += Math.abs(num);
             }
           }
-        });
-      });
+        }
+      }
     }
 
-    // --- 2. OTP SPECIFIKUS SZÖVEGBÁNYÁSZAT (Ez kell a te fájlodhoz!) ---
-    if (income === 0 || totalExpenses === 0) {
-      const lines = content.split('\n');
-      lines.forEach(line => {
-        const lowerLine = line.toLowerCase();
-        
-        // OTP "Mindösszesen beérkezés" és "Mindösszesen kifizetés" keresése
-        if (lowerLine.includes("beérkezés") || lowerLine.includes("jóváírás összesen")) {
-          const n = parseNumber(line);
-          if (!isNaN(n)) income = n;
-        }
-        if (lowerLine.includes("kifizetés") || lowerLine.includes("terhelés összesen")) {
-          const n = parseNumber(line);
-          if (!isNaN(n)) totalExpenses = Math.abs(n);
-        }
-      });
-    }
+    // --- 2. BACKUP: HA A TÁBLÁZAT ÜRES, SORONKÉNTI KERESÉS ---
+    if (income === 0 && totalExpenses === 0 && pages) {
+        // Az Azure a content-ben ömlesztve adja vissza a szöveget, 
+        // érdemesebb a pages[].lines-on végigmenni a pontosabb helymeghatározáshoz
+        const fullText = pages.map(p => p.lines.map(l => l.content).join(" ")).join("\n");
+        const lines = fullText.split('\n');
 
-    // Ha az OTP PDF-ben az időszaki összesítőt nézzük
-    if (income === 0 && totalExpenses === 0) {
-        // Ha nem talált kulcsszót, de van tartalom, próbáljuk meg a legnagyobb számokat kiszedni
-        const numbers = content.match(/(\d{1,3}(?:[\s\u00A0]\d{3})*(?:,\d{2}))/g);
-        if (numbers) {
-            const parsedNums = numbers.map(n => parseNumber(n)).filter(n => n > 100);
-            if (parsedNums.length >= 2) {
-                // Egy durva becslés, ha minden kötél szakad
-                income = Math.max(...parsedNums);
-                totalExpenses = parsedNums.reduce((a, b) => a + b, 0) - income;
+        lines.forEach(line => {
+            const lowerLine = line.toLowerCase();
+            if (lowerLine.includes("mindösszesen beérkezés") || lowerLine.includes("jóváírások összesen")) {
+                const n = parseNumber(line);
+                if (!isNaN(n)) income = n;
             }
-        }
+            if (lowerLine.includes("mindösszesen kifizetés") || lowerLine.includes("terhelések összesen")) {
+                const n = parseNumber(line);
+                if (!isNaN(n)) totalExpenses = Math.abs(n);
+            }
+        });
     }
 
     const hasData = income > 0 || totalExpenses > 0;
 
-    res.status(200).json({
-      income: hasData ? Math.round(income) : null, 
-      fixed: hasData ? Math.round(totalExpenses * 0.65) : null,
-      variable: hasData ? Math.round(totalExpenses * 0.35) : null,
+    return res.status(200).json({
+      income: hasData ? Math.round(income) : 0, 
+      fixed: hasData ? Math.round(totalExpenses * 0.65) : 0,
+      variable: hasData ? Math.round(totalExpenses * 0.35) : 0,
       status: hasData ? "success" : "manual_needed",
       scanned: true
     });
 
   } catch (error) {
-    console.error("AZURE_ERROR:", error.message);
-    res.status(500).json({ error: error.message, status: "error" });
+    console.error("AZURE_ERROR:", error);
+    return res.status(500).json({ error: error.message, status: "error" });
   }
 }
