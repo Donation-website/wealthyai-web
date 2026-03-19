@@ -21,7 +21,7 @@ export default async function handler(req, res) {
   const key = process.env.AZURE_DOCUMENT_INTEGRATION_KEY;
 
   if (!endpoint || !key) {
-    return res.status(500).json({ error: "Azure credentials missing from Vercel environment." });
+    return res.status(500).json({ error: "Azure credentials missing." });
   }
 
   try {
@@ -38,44 +38,29 @@ export default async function handler(req, res) {
     let income = 0;
     let totalExpenses = 0;
 
-    // --- SEGÉDFÜGGVÉNY A SZÁMOKHOZ ---
+    // --- GOLYÓÁLLÓ SZÁM-PARSER ---
     const parseNumber = (text) => {
       if (!text) return NaN;
-      // Kiszedünk minden létező szóköz-félét (normál, nem törő, stb.) és a vesszőt pontra cseréljük
+      // Minden szóköz-típust kigyomlálunk (OTP-nél ez kritikus)
       let clean = text.replace(/[\s\u00A0\u1680\u180E\u2000-\u200B\u202F\u205F\u3000\ufeff]/g, "");
+      // Vesszőt pontra cseréljük
       clean = clean.replace(/,/g, ".");
-      // Csak a számot és az esetleges tizedespontot/mínuszjelet tartjuk meg
+      // Csak a számot/mínuszjelet tartjuk meg
       const match = clean.match(/[-?]*\d+(\.\d+)?/);
       return match ? parseFloat(match[0]) : NaN;
     };
 
-    // --- 1. LOGIKA: TÁBLÁZATOK ELEMZÉSE ---
+    // --- 1. KERESÉS A TÁBLÁZATOKBAN ---
     if (tables && tables.length > 0) {
       tables.forEach((table) => {
         table.cells.forEach((cell) => {
           const num = parseNumber(cell.content);
-
           if (!isNaN(num) && num !== 0) {
             const lowText = cell.content.toLowerCase();
-            
-            const isIncome = lowText.includes("credit") || lowText.includes("deposit") || 
-                             lowText.includes("incoming") || lowText.includes("bej") || 
-                             lowText.includes("fizet") || lowText.includes("gehalt") ||
-                             lowText.includes("abono") || lowText.includes("ingreso") ||
-                             lowText.includes("jóváírás"); // OTP specifikus
-            
-            const isExpense = lowText.includes("debit") || lowText.includes("withdraw") || 
-                              lowText.includes("outgoing") || lowText.includes("kiad") || 
-                              lowText.includes("kivét") || lowText.includes("vásárlás") ||
-                              lowText.includes("payment") || lowText.includes("charge") ||
-                              lowText.includes("gasto") || lowText.includes("pago") ||
-                              lowText.includes("terhelés"); // OTP specifikus
-
-            if (isIncome && num > 0) {
-              income += num;
-            } else if (isExpense) {
-              totalExpenses += Math.abs(num);
-            } else if (num < 0) {
+            // OTP és nemzetközi kulcsszavak
+            if (lowText.includes("jóváírás") || lowText.includes("credit") || lowText.includes("deposit") || lowText.includes("bej")) {
+              income += Math.abs(num);
+            } else if (lowText.includes("terhelés") || lowText.includes("debit") || lowText.includes("kiad") || num < 0) {
               totalExpenses += Math.abs(num);
             }
           }
@@ -83,44 +68,50 @@ export default async function handler(req, res) {
       });
     }
 
-    // --- 2. LOGIKA: SZÖVEGBÁNYÁSZAT (Ha a táblázat üres maradt) ---
-    if (income === 0 && totalExpenses === 0) {
+    // --- 2. OTP SPECIFIKUS SZÖVEGBÁNYÁSZAT (Ez kell a te fájlodhoz!) ---
+    if (income === 0 || totalExpenses === 0) {
       const lines = content.split('\n');
       lines.forEach(line => {
-        const cleanLine = line.toLowerCase();
-        const num = parseNumber(line);
+        const lowerLine = line.toLowerCase();
         
-        if (!isNaN(num)) {
-          if (cleanLine.includes("income") || cleanLine.includes("salary") || cleanLine.includes("bevétel") || 
-              cleanLine.includes("total credit") || cleanLine.includes("beérkezés")) {
-            income += num;
-          } else if (cleanLine.includes("expense") || cleanLine.includes("spent") || cleanLine.includes("kiadás") || 
-                     cleanLine.includes("total debit") || cleanLine.includes("kifizetés")) {
-            totalExpenses += Math.abs(num);
-          }
+        // OTP "Mindösszesen beérkezés" és "Mindösszesen kifizetés" keresése
+        if (lowerLine.includes("beérkezés") || lowerLine.includes("jóváírás összesen")) {
+          const n = parseNumber(line);
+          if (!isNaN(n)) income = n;
+        }
+        if (lowerLine.includes("kifizetés") || lowerLine.includes("terhelés összesen")) {
+          const n = parseNumber(line);
+          if (!isNaN(n)) totalExpenses = Math.abs(n);
         }
       });
     }
 
-    const fixed = totalExpenses * 0.65;
-    const variable = totalExpenses * 0.35;
+    // Ha az OTP PDF-ben az időszaki összesítőt nézzük
+    if (income === 0 && totalExpenses === 0) {
+        // Ha nem talált kulcsszót, de van tartalom, próbáljuk meg a legnagyobb számokat kiszedni
+        const numbers = content.match(/(\d{1,3}(?:[\s\u00A0]\d{3})*(?:,\d{2}))/g);
+        if (numbers) {
+            const parsedNums = numbers.map(n => parseNumber(n)).filter(n => n > 100);
+            if (parsedNums.length >= 2) {
+                // Egy durva becslés, ha minden kötél szakad
+                income = Math.max(...parsedNums);
+                totalExpenses = parsedNums.reduce((a, b) => a + b, 0) - income;
+            }
+        }
+    }
+
     const hasData = income > 0 || totalExpenses > 0;
 
     res.status(200).json({
       income: hasData ? Math.round(income) : null, 
-      fixed: hasData ? Math.round(fixed) : null,
-      variable: hasData ? Math.round(variable) : null,
+      fixed: hasData ? Math.round(totalExpenses * 0.65) : null,
+      variable: hasData ? Math.round(totalExpenses * 0.35) : null,
       status: hasData ? "success" : "manual_needed",
-      scanned: true,
-      debug: `Found ${tables?.length || 0} tables and ${content.length} characters.`
+      scanned: true
     });
 
   } catch (error) {
-    console.error("AZURE_SCAN_ERROR:", error.message);
-    res.status(500).json({ 
-      error: "Scan failed", 
-      details: error.message,
-      status: "error"
-    });
+    console.error("AZURE_ERROR:", error.message);
+    res.status(500).json({ error: error.message, status: "error" });
   }
 }
