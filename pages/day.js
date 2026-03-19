@@ -164,7 +164,6 @@ export default function DayPremium() {
   const [mounted, setMounted] = useState(false);
   const [country, setCountry] = useState("US");
 
-  // Új állapotok az Azure-beolvasóhoz
   const [scanOpen, setScanOpen] = useState(false);
   const [scanLoading, setScanLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -211,7 +210,6 @@ export default function DayPremium() {
   const [loading, setLoading] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
 
-  /* CURRENCY LOGIC */
   const getCurrency = (c) => {
     switch(c) {
       case "HU": return "Ft";
@@ -222,52 +220,43 @@ export default function DayPremium() {
     }
   };
 
-  /* AZURE SCAN LOGIC - SUPABASE INTEGRATED WITH BASE64 JSON */
+  /* AZURE SCAN LOGIC - JAVÍTOTT FORM DATA KÜLDÉS */
   const handleFileUpload = async (file) => {
     if (!file) return;
     setScanLoading(true);
 
     try {
-      // 1. Fájl átalakítása Base64-re
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
+      const formData = new FormData();
+      formData.append('file', file); // A GitHubos index.ts a 'file' kulcsot várja
+
+      const supabaseUrl = "https://csfaqnsuhhnposhyfxmk.supabase.co/functions/v1/swift-task";
       
-      reader.onload = async () => {
-        const base64Image = reader.result;
+      const response = await fetch(supabaseUrl, {
+        method: "POST",
+        body: formData, // Nyers FormData küldése (nincs header, a böngésző kitölti)
+      });
 
-        // 2. Küldés a Supabase-nek JSON-ként
-        const supabaseUrl = "https://csfaqnsuhhnposhyfxmk.supabase.co/functions/v1/swift-task";
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log("Sikeres szkennelés:", result);
         
-        const response = await fetch(supabaseUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ image: base64Image }), // Így már érvényes JSON lesz!
-        });
+        const updatedData = {
+          income: result.income ? Number(result.income) : data.income,
+          fixed: result.fixed ? Number(result.fixed) : data.fixed,
+          variable: result.variable ? Number(result.variable) : data.variable,
+        };
 
-        if (response.ok) {
-          const result = await response.json();
-          
-          // Itt az Azure-tól kapott OCR adatokat dolgozzuk fel
-          console.log("Sikeres szkennelés:", result);
-          
-          const updatedData = {
-            income: result.income ? Number(result.income) : data.income,
-            fixed: result.fixed ? Number(result.fixed) : data.fixed,
-            variable: result.variable ? Number(result.variable) : data.variable,
-          };
-
-          setData(updatedData);
-          localStorage.setItem("userFinancials", JSON.stringify(updatedData));
-          setScanOpen(false);
-        } else {
-          const errorData = await response.json();
-          alert("Scan failed: " + (errorData.error || "Unknown error"));
-        }
-        setScanLoading(false);
-      };
+        setData(updatedData);
+        localStorage.setItem("userFinancials", JSON.stringify(updatedData));
+        setScanOpen(false);
+      } else {
+        alert("Scan failed: " + (result.error || "Unknown error"));
+      }
     } catch (err) {
       console.error("Supabase Error:", err);
       alert("Error connecting to intelligence service.");
+    } finally {
       setScanLoading(false);
     }
   };
@@ -288,7 +277,6 @@ export default function DayPremium() {
     }
   };
 
-  /* CLOSE AI ON REGION CHANGE */
   useEffect(() => {
     setAiOpen(false);
     setAiText("");
@@ -485,7 +473,6 @@ export default function DayPremium() {
           {/* JOBB OSZLOP */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             
-            {/* ÚJ AZURE SCANNER GOMB ÉS ABLAK */}
             <div style={{ marginBottom: '15px' }}>
               {!scanOpen ? (
                 <button 
@@ -540,7 +527,7 @@ export default function DayPremium() {
               <div style={{ fontSize: '10px', color: '#64748b', marginBottom: '10px', textAlign: 'center' }}>MANUAL DATA ENTRY</div>
               {["income", "fixed", "variable"].map((k) => (
                 <div key={k} style={inputRow}>
-                  <span>MONTHLY {k.toUpperCase()}</span>
+                  <span style={{ fontSize: isMobile ? '11px' : '13px' }}>MONTHLY {k.toUpperCase()}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <input
                       type="number"
@@ -743,8 +730,8 @@ const input = {
   padding: "5px 10px",
   color: "#38bdf8",
   textAlign: "right",
-  width: "100px",
-  fontSize: "16px"
+  width: "80px",
+  fontSize: "14px"
 };
 
 const chartGrid = { display: "grid", gap: "16px" };
