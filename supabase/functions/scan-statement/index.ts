@@ -18,18 +18,21 @@ serve(async (req) => {
     
     const arrayBuffer = await file.arrayBuffer();
 
-    // 1. AZURE HÍVÁS (A prebuilt-layout alapból többoldalas!)
+    // 1. AZURE HÍVÁS (Prebuilt-layout: felismeri a táblázatokat és minden oldalt beolvas)
     const azureUrl = `${endpoint}/formrecognizer/documentModels/prebuilt-layout:analyze?api-version=2023-07-31`;
     const response = await fetch(azureUrl, {
       method: 'POST',
-      headers: { 'Ocp-Apim-Subscription-Key': key!, 'Content-Type': 'application/octet-stream' },
+      headers: { 
+        'Ocp-Apim-Subscription-Key': key!, 
+        'Content-Type': 'application/octet-stream' 
+      },
       body: arrayBuffer
     });
 
     const operationLocation = response.headers.get('operation-location');
     if (!operationLocation) throw new Error("Azure initial call failed");
 
-    // 2. VÁRAKOZÁS
+    // 2. VÁRAKOZÁS AZ EREDMÉNYRE
     let result;
     const startTime = Date.now();
     while (true) {
@@ -41,61 +44,85 @@ serve(async (req) => {
       await new Promise(r => setTimeout(r, 1000));
     }
 
-    // 3. JAVÍTOTT PÉNZ-LOGIKA
+    // 3. NEMZETKÖZI PÉNZ-LOGIKA
     let income = 0;
     let expenses = 0;
 
     const analyzeResult = result.analyzeResult;
 
-    // Szigorúbb szűrő a számlaszámok és szemét ellen
+    // Szigorú szűrő: megkülönbözteti az összeget a számlaszámoktól és dátumoktól
     const extractStrictAmount = (text: string) => {
-      // 1. Szóközök törlése, de a mínuszjelet megtartjuk
+      // Szóközök és felesleges karakterek takarítása, de a mínuszjelet és tizedest megtartjuk
       const clean = text.replace(/\s/g, '');
       
-      // 2. ANTI-SZÁMLASZÁM: Ha túl hosszú a számsor (pl. 57600118...), az nem összeg
+      // ANTI-SZÁMLASZÁM VÉDELEM: 
+      // Ha 8-nál több számjegy van benne (pl. számlaszám: 57600118...), azt eldobjuk.
       const digitsOnly = clean.replace(/[^0-9]/g, '');
-      if (digitsOnly.length > 8) return null; // Egy tranzakció ritkán 100 milliónál több
+      if (digitsOnly.length > 8 || digitsOnly.length === 0) return null;
 
-      // 3. Formázás: vessző pontra cserélése
+      // Magyar (vessző) és Nemzetközi (pont) formátum kezelése
       const normalized = clean.replace(',', '.').replace(/[^-0-9.]/g, '');
       const val = parseFloat(normalized);
       
+      // Csak a releváns (10 egység feletti) összegeket nézzük, hogy a zajt kiszűrjük
       if (!isNaN(val) && Math.abs(val) > 10) return val; 
       return null;
     };
 
-    // --- ITT A LÉNYEG: VÉGIGMEGYÜNK MINDEN OLDALON ---
+    // FELDOLGOZÁS: Végigmegyünk az ÖSSZES oldalon
     analyzeResult.pages.forEach((page: any) => {
       page.lines.forEach((line: any) => {
         const val = extractStrictAmount(line.content);
         if (val !== null) {
           const txt = line.content.toLowerCase();
           
-          // Ha negatív, vagy kiadásra utaló szó van mellette
-          if (val < 0 || /-|terhelés|kiadás|vásárlás|díj|kamat/i.test(txt)) {
-            expenses += Math.abs(val);
-          } 
-          // Ha pozitív és bevételre utaló szó
-          else if (/fizetés|salary|bevétel|jóváírás|betét/i.test(txt)) {
-            income += Math.abs(val);
+          // NEMZETKÖZI KULCSSZAVAK (Angol + Magyar)
+          
+          // 1. KIADÁS jelei
+          const isExpense = val < 0 || 
+            /(-|fee|charge|expense|payment|purchase|debit|withdrawal|card|terhelés|kiadás|vásárlás|díj|kamat|költség)/i.test(txt);
+          
+          // 2. BEVÉTEL jelei
+          const isIncome = !isExpense && 
+            /(salary|income|deposit|credit|transfer in|bonus|bevétel|jóváírás|fizetés|betét|jutalom)/i.test(txt);
+
+          // 3. EGYENLEG SZŰRŐ (hogy a záróegyenleget ne számolja kiadásnak/bevételnek)
+          const isBalance = /balance|egyenleg|nyitó|záró/i.test(txt);
+
+          if (!isBalance) {
+            if (isExpense) {
+              expenses += Math.abs(val);
+            } else if (isIncome) {
+              income += Math.abs(val);
+            } else {
+              // Ha nincs kulcsszó, de pozitív szám, alapértelmezetten kiadásnak vesszük 
+              // (ez a biztonságosabb becslés bankkivonatoknál)
+              expenses += val;
+            }
           }
         }
       });
     });
 
-    // 4. VÁLASZ
+    // 4. VÁLASZ (Visszaküldjük a feldolgozott adatokat)
     return new Response(JSON.stringify({
       income: Math.round(income),
-      fixed: Math.round(expenses * 0.6),
+      fixed: Math.round(expenses * 0.6), // 60/40 szabály alapértelmezettnek
       variable: Math.round(expenses * 0.4),
       timestamp: Date.now(), 
       status: "success",
-      pagesRead: analyzeResult.pages.length // Visszaküldjük, hány oldalt látott
+      pagesRead: analyzeResult.pages.length,
+      currency: analyzeResult.content.includes('EUR') ? 'EUR' : 'HUF' // Egyszerű valuta detektálás
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
   } catch (err: any) {
-    return new Response(JSON.stringify({ error: err.message, status: "error" }), { 
-      status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    return new Response(JSON.stringify({ 
+      error: err.message, 
+      status: "error",
+      income: 0 
+    }), { 
+      status: 200, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   }
 })
