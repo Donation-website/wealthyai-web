@@ -222,7 +222,7 @@ export default function DayPremium() {
     }
   };
 
-  /* AZURE SCAN LOGIC */
+  /* AZURE SCAN LOGIC - SUPABASE INTEGRATED */
   const handleFileUpload = async (file) => {
     if (!file) return;
     setScanLoading(true);
@@ -231,7 +231,10 @@ export default function DayPremium() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch("/api/scan-statement", {
+      // A te egyedi Supabase URL-ed
+      const supabaseUrl = "https://csfaqnsuhhnposhyfxmk.supabase.co/functions/v1/swift-task";
+
+      const response = await fetch(supabaseUrl, {
         method: "POST",
         body: formData,
       });
@@ -239,7 +242,6 @@ export default function DayPremium() {
       if (response.ok) {
         const result = await response.json();
         
-        // JAVÍTÁS: Kényszerített típuskonverzió és azonnali mentés
         const updatedData = {
           income: result.income ? Number(result.income) : data.income,
           fixed: result.fixed ? Number(result.fixed) : data.fixed,
@@ -253,7 +255,7 @@ export default function DayPremium() {
         alert("Scan failed. Please try a clearer document.");
       }
     } catch (err) {
-      console.error("Azure Error:", err);
+      console.error("Supabase Error:", err);
       alert("Error connecting to intelligence service.");
     } finally {
       setScanLoading(false);
@@ -341,7 +343,6 @@ export default function DayPremium() {
     if (saved) setData(JSON.parse(saved));
   }, []);
 
-  // JAVÍTÁS: Kiszámítási logika rendbetétele a szorzók helyett surplus alapú vetítéssel
   const surplus = data.income - (data.fixed + data.variable);
   const savingsRate = data.income > 0 ? (surplus / data.income) * 100 : 0;
   const fiveYearProjection = surplus * 60;
