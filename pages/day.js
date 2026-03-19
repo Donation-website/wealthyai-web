@@ -231,7 +231,6 @@ export default function DayPremium() {
       const formData = new FormData();
       formData.append("file", file);
 
-      // Itt hívjuk meg a Vercel API-t, amit majd létre kell hoznod az Azure kulcsokkal
       const response = await fetch("/api/scan-statement", {
         method: "POST",
         body: formData,
@@ -239,13 +238,17 @@ export default function DayPremium() {
 
       if (response.ok) {
         const result = await response.json();
-        // Feltételezzük, hogy az Azure visszaküldte a számokat
-        setData({
-          income: result.income || data.income,
-          fixed: result.fixed || data.fixed,
-          variable: result.variable || data.variable,
-        });
-        setScanOpen(false); // Bezárjuk, ha sikeres
+        
+        // JAVÍTÁS: Kényszerített típuskonverzió és azonnali mentés
+        const updatedData = {
+          income: result.income ? Number(result.income) : data.income,
+          fixed: result.fixed ? Number(result.fixed) : data.fixed,
+          variable: result.variable ? Number(result.variable) : data.variable,
+        };
+
+        setData(updatedData);
+        localStorage.setItem("userFinancials", JSON.stringify(updatedData));
+        setScanOpen(false); 
       } else {
         alert("Scan failed. Please try a clearer document.");
       }
@@ -338,15 +341,16 @@ export default function DayPremium() {
     if (saved) setData(JSON.parse(saved));
   }, []);
 
+  // JAVÍTÁS: Kiszámítási logika rendbetétele a szorzók helyett surplus alapú vetítéssel
   const surplus = data.income - (data.fixed + data.variable);
   const savingsRate = data.income > 0 ? (surplus / data.income) * 100 : 0;
-  const fiveYearProjection = surplus * 60 * 1.45;
+  const fiveYearProjection = surplus * 60;
 
   const chartData = [
     { name: "Now", value: surplus },
-    { name: "Y1", value: surplus * 12 * 1.08 },
-    { name: "Y3", value: surplus * 36 * 1.25 },
-    { name: "Y5", value: surplus * 60 * 1.45 },
+    { name: "Y1", value: surplus * 12 },
+    { name: "Y3", value: surplus * 36 },
+    { name: "Y5", value: surplus * 60 },
   ];
 
   const askAI = async () => {
@@ -530,9 +534,12 @@ export default function DayPremium() {
                     <input
                       type="number"
                       value={data[k]}
-                      onChange={(e) =>
-                        setData({ ...data, [k]: Number(e.target.value) })
-                      }
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        const newData = { ...data, [k]: val };
+                        setData(newData);
+                        localStorage.setItem("userFinancials", JSON.stringify(newData));
+                      }}
                       style={input}
                     />
                     <span style={{ fontSize: 12, color: '#38bdf8' }}>{getCurrency(country)}</span>
