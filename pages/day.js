@@ -164,6 +164,11 @@ export default function DayPremium() {
   const [mounted, setMounted] = useState(false);
   const [country, setCountry] = useState("US");
 
+  // Új állapotok az Azure-beolvasóhoz
+  const [scanOpen, setScanOpen] = useState(false);
+  const [scanLoading, setScanLoading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+
   useEffect(() => {
     setMounted(true);
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
@@ -217,6 +222,57 @@ export default function DayPremium() {
     }
   };
 
+  /* AZURE SCAN LOGIC */
+  const handleFileUpload = async (file) => {
+    if (!file) return;
+    setScanLoading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      // Itt hívjuk meg a Vercel API-t, amit majd létre kell hoznod az Azure kulcsokkal
+      const response = await fetch("/api/scan-statement", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        // Feltételezzük, hogy az Azure visszaküldte a számokat
+        setData({
+          income: result.income || data.income,
+          fixed: result.fixed || data.fixed,
+          variable: result.variable || data.variable,
+        });
+        setScanOpen(false); // Bezárjuk, ha sikeres
+      } else {
+        alert("Scan failed. Please try a clearer document.");
+      }
+    } catch (err) {
+      console.error("Azure Error:", err);
+      alert("Error connecting to intelligence service.");
+    } finally {
+      setScanLoading(false);
+    }
+  };
+
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
+    else if (e.type === "dragleave") setDragActive(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileUpload(e.dataTransfer.files[0]);
+    }
+  };
+
   /* CLOSE AI ON REGION CHANGE */
   useEffect(() => {
     setAiOpen(false);
@@ -237,7 +293,6 @@ export default function DayPremium() {
       const params = new URLSearchParams(window.location.search);
       const sessionId = params.get("session_id");
 
-      // MESTERKÓD VISSZAHELYEZVE
       if (vipToken === "MASTER-DOMINANCE-2026" || (sessionId && sessionId.startsWith('cs_'))) {
         if (sessionId) localStorage.setItem("wai_vip_token", sessionId);
         setIsAuthorized(true);
@@ -414,7 +469,60 @@ export default function DayPremium() {
 
           {/* JOBB OSZLOP */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
+            
+            {/* ÚJ AZURE SCANNER GOMB ÉS ABLAK */}
+            <div style={{ marginBottom: '15px' }}>
+              {!scanOpen ? (
+                <button 
+                  onClick={() => setScanOpen(true)}
+                  style={scanTriggerBtn}
+                >
+                  ✨ AUTO-SCAN BANK STATEMENT (BETA)
+                </button>
+              ) : (
+                <div 
+                  style={{
+                    ...scanWindow,
+                    border: dragActive ? "2px dashed #38bdf8" : "1px solid #1e293b"
+                  }}
+                  onDragEnter={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDragOver={handleDrag}
+                  onDrop={handleDrop}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                    <span style={{ fontSize: '12px', color: '#7dd3fc', fontWeight: 'bold' }}>DOCUMENT INTELLIGENCE</span>
+                    <button onClick={() => setScanOpen(false)} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer' }}>✕</button>
+                  </div>
+                  
+                  {scanLoading ? (
+                    <div style={{ textAlign: 'center', padding: '20px', color: '#38bdf8' }}>Reading financial patterns...</div>
+                  ) : (
+                    <div style={{ textAlign: 'center', padding: '20px' }}>
+                      <p style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '15px' }}>
+                        Drag and drop your bank statement here or click to upload. 
+                        Our AI will extract income and expenses globally.
+                      </p>
+                      <input 
+                        type="file" 
+                        id="fileUpload" 
+                        style={{ display: 'none' }} 
+                        onChange={(e) => handleFileUpload(e.target.files[0])}
+                      />
+                      <label 
+                        htmlFor="fileUpload" 
+                        style={uploadLabel}
+                      >
+                        CHOOSE FILE
+                      </label>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             <div style={inputPanel}>
+              <div style={{ fontSize: '10px', color: '#64748b', marginBottom: '10px', textAlign: 'center' }}>MANUAL DATA ENTRY</div>
               {["income", "fixed", "variable"].map((k) => (
                 <div key={k} style={inputRow}>
                   <span>MONTHLY {k.toUpperCase()}</span>
@@ -523,6 +631,7 @@ function MiniBar({ title, value }) {
   );
 }
 
+/* STYLES */
 const page = {
   minHeight: "100vh",
   position: "relative",
@@ -635,3 +744,37 @@ const upsellFixed = {
 };
 
 const footerLeft = { position: "fixed", bottom: 20, left: 20, fontSize: "12px", opacity: 0.6 };
+
+/* ÚJ SCANNER STÍLUSOK */
+const scanTriggerBtn = {
+  width: "100%",
+  padding: "12px",
+  background: "rgba(56, 189, 248, 0.1)",
+  border: "1px solid rgba(56, 189, 248, 0.4)",
+  borderRadius: "12px",
+  color: "#38bdf8",
+  fontWeight: "bold",
+  fontSize: "12px",
+  cursor: "pointer",
+  letterSpacing: "1px",
+  transition: "all 0.3s ease"
+};
+
+const scanWindow = {
+  background: "rgba(15, 23, 42, 0.6)",
+  borderRadius: "12px",
+  padding: "20px",
+  backdropFilter: "blur(10px)",
+  transition: "all 0.2s ease"
+};
+
+const uploadLabel = {
+  display: 'inline-block',
+  padding: '8px 20px',
+  background: '#38bdf8',
+  color: '#020617',
+  borderRadius: '6px',
+  fontSize: '12px',
+  fontWeight: 'bold',
+  cursor: 'pointer'
+};
