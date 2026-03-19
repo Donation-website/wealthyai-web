@@ -1,10 +1,9 @@
 import { AzureKeyCredential, DocumentAnalysisClient } from "@azure/ai-form-recognizer";
-import formidable from "formidable";
-import fs from "fs/promises"; // Ígéret-alapú fs a stabilitásért
+import Busboy from 'busboy';
 
 export const config = {
   api: {
-    bodyParser: false, 
+    bodyParser: false, // Ez marad false, mi kezeljük a streamet
   },
 };
 
@@ -16,24 +15,21 @@ export default async function handler(req, res) {
 
   if (!endpoint || !key) return res.status(500).json({ error: "Azure credentials missing." });
 
-  const form = formidable({
-    keepExtensions: true,
-    maxFileSize: 10 * 1024 * 1024, // 10MB limit
-  });
-
   try {
-    // Formidable v3+ ígéret alapú parse
-    const [fields, files] = await form.parse(req);
-    const file = Array.isArray(files.file) ? files.file[0] : files.file;
+    const buffer = await new Promise((resolve, reject) => {
+      const busboy = Busboy({ headers: req.headers });
+      let chunks = [];
 
-    if (!file || !file.filepath) {
-      return res.status(400).json({ error: "No file uploaded." });
-    }
+      busboy.on('file', (name, file, info) => {
+        file.on('data', (data) => chunks.push(data));
+        file.on('end', () => resolve(Buffer.concat(chunks)));
+      });
 
-    // Fájl beolvasása Bufferbe
-    const buffer = await fs.readFile(file.filepath);
+      busboy.on('error', (err) => reject(err));
+      req.pipe(busboy);
+    });
 
-    // Azure Analízis
+    // Azure Analízis közvetlenül a memóriából (Buffer)
     const client = new DocumentAnalysisClient(endpoint, new AzureKeyCredential(key));
     const poller = await client.beginAnalyzeDocument("prebuilt-layout", buffer);
     const result = await poller.pollUntilDone();
@@ -57,16 +53,14 @@ export default async function handler(req, res) {
     };
 
     const keywords = {
-      income: ["beérkezés", "jóváírás", "incoming", "credit", "deposit", "fizetés", "salary"],
-      expense: ["kifizetés", "terhelés", "outgoing", "debit", "withdrawal", "spent", "vásárlás", "kártyás"]
+      income: ["beérkezés", "jóváírás", "incoming", "credit", "deposit", "fizetés", "salary", "bevétel"],
+      expense: ["kifizetés", "terhelés", "outgoing", "debit", "withdrawal", "spent", "vásárlás", "kártyás", "kiadás"]
     };
 
-    // Szöveges elemzés
-    const lines = content.split('\n');
-    lines.forEach(line => {
+    // Szöveges feldolgozás
+    content.split('\n').forEach(line => {
       const lowerLine = line.toLowerCase();
       const isTotal = lowerLine.includes("összesen") || lowerLine.includes("total") || lowerLine.includes("sum");
-      
       if (isTotal) {
         const n = parseNumber(line);
         if (!isNaN(n)) {
@@ -76,7 +70,7 @@ export default async function handler(req, res) {
       }
     });
 
-    // Táblázat elemzés fallback
+    // Ha nincs adat, táblázat fallback
     if (income === 0 && totalExpenses === 0 && tables) {
       tables.forEach(table => {
         table.cells.forEach(cell => {
@@ -90,9 +84,6 @@ export default async function handler(req, res) {
       });
     }
 
-    // Ideiglenes fájl törlése
-    try { await fs.unlink(file.filepath); } catch (e) { console.error("Cleanup error:", e); }
-
     return res.status(200).json({
       income: Math.round(income),
       fixed: Math.round(totalExpenses * 0.65),
@@ -102,6 +93,6 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error("DETAILED_ERROR:", error);
-    return res.status(500).json({ error: error.message || "Failed to process document." });
+    return res.status(500).json({ error: error.message });
   }
 }
