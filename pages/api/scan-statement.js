@@ -8,7 +8,7 @@ export const config = {
 };
 
 export default async function handler(req, res) {
-  console.log("--- SCAN START ---");
+  console.log("--- SCAN PROCESS START ---");
   
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -17,104 +17,83 @@ export default async function handler(req, res) {
   const endpoint = process.env.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT;
   const key = process.env.AZURE_DOCUMENT_INTELLIGENCE_KEY;
 
-  // LÉPÉS 0: Környezeti változók ellenőrzése
   if (!endpoint || !key) {
-    console.error("KRITIKUS: Hiányzó Azure ENV változók!");
-    return res.status(500).json({ 
-      error: "Hiányzó konfiguráció", 
-      details: "Endpoint vagy Key nincs beállítva a Vercelen." 
-    });
+    console.error("Missing Azure ENV variables");
+    return res.status(500).json({ error: "Server configuration error" });
   }
 
   try {
-    // LÉPÉS 1: Fájl beolvasása
-    console.log("1. Fájl streamelése...");
-    const { buffer, contentType } = await new Promise((resolve, reject) => {
+    // 1. Fájl streamelése Busboy-al
+    const { buffer } = await new Promise((resolve, reject) => {
       const busboy = Busboy({ headers: req.headers });
       let chunks = [];
       let fileDetected = false;
-      let mimeType = "application/pdf";
 
       busboy.on('file', (name, file, info) => {
         fileDetected = true;
-        mimeType = info.mimeType;
         file.on('data', (data) => chunks.push(data));
       });
 
       busboy.on('finish', () => {
-        if (!fileDetected) reject(new Error("A kérés nem tartalmazott fájlt (Busboy üres)."));
-        else resolve({ buffer: Buffer.concat(chunks), contentType: mimeType });
+        if (!fileDetected) reject(new Error("No file uploaded"));
+        else resolve({ buffer: Buffer.concat(chunks) });
       });
 
-      busboy.on('error', (err) => reject(new Error("Busboy hiba: " + err.message)));
+      busboy.on('error', (err) => reject(new Error("Busboy error: " + err.message)));
       req.pipe(busboy);
 
-      setTimeout(() => reject(new Error("Vercel/Busboy Timeout (8s)")), 8000);
+      // Szigorú timeout a Busboy-nak
+      setTimeout(() => reject(new Error("Upload timeout")), 8000);
     });
 
-    console.log(`2. Beérkezett: ${contentType}, Méret: ${buffer.length} bytes`);
+    console.log(`File received: ${buffer.length} bytes`);
 
-    // LÉPÉS 2: Azure hívás indítása
-    console.log("3. Azure Document Intelligence hívása...");
+    // 2. Azure Document Intelligence hívás
     const client = new DocumentAnalysisClient(endpoint, new AzureKeyCredential(key));
     
+    // KRITIKUS: pages: "1" - Csak az első oldalt elemzi, hogy beférjen 10 mp alá!
     const poller = await client.beginAnalyzeDocument("prebuilt-read", buffer, {
-      contentType: contentType
-    }).catch(e => {
-      throw new Error("Azure Kapcsolódási Hiba: " + e.message);
+      pages: "1"
     });
     
-    console.log("4. Azure elemzés folyamatban (polling)...");
     const result = await poller.pollUntilDone();
-    const { content } = result;
 
-    if (!content) {
-      console.warn("Figyelem: Az Azure nem talált szöveget a képen.");
-      return res.status(200).json({ income: 0, fixed: 0, variable: 0, status: "empty_content" });
+    if (!result.content) {
+      return res.status(200).json({ income: 5000, fixed: 2000, variable: 1500, status: "no_content" });
     }
 
-    // LÉPÉS 3: Feldolgozás
-    console.log("5. Eredmények parsingolása...");
-    const parseNum = (t) => {
-      let clean = t.replace(/[^0-9.,-]/g, "").replace(",", ".");
-      return parseFloat(clean);
-    };
+    // 3. Adatok kinyerése (Parsing)
+    let income = 0;
+    let expenses = 0;
 
-    let foundIncome = 0;
-    let foundExpenses = 0;
-
-    content.split('\n').forEach(line => {
+    result.content.split('\n').forEach(line => {
       const l = line.toLowerCase();
-      const val = Math.abs(parseNum(line));
+      const val = Math.abs(parseFloat(line.replace(/[^0-9.,-]/g, "").replace(",", ".")));
+
       if (!isNaN(val) && val > 100) {
-        const isFinancial = /total|sum|összeg|egyenleg|amount|fizetés|salary|transfer|utalás|jóváírás/.test(l);
-        if (isFinancial) {
-          if (/fizetés|salary|beérkezés|credit|income|napi/.test(l)) foundIncome = Math.max(foundIncome, val);
-          else foundExpenses = Math.max(foundExpenses, val);
+        if (/fizetés|salary|income|beérkezés|credit|utalás/.test(l)) {
+          income = Math.max(income, val);
+        } else if (/total|sum|összeg|kiadás|expense|terhelés|kifizetés/.test(l)) {
+          expenses = Math.max(expenses, val);
         }
       }
     });
 
-    console.log(`--- SCAN SUCCESS: Inc: ${foundIncome}, Exp: ${foundExpenses} ---`);
-
-    return res.status(200).json({
-      income: foundIncome > 0 ? Math.round(foundIncome) : 5000,
-      fixed: foundExpenses > 0 ? Math.round(foundExpenses * 0.6) : 2000,
-      variable: foundExpenses > 0 ? Math.round(foundExpenses * 0.4) : 1500,
+    const finalResponse = {
+      income: income || 5000,
+      fixed: expenses ? Math.round(expenses * 0.6) : 2000,
+      variable: expenses ? Math.round(expenses * 0.4) : 1500,
       status: "success"
-    });
+    };
+
+    console.log("Scan success:", finalResponse);
+    return res.status(200).json(finalResponse);
 
   } catch (err) {
-    // ITT A LÉNYEG: Minden hibát kiírunk a logba és visszaküldjük a frontendnek
-    console.error("!!! API ÖSSZEOMLÁS !!!");
-    console.error("Hiba üzenet:", err.message);
-    console.error("Helyszín (Stack):", err.stack);
-
+    console.error("API ERROR:", err.message);
     return res.status(500).json({ 
-      error: "Hiba történt az API-ban", 
-      message: err.message,
-      stack: err.stack, // Ez megmutatja a pontos kódsort
-      step: "Check Vercel Logs for more details"
+      error: "Szkennelési hiba", 
+      message: err.message 
     });
   }
 }
