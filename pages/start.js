@@ -1,395 +1,327 @@
-import { useEffect, useState, useRef } from "react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-} from "recharts";
+import React, { useState, useEffect } from "react";
 
-/* ===== ANIMATION COMPONENT (SpiderNet - HD & Ultra Dense) ===== */
-function SpiderNet({ isMobile, height }) {
-  const canvasRef = useRef(null);
-
-  useEffect(() => {
-    if (isMobile || !height) return;
-
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    let animationFrameId;
-
-    let particles = [];
-    const particleCount = 220; 
-    const connectionDistance = 140; 
-    const mouse = { x: null, y: null, radius: 150 };
-
-    const resize = () => {
-      const dpr = window.devicePixelRatio || 1;
-      const rect = canvas.parentElement.getBoundingClientRect();
-      canvas.width = rect.width * dpr;
-      canvas.height = height * dpr;
-      ctx.scale(dpr, dpr);
-      canvas.style.width = `${rect.width}px`;
-      canvas.style.height = `${height}px`;
-    };
-
-    window.addEventListener("resize", resize);
-    resize();
-
-    const handleMouseMove = (e) => {
-      const rect = canvas.getBoundingClientRect();
-      mouse.x = e.clientX - rect.left;
-      mouse.y = e.clientY - rect.top;
-    };
-
-    const handleMouseLeave = () => {
-      mouse.x = null;
-      mouse.y = null;
-    };
-
-    canvas.addEventListener("mousemove", handleMouseMove);
-    canvas.addEventListener("mouseleave", handleMouseLeave);
-
-    class Particle {
-      constructor() {
-        const rect = canvas.getBoundingClientRect();
-        this.x = Math.random() * rect.width;
-        this.y = Math.random() * rect.height;
-        this.size = Math.random() * 1.2 + 0.3;
-        this.vx = (Math.random() - 0.5) * 0.3;
-        this.vy = (Math.random() - 0.5) * 0.3;
-      }
-
-      draw() {
-        ctx.fillStyle = "#38bdf8";
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      update() {
-        const rect = canvas.getBoundingClientRect();
-        this.x += this.vx;
-        this.y += this.vy;
-
-        if (this.x < 0 || this.x > rect.width) this.vx *= -1;
-        if (this.y < 0 || this.y > rect.height) this.vy *= -1;
-
-        if (mouse.x !== null && mouse.y !== null) {
-          let dx = mouse.x - this.x;
-          let dy = mouse.y - this.y;
-          let distance = Math.sqrt(dx * dx + dy * dy);
-          if (distance < mouse.radius) {
-            const force = (mouse.radius - distance) / mouse.radius;
-            this.x -= (dx / distance) * force * 2;
-            this.y -= (dy / distance) * force * 2;
-          }
-        }
-      }
-    }
-
-    const init = () => {
-      particles = [];
-      for (let i = 0; i < particleCount; i++) {
-        particles.push(new Particle());
-      }
-    };
-
-    const connect = () => {
-      for (let a = 0; a < particles.length; a++) {
-        for (let b = a; b < particles.length; b++) {
-          let dx = particles[a].x - particles[b].x;
-          let dy = particles[a].y - particles[b].y;
-          let distance = Math.sqrt(dx * dx + dy * dy);
-
-          if (distance < connectionDistance) {
-            let opacity = 1 - (distance / connectionDistance);
-            ctx.strokeStyle = `rgba(34, 211, 238, ${opacity * 0.5})`;
-            ctx.lineWidth = 0.6;
-            ctx.beginPath();
-            ctx.moveTo(particles[a].x, particles[a].y);
-            ctx.lineTo(particles[b].x, particles[b].y);
-            ctx.stroke();
-          }
-        }
-      }
-    };
-
-    const animate = () => {
-      const rect = canvas.getBoundingClientRect();
-      if (!rect.width || !rect.height) return;
-      ctx.clearRect(0, 0, rect.width, rect.height);
-      particles.forEach(p => {
-        p.update();
-        p.draw();
-      });
-      connect();
-      animationFrameId = requestAnimationFrame(animate);
-    };
-
-    init();
-    animate();
-
-    return () => {
-      window.removeEventListener("resize", resize);
-      canvas.removeEventListener("mousemove", handleMouseMove);
-      canvas.removeEventListener("mouseleave", handleMouseLeave);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, [isMobile, height]);
-
-  return (
-    <canvas 
-      ref={canvasRef} 
-      style={{ 
-        display: 'block',
-        width: '100%', 
-        height: `${height}px`,
-        background: 'transparent'
-      }} 
-    />
-  );
-}
-
-export default function DayPremium() {
-  const [isMobile, setIsMobile] = useState(false);
-  const aiBoxRef = useRef(null);
-  const [aiBoxHeight, setAiBoxHeight] = useState(0);
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
-  const [country, setCountry] = useState("US");
-
-  // Új állapotok az Azure-beolvasóhoz
-  const [scanOpen, setScanOpen] = useState(false);
-  const [scanLoading, setScanLoading] = useState(false);
-  const [dragActive, setDragActive] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    const handleResize = () => setIsMobile(window.innerWidth < 1024);
-    handleResize();
-
-    const detectRegion = async () => {
-      try {
-        const res = await fetch("https://ipapi.co/json/");
-        const geo = await res.json();
-        const code = geo.country_code;
-
-        if (code === "HU") {
-          setCountry("HU");
-        } else if (code === "GB") {
-          setCountry("UK");
-        } else if (["AT", "DE", "FR", "IT", "ES", "BE", "NL", "LU", "IE", "PT"].includes(code)) {
-          setCountry("EU");
-        } else if (code === "US") {
-          setCountry("US");
-        } else {
-          setCountry("Other");
-        }
-      } catch (e) {
-        console.warn("Region detection unavailable, fallback to US");
-      }
-    };
-    detectRegion();
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
+export default function UserDashboard() {
   const [data, setData] = useState({
     income: 5000,
     fixed: 2000,
     variable: 1500,
+    electricity: 150,
+    water: 50,
+    gas: 100,
+    internet: 80,
+    subscriptions: 120,
   });
 
-  const [aiText, setAiText] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [aiOpen, setAiOpen] = useState(false);
+  /* ===== AI BRIEFING STATES ===== */
+  const [briefing, setBriefing] = useState("");
+  const [showBriefing, setShowBriefing] = useState(false);
 
-  /* CURRENCY LOGIC */
-  const getCurrency = (c) => {
-    switch(c) {
-      case "HU": return "Ft";
-      case "EU": return "€";
-      case "UK": return "£";
-      case "Other": return "$";
-      default: return "$";
-    }
-  };
+  /* ===== VIP ACCESS STATES ===== */
+  const [showVipInputDay, setShowVipInputDay] = useState(false);
+  const [vipCodeDay, setVipCodeDay] = useState("");
 
-  /* AZURE SCAN LOGIC */
-  const handleFileUpload = async (file) => {
-    if (!file) return;
-    setScanLoading(true);
+  const [showVipInputWeek, setShowVipInputWeek] = useState(false);
+  const [vipCodeWeek, setVipCodeWeek] = useState("");
 
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
+  const [showVipInputMonth, setShowVipInputMonth] = useState(false);
+  const [vipCodeMonth, setVipCodeMonth] = useState("");
 
-      // Itt hívjuk meg a Vercel API-t, amit majd létre kell hoznod az Azure kulcsokkal
-      const response = await fetch("/api/scan-statement", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        // Feltételezzük, hogy az Azure visszaküldte a számokat
-        setData({
-          income: result.income || data.income,
-          fixed: result.fixed || data.fixed,
-          variable: result.variable || data.variable,
-        });
-        setScanOpen(false); // Bezárjuk, ha sikeres
-      } else {
-        alert("Scan failed. Please try a clearer document.");
-      }
-    } catch (err) {
-      console.error("Azure Error:", err);
-      alert("Error connecting to intelligence service.");
-    } finally {
-      setScanLoading(false);
-    }
-  };
-
-  const handleDrag = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
-    else if (e.type === "dragleave") setDragActive(false);
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFileUpload(e.dataTransfer.files[0]);
-    }
-  };
-
-  /* CLOSE AI ON REGION CHANGE */
+  /* ===== MOBILE DETECTION ===== */
+  const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
-    setAiOpen(false);
-    setAiText("");
-  }, [country]);
-
-  useEffect(() => {
-    if (aiOpen && aiBoxRef.current) {
-      setAiBoxHeight(aiBoxRef.current.offsetHeight);
-    }
-  }, [aiOpen, aiText]);
-
-  useEffect(() => {
-    async function checkAccess() {
-      if (isAuthorized) return;
-
-      const vipToken = localStorage.getItem("wai_vip_token");
-      const params = new URLSearchParams(window.location.search);
-      const sessionId = params.get("session_id");
-
-      if (vipToken === "MASTER-DOMINANCE-2026" || (sessionId && sessionId.startsWith('cs_'))) {
-        if (sessionId) localStorage.setItem("wai_vip_token", sessionId);
-        setIsAuthorized(true);
-        setIsLoading(false);
-        return;
-      }
-
-      if (!sessionId && !vipToken) {
-        setTimeout(() => {
-          if (!localStorage.getItem("wai_vip_token")) {
-             window.location.href = "/start";
-          }
-        }, 5000);
-        return;
-      }
-
-      try {
-        const res = await fetch("/api/verify-active-subscription", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sessionId, vipToken }),
-        });
-        
-        if (res.ok) {
-          const d = await res.json();
-          if (d.valid || d.active) {
-            setIsAuthorized(true);
-          } else {
-            window.location.href = "/start";
-          }
-        }
-      } catch (err) {
-        if (sessionId) setIsAuthorized(true);
-      }
-      setIsLoading(false);
-    }
-
-    if (mounted) checkAccess();
-  }, [mounted, isAuthorized]);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("userFinancials");
-    if (saved) setData(JSON.parse(saved));
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const surplus = data.income - (data.fixed + data.variable);
-  const savingsRate = data.income > 0 ? (surplus / data.income) * 100 : 0;
-  const fiveYearProjection = surplus * 60 * 1.45;
+  /* ===== CALCULATIONS ===== */
 
-  const chartData = [
-    { name: "Now", value: surplus },
-    { name: "Y1", value: surplus * 12 * 1.08 },
-    { name: "Y3", value: surplus * 36 * 1.25 },
-    { name: "Y5", value: surplus * 60 * 1.45 },
-  ];
+  const totalExpenses = data.fixed + data.variable;
+  const balance = data.income - totalExpenses;
 
-  const askAI = async () => {
-    setLoading(true);
-    setAiOpen(true);
+  const usagePercent =
+    data.income > 0 
+      ? Math.min((totalExpenses / data.income) * 100, 100) 
+      : (totalExpenses > 0 ? 100 : 0);
+
+  const savingsRate =
+    data.income > 0 ? (balance / data.income) * 100 : (balance < 0 ? -100 : 0);
+
+  const savingsScore = Math.max(
+    0,
+    // math variables
+    Math.min(100, Math.round((savingsRate / 30) * 100))
+  );
+
+  const riskLevel =
+    (usagePercent > 90 || balance < 0 || (data.income === 0 && totalExpenses > 0))
+      ? "High Risk"
+      : usagePercent > 70
+      ? "Medium Risk"
+      : "Low Risk";
+
+  /* ===== INSIGHTS ===== */
+
+  const insights = [];
+
+  if (balance < 0) {
+    insights.push(
+      "Your expenses exceed your income. Immediate action may be required."
+    );
+  }
+
+  if (data.subscriptions > data.income * 0.08) {
+    insights.push(
+      "Subscriptions appear high. Reviewing unused services may free up cash."
+    );
+  }
+
+  if (savingsRate >= 20) {
+    insights.push(
+      "You are saving at a healthy rate, supporting long-term stability."
+    );
+  } else if (balance >= 0) {
+    insights.push(
+      "Your savings rate is modest. Small adjustments could improve resilience."
+    );
+  }
+
+  /* ===== QUICK AI BRIEFING HANDLER ===== */
+  const handleQuickBriefing = async () => {
+    setBriefing(""); // Reset earlier briefing
+    setShowBriefing(true); // Show the briefing box immediately
+
     try {
-      const res = await fetch("/api/get-ai-insight", {
+      const res = await fetch("/api/quick-briefing", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          mode: "day",
-          country,
           income: data.income,
           fixed: data.fixed,
           variable: data.variable,
         }),
       });
-      const d = await res.json();
-      setAiText(d.insight);
-    } catch {
-      setAiText("AI system temporarily unavailable.");
+
+      const result = await res.json();
+      setBriefing(result.briefing);
+    } catch (err) {
+      setBriefing("AI synchronization error. Please try again.");
     }
-    setLoading(false);
   };
 
-  if (!mounted) return null;
+  /* ===== VIP SUBMIT HANDLER (JAVÍTOTT ÚTVONAL) ===== */
 
-  if (isLoading) {
+  const handleVipSubmit = async (code, type) => {
+    if (!code.trim()) return;
+    
+    try {
+      const res = await fetch("/api/verify-priority", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          vipCode: code.trim(),
+          financials: data 
+        }),
+      });
+
+      const result = await res.json();
+
+      if (result.active) {
+        localStorage.setItem("wai_vip_token", code.trim());
+        window.location.href = result.redirectPath || `/premium-${type}`;
+      } else {
+        alert("Invalid or expired priority code.");
+      }
+    } catch (err) {
+      alert("Verification failed. Please try again.");
+    }
+  };
+
+  /* ===== STRIPE (PRICE IDs UPDATED) ===== */
+
+  const handleCheckout = async (priceId) => {
+    localStorage.setItem("userFinancials", JSON.stringify(data));
+
+    if (priceId === "price_1T0L8aDyLtejYlZik3nH3Uft") {
+      const hasHadMonth = localStorage.getItem("hadMonthSubscription");
+      if (hasHadMonth) {
+        localStorage.setItem("isReturningMonthCustomer", "true");
+      }
+    }
+
+    try {
+      const res = await fetch("/api/create-stripe-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ priceId }),
+      });
+
+      const session = await res.json();
+      if (session.url) window.location.href = session.url;
+      else alert("Payment initialization failed.");
+    } catch {
+      alert("Payment initialization failed.");
+    }
+  };
+
+
+  /* ===== RADAR DATA ===== */
+
+  const radar = [
+    { label: "Expense Load", value: usagePercent },
+    { label: "Savings Strength", value: Math.min(100, Math.max(0, savingsRate * 3)) },
+    {
+      label: "Subscription Weight",
+      value:
+        data.income > 0
+          ? Math.min((data.subscriptions / data.income) * 200, 100)
+          : (data.subscriptions > 0 ? 100 : 0),
+    },
+  ];
+
+  /* ===== RADAR COMPONENT ===== */
+
+  const Radar = ({ data, size = isMobile ? 180 : 200 }) => {
+    const c = size / 2;
+    const r = size / 2 - 24;
+    const step = (Math.PI * 2) / data.length;
+
+    const clamp = (v) => Math.max(0, Math.min(100, v));
+
+    const point = (val, i) => {
+      const a = i * step - Math.PI / 2;
+      const rr = (clamp(val) / 100) * r;
+      return [c + rr * Math.cos(a), c + rr * Math.sin(a)];
+    };
+
     return (
-      <div style={{ backgroundColor: "#020617", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontFamily: "Inter, sans-serif" }}>
-        Initialising Intelligence...
-      </div>
-    );
-  }
+      <svg
+        width={size}
+        height={size}
+        style={{ display: "block", margin: "20px auto", overflow: "visible" }}
+      >
+        {[0.25, 0.5, 0.75, 1].map((lvl, i) => (
+          <circle
+            key={i}
+            cx={c}
+            cy={c}
+            r={r * lvl}
+            fill="none"
+            stroke="rgba(255,255,255,0.12)"
+          />
+        ))}
 
-  if (!isAuthorized) return null;
+        {data.map((_, i) => {
+          const a = i * step - Math.PI / 2;
+          return (
+            <line
+              key={i}
+              x1={c}
+              y1={c}
+              x2={c + r * Math.cos(a)}
+              y2={c + r * Math.sin(a)}
+              stroke="rgba(255,255,255,0.18)"
+            />
+          );
+        })}
+
+        <polygon
+          points={data.map((d, i) => point(d.value, i).join(",")).join(" ")}
+          fill="rgba(99,102,241,0.35)"
+          stroke="rgba(99,102,241,0.9)"
+        />
+
+        {data.map((d, i) => {
+          const a = i * step - Math.PI / 2;
+          return (
+            <text
+              key={i}
+              x={c + (r + 14) * Math.cos(a)}
+              y={c + (r + 14) * Math.sin(a)}
+              fontSize="11"
+              fill="rgba(255,255,255,0.7)"
+              textAnchor="middle"
+              dominantBaseline="middle"
+            >
+              {d.label}
+            </text>
+          );
+        })}
+      </svg>
+    );
+  };
+
+  /* ===== STYLES ===== */
+
+  const card = {
+    background: "rgba(15,23,42,0.65)",
+    backdropFilter: "blur(14px)",
+    borderRadius: "22px",
+    padding: isMobile ? "20px" : "26px",
+    border: "1px solid rgba(255,255,255,0.08)",
+  };
+
+  const input = {
+    width: "100%",
+    padding: "10px",
+    marginTop: "6px",
+    borderRadius: "8px",
+    border: "none",
+    background: "rgba(255,255,255,0.08)",
+    color: "white",
+    boxSizing: "border-box",
+  };
+
+  const priceCard = {
+    ...card,
+    textAlign: "center",
+    cursor: "pointer",
+    flex: isMobile ? "1 1 100%" : "0 1 240px",
+  };
+
+  const helpButton = {
+    position: "absolute",
+    top: isMobile ? 15 : 24,
+    right: isMobile ? 15 : 24,
+    padding: "8px 14px",
+    borderRadius: 10,
+    fontSize: 13,
+    textDecoration: "none",
+    color: "#7dd3fc",
+    border: "1px solid #1e293b",
+    background: "rgba(2,6,23,0.6)",
+    zIndex: 15,
+  };
 
   const WealthyTicker = () => {
     if (isMobile) return null;
+
     const tickerText = "WealthyAI interprets your financial state over time — not advice, not prediction, just clarity • Interpretation over advice • Clarity over certainty • Insight unfolds over time • Financial understanding isn’t instant • Context changes • Insight follows time • Clarity over certainty • Built on time, not urgency • ";
+
     return (
-      <div style={{ position: "absolute", top: 10, left: 0, width: "100%", height: 18, overflow: "hidden", zIndex: 20, pointerEvents: "none" }}>
-        <div style={{ display: "inline-block", whiteSpace: "nowrap", fontSize: 11, letterSpacing: "0.08em", color: "rgba(255,255,255,0.75)", animation: "waiScroll 45s linear infinite" }}>
+      <div
+        style={{
+          position: "absolute",
+          top: 10,
+          left: 0,
+          width: "100%",
+          height: 18,
+          overflow: "hidden",
+          zIndex: 20,
+          pointerEvents: "none",
+        }}
+      >
+        <div
+          style={{
+            display: "inline-block",
+            whiteSpace: "nowrap",
+            fontSize: 11,
+            letterSpacing: "0.08em",
+            color: "rgba(255,255,255,0.75)",
+            animation: "waiScroll 45s linear infinite",
+          }}
+        >
           <span>{tickerText}</span>
           <span>{tickerText}</span>
         </div>
@@ -398,383 +330,436 @@ export default function DayPremium() {
   };
 
   return (
-    <div style={page}>
-      <WealthyTicker />
-      
-      <a href="/day/help" style={{
-        ...helpButton,
-        top: isMobile ? 12 : 24,
-        right: isMobile ? 12 : 24
-      }}>Help</a>
+    <>
+      <main
+        style={{
+          minHeight: "100vh",
+          position: "relative",
+          padding: isMobile ? "20px 15px" : "40px",
+          color: "white",
+          fontFamily: "Inter, system-ui, sans-serif",
+          backgroundColor: "#020617",
+          backgroundImage: `
+            repeating-linear-gradient(-25deg, rgba(56,189,248,0.07) 0px, rgba(56,189,248,0.07) 1px, transparent 1px, transparent 160px),
+            repeating-linear-gradient(35deg, rgba(167,139,250,0.06) 0px, rgba(167,139,250,0.06) 1px, transparent 1px, transparent 220px),
+            radial-gradient(circle at 20% 30%, rgba(56,189,248,0.22), transparent 40%),
+            radial-gradient(circle at 80% 60%, rgba(167,139,250,0.22), transparent 45%),
+            radial-gradient(circle at 45% 85%, rgba(34,211,238,0.18), transparent 40%),
+            url("/wealthyai/icons/generated.png")
+          `,
+          backgroundRepeat:
+            "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
+          backgroundSize:
+            "auto, auto, 100% 100%, 100% 100%, 100% 100%, 420px auto",
+          backgroundAttachment: "fixed",
+        }}
+      >
+        <WealthyTicker />
 
-      <div style={{
-        ...contentWrap,
-        padding: isMobile ? "60px 15px 120px 15px" : "40px"
-      }}>
-        <div style={header}>
-          <h1 style={{
-            ...title,
-            fontSize: isMobile ? "1.6rem" : "2.6rem"
-          }}>WEALTHYAI · PRO INTELLIGENCE</h1>
-          <p style={subtitle}>
-            Thank you for choosing the <strong>1-Day Professional Access</strong>.
-          </p>
-        </div>
+        <a href="/start/help" style={helpButton}>Help</a>
 
-        <div style={{
-          ...layout,
-          gridTemplateColumns: isMobile ? "1fr" : "1fr 1.3fr",
-          gap: isMobile ? "20px" : "40px",
-          alignItems: 'stretch'
-        }}>
-          {/* BAL OSZLOP */}
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
-               <span style={{ fontSize: 12, color: '#7dd3fc', fontWeight: 'bold' }}>REGION SETTING:</span>
-               <select value={country} onChange={(e) => setCountry(e.target.value)} style={{ background: "#0f172a", color: "#38bdf8", border: "1px solid rgba(56, 189, 248, 0.3)", borderRadius: "6px", padding: "4px 8px", outline: "none", fontSize: "12px" }}>
-                  <option value="US">US ($)</option>
-                  <option value="EU">EU (€)</option>
-                  <option value="UK">UK (£)</option>
-                  <option value="HU">HU (Ft)</option>
-                  <option value="Other">Other ($)</option>
-               </select>
-            </div>
+        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "30px" }}>
+            <h1 style={{ fontSize: isMobile ? "1.8rem" : "2.5rem" }}>
+              Your Financial Overview (Basic)
+            </h1>
+          </div>
 
-            <Metric label="MONTHLY SURPLUS" value={`${surplus.toLocaleString()} ${getCurrency(country)}`} isMobile={isMobile} />
-            <Metric label="SAVINGS RATE" value={`${savingsRate.toFixed(1)}%`} isMobile={isMobile} />
-            <Metric
-              label="5Y PROJECTION"
-              value={`${Math.round(fiveYearProjection).toLocaleString()} ${getCurrency(country)}`}
-              isMobile={isMobile}
-            />
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+              gap: 20,
+            }}
+          >
+            <div style={{ ...card, position: "relative" }}>
+              <h3>Income & Expenses</h3>
 
-            <div style={{ flex: 1 }}>
-              {aiOpen && (
-                <div ref={aiBoxRef} style={aiBox}>
-                  <div style={aiHeader}>
-                    <strong>AI Intelligence ({country})</strong>
-                    <button onClick={() => setAiOpen(false)} style={closeBtn}>✕</button>
-                  </div>
-                  <pre style={aiTextStyle}>{aiText}</pre>
+              {[
+                ["Monthly Income (units)", "income"],
+                ["Fixed Expenses", "fixed"],
+                ["Variable Expenses", "variable"],
+              ].map(([label, key]) => (
+                <div key={key} style={{ marginBottom: 15 }}>
+                  <label style={{ fontSize: "14px" }}>{label}</label>
+                  <input
+                    type="number"
+                    value={data[key]}
+                    style={input}
+                    onChange={(e) =>
+                      setData({ ...data, [key]: Number(e.target.value) })
+                    }
+                  />
+                </div>
+              ))}
+
+              {/* ÚJ ELEMZÉS GOMB */}
+              <button
+                onClick={handleQuickBriefing}
+                style={{
+                  width: "100%",
+                  marginTop: "10px",
+                  padding: "12px",
+                  background: "rgba(99,102,241,0.2)",
+                  border: "1px solid rgba(99,102,241,0.4)",
+                  borderRadius: "10px",
+                  color: "#7dd3fc",
+                  fontSize: "13px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  letterSpacing: "0.05em",
+                  transition: "all 0.3s ease"
+                }}
+                onMouseOver={(e) => e.target.style.background = "rgba(99,102,241,0.3)"}
+                onMouseOut={(e) => e.target.style.background = "rgba(99,102,241,0.2)"}
+              >
+                INTERPRET DATA (AI)
+              </button>
+
+              {/* AI BRIEFING BOX */}
+              {showBriefing && (
+                <div style={{
+                  marginTop: "20px",
+                  padding: "15px",
+                  background: "rgba(99,102,241,0.1)",
+                  border: "1px solid rgba(99,102,241,0.3)",
+                  borderRadius: "12px",
+                  position: "relative",
+                  animation: "fadeIn 0.4s ease-out"
+                }}>
+                  <span 
+                    onClick={() => setShowBriefing(false)}
+                    style={{
+                      position: "absolute",
+                      right: "10px",
+                      top: "8px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      opacity: 0.6
+                    }}
+                  >✕</span>
+                  <h5 style={{ margin: "0 0 8px 0", color: "#7dd3fc", fontSize: "13px", letterSpacing: "0.05em" }}>AI QUICK BRIEFING</h5>
+                  <p style={{ 
+                    margin: 0, 
+                    fontSize: "14px", 
+                    lineHeight: "1.5", 
+                    color: "rgba(255,255,255,0.9)",
+                    fontStyle: "italic"
+                  }}>
+                    {briefing || "Analyzing your units..."}
+                  </p>
                 </div>
               )}
             </div>
 
-            <div style={{ marginTop: '20px' }}>
-              <button onClick={askAI} style={aiButton}>
-                {loading ? "ANALYZING…" : "GENERATE INTELLIGENCE"}
-              </button>
+            <div style={card}>
+              <h3>Insights (Basic)</h3>
+              <Radar data={radar} />
+
+              <p>
+                Risk Level: <strong>{riskLevel}</strong>
+              </p>
+              <p style={{ marginBottom: 15 }}>
+                Savings Score: <strong>{savingsScore}/100</strong>
+              </p>
+
+              <ul style={{ paddingLeft: 20 }}>
+                {insights.map((i, idx) => (
+                  <li key={idx} style={{ marginBottom: 12, fontSize: "14px" }}>
+                    {i}
+                  </li>
+                ))}
+              </ul>
+
+              <p style={{ opacity: 0.65, marginTop: 18, fontSize: "12px" }}>
+                This view shows a snapshot — not behavior, not direction.
+              </p>
+              <p
+                onClick={() =>
+                  document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })
+                }
+                style={{
+                  marginTop: 10,
+                  fontSize: "12px",
+                  opacity: 0.5,
+                  textAlign: "center",
+                  cursor: "pointer",
+                }}
+              >
+                Daily / Weekly / Monthly intelligence available ↓
+              </p>
             </div>
           </div>
 
-          {/* JOBB OSZLOP */}
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            
-            {/* ÚJ AZURE SCANNER GOMB ÉS ABLAK */}
-            <div style={{ marginBottom: '15px' }}>
-              {!scanOpen ? (
-                <button 
-                  onClick={() => setScanOpen(true)}
-                  style={scanTriggerBtn}
-                >
-                  ✨ AUTO-SCAN BANK STATEMENT (BETA)
-                </button>
-              ) : (
+          <div style={{ marginTop: isMobile ? 40 : 70, textAlign: "center" }}>
+            <h2
+              className="pulse-title"
+              style={{ fontSize: isMobile ? "1.4rem" : "2rem" }}
+            >
+              Choose your depth of financial intelligence
+            </h2>
+
+            <p
+              style={{
+                maxWidth: 700,
+                margin: "18px auto",
+                opacity: 0.85,
+                fontSize: isMobile ? "14px" : "16px",
+              }}
+            >
+              Different questions require different levels of context.
+              You can choose the depth that matches what you want to understand right now.
+            </p>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: isMobile
+                  ? "1fr"
+                  : "repeat(auto-fit, minmax(240px, 1fr))",
+                gap: 20,
+                marginTop: 30,
+              }}
+            >
+              <div style={card}>
+                <h4>Daily Intelligence</h4>
+                <p style={{ fontSize: "14px", opacity: 0.8 }}>
+                  Short-term interpretation of your current financial state.
+                  Best for immediate clarity.
+                </p>
+              </div>
+
+              <div style={card}>
+                <h4>Weekly Intelligence</h4>
+                <p style={{ fontSize: "14px", opacity: 0.8 }}>
+                  Behavior patterns across days and categories.
+                  Best for understanding habits.
+                </p>
+              </div>
+
+              <div style={card}>
+                <h4>Monthly Intelligence</h4>
+                <p style={{ fontSize: "14px", opacity: 0.8 }}>
+                  Multi-week context, regional insights, and forward-looking analysis.
+                  Best when decisions require direction.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div
+            id="pricing"
+            style={{ marginTop: isMobile ? 40 : 60 }}
+          >
+            <h2
+              style={{
+                textAlign: "center",
+                marginBottom: 10,
+                fontSize: isMobile ? "1.4rem" : "2rem",
+              }}
+            >
+              Unlock Advanced AI Intelligence
+            </h2>
+
+            <div style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              justifyContent: "center", 
+              gap: "12px", 
+              marginBottom: 30,
+              fontSize: isMobile ? "14px" : "16px",
+              opacity: 0.9,
+              flexWrap: "wrap"
+            }}>
+              <span style={{ color: "#10b981", fontWeight: "600" }}>Strict Data Privacy</span>
+              <span style={{ opacity: 0.3 }}>|</span>
+              <span>Secure transaction processed via</span>
+              <img 
+                src="/wealthyai/icons/stripe.png" 
+                alt="Stripe" 
+                style={{ height: "35px", width: "auto", display: "inline-block" }} 
+              />
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                gap: 20,
+                flexWrap: "wrap",
+              }}
+            >
+              {/* --- DAY CARD --- */}
+              <div style={{ ...priceCard, cursor: "default" }}>
                 <div 
-                  style={{
-                    ...scanWindow,
-                    border: dragActive ? "2px dashed #38bdf8" : "1px solid #1e293b"
-                  }}
-                  onDragEnter={handleDrag}
-                  onDragLeave={handleDrag}
-                  onDragOver={handleDrag}
-                  onDrop={handleDrop}
+                  onClick={() => handleCheckout("price_1T0LCDDyLtejYlZimOucadbT")}
+                  style={{ cursor: "pointer" }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                    <span style={{ fontSize: '12px', color: '#7dd3fc', fontWeight: 'bold' }}>DOCUMENT INTELLIGENCE</span>
-                    <button onClick={() => setScanOpen(false)} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer' }}>✕</button>
-                  </div>
-                  
-                  {scanLoading ? (
-                    <div style={{ textAlign: 'center', padding: '20px', color: '#38bdf8' }}>Reading financial patterns...</div>
-                  ) : (
-                    <div style={{ textAlign: 'center', padding: '20px' }}>
-                      <p style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '15px' }}>
-                        Drag and drop your bank statement here or click to upload. 
-                        Our AI will extract income and expenses globally.
-                      </p>
+                  <h3>1 Day · $9.99</h3>
+                  <small>Immediate clarity</small>
+                </div>
+                <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "12px" }}>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setShowVipInputDay(!showVipInputDay); }}
+                    style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: "10px", cursor: "pointer", letterSpacing: "0.05em" }}
+                  >
+                    {showVipInputDay ? "CLOSE PRIORITY" : "HAVE A PRIORITY CODE?"}
+                  </button>
+                  {showVipInputDay && (
+                    <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px", position: "relative" }}>
+                      <span 
+                        onClick={() => setShowVipInputDay(false)}
+                        style={{ position: "absolute", right: "-5px", top: "-25px", cursor: "pointer", fontSize: "12px", opacity: 0.5 }}
+                      >✕</span>
                       <input 
-                        type="file" 
-                        id="fileUpload" 
-                        style={{ display: 'none' }} 
-                        onChange={(e) => handleFileUpload(e.target.files[0])}
+                        type="text" 
+                        value={vipCodeDay}
+                        onChange={(e) => setVipCodeDay(e.target.value)}
+                        placeholder="Enter code"
+                        style={{ ...input, textAlign: "center", fontSize: "12px", padding: "6px", background: "rgba(255,255,255,0.04)" }}
                       />
-                      <label 
-                        htmlFor="fileUpload" 
-                        style={uploadLabel}
+                      <button 
+                        onClick={() => handleVipSubmit(vipCodeDay, "day")}
+                        style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "white", borderRadius: "6px", padding: "6px", fontSize: "11px", cursor: "pointer" }}
                       >
-                        CHOOSE FILE
-                      </label>
+                        VALIDATE
+                      </button>
                     </div>
                   )}
                 </div>
-              )}
-            </div>
-
-            <div style={inputPanel}>
-              <div style={{ fontSize: '10px', color: '#64748b', marginBottom: '10px', textAlign: 'center' }}>MANUAL DATA ENTRY</div>
-              {["income", "fixed", "variable"].map((k) => (
-                <div key={k} style={inputRow}>
-                  <span>MONTHLY {k.toUpperCase()}</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <input
-                      type="number"
-                      value={data[k]}
-                      onChange={(e) =>
-                        setData({ ...data, [k]: Number(e.target.value) })
-                      }
-                      style={input}
-                    />
-                    <span style={{ fontSize: 12, color: '#38bdf8' }}>{getCurrency(country)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div style={{
-              ...chartGrid,
-              gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr"
-            }}>
-              <MiniChart title="Cash Flow Projection" data={chartData} />
-              <MiniBar title="Expense Distribution" value={data.fixed + data.variable} />
-            </div>
-
-            {!isMobile && aiOpen && (
-              <div style={{ flex: 0, marginTop: '20px', width: '100%' }}>
-                <SpiderNet isMobile={isMobile} height={aiBoxHeight} />
               </div>
-            )}
+
+              {/* --- WEEK CARD --- */}
+              <div style={{ ...priceCard, cursor: "default" }}>
+                <div 
+                  onClick={() => handleCheckout("price_1T0LBQDyLtejYlZiXKn0PmGP")}
+                  style={{ cursor: "pointer" }}
+                >
+                  <h3>1 Week · $14.99</h3>
+                  <small>Behavior & patterns</small>
+                </div>
+                <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "12px" }}>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setShowVipInputWeek(!showVipInputWeek); }}
+                    style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: "10px", cursor: "pointer", letterSpacing: "0.05em" }}
+                  >
+                    {showVipInputWeek ? "CLOSE PRIORITY" : "HAVE A PRIORITY CODE?"}
+                  </button>
+                  {showVipInputWeek && (
+                    <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px", position: "relative" }}>
+                      <span 
+                        onClick={() => setShowVipInputWeek(false)}
+                        style={{ position: "absolute", right: "-5px", top: "-25px", cursor: "pointer", fontSize: "12px", opacity: 0.5 }}
+                      >✕</span>
+                      <input 
+                        type="text" 
+                        value={vipCodeWeek}
+                        onChange={(e) => setVipCodeWeek(e.target.value)}
+                        placeholder="Enter code"
+                        style={{ ...input, textAlign: "center", fontSize: "12px", padding: "6px", background: "rgba(255,255,255,0.04)" }}
+                      />
+                      <button 
+                        onClick={() => handleVipSubmit(vipCodeWeek, "week")}
+                        style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "white", borderRadius: "6px", padding: "6px", fontSize: "11px", cursor: "pointer" }}
+                      >
+                        VALIDATE
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* --- MONTH CARD --- */}
+              <div style={{ ...priceCard, cursor: "default" }}>
+                <div 
+                  onClick={() => handleCheckout("price_1T0L8aDyLtejYlZik3nH3Uft")}
+                  style={{ cursor: "pointer" }}
+                >
+                  <h3>1 Month · $49.99</h3>
+                  <small>Full intelligence engine</small>
+                </div>
+                <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "12px" }}>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setShowVipInputMonth(!showVipInputMonth); }}
+                    style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: "10px", cursor: "pointer", letterSpacing: "0.05em" }}
+                  >
+                    {showVipInputMonth ? "CLOSE PRIORITY" : "HAVE A PRIORITY CODE?"}
+                  </button>
+                  {showVipInputMonth && (
+                    <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px", position: "relative" }}>
+                      <span 
+                        onClick={() => setShowVipInputMonth(false)}
+                        style={{ position: "absolute", right: "-5px", top: "-25px", cursor: "pointer", fontSize: "12px", opacity: 0.5 }}
+                      >✕</span>
+                      <input 
+                        type="text" 
+                        value={vipCodeMonth}
+                        onChange={(e) => setVipCodeMonth(e.target.value)}
+                        placeholder="Enter code"
+                        style={{ ...input, textAlign: "center", fontSize: "12px", padding: "6px", background: "rgba(255,255,255,0.04)" }}
+                      />
+                      <button 
+                        onClick={() => handleVipSubmit(vipCodeMonth, "month")}
+                        style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "white", borderRadius: "6px", padding: "6px", fontSize: "11px", cursor: "pointer" }}
+                      >
+                        VALIDATE
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      {!isMobile && (
-        <div style={footerLeft}>
-          © 2026 WealthyAI — All rights reserved.
+        {/* CUSTOM INQUIRY SECTION */}
+        <div style={{ 
+          marginTop: "40px", 
+          textAlign: "center", 
+          padding: "0 20px" 
+        }}>
+          <p style={{ 
+            fontSize: isMobile ? "13px" : "15px", 
+            opacity: 0.85, 
+            maxWidth: "800px", 
+            margin: "0 auto", 
+            lineHeight: "1.6" 
+          }}>
+            <strong>Looking for a custom deep-dive?</strong><br />
+            If our standard plans don't cover your specific needs, contact us for a personalized data interpretation request at <a href="mailto:info@mywealthyai.com" style={{ color: "#7dd3fc", textDecoration: "none" }}>info@mywealthyai.com</a>. We provide technical insights and analytical clarity to help you understand your financial data better.<br />
+            <span style={{ fontSize: "11px", opacity: 0.6 }}>*Note: This service constitutes data interpretation and information services only, not financial or investment advice.</span>
+          </p>
         </div>
-      )}
 
-      <div style={{
-        ...upsellFixed,
-        position: isMobile ? "relative" : "fixed",
-        padding: isMobile ? "20px" : "20px 0",
-        background: isMobile ? "transparent" : "transparent",
-        backdropFilter: isMobile ? "none" : "none",
-        fontSize: isMobile ? "12px" : "14px",
-        borderTop: isMobile ? "none" : "none", 
-      }}>
-        Weekly and Monthly plans unlock deeper insights through multi-angle analysis, 
-        stress testing, and advanced projections.
-        
-        {isMobile && <div style={{marginTop: 10, fontSize: 10, opacity: 0.6}}>© 2026 WealthyAI</div>}
-      </div>
+        <div style={{ 
+          marginTop: "30px", 
+          textAlign: "center", 
+          paddingBottom: "20px" 
+        }}>
+          <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
+            © 2026 WealthyAI — All rights reserved.
+          </div>
+        </div>
 
-      <style>{`
-        @keyframes waiScroll {
-          from { transform: translateX(0); }
-          to   { transform: translateX(-50%); }
-        }
-      `}</style>
-    </div>
+        <style>{`
+          .pulse-title {
+            animation: pulseSoft 3s ease-in-out infinite;
+          }
+          @keyframes pulseSoft {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+          }
+          @keyframes waiScroll {
+            from { transform: translateX(0); }
+            to   { transform: translateX(-50%); }
+          }
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
+      </main>
+    </>
   );
 }
-
-function Metric({ label, value, isMobile }) {
-  return (
-    <div style={{ ...metric, marginBottom: isMobile ? "15px" : "25px" }}>
-      <div style={metricLabel}>{label}</div>
-      <div style={{ ...metricValue, fontSize: isMobile ? "1.6rem" : "2.2rem" }}>{value}</div>
-    </div>
-  );
-}
-
-function MiniChart({ title, data }) {
-  return (
-    <div style={chartBox}>
-      <div style={chartTitle}>{title}</div>
-      <ResponsiveContainer width="100%" height={120}>
-        <LineChart data={data}>
-          <CartesianGrid stroke="#0f172a" strokeDasharray="3 3" />
-          <XAxis dataKey="name" stroke="#64748b" fontSize={10} />
-          <YAxis stroke="#64748b" fontSize={10} />
-          <Tooltip contentStyle={{backgroundColor: '#020617', border: '1px solid #1e293b'}} />
-          <Line type="monotone" dataKey="value" stroke="#38bdf8" strokeWidth={2} dot={{ r: 3 }} />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
-
-function MiniBar({ title, value }) {
-  const data = [{ name: "Total", v: value }];
-  return (
-    <div style={chartBox}>
-      <div style={chartTitle}>{title}</div>
-      <ResponsiveContainer width="100%" height={120}>
-        <BarChart data={data}>
-          <XAxis dataKey="name" stroke="#64748b" fontSize={10} />
-          <YAxis stroke="#64748b" fontSize={10} />
-          <Bar dataKey="v" fill="#22d3ee" />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
-
-/* STYLES */
-const page = {
-  minHeight: "100vh",
-  position: "relative",
-  color: "#e5e7eb",
-  fontFamily: "Inter, system-ui, sans-serif",
-  backgroundColor: "#020617",
-  backgroundAttachment: "fixed",
-  backgroundImage: `
-    repeating-linear-gradient(-25deg, rgba(56,189,248,0.06) 0px, rgba(56,189,248,0.06) 1px, transparent 1px, transparent 180px),
-    repeating-linear-gradient(35deg, rgba(167,139,250,0.05) 0px, rgba(167,139,250,0.05) 1px, transparent 1px, transparent 260px),
-    radial-gradient(circle at 20% 30%, rgba(56,189,248,0.18), transparent 45%),
-    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.18), transparent 50%),
-    radial-gradient(circle at 45% 85%, rgba(34,211,238,0.14), transparent 45%),
-    url("/wealthyai/icons/generated.png")
-  `,
-  backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
-  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 280px auto",
-  backgroundPosition: "center",
-  overflowX: "hidden"
-};
-
-const contentWrap = { width: "100%", boxSizing: "border-box" };
-const header = { marginBottom: "30px", textAlign: "center" };
-const title = { margin: 0, fontWeight: "bold" };
-const subtitle = { color: "#f8fafc", marginTop: "10px" };
-
-const helpButton = {
-  position: "absolute",
-  padding: "8px 14px",
-  borderRadius: 10,
-  fontSize: 13,
-  textDecoration: "none",
-  color: "#7dd3fc",
-  border: "1px solid #1e293b",
-  background: "rgba(2,6,23,0.6)",
-  backdropFilter: "blur(6px)",
-  zIndex: 10,
-};
-
-const layout = { display: "grid", maxWidth: "1200px", margin: "0 auto" };
-const metric = { width: "100%" };
-const metricLabel = { color: "#7dd3fc", fontSize: "0.8rem", letterSpacing: "1px" };
-const metricValue = { fontWeight: "bold" };
-
-const aiBox = {
-  marginTop: "20px",
-  background: "rgba(2,6,23,0.8)",
-  border: "1px solid #1e293b",
-  borderRadius: "12px",
-  padding: "16px",
-  backdropFilter: "blur(10px)",
-};
-
-const aiHeader = { display: "flex", justifyContent: "space-between", marginBottom: 10 };
-const closeBtn = { background: "transparent", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: "18px" };
-
-const aiButton = {
-  width: "100%",
-  padding: "14px",
-  background: "#38bdf8",
-  border: "none",
-  borderRadius: "8px",
-  fontWeight: "bold",
-  color: "#020617",
-  cursor: "pointer",
-};
-
-const aiTextStyle = {
-  marginTop: "10px",
-  whiteSpace: "pre-wrap",
-  color: "#cbd5f5",
-  fontSize: "14px",
-  lineHeight: "1.5",
-  fontFamily: "inherit"
-};
-
-const inputPanel = {
-  marginBottom: "20px",
-  border: "1px solid #1e293b",
-  borderRadius: "12px",
-  padding: "15px",
-  background: "rgba(30, 41, 59, 0.2)"
-};
-
-const inputRow = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" };
-
-const input = {
-  background: "rgba(56, 189, 248, 0.05)",
-  border: "1px solid rgba(56, 189, 248, 0.2)",
-  borderRadius: "4px",
-  padding: "5px 10px",
-  color: "#38bdf8",
-  textAlign: "right",
-  width: "100px",
-  fontSize: "16px"
-};
-
-const chartGrid = { display: "grid", gap: "16px" };
-const chartBox = { background: "rgba(2, 6, 23, 0.7)", border: "1px solid #1e293b", borderRadius: "12px", padding: "12px" };
-const chartTitle = { fontSize: "0.75rem", color: "#7dd3fc", marginBottom: "10px", textTransform: "uppercase", letterSpacing: "0.5px" };
-
-const upsellFixed = {
-  bottom: 0,
-  left: 0,
-  width: "100%",
-  textAlign: "center",
-  color: "#f8fafc",
-  boxSizing: "border-box",
-  zIndex: 5,
-};
-
-const footerLeft = { position: "fixed", bottom: 20, left: 20, fontSize: "12px", opacity: 0.6 };
-
-/* ÚJ SCANNER STÍLUSOK */
-const scanTriggerBtn = {
-  width: "100%",
-  padding: "12px",
-  background: "rgba(56, 189, 248, 0.1)",
-  border: "1px solid rgba(56, 189, 248, 0.4)",
-  borderRadius: "12px",
-  color: "#38bdf8",
-  fontWeight: "bold",
-  fontSize: "12px",
-  cursor: "pointer",
-  letterSpacing: "1px",
-  transition: "all 0.3s ease"
-};
-
-const scanWindow = {
-  background: "rgba(15, 23, 42, 0.6)",
-  borderRadius: "12px",
-  padding: "20px",
-  backdropFilter: "blur(10px)",
-  transition: "all 0.2s ease"
-};
-
-const uploadLabel = {
-  display: 'inline-block',
-  padding: '8px 20px',
-  background: '#38bdf8',
-  color: '#020617',
-  borderRadius: '6px',
-  fontSize: '12px',
-  fontWeight: 'bold',
-  cursor: 'pointer'
-};
