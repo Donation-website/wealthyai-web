@@ -168,6 +168,19 @@ export default function DayPremium() {
   const [scanLoading, setScanLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
 
+  const [data, setData] = useState({
+    income: 0,
+    fixed: 0,
+    variable: 0,
+  });
+
+  // KILÉPÉSKOR ÉS BEZÁRÁSKOR NULLÁZÓ LOGIKA
+  const resetFinancials = () => {
+    const empty = { income: 0, fixed: 0, variable: 0 };
+    setData(empty);
+    localStorage.removeItem("userFinancials");
+  };
+
   useEffect(() => {
     setMounted(true);
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
@@ -197,14 +210,13 @@ export default function DayPremium() {
     detectRegion();
 
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    
+    // Cleanup: Amikor elhagyja az oldalt (unmount), töröljük a beragadt adatokat
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      resetFinancials();
+    };
   }, []);
-
-  const [data, setData] = useState({
-    income: 5000,
-    fixed: 2000,
-    variable: 1500,
-  });
 
   const [aiText, setAiText] = useState("");
   const [loading, setLoading] = useState(false);
@@ -220,20 +232,19 @@ export default function DayPremium() {
     }
   };
 
-  /* AZURE SCAN LOGIC - JAVÍTOTT FORM DATA KÜLDÉS */
   const handleFileUpload = async (file) => {
     if (!file) return;
     setScanLoading(true);
 
     try {
       const formData = new FormData();
-      formData.append('file', file); // A GitHubos index.ts a 'file' kulcsot várja
+      formData.append('file', file);
 
       const supabaseUrl = "https://csfaqnsuhhnposhyfxmk.supabase.co/functions/v1/swift-task";
       
       const response = await fetch(supabaseUrl, {
         method: "POST",
-        body: formData, // Nyers FormData küldése (nincs header, a böngésző kitölti)
+        body: formData,
       });
 
       const result = await response.json();
@@ -242,14 +253,16 @@ export default function DayPremium() {
         console.log("Sikeres szkennelés:", result);
         
         const updatedData = {
-          income: result.income ? Number(result.income) : data.income,
-          fixed: result.fixed ? Number(result.fixed) : data.fixed,
-          variable: result.variable ? Number(result.variable) : data.variable,
+          income: result.income ? Math.round(Number(result.income)) : 0,
+          fixed: result.fixed ? Math.round(Number(result.fixed)) : 0,
+          variable: result.variable ? Math.round(Number(result.variable)) : 0,
         };
 
+        // FRISSÍTÉS A MEMÓRIÁBAN ÉS LOCALSTORAGE-BAN
         setData(updatedData);
         localStorage.setItem("userFinancials", JSON.stringify(updatedData));
         setScanOpen(false);
+
       } else {
         alert("Scan failed: " + (result.error || "Unknown error"));
       }
@@ -275,6 +288,11 @@ export default function DayPremium() {
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFileUpload(e.dataTransfer.files[0]);
     }
+  };
+
+  const handleCloseScan = () => {
+    resetFinancials(); // Töröljük a számokat a bezáráskor is
+    setScanOpen(false);
   };
 
   useEffect(() => {
@@ -339,6 +357,7 @@ export default function DayPremium() {
   useEffect(() => {
     const saved = localStorage.getItem("userFinancials");
     if (saved) setData(JSON.parse(saved));
+    else resetFinancials(); // Ha nincs mentett adat, induljunk nulláról
   }, []);
 
   const surplus = data.income - (data.fixed + data.variable);
@@ -479,7 +498,7 @@ export default function DayPremium() {
                   onClick={() => setScanOpen(true)}
                   style={scanTriggerBtn}
                 >
-                  AUTO-SCAN BANK STATEMENT (BETA)
+                  AUTO-SCAN BANK STATEMENT
                 </button>
               ) : (
                 <div 
@@ -494,7 +513,7 @@ export default function DayPremium() {
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                     <span style={{ fontSize: '12px', color: '#7dd3fc', fontWeight: 'bold' }}>DOCUMENT INTELLIGENCE</span>
-                    <button onClick={() => setScanOpen(false)} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer' }}>✕</button>
+                    <button onClick={handleCloseScan} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer' }}>✕</button>
                   </div>
                   
                   {scanLoading ? (
