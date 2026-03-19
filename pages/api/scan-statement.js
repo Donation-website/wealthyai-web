@@ -11,27 +11,58 @@ export default async function handler(req, res) {
   const endpoint = process.env.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT;
   const key = process.env.AZURE_DOCUMENT_INTELLIGENCE_KEY;
 
+  console.log("DEBUG: API hívás indult");
+  console.log("DEBUG: Endpoint megvan:", !!endpoint);
+
   try {
-    const buffer = await new Promise((resolve, reject) => {
+    const { buffer, contentType } = await new Promise((resolve, reject) => {
       const busboy = Busboy({ headers: req.headers });
       let chunks = [];
-      busboy.on('file', (name, file) => {
-        file.on('data', (d) => chunks.push(d));
-        file.on('end', () => resolve(Buffer.concat(chunks)));
+      let detectedContentType = "";
+
+      busboy.on('file', (name, file, info) => {
+        // 1. FIX: Csak a "file" nevű fieldet fogadjuk el (vagy amit a frontend küld)
+        detectedContentType = info.mimeType;
+        
+        file.on('data', (data) => chunks.push(data));
+        file.on('end', () => {
+          console.log(`DEBUG: Fájl beolvasva (${name}), méret: ${Buffer.concat(chunks).length} bytes`);
+        });
       });
-      busboy.on('error', reject);
+
+      busboy.on('finish', () => {
+        if (chunks.length === 0) {
+          reject(new Error("Nincs feltöltött fájl vagy rossz field név (használd a 'file' nevet!)"));
+        } else {
+          resolve({ 
+            buffer: Buffer.concat(chunks), 
+            contentType: detectedContentType 
+          });
+        }
+      });
+
+      busboy.on('error', (err) => reject(err));
       req.pipe(busboy);
-      setTimeout(() => reject(new Error("Timeout")), 10000);
+
+      // Timeout védelem
+      setTimeout(() => reject(new Error("Vercel/Busboy Upload Timeout")), 15000);
     });
 
-    const client = new DocumentAnalysisClient(endpoint, new AzureKeyCredential(key));
-    // A Layout modell a legerősebb nemzetközi táblázatfelismeréshez
-    const poller = await client.beginAnalyzeDocument("prebuilt-layout", buffer);
-    const { content, tables } = await poller.pollUntilDone();
+    console.log("DEBUG: Azure küldés indítása...", contentType);
 
-    let income = 0, expenses = 0;
+    const client = new DocumentAnalysisClient(endpoint, new AzureKeyCredential(key));
     
-    // Univerzális számformázó (kezeli a 1.234,56 és 1,234.56 formátumot is)
+    // 2. FIX: Explicit contentType megadása az Azure-nak
+    const poller = await client.beginAnalyzeDocument(
+      "prebuilt-layout", 
+      buffer, 
+      { contentType: contentType || "application/pdf" }
+    );
+    
+    const result = await poller.pollUntilDone();
+    console.log("DEBUG: Azure válasz megérkezett");
+
+    // Szám parsing javítása (nemzetközi)
     const parse = (t) => {
       if (!t) return NaN;
       let clean = t.replace(/[^0-9.,-]/g, "");
@@ -45,20 +76,21 @@ export default async function handler(req, res) {
       return parseFloat(clean);
     };
 
-    // Nemzetközi kulcsszavak
-    const keywords = {
-      inc: ["fizetés", "salary", "beérkezés", "credit", "incoming", "deposit", "gehalt", "lohn"],
-      exp: ["kifizetés", "total expenses", "outgoing", "debit", "withdrawal", "ausgaben", "spent"]
-    };
+    let income = 0, expenses = 0;
+    const { content } = result;
 
-    content.split('\n').forEach(line => {
-      const l = line.toLowerCase();
-      // Összesítő sorok keresése (Total/Sum/Egyenleg)
-      if (l.includes("total") || l.includes("összesen") || l.includes("sum") || l.includes("balance")) {
-        const n = parse(line);
-        if (!isNaN(n)) {
-          if (keywords.inc.some(k => l.includes(k))) income = Math.max(income, n);
-          else if (keywords.exp.some(k => l.includes(k))) expenses = Math.max(expenses, Math.abs(n));
+    if (content) {
+      content.split('\n').forEach(line => {
+        const l = line.toLowerCase();
+        if (l.includes("total") || l.includes("összesen") || l.includes("sum") || l.includes("balance")) {
+          const n = parse(line);
+          if (!isNaN(n)) {
+            if (["salary", "fizetés", "credit", "beérkezés", "incoming"].some(k => l.includes(k))) {
+              income = Math.max(income, n);
+            } else {
+              expenses = Math.max(expenses, Math.abs(n));
+            }
+          }
         }
       }
     });
@@ -67,11 +99,16 @@ export default async function handler(req, res) {
       income: Math.round(income) || 0,
       fixed: Math.round(expenses * 0.65) || 0,
       variable: Math.round(expenses * 0.35) || 0,
-      status: "success",
-      currency_detected: content.includes("€") ? "EUR" : content.includes("$") ? "USD" : "HUF"
+      status: (income > 0 || expenses > 0) ? "success" : "manual_needed",
+      debug: { size: buffer.length, type: contentType }
     });
-  } catch (err) {
-    console.error("Feldolgozási hiba:", err.message);
-    return res.status(500).json({ error: "Sikertelen beolvasás. Kérjük, próbáljon tisztább dokumentumot!" });
+
+  } catch (error) {
+    // 6. FIX: Részletes hiba logolás
+    console.error("FULL ERROR OBJECT:", JSON.stringify(error, null, 2));
+    return res.status(500).json({ 
+      error: error.message, 
+      details: error.code || "No error code" 
+    });
   }
 }
