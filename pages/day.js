@@ -250,12 +250,28 @@ export default function DayPremium() {
       const result = await response.json();
 
       if (response.ok) {
-        console.log("Sikeres szkennelés:", result);
+        console.log("BACKEND RAW:", result);
         
+        // 🔥 1. JAVÍTOTT ADATKEZELÉS ÉS BIZTONSÁGI SZŰRÉS
+        const income = Number(result.income) || 0;
+        const expenses = Number(result.expenses) || Number(result.total_expenses) || (Number(result.fixed || 0) + Number(result.variable || 0)) || 0;
+
+        // Ha nincs bontás a backendtől, generáljuk le az arányos becslést
+        const fixed = result.fixed && result.fixed > 0
+          ? Math.round(Number(result.fixed))
+          : Math.round(expenses * 0.6);
+
+        const variable = result.variable && result.variable > 0
+          ? Math.round(Number(result.variable))
+          : Math.round(expenses * 0.4);
+
+        // Brutál szám szűrés (backend bug védelem: pl. 10^30)
+        const safeIncome = income > 1_000_000_000 ? 0 : income;
+
         const updatedData = {
-          income: result.income ? Math.round(Number(result.income)) : 0,
-          fixed: result.fixed ? Math.round(Number(result.fixed)) : 0,
-          variable: result.variable ? Math.round(Number(result.variable)) : 0,
+          income: Math.round(safeIncome),
+          fixed,
+          variable,
         };
 
         // FRISSÍTÉS A MEMÓRIÁBAN ÉS LOCALSTORAGE-BAN
@@ -355,9 +371,20 @@ export default function DayPremium() {
   }, [mounted, isAuthorized]);
 
   useEffect(() => {
+    // 🔥 3. JAVÍTOTT LOCALSTORAGE BETÖLTÉS
     const saved = localStorage.getItem("userFinancials");
-    if (saved) setData(JSON.parse(saved));
-    else resetFinancials(); // Ha nincs mentett adat, induljunk nulláról
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Ha irreális adatot találunk (bugos mentés), töröljük
+      if (parsed.income > 1_000_000_000) {
+        localStorage.removeItem("userFinancials");
+        resetFinancials();
+      } else {
+        setData(parsed);
+      }
+    } else {
+      resetFinancials();
+    }
   }, []);
 
   const surplus = data.income - (data.fixed + data.variable);
