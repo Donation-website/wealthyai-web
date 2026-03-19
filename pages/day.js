@@ -11,16 +11,17 @@ import {
   Bar,
 } from "recharts";
 
-/* ===== ANIMATION COMPONENT (SpiderNet - Dinamikus magassággal) ===== */
-function SpiderNet({ isMobile, containerRef }) {
+/* ===== ANIMATION COMPONENT (SpiderNet - HD & Ultra Dense) ===== */
+function SpiderNet({ isMobile, height }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
-    if (isMobile) return;
+    if (isMobile || !height) return;
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     let animationFrameId;
+
     let particles = [];
     const particleCount = 220; 
     const connectionDistance = 140; 
@@ -28,14 +29,16 @@ function SpiderNet({ isMobile, containerRef }) {
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
-      const rect = containerRef.current.getBoundingClientRect();
+      const rect = canvas.parentElement.getBoundingClientRect();
       canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
+      canvas.height = height * dpr;
       ctx.scale(dpr, dpr);
       canvas.style.width = `${rect.width}px`;
-      canvas.style.height = `${rect.height}px`;
-      init(); // Újrainicializáljuk a részecskéket az új mérethez
+      canvas.style.height = `${height}px`;
     };
+
+    window.addEventListener("resize", resize);
+    resize();
 
     const handleMouseMove = (e) => {
       const rect = canvas.getBoundingClientRect();
@@ -48,25 +51,33 @@ function SpiderNet({ isMobile, containerRef }) {
       mouse.y = null;
     };
 
+    canvas.addEventListener("mousemove", handleMouseMove);
+    canvas.addEventListener("mouseleave", handleMouseLeave);
+
     class Particle {
       constructor() {
-        this.x = Math.random() * canvas.offsetWidth;
-        this.y = Math.random() * canvas.offsetHeight;
+        const rect = canvas.getBoundingClientRect();
+        this.x = Math.random() * rect.width;
+        this.y = Math.random() * rect.height;
         this.size = Math.random() * 1.2 + 0.3;
         this.vx = (Math.random() - 0.5) * 0.3;
         this.vy = (Math.random() - 0.5) * 0.3;
       }
+
       draw() {
         ctx.fillStyle = "#38bdf8";
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
       }
+
       update() {
-        if (this.x < 0 || this.x > canvas.offsetWidth) this.vx *= -1;
-        if (this.y < 0 || this.y > canvas.offsetHeight) this.vy *= -1;
+        const rect = canvas.getBoundingClientRect();
         this.x += this.vx;
         this.y += this.vy;
+
+        if (this.x < 0 || this.x > rect.width) this.vx *= -1;
+        if (this.y < 0 || this.y > rect.height) this.vy *= -1;
 
         if (mouse.x !== null && mouse.y !== null) {
           let dx = mouse.x - this.x;
@@ -94,6 +105,7 @@ function SpiderNet({ isMobile, containerRef }) {
           let dx = particles[a].x - particles[b].x;
           let dy = particles[a].y - particles[b].y;
           let distance = Math.sqrt(dx * dx + dy * dy);
+
           if (distance < connectionDistance) {
             let opacity = 1 - (distance / connectionDistance);
             ctx.strokeStyle = `rgba(34, 211, 238, ${opacity * 0.5})`;
@@ -108,7 +120,9 @@ function SpiderNet({ isMobile, containerRef }) {
     };
 
     const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const rect = canvas.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      ctx.clearRect(0, 0, rect.width, rect.height);
       particles.forEach(p => {
         p.update();
         p.draw();
@@ -117,30 +131,25 @@ function SpiderNet({ isMobile, containerRef }) {
       animationFrameId = requestAnimationFrame(animate);
     };
 
-    window.addEventListener("resize", resize);
-    canvas.addEventListener("mousemove", handleMouseMove);
-    canvas.addEventListener("mouseleave", handleMouseLeave);
-    
-    resize();
+    init();
     animate();
 
     return () => {
       window.removeEventListener("resize", resize);
+      canvas.removeEventListener("mousemove", handleMouseMove);
+      canvas.removeEventListener("mouseleave", handleMouseLeave);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [isMobile, containerRef]);
+  }, [isMobile, height]);
 
   return (
     <canvas 
       ref={canvasRef} 
       style={{ 
-        position: 'absolute',
-        top: 0,
-        left: 0,
+        display: 'block',
         width: '100%', 
-        height: '100%',
-        zIndex: 0,
-        pointerEvents: 'none'
+        height: `${height}px`,
+        background: 'transparent'
       }} 
     />
   );
@@ -148,15 +157,49 @@ function SpiderNet({ isMobile, containerRef }) {
 
 export default function DayPremium() {
   const [isMobile, setIsMobile] = useState(false);
-  const mainContainerRef = useRef(null);
+  const aiBoxRef = useRef(null);
+  const [aiBoxHeight, setAiBoxHeight] = useState(0);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [country, setCountry] = useState("US");
 
+  // Új állapotok az Azure-beolvasóhoz
   const [scanOpen, setScanOpen] = useState(false);
   const [scanLoading, setScanLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    handleResize();
+
+    const detectRegion = async () => {
+      try {
+        const res = await fetch("https://ipapi.co/json/");
+        const geo = await res.json();
+        const code = geo.country_code;
+
+        if (code === "HU") {
+          setCountry("HU");
+        } else if (code === "GB") {
+          setCountry("UK");
+        } else if (["AT", "DE", "FR", "IT", "ES", "BE", "NL", "LU", "IE", "PT"].includes(code)) {
+          setCountry("EU");
+        } else if (code === "US") {
+          setCountry("US");
+        } else {
+          setCountry("Other");
+        }
+      } catch (e) {
+        console.warn("Region detection unavailable, fallback to US");
+      }
+    };
+    detectRegion();
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const [data, setData] = useState({
     income: 5000,
@@ -168,49 +211,46 @@ export default function DayPremium() {
   const [loading, setLoading] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-    const handleResize = () => setIsMobile(window.innerWidth < 1024);
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  /* CURRENCY LOGIC */
+  const getCurrency = (c) => {
+    switch(c) {
+      case "HU": return "Ft";
+      case "EU": return "€";
+      case "UK": return "£";
+      case "Other": return "$";
+      default: return "$";
+    }
+  };
 
-  /* SCAN LOGIC - FIX: Binary Transfer */
+  /* AZURE SCAN LOGIC */
   const handleFileUpload = async (file) => {
     if (!file) return;
     setScanLoading(true);
 
     try {
-      // Nem FormData-t használunk, hanem közvetlenül a bináris tartalmat küldjük,
-      // mert a Vercel body-parser-e így stabilabb PDF-nél.
-      const arrayBuffer = await file.arrayBuffer();
-      
+      const formData = new FormData();
+      formData.append("file", file);
+
+      // Itt hívjuk meg a Vercel API-t, amit majd létre kell hoznod az Azure kulcsokkal
       const response = await fetch("/api/scan-statement", {
         method: "POST",
-        headers: {
-          "Content-Type": file.type || "application/pdf",
-        },
-        body: arrayBuffer,
+        body: formData,
       });
 
       if (response.ok) {
         const result = await response.json();
-        if (result.status === "success" || result.income !== null) {
-          setData({
-            income: result.income || data.income,
-            fixed: result.fixed || data.fixed,
-            variable: result.variable || data.variable,
-          });
-          setScanOpen(false);
-        } else {
-          alert("Partial scan. Please verify the extracted numbers.");
-        }
+        // Feltételezzük, hogy az Azure visszaküldte a számokat
+        setData({
+          income: result.income || data.income,
+          fixed: result.fixed || data.fixed,
+          variable: result.variable || data.variable,
+        });
+        setScanOpen(false); // Bezárjuk, ha sikeres
       } else {
         alert("Scan failed. Please try a clearer document.");
       }
     } catch (err) {
-      console.error("Scan Error:", err);
+      console.error("Azure Error:", err);
       alert("Error connecting to intelligence service.");
     } finally {
       setScanLoading(false);
@@ -233,14 +273,81 @@ export default function DayPremium() {
     }
   };
 
-  const getCurrency = (c) => {
-    switch(c) {
-      case "HU": return "Ft";
-      case "EU": return "€";
-      case "UK": return "£";
-      default: return "$";
+  /* CLOSE AI ON REGION CHANGE */
+  useEffect(() => {
+    setAiOpen(false);
+    setAiText("");
+  }, [country]);
+
+  useEffect(() => {
+    if (aiOpen && aiBoxRef.current) {
+      setAiBoxHeight(aiBoxRef.current.offsetHeight);
     }
-  };
+  }, [aiOpen, aiText]);
+
+  useEffect(() => {
+    async function checkAccess() {
+      if (isAuthorized) return;
+
+      const vipToken = localStorage.getItem("wai_vip_token");
+      const params = new URLSearchParams(window.location.search);
+      const sessionId = params.get("session_id");
+
+      if (vipToken === "MASTER-DOMINANCE-2026" || (sessionId && sessionId.startsWith('cs_'))) {
+        if (sessionId) localStorage.setItem("wai_vip_token", sessionId);
+        setIsAuthorized(true);
+        setIsLoading(false);
+        return;
+      }
+
+      if (!sessionId && !vipToken) {
+        setTimeout(() => {
+          if (!localStorage.getItem("wai_vip_token")) {
+             window.location.href = "/start";
+          }
+        }, 5000);
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/verify-active-subscription", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId, vipToken }),
+        });
+        
+        if (res.ok) {
+          const d = await res.json();
+          if (d.valid || d.active) {
+            setIsAuthorized(true);
+          } else {
+            window.location.href = "/start";
+          }
+        }
+      } catch (err) {
+        if (sessionId) setIsAuthorized(true);
+      }
+      setIsLoading(false);
+    }
+
+    if (mounted) checkAccess();
+  }, [mounted, isAuthorized]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("userFinancials");
+    if (saved) setData(JSON.parse(saved));
+  }, []);
+
+  const surplus = data.income - (data.fixed + data.variable);
+  const savingsRate = data.income > 0 ? (surplus / data.income) * 100 : 0;
+  const fiveYearProjection = surplus * 60 * 1.45;
+
+  const chartData = [
+    { name: "Now", value: surplus },
+    { name: "Y1", value: surplus * 12 * 1.08 },
+    { name: "Y3", value: surplus * 36 * 1.25 },
+    { name: "Y5", value: surplus * 60 * 1.45 },
+  ];
 
   const askAI = async () => {
     setLoading(true);
@@ -265,108 +372,149 @@ export default function DayPremium() {
     setLoading(false);
   };
 
-  /* AUTH & INIT */
-  useEffect(() => {
-    async function checkAccess() {
-      if (isAuthorized) return;
-      const vipToken = localStorage.getItem("wai_vip_token");
-      const params = new URLSearchParams(window.location.search);
-      const sessionId = params.get("session_id");
-
-      if (vipToken === "MASTER-DOMINANCE-2026" || (sessionId && sessionId.startsWith('cs_'))) {
-        setIsAuthorized(true);
-        setIsLoading(false);
-        return;
-      }
-      setIsAuthorized(true); // Temporary bypass for dev
-      setIsLoading(false);
-    }
-    if (mounted) checkAccess();
-  }, [mounted]);
-
   if (!mounted) return null;
-  if (isLoading) return <div style={loadingScreen}>Initialising Intelligence...</div>;
 
-  const surplus = data.income - (data.fixed + data.variable);
-  const savingsRate = data.income > 0 ? (surplus / data.income) * 100 : 0;
+  if (isLoading) {
+    return (
+      <div style={{ backgroundColor: "#020617", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontFamily: "Inter, sans-serif" }}>
+        Initialising Intelligence...
+      </div>
+    );
+  }
 
-  return (
-    <div style={page} ref={mainContainerRef}>
-      <SpiderNet isMobile={isMobile} containerRef={mainContainerRef} />
-      
-      <div style={tickerContainer}>
-        <div style={tickerTrack}>
-          <span>WealthyAI interprets your financial state over time — not advice, not prediction, just clarity • Interpretation over advice • Clarity over certainty • Insight unfolds over time • Financial understanding isn’t instant • </span>
-          <span>WealthyAI interprets your financial state over time — not advice, not prediction, just clarity • Interpretation over advice • Clarity over certainty • Insight unfolds over time • Financial understanding isn’t instant • </span>
+  if (!isAuthorized) return null;
+
+  const WealthyTicker = () => {
+    if (isMobile) return null;
+    const tickerText = "WealthyAI interprets your financial state over time — not advice, not prediction, just clarity • Interpretation over advice • Clarity over certainty • Insight unfolds over time • Financial understanding isn’t instant • Context changes • Insight follows time • Clarity over certainty • Built on time, not urgency • ";
+    return (
+      <div style={{ position: "absolute", top: 10, left: 0, width: "100%", height: 18, overflow: "hidden", zIndex: 20, pointerEvents: "none" }}>
+        <div style={{ display: "inline-block", whiteSpace: "nowrap", fontSize: 11, letterSpacing: "0.08em", color: "rgba(255,255,255,0.75)", animation: "waiScroll 45s linear infinite" }}>
+          <span>{tickerText}</span>
+          <span>{tickerText}</span>
         </div>
       </div>
+    );
+  };
 
-      <a href="/day/help" style={helpButton}>Help</a>
+  return (
+    <div style={page}>
+      <WealthyTicker />
+      
+      <a href="/day/help" style={{
+        ...helpButton,
+        top: isMobile ? 12 : 24,
+        right: isMobile ? 12 : 24
+      }}>Help</a>
 
-      <div style={{ ...contentWrap, padding: isMobile ? "60px 15px" : "80px 40px" }}>
+      <div style={{
+        ...contentWrap,
+        padding: isMobile ? "60px 15px 120px 15px" : "40px"
+      }}>
         <div style={header}>
-          <h1 style={{ ...title, fontSize: isMobile ? "1.6rem" : "2.6rem" }}>WEALTHYAI · PRO INTELLIGENCE</h1>
-          <p style={subtitle}>Thank you for choosing the <strong>1-Day Professional Access</strong>.</p>
+          <h1 style={{
+            ...title,
+            fontSize: isMobile ? "1.6rem" : "2.6rem"
+          }}>WEALTHYAI · PRO INTELLIGENCE</h1>
+          <p style={subtitle}>
+            Thank you for choosing the <strong>1-Day Professional Access</strong>.
+          </p>
         </div>
 
-        <div style={{ ...layout, gridTemplateColumns: isMobile ? "1fr" : "1fr 1.3fr" }}>
-          
-          {/* LEFT COLUMN */}
-          <div style={{ zIndex: 1, position: 'relative' }}>
-            <div style={regionPicker}>
-               <span style={regionLabel}>REGION:</span>
-               <select value={country} onChange={(e) => setCountry(e.target.value)} style={selectStyle}>
+        <div style={{
+          ...layout,
+          gridTemplateColumns: isMobile ? "1fr" : "1fr 1.3fr",
+          gap: isMobile ? "20px" : "40px",
+          alignItems: 'stretch'
+        }}>
+          {/* BAL OSZLOP */}
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
+               <span style={{ fontSize: 12, color: '#7dd3fc', fontWeight: 'bold' }}>REGION SETTING:</span>
+               <select value={country} onChange={(e) => setCountry(e.target.value)} style={{ background: "#0f172a", color: "#38bdf8", border: "1px solid rgba(56, 189, 248, 0.3)", borderRadius: "6px", padding: "4px 8px", outline: "none", fontSize: "12px" }}>
                   <option value="US">US ($)</option>
                   <option value="EU">EU (€)</option>
                   <option value="UK">UK (£)</option>
                   <option value="HU">HU (Ft)</option>
+                  <option value="Other">Other ($)</option>
                </select>
             </div>
 
-            <Metric label="MONTHLY SURPLUS" value={`${surplus.toLocaleString()} ${getCurrency(country)}`} />
-            <Metric label="SAVINGS RATE" value={`${savingsRate.toFixed(1)}%`} />
-            <Metric label="5Y PROJECTION" value={`${Math.round(surplus * 60 * 1.45).toLocaleString()} ${getCurrency(country)}`} />
+            <Metric label="MONTHLY SURPLUS" value={`${surplus.toLocaleString()} ${getCurrency(country)}`} isMobile={isMobile} />
+            <Metric label="SAVINGS RATE" value={`${savingsRate.toFixed(1)}%`} isMobile={isMobile} />
+            <Metric
+              label="5Y PROJECTION"
+              value={`${Math.round(fiveYearProjection).toLocaleString()} ${getCurrency(country)}`}
+              isMobile={isMobile}
+            />
 
-            {aiOpen && (
-              <div style={aiBox}>
-                <div style={aiHeader}>
-                  <strong>AI ANALYSIS ({country})</strong>
-                  <button onClick={() => setAiOpen(false)} style={closeBtn}>✕</button>
+            <div style={{ flex: 1 }}>
+              {aiOpen && (
+                <div ref={aiBoxRef} style={aiBox}>
+                  <div style={aiHeader}>
+                    <strong>AI Intelligence ({country})</strong>
+                    <button onClick={() => setAiOpen(false)} style={closeBtn}>✕</button>
+                  </div>
+                  <pre style={aiTextStyle}>{aiText}</pre>
                 </div>
-                <pre style={aiTextStyle}>{aiText}</pre>
-              </div>
-            )}
+              )}
+            </div>
 
-            <button onClick={askAI} style={aiButton}>
-              {loading ? "ANALYZING…" : "GENERATE INTELLIGENCE"}
-            </button>
+            <div style={{ marginTop: '20px' }}>
+              <button onClick={askAI} style={aiButton}>
+                {loading ? "ANALYZING…" : "GENERATE INTELLIGENCE"}
+              </button>
+            </div>
           </div>
 
-          {/* RIGHT COLUMN */}
-          <div style={{ zIndex: 1, position: 'relative' }}>
+          {/* JOBB OSZLOP */}
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
             
+            {/* ÚJ AZURE SCANNER GOMB ÉS ABLAK */}
             <div style={{ marginBottom: '15px' }}>
               {!scanOpen ? (
-                <button onClick={() => setScanOpen(true)} style={scanTriggerBtn}>
-                  DOCUMENT INTELLIGENCE (BETA)
+                <button 
+                  onClick={() => setScanOpen(true)}
+                  style={scanTriggerBtn}
+                >
+                  AUTO-SCAN BANK STATEMENT (BETA)
                 </button>
               ) : (
                 <div 
-                  style={{ ...scanWindow, border: dragActive ? "2px dashed #38bdf8" : "1px solid #1e293b" }}
-                  onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
+                  style={{
+                    ...scanWindow,
+                    border: dragActive ? "2px dashed #38bdf8" : "1px solid #1e293b"
+                  }}
+                  onDragEnter={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDragOver={handleDrag}
+                  onDrop={handleDrop}
                 >
-                  <div style={scanHeader}>
-                    <span>OCR SCANNER</span>
-                    <button onClick={() => setScanOpen(false)} style={closeX}>✕</button>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                    <span style={{ fontSize: '12px', color: '#7dd3fc', fontWeight: 'bold' }}>DOCUMENT INTELLIGENCE</span>
+                    <button onClick={() => setScanOpen(false)} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer' }}>✕</button>
                   </div>
                   
                   {scanLoading ? (
-                    <div style={scanLoadingText}>Reading financial patterns...</div>
+                    <div style={{ textAlign: 'center', padding: '20px', color: '#38bdf8' }}>Reading financial patterns...</div>
                   ) : (
-                    <div style={{ textAlign: 'center', padding: '10px' }}>
-                      <p style={scanP}>Upload bank statement (PDF/PNG) to auto-fill metrics.</p>
-                      <input type="file" id="fileUpload" style={{ display: 'none' }} onChange={(e) => handleFileUpload(e.target.files[0])} />
-                      <label htmlFor="fileUpload" style={uploadLabel}>CHOOSE FILE</label>
+                    <div style={{ textAlign: 'center', padding: '20px' }}>
+                      <p style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '15px' }}>
+                        Drag and drop your bank statement here or click to upload. 
+                        Our AI will extract income and expenses globally.
+                      </p>
+                      <input 
+                        type="file" 
+                        id="fileUpload" 
+                        style={{ display: 'none' }} 
+                        onChange={(e) => handleFileUpload(e.target.files[0])}
+                      />
+                      <label 
+                        htmlFor="fileUpload" 
+                        style={uploadLabel}
+                      >
+                        CHOOSE FILE
+                      </label>
                     </div>
                   )}
                 </div>
@@ -374,33 +522,61 @@ export default function DayPremium() {
             </div>
 
             <div style={inputPanel}>
-              <div style={manualLabel}>MANUAL OVERRIDE</div>
+              <div style={{ fontSize: '10px', color: '#64748b', marginBottom: '10px', textAlign: 'center' }}>MANUAL DATA ENTRY</div>
               {["income", "fixed", "variable"].map((k) => (
                 <div key={k} style={inputRow}>
-                  <span style={{fontSize: 11}}>{k.toUpperCase()}</span>
+                  <span>MONTHLY {k.toUpperCase()}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <input type="number" value={data[k]} onChange={(e) => setData({ ...data, [k]: Number(e.target.value) })} style={input} />
+                    <input
+                      type="number"
+                      value={data[k]}
+                      onChange={(e) =>
+                        setData({ ...data, [k]: Number(e.target.value) })
+                      }
+                      style={input}
+                    />
                     <span style={{ fontSize: 12, color: '#38bdf8' }}>{getCurrency(country)}</span>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div style={chartGrid}>
-              <MiniChart title="Cash Flow Projection" data={[
-                { name: "Now", value: surplus },
-                { name: "Y1", value: surplus * 12 * 1.08 },
-                { name: "Y5", value: surplus * 60 * 1.45 },
-              ]} />
-              <MiniBar title="Expense Load" value={data.fixed + data.variable} />
+            <div style={{
+              ...chartGrid,
+              gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr"
+            }}>
+              <MiniChart title="Cash Flow Projection" data={chartData} />
+              <MiniBar title="Expense Distribution" value={data.fixed + data.variable} />
             </div>
+
+            {!isMobile && aiOpen && (
+              <div style={{ flex: 0, marginTop: '20px', width: '100%' }}>
+                <SpiderNet isMobile={isMobile} height={aiBoxHeight} />
+              </div>
+            )}
           </div>
         </div>
+      </div>
 
-        <div style={footerText}>
-          Weekly and Monthly plans unlock deeper insights through multi-angle analysis, stress testing, and advanced projections.
-          <br />© 2026 WealthyAI — All rights reserved.
+      {!isMobile && (
+        <div style={footerLeft}>
+          © 2026 WealthyAI — All rights reserved.
         </div>
+      )}
+
+      <div style={{
+        ...upsellFixed,
+        position: isMobile ? "relative" : "fixed",
+        padding: isMobile ? "20px" : "20px 0",
+        background: isMobile ? "transparent" : "transparent",
+        backdropFilter: isMobile ? "none" : "none",
+        fontSize: isMobile ? "12px" : "14px",
+        borderTop: isMobile ? "none" : "none", 
+      }}>
+        Weekly and Monthly plans unlock deeper insights through multi-angle analysis, 
+        stress testing, and advanced projections.
+        
+        {isMobile && <div style={{marginTop: 10, fontSize: 10, opacity: 0.6}}>© 2026 WealthyAI</div>}
       </div>
 
       <style>{`
@@ -413,12 +589,11 @@ export default function DayPremium() {
   );
 }
 
-/* HELPER COMPONENTS */
-function Metric({ label, value }) {
+function Metric({ label, value, isMobile }) {
   return (
-    <div style={metricStyle}>
+    <div style={{ ...metric, marginBottom: isMobile ? "15px" : "25px" }}>
       <div style={metricLabel}>{label}</div>
-      <div style={metricValue}>{value}</div>
+      <div style={{ ...metricValue, fontSize: isMobile ? "1.6rem" : "2.2rem" }}>{value}</div>
     </div>
   );
 }
@@ -427,13 +602,13 @@ function MiniChart({ title, data }) {
   return (
     <div style={chartBox}>
       <div style={chartTitle}>{title}</div>
-      <ResponsiveContainer width="100%" height={100}>
+      <ResponsiveContainer width="100%" height={120}>
         <LineChart data={data}>
-          <CartesianGrid stroke="#1e293b" strokeDasharray="3 3" vertical={false} />
-          <XAxis dataKey="name" stroke="#64748b" fontSize={9} />
-          <YAxis hide />
-          <Tooltip contentStyle={{backgroundColor: '#020617', border: '1px solid #1e293b', fontSize: 10}} />
-          <Line type="monotone" dataKey="value" stroke="#38bdf8" strokeWidth={2} dot={false} />
+          <CartesianGrid stroke="#0f172a" strokeDasharray="3 3" />
+          <XAxis dataKey="name" stroke="#64748b" fontSize={10} />
+          <YAxis stroke="#64748b" fontSize={10} />
+          <Tooltip contentStyle={{backgroundColor: '#020617', border: '1px solid #1e293b'}} />
+          <Line type="monotone" dataKey="value" stroke="#38bdf8" strokeWidth={2} dot={{ r: 3 }} />
         </LineChart>
       </ResponsiveContainer>
     </div>
@@ -441,74 +616,165 @@ function MiniChart({ title, data }) {
 }
 
 function MiniBar({ title, value }) {
+  const data = [{ name: "Total", v: value }];
   return (
     <div style={chartBox}>
       <div style={chartTitle}>{title}</div>
-      <ResponsiveContainer width="100%" height={100}>
-        <BarChart data={[{n: '', v: value}]}>
-          <Bar dataKey="v" fill="#22d3ee" radius={[4, 4, 0, 0]} />
+      <ResponsiveContainer width="100%" height={120}>
+        <BarChart data={data}>
+          <XAxis dataKey="name" stroke="#64748b" fontSize={10} />
+          <YAxis stroke="#64748b" fontSize={10} />
+          <Bar dataKey="v" fill="#22d3ee" />
         </BarChart>
       </ResponsiveContainer>
     </div>
   );
 }
 
-/* STYLES - FIX: SpiderNet is now Absolute & Layered */
+/* STYLES */
 const page = {
   minHeight: "100vh",
   position: "relative",
   color: "#e5e7eb",
-  fontFamily: "Inter, sans-serif",
+  fontFamily: "Inter, system-ui, sans-serif",
   backgroundColor: "#020617",
-  overflowX: "hidden",
-  display: "flex",
-  flexDirection: "column"
+  backgroundAttachment: "fixed",
+  backgroundImage: `
+    repeating-linear-gradient(-25deg, rgba(56,189,248,0.06) 0px, rgba(56,189,248,0.06) 1px, transparent 1px, transparent 180px),
+    repeating-linear-gradient(35deg, rgba(167,139,250,0.05) 0px, rgba(167,139,250,0.05) 1px, transparent 1px, transparent 260px),
+    radial-gradient(circle at 20% 30%, rgba(56,189,248,0.18), transparent 45%),
+    radial-gradient(circle at 80% 60%, rgba(167,139,250,0.18), transparent 50%),
+    radial-gradient(circle at 45% 85%, rgba(34,211,238,0.14), transparent 45%),
+    url("/wealthyai/icons/generated.png")
+  `,
+  backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, no-repeat, repeat",
+  backgroundSize: "auto, auto, 100% 100%, 100% 100%, 100% 100%, 280px auto",
+  backgroundPosition: "center",
+  overflowX: "hidden"
 };
 
-const tickerContainer = { position: "absolute", top: 10, left: 0, width: "100%", overflow: "hidden", zIndex: 10 };
-const tickerTrack = { display: "inline-block", whiteSpace: "nowrap", fontSize: 10, color: "rgba(255,255,255,0.4)", animation: "waiScroll 40s linear infinite" };
+const contentWrap = { width: "100%", boxSizing: "border-box" };
+const header = { marginBottom: "30px", textAlign: "center" };
+const title = { margin: 0, fontWeight: "bold" };
+const subtitle = { color: "#f8fafc", marginTop: "10px" };
 
-const loadingScreen = { backgroundColor: "#020617", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#38bdf8" };
+const helpButton = {
+  position: "absolute",
+  padding: "8px 14px",
+  borderRadius: 10,
+  fontSize: 13,
+  textDecoration: "none",
+  color: "#7dd3fc",
+  border: "1px solid #1e293b",
+  background: "rgba(2,6,23,0.6)",
+  backdropFilter: "blur(6px)",
+  zIndex: 10,
+};
 
-const contentWrap = { width: "100%", maxWidth: "1200px", margin: "0 auto", flex: 1, position: 'relative', zIndex: 1 };
-const header = { marginBottom: "40px", textAlign: "center" };
-const title = { margin: 0, fontWeight: 900, letterSpacing: "-1px", color: "#fff" };
-const subtitle = { color: "#94a3b8", marginTop: "10px" };
+const layout = { display: "grid", maxWidth: "1200px", margin: "0 auto" };
+const metric = { width: "100%" };
+const metricLabel = { color: "#7dd3fc", fontSize: "0.8rem", letterSpacing: "1px" };
+const metricValue = { fontWeight: "bold" };
 
-const helpButton = { position: "absolute", top: 30, right: 30, padding: "6px 15px", borderRadius: "20px", fontSize: 12, color: "#38bdf8", border: "1px solid #1e293b", background: "rgba(15,23,42,0.8)", zIndex: 20, textDecoration: 'none' };
+const aiBox = {
+  marginTop: "20px",
+  background: "rgba(2,6,23,0.8)",
+  border: "1px solid #1e293b",
+  borderRadius: "12px",
+  padding: "16px",
+  backdropFilter: "blur(10px)",
+};
 
-const layout = { display: "grid", gap: "40px" };
+const aiHeader = { display: "flex", justifyContent: "space-between", marginBottom: 10 };
+const closeBtn = { background: "transparent", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: "18px" };
 
-const metricStyle = { marginBottom: "25px" };
-const metricLabel = { color: "#38bdf8", fontSize: "11px", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" };
-const metricValue = { fontWeight: 800, fontSize: "2rem", color: "#fff" };
+const aiButton = {
+  width: "100%",
+  padding: "14px",
+  background: "#38bdf8",
+  border: "none",
+  borderRadius: "8px",
+  fontWeight: "bold",
+  color: "#020617",
+  cursor: "pointer",
+};
 
-const regionPicker = { marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 };
-const regionLabel = { fontSize: 10, color: '#64748b', fontWeight: 'bold' };
-const selectStyle = { background: "#0f172a", color: "#38bdf8", border: "1px solid #1e293b", borderRadius: "4px", padding: "4px" };
+const aiTextStyle = {
+  marginTop: "10px",
+  whiteSpace: "pre-wrap",
+  color: "#cbd5f5",
+  fontSize: "14px",
+  lineHeight: "1.5",
+  fontFamily: "inherit"
+};
 
-const aiBox = { background: "rgba(15,23,42,0.9)", border: "1px solid #38bdf8", borderRadius: "12px", padding: "20px", marginBottom: 20, backdropFilter: "blur(10px)" };
-const aiHeader = { display: "flex", justifyContent: "space-between", color: "#38bdf8", fontSize: 12, marginBottom: 15 };
-const aiTextStyle = { whiteSpace: "pre-wrap", color: "#e2e8f0", fontSize: "13px", lineHeight: "1.6", fontFamily: "Inter" };
-const closeBtn = { background: "none", border: "none", color: "#64748b", cursor: "pointer" };
+const inputPanel = {
+  marginBottom: "20px",
+  border: "1px solid #1e293b",
+  borderRadius: "12px",
+  padding: "15px",
+  background: "rgba(30, 41, 59, 0.2)"
+};
 
-const aiButton = { width: "100%", padding: "16px", background: "#38bdf8", border: "none", borderRadius: "12px", fontWeight: 900, color: "#020617", cursor: "pointer", fontSize: 14 };
+const inputRow = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" };
 
-const scanTriggerBtn = { width: "100%", padding: "14px", background: "rgba(56, 189, 248, 0.05)", border: "1px solid #38bdf8", borderRadius: "12px", color: "#38bdf8", fontWeight: 700, fontSize: 11, cursor: "pointer" };
-const scanWindow = { background: "rgba(15,23,42,0.8)", borderRadius: "12px", padding: "20px" };
-const scanHeader = { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#38bdf8', marginBottom: 15 };
-const closeX = { background: 'none', border: 'none', color: '#64748b', cursor: 'pointer' };
-const scanLoadingText = { textAlign: 'center', color: '#38bdf8', padding: 20, fontSize: 13 };
-const scanP = { fontSize: '12px', color: '#94a3b8', marginBottom: '15px' };
-const uploadLabel = { padding: '10px 25px', background: '#38bdf8', color: '#020617', borderRadius: '8px', fontSize: 11, fontWeight: 800, cursor: 'pointer' };
+const input = {
+  background: "rgba(56, 189, 248, 0.05)",
+  border: "1px solid rgba(56, 189, 248, 0.2)",
+  borderRadius: "4px",
+  padding: "5px 10px",
+  color: "#38bdf8",
+  textAlign: "right",
+  width: "100px",
+  fontSize: "16px"
+};
 
-const inputPanel = { marginBottom: "20px", border: "1px solid #1e293b", borderRadius: "12px", padding: "20px", background: "rgba(15,23,42,0.4)" };
-const manualLabel = { fontSize: '9px', color: '#475569', marginBottom: '15px', letterSpacing: 2, textAlign: 'center' };
-const inputRow = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" };
-const input = { background: "#020617", border: "1px solid #1e293b", borderRadius: "6px", padding: "8px", color: "#fff", textAlign: "right", width: "100px" };
+const chartGrid = { display: "grid", gap: "16px" };
+const chartBox = { background: "rgba(2, 6, 23, 0.7)", border: "1px solid #1e293b", borderRadius: "12px", padding: "12px" };
+const chartTitle = { fontSize: "0.75rem", color: "#7dd3fc", marginBottom: "10px", textTransform: "uppercase", letterSpacing: "0.5px" };
 
-const chartGrid = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" };
-const chartBox = { background: "rgba(15,23,42,0.5)", border: "1px solid #1e293b", borderRadius: "12px", padding: "15px" };
-const chartTitle = { fontSize: "9px", color: "#64748b", marginBottom: "10px", textTransform: "uppercase" };
+const upsellFixed = {
+  bottom: 0,
+  left: 0,
+  width: "100%",
+  textAlign: "center",
+  color: "#f8fafc",
+  boxSizing: "border-box",
+  zIndex: 5,
+};
 
-const footerText = { marginTop: 60, textAlign: 'center', fontSize: 11, color: '#475569', lineHeight: 1.8 };
+const footerLeft = { position: "fixed", bottom: 20, left: 20, fontSize: "12px", opacity: 0.6 };
+
+/* ÚJ SCANNER STÍLUSOK */
+const scanTriggerBtn = {
+  width: "100%",
+  padding: "12px",
+  background: "rgba(56, 189, 248, 0.1)",
+  border: "1px solid rgba(56, 189, 248, 0.4)",
+  borderRadius: "12px",
+  color: "#38bdf8",
+  fontWeight: "bold",
+  fontSize: "12px",
+  cursor: "pointer",
+  letterSpacing: "1px",
+  transition: "all 0.3s ease"
+};
+
+const scanWindow = {
+  background: "rgba(15, 23, 42, 0.6)",
+  borderRadius: "12px",
+  padding: "20px",
+  backdropFilter: "blur(10px)",
+  transition: "all 0.2s ease"
+};
+
+const uploadLabel = {
+  display: 'inline-block',
+  padding: '8px 20px',
+  background: '#38bdf8',
+  color: '#020617',
+  borderRadius: '6px',
+  fontSize: '12px',
+  fontWeight: 'bold',
+  cursor: 'pointer'
+};
