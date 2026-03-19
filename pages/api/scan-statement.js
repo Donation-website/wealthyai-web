@@ -1,6 +1,7 @@
 import { AzureKeyCredential, DocumentAnalysisClient } from "@azure/ai-form-recognizer";
-import formidable from "formidable";
-import fs from "fs";
+import Busboy from 'busboy';
+
+export const runtime = 'nodejs';
 
 export const config = {
   api: {
@@ -9,142 +10,85 @@ export const config = {
 };
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   const endpoint = process.env.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT;
   const key = process.env.AZURE_DOCUMENT_INTELLIGENCE_KEY;
 
-  if (!endpoint || !key) {
-    return res.status(500).json({ error: "Missing Azure config" });
-  }
-
   try {
-    // ===== FILE PARSE (STABIL) =====
-    const form = formidable({
-      multiples: false,
-      maxFileSize: 5 * 1024 * 1024, // 5MB Vercel safe
-    });
+    const { buffer, contentType } = await new Promise((resolve, reject) => {
+      const busboy = Busboy({ headers: req.headers });
+      let chunks = [];
+      let fileDetected = false;
+      let mimeType = "application/pdf";
 
-    const { files } = await new Promise((resolve, reject) => {
-      form.parse(req, (err, fields, files) => {
-        if (err) reject(err);
-        else resolve({ fields, files });
+      busboy.on('file', (fieldname, file, info) => {
+        // Busboy 1.0+ esetén az info objektumban van a mimeType
+        fileDetected = true;
+        mimeType = info?.mimeType || "application/pdf";
+        
+        file.on('data', (data) => chunks.push(data));
       });
+
+      busboy.on('finish', () => {
+        if (!fileDetected) reject(new Error("Busboy: Nem érkezett fájl a kérésben. Ellenőrizd a FormData 'file' kulcsát!"));
+        else resolve({ buffer: Buffer.concat(chunks), contentType: mimeType });
+      });
+
+      busboy.on('error', (err) => reject(err));
+      
+      if (!req.pipe) reject(new Error("Request is not pipeable"));
+      req.pipe(busboy);
+
+      // Kicsit emeltem a timeoutot (15s), hogy az Azure-nak legyen ideje
+      setTimeout(() => reject(new Error("Upload/Processing Timeout (15s)")), 15000);
     });
 
-    const file = files.file;
-
-    if (!file) {
-      return res.status(400).json({ error: "No file uploaded" });
-    }
-
-    const fileBuffer = fs.readFileSync(file.filepath);
-
-    console.log("FILE SIZE:", fileBuffer.length);
-
-    // ===== AZURE CLIENT =====
-    const client = new DocumentAnalysisClient(
-      endpoint,
-      new AzureKeyCredential(key)
-    );
-
-    const poller = await client.beginAnalyzeDocument(
-      "prebuilt-layout",
-      fileBuffer,
-      {
-        contentType: file.mimetype || "application/pdf",
-      }
-    );
-
+    const client = new DocumentAnalysisClient(endpoint, new AzureKeyCredential(key));
+    const poller = await client.beginAnalyzeDocument("prebuilt-layout", buffer, {
+      contentType: contentType
+    });
+    
     const result = await poller.pollUntilDone();
+    const { content } = result;
 
-    if (!result) {
-      return res.status(500).json({ error: "No result from Azure" });
-    }
+    const parse = (t) => parseFloat(t.replace(/[^0-9.,-]/g, "").replace(",", "."));
+    let income = 0, expenses = 0;
 
-    const text = result.content || "";
-
-    console.log("TEXT LENGTH:", text.length);
-
-    // ===== SMART PARSER (NEMZETKÖZI) =====
-
-    const parseNumber = (t) => {
-      if (!t) return NaN;
-      let clean = t.replace(/[^0-9.,-]/g, "");
-
-      if (clean.includes(",") && clean.includes(".")) {
-        clean =
-          clean.lastIndexOf(",") > clean.lastIndexOf(".")
-            ? clean.replace(/\./g, "").replace(",", ".")
-            : clean.replace(/,/g, "");
-      } else if (clean.includes(",")) {
-        clean = clean.replace(",", ".");
-      }
-
-      return parseFloat(clean);
-    };
-
-    let income = 0;
-    let expenses = 0;
-
-    const lines = text.split("\n");
-
-    lines.forEach((line) => {
-      const lower = line.toLowerCase();
-      const num = parseNumber(line);
-
-      if (isNaN(num)) return;
-
-      // 🌍 INTERNATIONAL LOGIC (nem csak HU!)
-      if (
-        lower.includes("salary") ||
-        lower.includes("income") ||
-        lower.includes("credit") ||
-        lower.includes("deposit") ||
-        lower.includes("payment received") ||
-        lower.includes("jóváírás") ||
-        lower.includes("bevétel")
-      ) {
-        income += Math.abs(num);
-      } else if (
-        lower.includes("debit") ||
-        lower.includes("payment") ||
-        lower.includes("purchase") ||
-        lower.includes("withdrawal") ||
-        lower.includes("kifizetés") ||
-        lower.includes("kiadás")
-      ) {
-        expenses += Math.abs(num);
-      }
-    });
-
-    // ===== FALLBACK (ha nincs kulcsszó) =====
-    if (income === 0 && expenses === 0) {
-      lines.forEach((line) => {
-        const num = parseNumber(line);
-        if (!isNaN(num)) {
-          if (num > 0) income += num;
-          else expenses += Math.abs(num);
+    if (content) {
+      content.split('\n').forEach(line => {
+        const l = line.toLowerCase();
+        if (l.includes("total") || l.includes("sum") || l.includes("összesen")) {
+          const n = parse(line);
+          if (!isNaN(n)) {
+            if (["salary", "fizetés", "credit", "incoming"].some(k => l.includes(k))) income = Math.max(income, n);
+            else expenses = Math.max(expenses, Math.abs(n));
+          }
         }
       });
     }
 
-    console.log("INCOME:", income, "EXP:", expenses);
-
     return res.status(200).json({
-      income: Math.round(income),
-      fixed: Math.round(expenses * 0.6),
-      variable: Math.round(expenses * 0.4),
-      status:
-        income > 0 || expenses > 0 ? "success" : "manual_needed",
+      income: Math.round(income) || 0,
+      fixed: Math.round(expenses * 0.65) || 0,
+      variable: Math.round(expenses * 0.35) || 0,
+      status: "success"
     });
+
   } catch (err) {
-    console.error("FULL ERROR:", err);
+    // --- EZ A VALÓDI DEBUG RÉSZ ---
+    console.error("ERROR RAW:", err);
+    console.error("ERROR STRING:", err?.message);
+    // Az Azure SDK hibaobjektumai néha körkörösek, ezért a try-catch a stringify köré
+    try {
+      console.error("ERROR FULL JSON:", JSON.stringify(err, null, 2));
+    } catch (e) {
+      console.error("Could not stringify error object, likely circular.");
+    }
 
     return res.status(500).json({
-      error: err.message || "Processing error",
+      error: err?.message || "Unknown error",
+      code: err?.code || "NO_CODE"
     });
   }
 }
