@@ -222,42 +222,52 @@ export default function DayPremium() {
     }
   };
 
-  /* AZURE SCAN LOGIC - SUPABASE INTEGRATED */
+  /* AZURE SCAN LOGIC - SUPABASE INTEGRATED WITH BASE64 JSON */
   const handleFileUpload = async (file) => {
     if (!file) return;
     setScanLoading(true);
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
+      // 1. Fájl átalakítása Base64-re
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      
+      reader.onload = async () => {
+        const base64Image = reader.result;
 
-      // A te egyedi Supabase URL-ed
-      const supabaseUrl = "https://csfaqnsuhhnposhyfxmk.supabase.co/functions/v1/swift-task";
-
-      const response = await fetch(supabaseUrl, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (response.ok) {
-        const result = await response.json();
+        // 2. Küldés a Supabase-nek JSON-ként
+        const supabaseUrl = "https://csfaqnsuhhnposhyfxmk.supabase.co/functions/v1/swift-task";
         
-        const updatedData = {
-          income: result.income ? Number(result.income) : data.income,
-          fixed: result.fixed ? Number(result.fixed) : data.fixed,
-          variable: result.variable ? Number(result.variable) : data.variable,
-        };
+        const response = await fetch(supabaseUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image: base64Image }), // Így már érvényes JSON lesz!
+        });
 
-        setData(updatedData);
-        localStorage.setItem("userFinancials", JSON.stringify(updatedData));
-        setScanOpen(false); 
-      } else {
-        alert("Scan failed. Please try a clearer document.");
-      }
+        if (response.ok) {
+          const result = await response.json();
+          
+          // Itt az Azure-tól kapott OCR adatokat dolgozzuk fel
+          console.log("Sikeres szkennelés:", result);
+          
+          const updatedData = {
+            income: result.income ? Number(result.income) : data.income,
+            fixed: result.fixed ? Number(result.fixed) : data.fixed,
+            variable: result.variable ? Number(result.variable) : data.variable,
+          };
+
+          setData(updatedData);
+          localStorage.setItem("userFinancials", JSON.stringify(updatedData));
+          setScanOpen(false);
+        } else {
+          const errorData = await response.json();
+          alert("Scan failed: " + (errorData.error || "Unknown error"));
+        }
+        setScanLoading(false);
+      };
     } catch (err) {
       console.error("Supabase Error:", err);
       alert("Error connecting to intelligence service.");
-    } finally {
       setScanLoading(false);
     }
   };
