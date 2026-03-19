@@ -7,32 +7,56 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // CORS kezelése a böngészőnek
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
+    // 1. Környezeti változók beolvasása (Supabase Secrets-ből)
+    const endpoint = Deno.env.get("AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT");
+    const key = Deno.env.get("AZURE_DOCUMENT_INTELLIGENCE_KEY");
+
+    // Biztonsági ellenőrzés: Ha hiányoznak a kulcsok, értelmes hibaüzenetet küldünk
+    if (!endpoint || !key) {
+      console.error("Hiányzó Azure kulcsok a Supabase-ben!");
+      return new Response(JSON.stringify({ 
+        error: "Azure Secrets hiányoznak!",
+        details: `Endpoint: ${!!endpoint}, Key: ${!!key}`
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      });
+    }
+
+    // 2. Fájl kinyerése a kérésből
     const formData = await req.formData()
     const file = formData.get('file') as File
 
-    const endpoint = Deno.env.get("AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT")!
-    const key = Deno.env.get("AZURE_DOCUMENT_INTELLIGENCE_KEY")!
+    if (!file) {
+      return new Response(JSON.stringify({ error: "Nincs fájl feltöltve!" }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
+    }
 
+    // 3. Azure kliens létrehozása (Figyelj, hogy az endpoint végén NE legyen / jel a Supabase Dashboardon!)
     const client = new DocumentAnalysisClient(endpoint, new AzureKeyCredential(key))
     const arrayBuffer = await file.arrayBuffer()
     
-    const poller = await client.beginAnalyzeDocument("prebuilt-read", arrayBuffer, {
-      pages: "1"
-    })
-    
+    // Dokumentum elemzése
+    const poller = await client.beginAnalyzeDocument("prebuilt-read", arrayBuffer)
     const result = await poller.pollUntilDone()
 
     let income = 0
     let expenses = 0
 
+    // 4. Adatok feldolgozása a felismert szövegből
     if (result.content) {
-      result.content.split('\n').forEach(line => {
+      const lines = result.content.split('\n');
+      lines.forEach(line => {
         const l = line.toLowerCase()
+        // Csak a számokat és a tizedesjeleket tartjuk meg az elemzéshez
         const val = Math.abs(parseFloat(line.replace(/[^0-9.,-]/g, "").replace(",", ".")))
 
         if (!isNaN(val) && val > 100) {
@@ -45,6 +69,7 @@ serve(async (req) => {
       })
     }
 
+    // 5. Válasz küldése (ha nincs találat, alapértelmezett értékeket adunk a teszteléshez)
     return new Response(JSON.stringify({
       income: income || 5000,
       fixed: expenses ? Math.round(expenses * 0.6) : 2000,
@@ -56,7 +81,11 @@ serve(async (req) => {
     })
 
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error("Váratlan hiba:", error.message);
+    return new Response(JSON.stringify({ 
+      error: `Szerver hiba: ${error.message}`,
+      type: "AzureError" 
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     })
