@@ -11,23 +11,18 @@ serve(async (req) => {
   try {
     const endpoint = Deno.env.get("AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT")?.replace(/\/$/, "");
     const key = Deno.env.get("AZURE_DOCUMENT_INTELLIGENCE_KEY");
+    if (!endpoint || !key) throw new Error("Missing Azure Credentials");
 
-    if (!endpoint || !key) throw new Error("Azure Secrets missing!");
+    const formData = await req.formData();
+    const file = formData.get('file') as File;
+    const arrayBuffer = await file.arrayBuffer();
 
-    const formData = await req.formData()
-    const file = formData.get('file') as File
-    const arrayBuffer = await file.arrayBuffer()
-
-    // 1. LAYOUT MODELL HASZNÁLATA (Ez érti a táblázatokat!)
     const azureUrl = `${endpoint}/formrecognizer/documentModels/prebuilt-layout:analyze?api-version=2023-07-31`;
-    
     const response = await fetch(azureUrl, {
       method: 'POST',
       headers: { 'Ocp-Apim-Subscription-Key': key, 'Content-Type': 'application/octet-stream' },
       body: arrayBuffer
     });
-
-    if (!response.ok) throw new Error(`Azure Error: ${response.statusText}`);
 
     const operationLocation = response.headers.get('operation-location');
     let result;
@@ -41,45 +36,55 @@ serve(async (req) => {
     let income = 0;
     let expenses = 0;
 
-    // 2. TÁBLÁZATOK FELDOLGOZÁSA (PDF-nél ez a kulcs)
+    // SZIGORÚ SZÁMOLVASÓ: Csak a valós pénzösszegeket engedi át
+    const parseStrictAmount = (text: string) => {
+      // Kiszedünk mindent, ami nem szám, pont, vessző vagy mínusz
+      const clean = text.replace(/\s(?=\d)/g, "").replace(/[^0-9,.-]/g, "").replace(",", ".");
+      const val = parseFloat(clean);
+      // SZŰRŐ: Ha a szám nagyobb mint 5 millió, az valószínűleg számlaszám vagy ID -> IGNORE
+      if (isNaN(val) || Math.abs(val) > 5000000 || Math.abs(val) < 1) return null;
+      return val;
+    };
+
+    // 1. PRIORITÁS: TÁBLÁZATOK (Banki PDF-hez)
     if (result.analyzeResult.tables && result.analyzeResult.tables.length > 0) {
       result.analyzeResult.tables.forEach((table: any) => {
         table.cells.forEach((cell: any) => {
-          const text = cell.content.toLowerCase();
-          // Szám keresése a cellában
-          const val = Math.abs(parseFloat(cell.content.replace(/\s/g, "").replace(",", ".").replace(/[^0-9.-]/g, "")));
-          
-          if (!isNaN(val) && val > 100) {
-            // Ha a cella vagy a környező sor tartalmaz bevételi kulcsszót
-            if (/fizetés|salary|income|beérkezés|jóváírás|utalás/i.test(text)) {
-              income = Math.max(income, val);
-            } 
-            // Ha kiadás (pl. mínusz jel van előtte vagy kiadás szó a sorban)
-            else if (cell.content.includes("-") || /total|sum|összeg|kiadás|expense|terhelés/i.test(text)) {
-              expenses += val;
+          const val = parseStrictAmount(cell.content);
+          if (val !== null) {
+            const txt = cell.content.toLowerCase();
+            const isNegative = cell.content.includes("-") || txt.includes("terhelés") || txt.includes("kiadás");
+            const isPositive = txt.includes("jóváírás") || txt.includes("fizetés") || txt.includes("kamat");
+
+            if (isNegative) expenses += Math.abs(val);
+            else if (isPositive) income += val;
+            // Ha az "Összesen" sorban vagyunk, az a legpontosabb
+            else if (txt.includes("összesen")) {
+                if (val < 0) expenses = Math.abs(val);
+                else income = val;
             }
           }
         });
       });
     }
 
-    // 3. HA NINCS TÁBLÁZAT (Képernyőfotóhoz marad a szöveges keresés)
+    // 2. PRIORITÁS: HA NINCS TÁBLÁZAT (Mobil fotóhoz)
     if (income === 0 && expenses === 0) {
-      const fullText = result.analyzeResult.content.toLowerCase();
-      const lines = result.analyzeResult.content.split('\n');
-      lines.forEach((line: string) => {
-        const val = Math.abs(parseFloat(line.replace(/\s/g, "").replace(",", ".").replace(/[^0-9.-]/g, "")));
-        if (!isNaN(val) && val > 100) {
-          if (/fizetés|salary|income|beérkezés|utalás/i.test(line.toLowerCase())) income = Math.max(income, val);
-          else if (/total|sum|összeg|kiadás|expense/i.test(line.toLowerCase())) expenses += val;
+      result.analyzeResult.content.split('\n').forEach((line: string) => {
+        const val = parseStrictAmount(line);
+        if (val !== null) {
+          const l = line.toLowerCase();
+          if (/fizetés|salary|income|kamat|jóváírás/i.test(l)) income += val;
+          else if (/összesen|total|sum|kiadás|vásárlás|-/i.test(l)) expenses += Math.abs(val);
         }
       });
     }
 
+    // 3. VÉGSŐ FORMÁZÁS AZ AI-NAK (Nincs több felesleges nulla!)
     return new Response(JSON.stringify({
-      income: income || 5000,
-      fixed: expenses ? Math.round(expenses * 0.6) : 2000,
-      variable: expenses ? Math.round(expenses * 0.4) : 1500,
+      income: Math.round(income) || 0,
+      fixed: Math.round(expenses * 0.6) || 0,
+      variable: Math.round(expenses * 0.4) || 0,
       status: "success"
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
