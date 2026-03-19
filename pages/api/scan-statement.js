@@ -1,24 +1,68 @@
 import { AzureKeyCredential, DocumentAnalysisClient } from "@azure/ai-form-recognizer";
 
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  try {
-    const { file, type } = req.body;
+  const endpoint = process.env.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT;
+  const key = process.env.AZURE_DOCUMENT_INTELLIGENCE_KEY;
 
-    if (!file) {
-      return res.status(400).json({ error: "No file received" });
+  if (!endpoint || !key) {
+    return res.status(500).json({ error: "Missing Azure config" });
+  }
+
+  try {
+    // ===== RAW BODY BEOLVASÁS (NO BUSBOY) =====
+    const chunks = [];
+
+    for await (const chunk of req) {
+      chunks.push(chunk);
     }
 
-    const buffer = Buffer.from(file, "base64");
+    const buffer = Buffer.concat(chunks);
 
-    console.log("BUFFER SIZE:", buffer.length);
+    console.log("RAW SIZE:", buffer.length);
 
-    const endpoint = process.env.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT;
-    const key = process.env.AZURE_DOCUMENT_INTELLIGENCE_KEY;
+    // ===== BOUNDARY KINYERÉS =====
+    const contentType = req.headers["content-type"] || "";
+    const boundaryMatch = contentType.match(/boundary=(.+)$/);
 
+    if (!boundaryMatch) {
+      return res.status(400).json({ error: "No boundary found" });
+    }
+
+    const boundary = boundaryMatch[1];
+
+    // ===== FILE KINYERÉS =====
+    const parts = buffer.toString("binary").split(`--${boundary}`);
+
+    let fileBuffer = null;
+
+    for (let part of parts) {
+      if (part.includes("filename=")) {
+        const start = part.indexOf("\r\n\r\n") + 4;
+        const end = part.lastIndexOf("\r\n");
+
+        const fileBinary = part.substring(start, end);
+        fileBuffer = Buffer.from(fileBinary, "binary");
+        break;
+      }
+    }
+
+    if (!fileBuffer || fileBuffer.length === 0) {
+      return res.status(400).json({ error: "File not found in request" });
+    }
+
+    console.log("FILE SIZE:", fileBuffer.length);
+
+    // ===== AZURE =====
     const client = new DocumentAnalysisClient(
       endpoint,
       new AzureKeyCredential(key)
@@ -26,17 +70,19 @@ export default async function handler(req, res) {
 
     const poller = await client.beginAnalyzeDocument(
       "prebuilt-layout",
-      buffer,
+      fileBuffer,
       {
-        contentType: type || "application/pdf",
+        contentType: "application/pdf",
       }
     );
 
     const result = await poller.pollUntilDone();
 
-    const text = result.content || "";
+    const text = result?.content || "";
 
-    // ===== SIMPLE GLOBAL PARSER =====
+    console.log("TEXT LENGTH:", text.length);
+
+    // ===== UNIVERSAL PARSER =====
     const parseNumber = (t) => {
       if (!t) return NaN;
       let clean = t.replace(/[^0-9.,-]/g, "");
@@ -68,10 +114,12 @@ export default async function handler(req, res) {
       income: Math.round(income),
       fixed: Math.round(expenses * 0.6),
       variable: Math.round(expenses * 0.4),
-      status: income > 0 || expenses > 0 ? "success" : "manual_needed",
+      status:
+        income > 0 || expenses > 0 ? "success" : "manual_needed",
     });
+
   } catch (err) {
-    console.error("ERROR:", err);
+    console.error("FULL ERROR:", err);
 
     return res.status(500).json({
       error: err.message || "Processing failed",
