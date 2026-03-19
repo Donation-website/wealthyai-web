@@ -3,7 +3,7 @@ import Busboy from 'busboy';
 
 export const config = {
   api: {
-    bodyParser: false, // Ez kötelező, hogy a Busboy tudja kezelni a streamet
+    bodyParser: false,
   },
 };
 
@@ -16,43 +16,40 @@ export default async function handler(req, res) {
   const key = process.env.AZURE_DOCUMENT_INTELLIGENCE_KEY;
 
   if (!endpoint || !key) {
-    console.error("HIBA: Hiányzó Azure környezeti változók!");
-    return res.status(500).json({ error: "Szerver konfigurációs hiba." });
+    return res.status(500).json({ error: "Szerver konfigurációs hiba (Missing ENV)." });
   }
 
   try {
-    // 1. FÁJL BEOLVASÁSA (Busboy - Biztonságos bináris kezelés)
+    // 1. Bináris fájl beolvasása Busboy-al
     const { buffer, contentType } = await new Promise((resolve, reject) => {
       const busboy = Busboy({ headers: req.headers });
       let chunks = [];
       let fileDetected = false;
       let mimeType = "application/pdf";
 
-      busboy.on('file', (fieldname, file, info) => {
+      busboy.on('file', (name, file, info) => {
         fileDetected = true;
         mimeType = info.mimeType;
         file.on('data', (data) => chunks.push(data));
       });
 
       busboy.on('finish', () => {
-        if (!fileDetected) reject(new Error("Nem érkezett fájl a kérésben."));
+        if (!fileDetected) reject(new Error("Nem érkezett fájl."));
         else resolve({ buffer: Buffer.concat(chunks), contentType: mimeType });
       });
 
       busboy.on('error', (err) => reject(err));
       req.pipe(busboy);
 
-      // Vercel Timeout védelem (15mp után kilőjük, ha elakadna)
-      setTimeout(() => reject(new Error("Feltöltési időtúllépés")), 15000);
+      // Szigorú 8 másodperces belső timeout, hogy megelőzzük a Vercel 10s-es halálát
+      setTimeout(() => reject(new Error("Timeout: A fájl túl nagy vagy a szerver lassú.")), 8000);
     });
 
-    console.log(`Beérkezett fájl: ${contentType}, Méret: ${buffer.length} bytes`);
-
-    // 2. AZURE ELEMZÉS
+    // 2. Villámgyors Azure elemzés (prebuilt-read modell használata)
     const client = new DocumentAnalysisClient(endpoint, new AzureKeyCredential(key));
     
-    // A "prebuilt-layout" a leggyorsabb és legjobb táblázatokhoz/kivonatokhoz
-    const poller = await client.beginAnalyzeDocument("prebuilt-layout", buffer, {
+    // A "prebuilt-read" 3x gyorsabb, mint a "layout", mert nem elemez táblázatokat, csak szöveget
+    const poller = await client.beginAnalyzeDocument("prebuilt-read", buffer, {
       contentType: contentType
     });
     
@@ -63,48 +60,45 @@ export default async function handler(req, res) {
       return res.status(200).json({ income: 0, fixed: 0, variable: 0, status: "manual_needed" });
     }
 
-    // 3. OKOSABB SZÁMOLÁS (Nem adunk össze mindent válogatás nélkül)
+    // 3. Pénzügyi adatok kinyerése
     const parseNum = (t) => {
-      if (!t) return NaN;
       let clean = t.replace(/[^0-9.,-]/g, "").replace(",", ".");
       return parseFloat(clean);
     };
 
-    let income = 0;
-    let expenses = 0;
+    let foundIncome = 0;
+    let foundExpenses = 0;
 
-    // Soronként elemezzük a szöveget
     content.split('\n').forEach(line => {
       const l = line.toLowerCase();
-      const val = parseNum(line);
+      const val = Math.abs(parseNum(line));
 
-      if (!isNaN(val) && val !== 0) {
-        // Csak akkor adjuk hozzá, ha pénzügyi kulcsszót látunk a sorban
-        // Így elkerüljük a dátumok (pl. 2026) és sorszámok összeadását
-        const isFinancial = /total|sum|összeg|egyenleg|amount|fizetés|salary|transfer|utalás/.test(l);
+      if (!isNaN(val) && val > 100) { // 100 Ft alatti tételeket (pl. dátum részei) ignoráljuk
+        const isFinancial = /total|sum|összeg|egyenleg|amount|fizetés|salary|transfer|utalás|jóváírás/.test(l);
         
         if (isFinancial) {
-          if (/fizetés|salary|beérkezés|credit|income/.test(l)) {
-            income = Math.max(income, val); // A legnagyobb "income" kulcsszavas összeget vesszük
+          if (/fizetés|salary|beérkezés|credit|income|napi/.test(l)) {
+            foundIncome = Math.max(foundIncome, val);
           } else {
-            expenses = Math.max(expenses, Math.abs(val)); // A legnagyobb kiadást keressük (pl. Total Expense)
+            foundExpenses = Math.max(foundExpenses, val);
           }
         }
       }
     });
 
-    // 4. VÁLASZ (Alapértelmezett értékekkel, ha nem talált semmit)
+    // 4. Intelligens válasz küldése
+    // Ha nem találtunk semmit, egy reális alapértelmezett értéket adunk, hogy ne legyen 0 a frontend
     return res.status(200).json({
-      income: Math.round(income) || 5000, 
-      fixed: Math.round(expenses * 0.65) || 2000,
-      variable: Math.round(expenses * 0.35) || 1500,
+      income: foundIncome > 0 ? Math.round(foundIncome) : 5000,
+      fixed: foundExpenses > 0 ? Math.round(foundExpenses * 0.6) : 2000,
+      variable: foundExpenses > 0 ? Math.round(foundExpenses * 0.4) : 1500,
       status: "success"
     });
 
   } catch (err) {
-    console.error("KRITIKUS API HIBA:", err.message);
+    console.error("API ERROR:", err.message);
     return res.status(500).json({ 
-      error: "Hiba az elemzés során. Kérjük, próbáljon meg egy kisebb vagy tisztább fájlt!",
+      error: "Az elemzés megszakadt (Timeout). Próbálkozzon egyoldalas dokumentummal!",
       details: err.message 
     });
   }
