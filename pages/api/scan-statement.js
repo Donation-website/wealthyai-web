@@ -10,10 +10,14 @@ export const config = {
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ message: "Method not allowed" });
 
-  const endpoint = process.env.AZURE_DOCUMENT_INTEGRATION_ENDPOINT;
-  const key = process.env.AZURE_DOCUMENT_INTEGRATION_KEY;
+  // JAVÍTVA: A Vercel dashboard alapján a változóid neve INTELLIGENCE
+  const endpoint = process.env.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT;
+  const key = process.env.AZURE_DOCUMENT_INTELLIGENCE_KEY;
 
-  if (!endpoint || !key) return res.status(500).json({ error: "Azure credentials missing." });
+  if (!endpoint || !key) {
+    console.error("HIÁNYZÓ KULCSOK A VERCELBEN!");
+    return res.status(500).json({ error: "Azure credentials missing in Vercel settings." });
+  }
 
   try {
     const buffer = await new Promise((resolve, reject) => {
@@ -27,9 +31,11 @@ export default async function handler(req, res) {
 
       busboy.on('error', (err) => reject(err));
       req.pipe(busboy);
+
+      // Timeout biztonság kedvéért, ha nem jönne fájl
+      setTimeout(() => reject(new Error("Upload timeout")), 15000);
     });
 
-    // Azure Analízis közvetlenül a memóriából (Buffer)
     const client = new DocumentAnalysisClient(endpoint, new AzureKeyCredential(key));
     const poller = await client.beginAnalyzeDocument("prebuilt-layout", buffer);
     const result = await poller.pollUntilDone();
