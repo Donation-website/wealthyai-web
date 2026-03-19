@@ -2,11 +2,10 @@ import { AzureKeyCredential, DocumentAnalysisClient } from "@azure/ai-form-recog
 
 export const config = {
   api: {
-    bodyParser: false, // Fontos: a nyers binary adatot mi magunk olvassuk be
+    bodyParser: false,
   },
 };
 
-// Segédfüggvény a stream beolvasásához
 async function getRawBody(readable) {
   const chunks = [];
   for await (const chunk of readable) {
@@ -16,9 +15,7 @@ async function getRawBody(readable) {
 }
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ message: "Method not allowed" });
-  }
+  if (req.method !== "POST") return res.status(405).json({ message: "Method not allowed" });
 
   const endpoint = process.env.AZURE_DOCUMENT_INTEGRATION_ENDPOINT;
   const key = process.env.AZURE_DOCUMENT_INTEGRATION_KEY;
@@ -29,61 +26,82 @@ export default async function handler(req, res) {
 
   try {
     const buffer = await getRawBody(req);
+    const contentType = req.headers["content-type"] || "application/octet-stream";
     const client = new DocumentAnalysisClient(endpoint, new AzureKeyCredential(key));
     
-    // A 'prebuilt-layout' a legjobb, mert minden nyelven felismeri a táblázatokat
-    const poller = await client.beginAnalyzeDocument("prebuilt-layout", buffer);
+    // A Layout modell PDF, Kép és TXT esetén is a legjobb választás
+    const poller = await client.beginAnalyzeDocument("prebuilt-layout", buffer, {
+      contentType: contentType
+    });
+    
     const { tables, content } = await poller.pollUntilDone();
 
-    // INTELLIGENS ADATKINYERÉS (Nemzetközi logika)
     let income = 0;
     let totalExpenses = 0;
 
-    // 1. Keressük a táblázatokat (A banki kivonatok 90%-a táblázatos)
+    // --- 1. LOGIKA: TÁBLÁZATOK (PDF/Kép esetén ez az elsődleges) ---
     if (tables && tables.length > 0) {
       tables.forEach((table) => {
         table.cells.forEach((cell) => {
-          const val = cell.content.replace(/\s/g, "").replace(",", "."); // Tisztítás
+          // Tisztítás: szóközök ki, ezres elválasztók ki, vessző pontra cserélése
+          const cleanText = cell.content.replace(/\s/g, "").replace(/\s/g, "");
+          const val = cleanText.replace(/,/g, "."); 
           const num = parseFloat(val.replace(/[^0-9.-]+/g, ""));
 
-          if (!isNaN(num)) {
-            // Logika: A pozitív nagy összegek általában bevételek, a negatívok kiadások
-            if (num > 0 && (cell.content.toLowerCase().includes("credit") || cell.content.toLowerCase().includes("deposit") || cell.content.toLowerCase().includes("bejö"))) {
-              income += num;
-            } else if (num < 0 || cell.content.toLowerCase().includes("debit") || cell.content.toLowerCase().includes("kivét")) {
-              totalExpenses += Math.abs(num);
-            }
+          if (!isNaN(num) && num !== 0) {
+            const lowText = cell.content.toLowerCase();
+            // Nemzetközi kulcsszavak: Credit/Deposit/Incoming/Bejövő vs Debit/Withdrawal/Kimenő
+            const isIncome = lowText.includes("credit") || lowText.includes("deposit") || 
+                             lowText.includes("incoming") || lowText.includes("bej") || 
+                             lowText.includes("fizet");
+            
+            const isExpense = lowText.includes("debit") || lowText.includes("withdraw") || 
+                              lowText.includes("outgoing") || lowText.includes("kiad") || 
+                              lowText.includes("kivét") || lowText.includes("vásárlás");
+
+            if (isIncome && num > 0) income += num;
+            else if (isExpense) totalExpenses += Math.abs(num);
+            else if (num < 0) totalExpenses += Math.abs(num); 
           }
         });
       });
     }
 
-    // 2. Ha nem talált táblázatot, a szövegből próbálunk "Total" kulcsszavakat keresni
+    // --- 2. LOGIKA: SZÖVEGBÁNYÁSZAT (TXT vagy egyszerű PDF esetén) ---
+    // Ha a táblázat nem adott eredményt, a teljes szövegtartalomban keresünk összegeket
     if (income === 0 && totalExpenses === 0) {
+      // Regex ami keresi a számokat kulcsszavak után (pl: Total: 1200.50)
       const lines = content.split('\n');
       lines.forEach(line => {
         const cleanLine = line.toLowerCase();
-        if (cleanLine.includes("total") || cleanLine.includes("sum") || cleanLine.includes("egyenleg")) {
-           // Itt egy egyszerűbb regex keresőt is bevethetünk a jövőben
+        const amountMatch = line.match(/(\d{1,3}(?:[.,\s]\d{3})*(?:[.,]\d{2})?)/);
+        
+        if (amountMatch) {
+          const foundNum = parseFloat(amountMatch[0].replace(/\s/g, "").replace(",", "."));
+          if (cleanLine.includes("income") || cleanLine.includes("salary") || cleanLine.includes("bevétel")) {
+            income += foundNum;
+          } else if (cleanLine.includes("expense") || cleanLine.includes("spent") || cleanLine.includes("kiadás")) {
+            totalExpenses += foundNum;
+          }
         }
       });
     }
 
-    // Súlyozott elosztás a mywealthyai fix/variable mezőihez (becslés az első teszthez)
-    // Később ezt finomítjuk, ha látjuk a konkrét banki formátumotokat
-    const fixed = totalExpenses * 0.6; // Általában a 60% a fix (lakbér, rezsi)
-    const variable = totalExpenses * 0.4;
+    // --- 3. FIX / VARIABLE ELOSZTÁS ---
+    // Mivel a banki kivonat nem mondja meg, mi a fix, a MyWealthyAI logikája szerint becsülünk
+    const fixed = totalExpenses * 0.65; // Átlagos fix költség arány (lakhatás, előfizetések)
+    const variable = totalExpenses * 0.35;
 
     res.status(200).json({
-      income: Math.round(income) || 5000, // Fallback érték a teszthez, ha üres a PDF
-      fixed: Math.round(fixed) || 2000,
-      variable: Math.round(variable) || 1500,
-      message: "Analysis complete",
-      debugInfo: `Found ${tables?.length || 0} tables.`
+      income: Math.round(income) || null, 
+      fixed: Math.round(fixed) || null,
+      variable: Math.round(variable) || null,
+      status: (income || totalExpenses) ? "success" : "manual_needed",
+      debug: `Extracted from ${tables?.length || 0} tables and ${content.length} chars.`
     });
 
   } catch (error) {
-    console.error("Azure Analysis Error:", error);
-    res.status(500).json({ error: "Failed to analyze document", details: error.message });
+    console.error("Azure Error:", error);
+    res.status(500).json({ error: "Failed to process document." });
   }
 }
