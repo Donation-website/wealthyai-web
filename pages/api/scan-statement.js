@@ -1,8 +1,13 @@
 import { AzureKeyCredential, DocumentAnalysisClient } from "@azure/ai-form-recognizer";
 import Busboy from 'busboy';
 
+// Kényszerítjük a Node.js runtime-ot (Vercel néha elvált Edge-re, ahol nincs Busboy)
+export const runtime = 'nodejs';
+
 export const config = {
-  api: { bodyParser: false },
+  api: {
+    bodyParser: false, // Ez KELL a Busboy-hoz
+  },
 };
 
 export default async function handler(req, res) {
@@ -15,27 +20,32 @@ export default async function handler(req, res) {
     const { buffer, contentType } = await new Promise((resolve, reject) => {
       const busboy = Busboy({ headers: req.headers });
       let chunks = [];
-      let detectedType = "application/pdf";
+      let fileDetected = false;
+      let mimeType = "application/pdf";
 
-      busboy.on('file', (name, file, info) => {
-        detectedType = info.mimeType;
+      busboy.on('file', (fieldname, file, info) => {
+        fileDetected = true;
+        mimeType = info.mimeType;
         file.on('data', (data) => chunks.push(data));
-        file.on('end', () => {});
       });
 
       busboy.on('finish', () => {
-        if (chunks.length === 0) reject(new Error("Üres fájl"));
-        else resolve({ buffer: Buffer.concat(chunks), contentType: detectedType });
+        if (!fileDetected) reject(new Error("Busboy: Nem érkezett fájl a kérésben. Ellenőrizd a FormData 'file' kulcsát!"));
+        else resolve({ buffer: Buffer.concat(chunks), contentType: mimeType });
       });
 
       busboy.on('error', (err) => reject(err));
+      
+      // Hibakezelés, ha a kérés nem multipart
+      if (!req.pipe) reject(new Error("Request is not pipeable"));
       req.pipe(busboy);
-      setTimeout(() => reject(new Error("Feltöltési időtúllépés")), 10000);
+
+      setTimeout(() => reject(new Error("Upload Timeout (10s)")), 10000);
     });
 
     const client = new DocumentAnalysisClient(endpoint, new AzureKeyCredential(key));
     
-    // Itt küldjük el az Azure-nak explicit típusmegadással
+    // Azure hívás explicit tartalomtípussal
     const poller = await client.beginAnalyzeDocument("prebuilt-layout", buffer, {
       contentType: contentType
     });
@@ -43,20 +53,17 @@ export default async function handler(req, res) {
     const result = await poller.pollUntilDone();
     const { content } = result;
 
-    const parseNum = (t) => {
-      if (!t) return NaN;
-      let clean = t.replace(/[^0-9.,-]/g, "").replace(",", ".");
-      return parseFloat(clean);
-    };
-
+    // Egyszerűsített nemzetközi parsing
+    const parse = (t) => parseFloat(t.replace(/[^0-9.,-]/g, "").replace(",", "."));
     let income = 0, expenses = 0;
+
     if (content) {
       content.split('\n').forEach(line => {
         const l = line.toLowerCase();
         if (l.includes("total") || l.includes("sum") || l.includes("összesen")) {
-          const n = parseNum(line);
+          const n = parse(line);
           if (!isNaN(n)) {
-            if (["salary", "fizetés", "beérkezés", "credit"].some(k => l.includes(k))) income = Math.max(income, n);
+            if (["salary", "fizetés", "credit", "incoming"].some(k => l.includes(k))) income = Math.max(income, n);
             else expenses = Math.max(expenses, Math.abs(n));
           }
         }
@@ -64,14 +71,14 @@ export default async function handler(req, res) {
     }
 
     return res.status(200).json({
-      income: Math.round(income),
-      fixed: Math.round(expenses * 0.65),
-      variable: Math.round(expenses * 0.35),
+      income: Math.round(income) || 0,
+      fixed: Math.round(expenses * 0.65) || 0,
+      variable: Math.round(expenses * 0.35) || 0,
       status: "success"
     });
 
   } catch (error) {
-    console.error("API Error:", error);
-    return res.status(500).json({ error: error.message });
+    console.error("Vercel API Error:", error.message);
+    return res.status(500).json({ error: error.message, status: "error" });
   }
 }
