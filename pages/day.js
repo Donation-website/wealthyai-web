@@ -249,29 +249,14 @@ export default function DayPremium() {
 
       const result = await response.json();
 
-      if (response.ok) {
-        console.log("BACKEND RAW:", result);
+      if (response.ok && result.status === "success") {
+        console.log("FRONTEND RECEIVED DATA:", result);
         
-        // 🔥 1. JAVÍTOTT ADATKEZELÉS ÉS BIZTONSÁGI SZŰRÉS
-        const income = Number(result.income) || 0;
-        const expenses = Number(result.expenses) || Number(result.total_expenses) || (Number(result.fixed || 0) + Number(result.variable || 0)) || 0;
-
-        // Ha nincs bontás a backendtől, generáljuk le az arányos becslést
-        const fixed = result.fixed && result.fixed > 0
-          ? Math.round(Number(result.fixed))
-          : Math.round(expenses * 0.6);
-
-        const variable = result.variable && result.variable > 0
-          ? Math.round(Number(result.variable))
-          : Math.round(expenses * 0.4);
-
-        // Brutál szám szűrés (backend bug védelem: pl. 10^30)
-        const safeIncome = income > 1_000_000_000 ? 0 : income;
-
+        // 🔥 JAVÍTOTT ADATKEZELÉS: Összehangolva a Backend kulcsaival
         const updatedData = {
-          income: Math.round(safeIncome),
-          fixed,
-          variable,
+          income: Number(result.monthly_income) || 0,
+          fixed: Number(result.monthly_fixed) || 0,
+          variable: Number(result.monthly_variable) || 0,
         };
 
         // FRISSÍTÉS A MEMÓRIÁBAN ÉS LOCALSTORAGE-BAN
@@ -307,7 +292,6 @@ export default function DayPremium() {
   };
 
   const handleCloseScan = () => {
-    resetFinancials(); // Töröljük a számokat a bezáráskor is
     setScanOpen(false);
   };
 
@@ -371,19 +355,10 @@ export default function DayPremium() {
   }, [mounted, isAuthorized]);
 
   useEffect(() => {
-    // 🔥 3. JAVÍTOTT LOCALSTORAGE BETÖLTÉS
     const saved = localStorage.getItem("userFinancials");
     if (saved) {
       const parsed = JSON.parse(saved);
-      // Ha irreális adatot találunk (bugos mentés), töröljük
-      if (parsed.income > 1_000_000_000) {
-        localStorage.removeItem("userFinancials");
-        resetFinancials();
-      } else {
-        setData(parsed);
-      }
-    } else {
-      resetFinancials();
+      setData(parsed);
     }
   }, []);
 
@@ -571,16 +546,20 @@ export default function DayPremium() {
 
             <div style={inputPanel}>
               <div style={{ fontSize: '10px', color: '#64748b', marginBottom: '10px', textAlign: 'center' }}>MANUAL DATA ENTRY</div>
-              {["income", "fixed", "variable"].map((k) => (
-                <div key={k} style={inputRow}>
-                  <span style={{ fontSize: isMobile ? '11px' : '13px' }}>MONTHLY {k.toUpperCase()}</span>
+              {[
+                { label: "income", key: "income" },
+                { label: "fixed", key: "fixed" },
+                { label: "variable", key: "variable" }
+              ].map((item) => (
+                <div key={item.key} style={inputRow}>
+                  <span style={{ fontSize: isMobile ? '11px' : '13px' }}>MONTHLY {item.label.toUpperCase()}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <input
                       type="number"
-                      value={data[k]}
+                      value={data[item.key]}
                       onChange={(e) => {
                         const val = Number(e.target.value);
-                        const newData = { ...data, [k]: val };
+                        const newData = { ...data, [item.key]: val };
                         setData(newData);
                         localStorage.setItem("userFinancials", JSON.stringify(newData));
                       }}
