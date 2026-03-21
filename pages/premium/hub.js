@@ -22,7 +22,7 @@ export default function PremiumHub() {
   const _K = "TUFTVEVSLURPTUlOQU5DRS0yMDI2"; 
   
   const links = {
-    cf: { name: "CLOUDFLARE", color: "#f38020", url: "aHR0cHM6Ly9kYXNoLmNsb3VkZmxhcmUuY29tL2QwMzAzZDdjNTAzOTRiMjgwYTI4YjU4ZDNjMTNmMTEvaG9tZS9vdmVydmlldw==" },
+    cf: { name: "CLOUDFLARE", color: "#f38020", url: "aHR0cHM6Ly9kYXNoDashY2xvdWRmbGFyZS5jb20vZDAzMDNkN2M1MDM5NGIyODBhMjhiNThkM2MxM2YxMWYvaG9tZS9vdmVydmlldw==" },
     lc: { name: "LOCANTO", color: "#32cd32", url: "aHR0cHM6Ly93d3cubG9jYW50by5jb20vZy9teS8/c2hvdz1teS1hZHM=" },
     ph: { name: "PH PROFIL", color: "#da552f", url: "aHR0cHM6Ly93d3cucHJvZHVjdGh1bnQuY29tL0B6b2x0YW5faG9ydmF0aDU=" },
     zo: { name: "ZOHO MAIL", color: "#1e3a8a", url: "aHR0cHM6Ly9tYWlsLnpvaG8uZXU=" },
@@ -33,7 +33,8 @@ export default function PremiumHub() {
     st: { name: "STRIPE", color: "#4338ca", url: "aHR0cHM6Ly9kYXNoYm9hcmQuc3RyaXBlLmNvbQ==" },
     az: { name: "AZURE", color: "#2563eb", url: "aHR0cHM6Ly9wb3J0YWwuYXp1cmUuY29tLyNob21l" },
     sb: { name: "SUPABASE", color: "#3ecf8e", url: "aHR0cHM6Ly9zdXBhYmFzZS5jb20vZGFzaGJvYXJkL29yZy91dWhvanduamJlYnVrimJmYnV3em4=" },
-    fb: { name: "FB GROUP", color: "#1877F2", url: "aHR0cHM6Ly93d3cuZmFjZWJvb2suY29tL2dyb3Vwcy9mZWVk" }
+    fb: { name: "FB GROUP", color: "#1877F2", url: "aHR0cHM6Ly93d3cuZmFjZWJvb2suY29tL2dyb3Vwcy9mZWVk" },
+    ne: { name: "NETLIFY", color: "#00AD9F", url: "aHR0cHM6Ly9hcHAubmV0bGlmeS5jb20vdGVhbXMvZG9uYXRpb24td2Vic2l0ZS9wcm9qZWN0cw==" }
   };
 
   const fetchMasterStats = async () => {
@@ -226,7 +227,7 @@ export default function PremiumHub() {
 
           <div style={styles.btnGroup}>
             {Object.keys(links).map(key => (
-              <button key={key} onClick={() => openSecure(key)} style={{ ...styles.adminBtn, backgroundColor: links[key].color, color: (key === 'sb' || key === 'nc' || key === 'lc') ? '#000' : 'white' }}>{links[key].name}</button>
+              <button key={key} onClick={() => openSecure(key)} style={{ ...styles.adminBtn, backgroundColor: links[key].color, color: (key === 'sb' || key === 'nc' || key === 'lc' || key === 'ne') ? '#000' : 'white' }}>{links[key].name}</button>
             ))}
           </div>
         </div>
