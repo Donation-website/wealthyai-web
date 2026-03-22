@@ -34,7 +34,8 @@ export default function PremiumHub() {
     az: { name: "AZURE", color: "#2563eb", url: "aHR0cHM6Ly9wb3J0YWwuYXp1cmUuY29tLyNob21l" },
     sb: { name: "SUPABASE", color: "#3ecf8e", url: "aHR0cHM6Ly9zdXBhYmFzZS5jb20vZGFzaGJvYXJkL29yZy91dWhvanduamJlYnVrimJmYnV3em4=" },
     fb: { name: "FB GROUP", color: "#1877F2", url: "aHR0cHM6Ly93d3cuZmFjZWJvb2suY29tL2dyb3Vwcy9mZWVk" },
-    ne: { name: "NETLIFY", color: "#00AD9F", url: "aHR0cHM6Ly9hcHAubmV0bGlmeS5jb20vdGVhbXMvZG9uYXRpb24td2Vic2l0ZS9wcm9qZWN0cw==" }
+    ne: { name: "NETLIFY", color: "#00AD9F", url: "aHR0cHM6Ly9hcHAubmV0bGlmeS5jb20vdGVhbXMvZG9uYXRpb24td2Vic2l0ZS9wcm9qZWN0cw==" },
+    mk: { name: "MAKE.COM", color: "#ff00ff", url: "aHR0cHM6Ly9ldTEubWFrZS5jb20vMTI5NTg0OC9zY2VuYXJpb3MvNDkzNzEwOS9lZGl0" }
   };
 
   const fetchMasterStats = async () => {
@@ -182,7 +183,10 @@ export default function PremiumHub() {
   }, []);
 
   const navigateTo = (path) => { window.location.href = path; };
-  const openSecure = (key) => { window.open(atob(links[key].url), "_blank", "noreferrer"); };
+  const openSecure = (key) => { 
+    const url = key === 'mk' ? links[key].url : atob(links[key].url);
+    window.open(url, "_blank", "noreferrer"); 
+  };
 
   const styles = {
     container: { minHeight: "100vh", width: "100%", backgroundColor: "#020617", color: "white", fontFamily: "Inter, sans-serif", display: "flex", flexDirection: "column", alignItems: "center", padding: "0 0 40px 0", backgroundImage: "radial-gradient(circle at center, #1e1b4b 0%, #020617 100%)", boxSizing: "border-box" },
