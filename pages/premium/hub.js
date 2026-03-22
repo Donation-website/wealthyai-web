@@ -22,7 +22,7 @@ export default function PremiumHub() {
   const _K = "TUFTVEVSLURPTUlOQU5DRS0yMDI2"; 
   
   const links = {
-    cf: { name: "CLOUDFLARE", color: "#f38020", url: "aHR0cHM6Ly9kYXNoDashY2xvdWRmbGFyZS5jb20vZDAzMDNkN2M1MDM5NGIyODBhMjhiNThkM2MxM2YxMWYvaG9tZS9vdmVydmlldw==" },
+    cf: { name: "CLOUDFLARE", color: "#f38020", url: "aHR0cHM6Ly9kYXNoLmNsb3VkZmxhcmUuY29tL2QwMzMDNkN2M1MDM5NGIyODBhMjhiNThkM2MxM2YxMWYvaG9tZS9vdmVydmlldw==" },
     lc: { name: "LOCANTO", color: "#32cd32", url: "aHR0cHM6Ly93d3cubG9jYW50by5jb20vZy9teS8/c2hvdz1teS1hZHM=" },
     ph: { name: "PH PROFIL", color: "#da552f", url: "aHR0cHM6Ly93d3cucHJvZHVjdGh1bnQuY29tL0B6b2x0YW5faG9ydmF0aDU=" },
     zo: { name: "ZOHO MAIL", color: "#1e3a8a", url: "aHR0cHM6Ly9tYWlsLnpvaG8uZXU=" },
@@ -184,11 +184,12 @@ export default function PremiumHub() {
 
   const navigateTo = (path) => { window.location.href = path; };
   const openSecure = (key) => { 
-    // Mivel a make link nincs base64-elve, itt egy egyszerű kivételt teszünk a biztonság kedvéért:
     try {
-        const url = key === 'mk' ? links[key].url : atob(links[key].url);
+        // Megpróbáljuk dekódolni a linket
+        const url = atob(links[key].url);
         window.open(url, "_blank", "noreferrer"); 
     } catch (e) {
+        // Ha nem Base64 vagy hiba van, megnyitjuk az eredeti stringet
         window.open(links[key].url, "_blank", "noreferrer");
     }
   };
