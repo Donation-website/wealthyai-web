@@ -184,8 +184,13 @@ export default function PremiumHub() {
 
   const navigateTo = (path) => { window.location.href = path; };
   const openSecure = (key) => { 
-    const url = key === 'mk' ? links[key].url : atob(links[key].url);
-    window.open(url, "_blank", "noreferrer"); 
+    // Mivel a make link nincs base64-elve, itt egy egyszerű kivételt teszünk a biztonság kedvéért:
+    try {
+        const url = key === 'mk' ? links[key].url : atob(links[key].url);
+        window.open(url, "_blank", "noreferrer"); 
+    } catch (e) {
+        window.open(links[key].url, "_blank", "noreferrer");
+    }
   };
 
   const styles = {
@@ -231,7 +236,7 @@ export default function PremiumHub() {
 
           <div style={styles.btnGroup}>
             {Object.keys(links).map(key => (
-              <button key={key} onClick={() => openSecure(key)} style={{ ...styles.adminBtn, backgroundColor: links[key].color, color: (key === 'sb' || key === 'nc' || key === 'lc' || key === 'ne') ? '#000' : 'white' }}>{links[key].name}</button>
+              <button key={key} onClick={() => openSecure(key)} style={{ ...styles.adminBtn, backgroundColor: links[key].color, color: (key === 'sb' || key === 'nc' || key === 'lc' || key === 'ne' || key === 'mk') ? '#000' : 'white' }}>{links[key].name}</button>
             ))}
           </div>
         </div>
