@@ -69,6 +69,50 @@ export default function Philosophy() {
             don’t want to be sold certainty, and <strong>value continuity over instant output</strong>.
           </Section>
 
+          <Section title="Zoltán Horváth: Strategic Philosophy and Methodology">
+            Zoltán Horváth is the founder and developer of mywealthyai.com and the architect of the TITAN Engine. He possesses extensive expertise in IT system architecture, Business Intelligence (BI), and strategic leadership, having previously held senior executive and advisory roles at world-leading organizations.
+          </Section>
+
+          <Section title="Philosophy and Vision">
+            Zoltán’s approach deliberately counters current fintech trends that promise "get-rich-quick" schemes or "automated certainty." He shares his strategic insights through the platform’s Insights section and international professional forums, such as the Meridian Global Forum.
+            <ul style={listStyle}>
+              <li><strong>AI as an "Interpreter," Not an Advisor:</strong> Zoltán argues that most financial tools fail under the weight of their own promises. MyWealthyAI was created not to dictate financial decisions, but to provide structured AI insights that enable users to interpret their own financial landscape with clarity.</li>
+              <li><strong>Structural Discipline vs. Patchwork:</strong> He believes true freedom is a product of uncompromising structure, not luck. His architectural philosophy dictates that technical and business frictions should not be "patched" but replaced by fundamentally efficient systems.</li>
+              <li><strong>Human Accountability in the Algorithmic Age:</strong> He emphasizes that accountability is the only thing that cannot be outsourced to a GPU. AI is treated as a "supporting strategist" that offers recommendations, while the final decision and ethical responsibility remain with the human leader.</li>
+            </ul>
+          </Section>
+
+          <Section title="Key Themes and Publications">
+            His writings frequently explore the intersection of technology and reality:
+            <ul style={listStyle}>
+              <li><strong>The Uncertainty of the Future:</strong> Zoltán posits that the greatest risk is not AI replacing jobs, but the paralysis caused by falling behind. He believes the future begins when things are still uncertain and action feels uncomfortable.</li>
+              <li><strong>Space Economy and AI:</strong> Drawing parallels between SpaceX’s lunar missions and the ubiquity of AI, he questions why corporations still struggle with slow decision-making and legacy systems while technology accelerates at warp speed.</li>
+            </ul>
+          </Section>
+
+          <Section title="Strategic Profile and Intellectual Leadership">
+            Known as a "technological philosopher," Zoltán views coding and financial architecture as tools for achieving deeper, structured thinking.
+            <ul style={listStyle}>
+              <li><strong>The "Less is More" Network Principle:</strong> His limited number of LinkedIn connections is a deliberate choice. This exclusivity signals a preference for high-level intellectual dialogue with those who understand a systems-thinking approach, aligning with the "noise-free" philosophy of MyWealthyAI.</li>
+              <li><strong>Philanthropy and Values:</strong> His support for child protection and community spaces (including involvement with Waldorf education) reflects his view that the true value of accumulated capital lies in social impact and supporting future generations.</li>
+              <li><strong>Intellectual Authority:</strong> In a world where "attention" is the scarcest currency, Zoltán focuses on increasing clarity rather than volume. His output consists of essays on responsibility, structure, and emerging from chaos rather than typical marketing copy.</li>
+            </ul>
+          </Section>
+
+          <Section title='Methodology of MyWealthyAI: "Structure Over Chaos"'>
+            The platform represents a disciplined synergy between Zoltán’s technical and intellectual approach:
+            <ul style={listStyle}>
+              <li><strong>Financial Intelligence (Non-Advisory):</strong> The system translates complex market and personal data into a coherent framework without providing specific investment tips.</li>
+              <li><strong>Zero Tolerance for Friction:</strong> A core pillar of the methodology; if a system component causes latency or risk, it is fundamentally re-engineered.</li>
+              <li><strong>Human-Machine Symbiosis:</strong> The AI performs the "strategic heavy lifting" (data processing, pattern recognition), leaving the ultimate judgment to the user.</li>
+              <li><strong>Privacy and Velocity:</strong> The "No Log-In" model and ephemeral data handling ensure that financial analysis remains discrete and instantaneous.</li>
+            </ul>
+          </Section>
+
+          <Section title="Global Context and Influence">
+            While Zoltán maintains a highly private profile and rarely grants interviews, his influence is felt through TITAN, a series of confidential projects involving world-leading technology companies. His personal wealth is not public; however, based on his strategic partnerships with global leaders, experts estimate his net worth to be in the multi-million dollar range. For Zoltán Horváth, wealth management is not about numbers—it is about discipline and the pursuit of freedom. Despite his success, Zoltán has remained an approachable leader; his email address remains public, accessible to those who wish to build the future.
+          </Section>
+
           <p style={footer}>
             WealthyAI is not trying to replace human judgment. It exists to support it — quietly, over time.
           </p>
