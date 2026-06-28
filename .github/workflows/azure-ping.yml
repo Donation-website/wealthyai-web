@@ -1,0 +1,17 @@
+name: Azure DB Sustained Workload Ping
+
+on:
+  schedule:
+    # 3 óránként fut le automatikusan (naponta 8-szor), így egyenletes, tartós mintát ad
+    - cron: '0 */3 * * *'
+  workflow_dispatch: # Ez a gomb ahhoz kell, hogy kézzel is el tudd indítani tesztelni
+
+jobs:
+  ping-azure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check network port on Azure SQL
+        run: |
+          echo "Bökés indítása az Azure SQL felé..."
+          nc -zv -w 5 mywealthyai-server-2026.database.windows.net 1433
+          echo "Kész, az Azure regisztrálta az aktivitást."
