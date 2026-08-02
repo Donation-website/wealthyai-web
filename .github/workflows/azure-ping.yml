@@ -1,17 +1,29 @@
-name: Azure DB Sustained Workload Ping
+name: Azure Multi-Workload Sustained Ping
 
 on:
   schedule:
-    # 3 óránként fut le automatikusan (naponta 8-szor), így egyenletes, tartós mintát ad
-    - cron: '0 */3 * * *'
-  workflow_dispatch: # Ez a gomb ahhoz kell, hogy kézzel is el tudd indítani tesztelni
+    - cron: '0 */3 * * *' # 3 óránként fut le automatikusan, tartós mintát adva
+  workflow_dispatch: # Kézi indítási gomb a teszteléshez
 
 jobs:
-  ping-azure:
+  ping-all-workloads:
     runs-on: ubuntu-latest
     steps:
-      - name: Check network port on Azure SQL
+      - name: Ping All 5 Azure Services
         run: |
-          echo "Bökés indítása az Azure SQL felé..."
-          nc -zv -w 5 mywealthyai-server-2026.database.windows.net 1433
-          echo "Kész, az Azure regisztrálta az aktivitást."
+          echo "=== 1. SQL Database (mywealthyai-db) ==="
+          nc -zv -w 5 mywealthyai-server-2026.database.windows.net 1433 || true
+
+          echo "=== 2. Azure OpenAI (jobsandcv-ai-engine) ==="
+          curl -I -s -o /dev/null -w "%{http_code}\n" "https://jobsandcv-ai-engine.openai.azure.com/" || true
+
+          echo "=== 3. Cognitive Search (jobs-search-cv) ==="
+          curl -I -s -o /dev/null -w "%{http_code}\n" "https://jobs-search-cv.search.windows.net/" || true
+
+          echo "=== 4. Document Intelligence (mywealthyai-doc-reader) ==="
+          curl -I -s -o /dev/null -w "%{http_code}\n" "https://mywealthyai-doc-reader.cognitiveservices.azure.com/" || true
+
+          echo "=== 5. Communication Service (mywealthyai-communication) ==="
+          curl -I -s -o /dev/null -w "%{http_code}\n" "https://mywealthyai-communication.communication.azure.com/" || true
+          
+          echo "Kész, az összes erőforrás megpöccintve, az Azure naplózza az aktivitást."
