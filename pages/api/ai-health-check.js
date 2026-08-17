@@ -1,11 +1,17 @@
 export default async function handler(req, res) {
-  // A legfrissebb és aktív Groq modellek fallback tömbben
   const models = [
     "llama-3.3-70b-versatile",
     "llama3-8b-8192"
   ]; 
 
   try {
+    if (!process.env.GROQ_API_KEY) {
+      return res.status(500).json({ 
+        status: "CRITICAL", 
+        message: "HIÁNYZIK AZ API KULCS (GROQ_API_KEY is missing)" 
+      });
+    }
+
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -23,7 +29,11 @@ export default async function handler(req, res) {
       return res.status(200).json({ status: "HEALTHY", engine: "Groq Llama 3.3" });
     } else {
       const errorData = await response.json();
-      return res.status(500).json({ status: "CRITICAL", message: errorData.error?.message });
+      return res.status(500).json({ 
+        status: "CRITICAL", 
+        message: errorData.error?.message || "Groq API hiba",
+        http_code: response.status 
+      });
     }
   } catch (err) {
     return res.status(500).json({ status: "OFFLINE", error: err.message });
