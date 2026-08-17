@@ -1,6 +1,5 @@
 export default async function handler(req, res) {
-  // A Groq hivatalos új aktív modellje a kivezetett Llama 3.1 8B helyett
-  const primaryModel = "openai/gpt-oss-20b";
+  const modelName = "openai/gpt-oss-20b";
 
   try {
     if (!process.env.GROQ_API_KEY) {
@@ -17,14 +16,14 @@ export default async function handler(req, res) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: primaryModel,
+        model: modelName,
         messages: [{ role: "user", content: "hi" }],
         max_tokens: 10
       })
     });
 
     if (response.ok) {
-      return res.status(200).json({ status: "HEALTHY", engine: primaryModel });
+      return res.status(200).json({ status: "HEALTHY", engine: modelName });
     } else {
       const errorData = await response.json();
       return res.status(500).json({ 
