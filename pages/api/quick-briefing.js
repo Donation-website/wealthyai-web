@@ -49,46 +49,22 @@ STRICT FORMATTING:
       return res.status(500).json({ briefing: "Error: GROQ_API_KEY is missing." });
     }
 
-    // Elsődlegesen az aktív openai/gpt-oss-20b modellt használjuk, ha elhasal, a llama-3.1-8b-instant-ra vált
-    let activeModel = "openai/gpt-oss-20b";
-
-    let response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: activeModel,
+        model: "openai/gpt-oss-20b",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: "Interpret my current financial numbers." },
         ],
         temperature: 0.1, 
-        max_completion_tokens: 200,
+        max_tokens: 300,
       }),
     });
-
-    if (!response.ok) {
-      // Fallback próbálkozás a llama-3.1-8b-instant dallal
-      activeModel = "llama-3.1-8b-instant";
-      response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: activeModel,
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: "Interpret my current financial numbers." },
-          ],
-          temperature: 0.1, 
-          max_completion_tokens: 200,
-        }),
-      });
-    }
 
     if (!response.ok) {
       const errJson = await response.json();
@@ -98,7 +74,11 @@ STRICT FORMATTING:
     }
 
     const data = await response.json();
-    const briefingText = data.choices[0]?.message?.content || "Analysis temporarily unavailable.";
+    const briefingText = data.choices[0]?.message?.content;
+
+    if (!briefingText) {
+      return res.status(500).json({ briefing: "AI response was empty. Please try again." });
+    }
 
     return res.status(200).json({ briefing: briefingText });
 
