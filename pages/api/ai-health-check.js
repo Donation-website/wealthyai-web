@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
-  // A jelenleg érvényes hivatalos Groq modellazonosítók
-  const primaryModel = "llama-3.1-8b-instant";
+  // A Groq hivatalos új aktív modellje a kivezetett Llama 3.1 8B helyett
+  const primaryModel = "openai/gpt-oss-20b";
 
   try {
     if (!process.env.GROQ_API_KEY) {
