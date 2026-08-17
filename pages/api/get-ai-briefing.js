@@ -158,7 +158,7 @@ TASK: Write the briefing. Use the calculated balance of ${dynamicSurplus}.
     const directivePrompt = `MODE: DIRECTIVE\n- Firm, Strategic.\n${baseUserPrompt}`;
 
     /* ================================
-        GROQ CALL (RESTORED TO INSTANT)
+        GROQ CALL (UPDATED MODEL)
     ================================= */
 
     const callGroq = async (prompt, temperature) => {
@@ -171,7 +171,7 @@ TASK: Write the briefing. Use the calculated balance of ${dynamicSurplus}.
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "llama-3.1-8b-instant", 
+            model: "openai/gpt-oss-20b", 
             messages: [
               { role: "system", content: systemPrompt },
               { role: "user", content: prompt },
@@ -182,7 +182,11 @@ TASK: Write the briefing. Use the calculated balance of ${dynamicSurplus}.
         }
       );
 
-      if (!r.ok) throw new Error("Groq unavailable");
+      if (!r.ok) {
+        const errData = await r.json().catch(() => ({}));
+        throw new Error(errData.error?.message || `Groq unavailable (${r.status})`);
+      }
+      
       const j = await r.json();
       let text = j?.choices?.[0]?.message?.content || "";
 
@@ -212,6 +216,6 @@ TASK: Write the briefing. Use the calculated balance of ${dynamicSurplus}.
 
   } catch (err) {
     console.error("Monthly AI crash:", err);
-    return res.status(500).json({ briefing: "AI system error." });
+    return res.status(500).json({ briefing: `AI system error: ${err.message}` });
   }
 }
