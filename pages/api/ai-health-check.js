@@ -1,14 +1,12 @@
 export default async function handler(req, res) {
-  const models = [
-    "llama-3.3-70b-versatile",
-    "llama3-8b-8192"
-  ]; 
+  // A Groq legmegbízhatóbb alapértelmezett ingyenes modellje
+  const modelName = "llama3-8b-8192"; 
 
   try {
     if (!process.env.GROQ_API_KEY) {
       return res.status(500).json({ 
         status: "CRITICAL", 
-        message: "HIÁNYZIK AZ API KULCS (GROQ_API_KEY is missing)" 
+        message: "GROQ_API_KEY hiányzik a környezeti változókból" 
       });
     }
 
@@ -19,14 +17,14 @@ export default async function handler(req, res) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: models[0],
+        model: modelName,
         messages: [{ role: "user", content: "hi" }],
         max_tokens: 10
       })
     });
 
     if (response.ok) {
-      return res.status(200).json({ status: "HEALTHY", engine: "Groq Llama 3.3" });
+      return res.status(200).json({ status: "HEALTHY", engine: "Groq Llama 3" });
     } else {
       const errorData = await response.json();
       return res.status(500).json({ 
