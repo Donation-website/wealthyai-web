@@ -49,23 +49,46 @@ STRICT FORMATTING:
       return res.status(500).json({ briefing: "Error: GROQ_API_KEY is missing." });
     }
 
-    // A legstabilabb garantált Groq Llama 3 modellazonosító
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    // Elsődlegesen az aktív openai/gpt-oss-20b modellt használjuk, ha elhasal, a llama-3.1-8b-instant-ra vált
+    let activeModel = "openai/gpt-oss-20b";
+
+    let response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "llama3-70b-8192",
+        model: activeModel,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: "Interpret my current financial numbers." },
         ],
         temperature: 0.1, 
-        max_tokens: 200,
+        max_completion_tokens: 200,
       }),
     });
+
+    if (!response.ok) {
+      // Fallback próbálkozás a llama-3.1-8b-instant dallal
+      activeModel = "llama-3.1-8b-instant";
+      response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: activeModel,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: "Interpret my current financial numbers." },
+          ],
+          temperature: 0.1, 
+          max_completion_tokens: 200,
+        }),
+      });
+    }
 
     if (!response.ok) {
       const errJson = await response.json();
