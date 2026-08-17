@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
-  // A Groq legmegbízhatóbb alapértelmezett ingyenes modellje
-  const modelName = "llama3-8b-8192"; 
+  // A jelenleg érvényes hivatalos Groq modellazonosítók
+  const primaryModel = "llama-3.1-8b-instant";
 
   try {
     if (!process.env.GROQ_API_KEY) {
@@ -17,14 +17,14 @@ export default async function handler(req, res) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: modelName,
+        model: primaryModel,
         messages: [{ role: "user", content: "hi" }],
         max_tokens: 10
       })
     });
 
     if (response.ok) {
-      return res.status(200).json({ status: "HEALTHY", engine: "Groq Llama 3" });
+      return res.status(200).json({ status: "HEALTHY", engine: primaryModel });
     } else {
       const errorData = await response.json();
       return res.status(500).json({ 
