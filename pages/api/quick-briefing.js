@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-  // Csak POST kéréseket fogadunk el
   if (req.method !== "POST") {
     return res.status(405).json({ briefing: "Method not allowed." });
   }
@@ -7,7 +6,6 @@ export default async function handler(req, res) {
   try {
     const { income, fixed, variable } = req.body;
 
-    // Alapvető számítások az AI-nak (Sanitization)
     const sIncome = Math.max(0, Number(income || 0));
     const sFixed = Math.max(0, Number(fixed || 0));
     const sVariable = Math.max(0, Number(variable || 0));
@@ -15,7 +13,6 @@ export default async function handler(req, res) {
     const totalOut = sFixed + sVariable;
     const balance = sIncome - totalOut;
     
-    // Százalékos mutatók kiszámítása
     const usagePercentVal = sIncome > 0 ? (totalOut / sIncome) * 100 : (totalOut > 0 ? 100.1 : 0);
     const usagePercentStr = usagePercentVal.toFixed(1);
     const deficitAmount = balance < 0 ? Math.abs(balance) : 0;
@@ -48,20 +45,19 @@ STRICT FORMATTING:
 - No greeting, no intro, no other text.
 `;
 
-    // Ha nincs API kulcs a környezeti változókban
     if (!process.env.GROQ_API_KEY) {
-      return res.status(500).json({ briefing: "Error: GROQ_API_KEY is missing in environment variables." });
+      return res.status(500).json({ briefing: "Error: GROQ_API_KEY is missing." });
     }
 
-    // Először próbáljuk a 3.1-es instant modellt, ha nem megy, a 3.3-as versatile-t
-    let response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    // A legstabilabb garantált Groq Llama 3 modellazonosító
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
+        model: "llama3-70b-8192",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: "Interpret my current financial numbers." },
@@ -70,26 +66,6 @@ STRICT FORMATTING:
         max_tokens: 200,
       }),
     });
-
-    // Fallback próbálkozás, ha a 3.1 elhasalna
-    if (!response.ok) {
-      response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: "Interpret my current financial numbers." },
-          ],
-          temperature: 0.1, 
-          max_tokens: 200,
-        }),
-      });
-    }
 
     if (!response.ok) {
       const errJson = await response.json();
@@ -101,7 +77,6 @@ STRICT FORMATTING:
     const data = await response.json();
     const briefingText = data.choices[0]?.message?.content || "Analysis temporarily unavailable.";
 
-    // Válasz küldése a frontendnek
     return res.status(200).json({ briefing: briefingText });
 
   } catch (err) {
