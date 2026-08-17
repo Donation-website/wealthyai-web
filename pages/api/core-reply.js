@@ -46,7 +46,7 @@ export default async function handler(req, res) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "llama-3.1-8b-instant", 
+        model: "openai/gpt-oss-20b", 
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `Insight from ${userName || 'Visitor'}: ${userComment}` }
@@ -58,7 +58,7 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok || data.error) {
-      return res.status(response.status || 500).json({ error: "Groq API error" });
+      return res.status(response.status || 500).json({ error: data.error?.message || "Groq API error" });
     }
 
     if (data.choices && data.choices.length > 0) {
