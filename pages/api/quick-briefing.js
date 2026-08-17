@@ -20,7 +20,6 @@ export default async function handler(req, res) {
     const usagePercentStr = usagePercentVal.toFixed(1);
     const deficitAmount = balance < 0 ? Math.abs(balance) : 0;
 
-    // Rendszer utasítás a Llama-nak - Beszédesebb, de szigorúbb logika
     const systemPrompt = `
 You are WealthyAI — a professional financial data interpreter.
 ROLE: Provide a professional "Quick Briefing" based on the provided data.
@@ -49,8 +48,13 @@ STRICT FORMATTING:
 - No greeting, no intro, no other text.
 `;
 
-    // Hívás a Groq API-hoz
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    // Ha nincs API kulcs a környezeti változókban
+    if (!process.env.GROQ_API_KEY) {
+      return res.status(500).json({ briefing: "Error: GROQ_API_KEY is missing in environment variables." });
+    }
+
+    // Először próbáljuk a 3.1-es instant modellt, ha nem megy, a 3.3-as versatile-t
+    let response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
@@ -63,12 +67,35 @@ STRICT FORMATTING:
           { role: "user", content: "Interpret my current financial numbers." },
         ],
         temperature: 0.1, 
-        max_tokens: 200, // Kicsit korlátozva, hogy beférjen a boxba
+        max_tokens: 200,
       }),
     });
 
+    // Fallback próbálkozás, ha a 3.1 elhasalna
     if (!response.ok) {
-      throw new Error("Groq API connection failed");
+      response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: "Interpret my current financial numbers." },
+          ],
+          temperature: 0.1, 
+          max_tokens: 200,
+        }),
+      });
+    }
+
+    if (!response.ok) {
+      const errJson = await response.json();
+      return res.status(500).json({ 
+        briefing: `Groq Error (${response.status}): ${errJson.error?.message || "Unknown API error"}` 
+      });
     }
 
     const data = await response.json();
@@ -79,6 +106,6 @@ STRICT FORMATTING:
 
   } catch (err) {
     console.error("Quick Briefing AI Error:", err);
-    return res.status(500).json({ briefing: "The AI system is currently re-calibrating. Please try again in a moment." });
+    return res.status(500).json({ briefing: `System Error: ${err.message}` });
   }
 }
