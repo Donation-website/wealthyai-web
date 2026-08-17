@@ -138,7 +138,7 @@ Upgrade to Monthly Intelligence to see how these weekly patterns impact your net
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "llama-3.1-8b-instant",
+          model: "openai/gpt-oss-20b",
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt },
@@ -150,7 +150,10 @@ Upgrade to Monthly Intelligence to see how these weekly patterns impact your net
     );
 
     if (!groqRes.ok) {
-      return res.status(500).json({ insight: "AI backend unavailable." });
+      const errData = await groqRes.json().catch(() => ({}));
+      return res.status(500).json({ 
+        insight: `AI backend unavailable: ${errData.error?.message || groqRes.status}` 
+      });
     }
 
     const json = await groqRes.json();
@@ -166,6 +169,6 @@ Upgrade to Monthly Intelligence to see how these weekly patterns impact your net
 
   } catch (err) {
     console.error("AI crash:", err);
-    return res.status(500).json({ insight: "AI system error." });
+    return res.status(500).json({ insight: `AI system error: ${err.message}` });
   }
 }
