@@ -35,7 +35,8 @@ export default function PremiumHub() {
     sb: { name: "SUPABASE", color: "#3ecf8e", url: "aHR0cHM6Ly9zdXBhYmFzZS5jb20vZGFzaGJvYXJkL29yZy91dWhvanduamJlYnVrimJmYnV3em4=" },
     fb: { name: "FB GROUP", color: "#1877F2", url: "aHR0cHM6Ly93d3cuZmFjZWJvb2suY29tL2dyb3Vwcy9mZWVk" },
     ne: { name: "NETLIFY", color: "#00AD9F", url: "aHR0cHM6Ly9hcHAubmV0bGlmeS5jb20vdGVhbXMvZG9uYXRpb24td2Vic2l0ZS9wcm9qZWN0cw==" },
-    mk: { name: "MAKE.COM", color: "#ff00ff", url: "aHR0cHM6Ly9ldTEubWFrZS5jb20vMTI5NTg0OC9zY2VuYXJpb3MvNDkzNzEwOS9lZGl0" }
+    mk: { name: "MAKE.COM", color: "#ff00ff", url: "aHR0cHM6Ly9ldTEubWFrZS5jb20vMTI5NTg0OC9zY2VuYXJpb3MvNDkzNzEwOS9lZGl0" },
+    gc: { name: "GOOGLECONSOL", color: "#4285F4", url: "aHR0cHM6Ly9jb25zb2xlLmNsb3VkLmdvb2dsZS5jb20vYmlsbGluZy8wMTQ0NzMtOTBBNzlDLUE0OTk0Ni9jcmVkaXRzL2FsbD9wcm9qZWN0PXByb2plY3QtNTUyZmJkOWMtYzY1YS00NjY2LWI4Zg==" }
   };
 
   const fetchMasterStats = async () => {
@@ -237,7 +238,7 @@ export default function PremiumHub() {
 
           <div style={styles.btnGroup}>
             {Object.keys(links).map(key => (
-              <button key={key} onClick={() => openSecure(key)} style={{ ...styles.adminBtn, backgroundColor: links[key].color, color: (key === 'sb' || key === 'nc' || key === 'lc' || key === 'ne' || key === 'mk') ? '#000' : 'white' }}>{links[key].name}</button>
+              <button key={key} onClick={() => openSecure(key)} style={{ ...styles.adminBtn, backgroundColor: links[key].color, color: (key === 'sb' || key === 'nc' || key === 'lc' || key === 'ne' || key === 'mk' || key === 'gc') ? '#000' : 'white' }}>{links[key].name}</button>
             ))}
           </div>
         </div>
