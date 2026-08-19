@@ -1,6 +1,4 @@
 export default async function handler(req, res) {
-  const modelName = "openai/gpt-oss-20b";
-
   try {
     if (!process.env.GROQ_API_KEY) {
       return res.status(500).json({ 
@@ -9,23 +7,18 @@ export default async function handler(req, res) {
       });
     }
 
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
+    // A sima GET /models hívás igazolja az API kapcsolatot, de nem égeti el a napi kvótádat
+    const response = await fetch("https://api.groq.com/openai/v1/models", {
+      method: "GET",
       headers: {
         "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
-        "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        model: modelName,
-        messages: [{ role: "user", content: "hi" }],
-        max_tokens: 10
-      })
     });
 
     if (response.ok) {
-      return res.status(200).json({ status: "HEALTHY", engine: modelName });
+      return res.status(200).json({ status: "HEALTHY", engine: "Groq API (Lightweight)" });
     } else {
-      const errorData = await response.json();
+      const errorData = await response.json().catch(() => ({}));
       return res.status(500).json({ 
         status: "CRITICAL", 
         message: errorData.error?.message || "Groq API hiba",
